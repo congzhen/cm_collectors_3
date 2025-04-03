@@ -1,0 +1,33 @@
+# Logs
+/cm_collectors_html/logs
+/cm_collectors_html/*.log
+/cm_collectors_html/npm-debug.log*
+/cm_collectors_html/yarn-debug.log*
+/cm_collectors_html/yarn-error.log*
+/cm_collectors_html/pnpm-debug.log*
+/cm_collectors_html/lerna-debug.log*
+
+/cm_collectors_html/node_modules
+/cm_collectors_html/.DS_Store
+/cm_collectors_html/dist
+/cm_collectors_html/dist-ssr
+/cm_collectors_html/coverage
+/cm_collectors_html/*.local
+
+/cm_collectors_html/cypress/videos/
+/cm_collectors_html/cypress/screenshots/
+
+# Editor directories and files
+/cm_collectors_html/.vscode/*
+!.vscode/extensions.json
+/cm_collectors_html/.idea
+/cm_collectors_html/*.suo
+/cm_collectors_html/*.ntvs*
+/cm_collectors_html/*.njsproj
+/cm_collectors_html/*.sln
+/cm_collectors_html/*.sw?
+
+/cm_collectors_html/*.tsbuildinfo
+
+/cm_collectors_html/test-results/
+/cm_collectors_html/playwright-report/
