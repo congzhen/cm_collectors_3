@@ -30,7 +30,6 @@
   &:hover {
     color: var(--el-color-primary);
     background-color: var(--el-color-primary-light-9);
-    box-shadow: 0 0 4px rgba(0, 141, 255, 0.3);
   }
 }
 </style>

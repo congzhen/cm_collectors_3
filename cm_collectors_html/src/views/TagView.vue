@@ -4,8 +4,8 @@
       <div class="tag-block-list">
         <el-collapse v-model="activeNames">
           <tagCollapseItem name="1"></tagCollapseItem>
-          <tagCollapseItem name="2"></tagCollapseItem>
-          <tagCollapseItem name="3"></tagCollapseItem>
+          <tagCollapseItem name="2" :tag-type="E_tagType.Star"></tagCollapseItem>
+          <tagCollapseItem name="3" :tag-type="E_tagType.Performer"></tagCollapseItem>
           <tagCollapseItem name="4"></tagCollapseItem>
           <tagCollapseItem name="5"></tagCollapseItem>
           <tagCollapseItem name="6"></tagCollapseItem>
@@ -21,13 +21,14 @@
   </div>
 </template>
 <script setup lang="ts">
+import { E_tagType } from '@/dataType/app.dataType'
 import tagCollapseItem from '@/components/tag/tagCollapseItem.vue'
 import { ref } from 'vue'
 const activeNames = ref(['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'])
 </script>
 <style lang="scss" scoped>
 .tag-container {
-  width: 25.5em;
+  width: 24.4em;
   height: 100%;
   overflow: hidden;
   border-right: 0.1em solid #414243;

@@ -30,7 +30,7 @@ import tagSpan from './tagSpan.vue'
   .tag-content {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5em;
+    gap: 0.3em;
   }
 }
 </style>
