@@ -4,7 +4,7 @@
       <img src="/public/icon32.png" />
       <label>CM File Collectors</label>
     </div>
-    <div class="right">
+    <div class="right" v-if="props.mode === E_headerMode.Index">
       <div class="search">
         <el-input-tag v-model="searchValue" trigger="Space" clearable placeholder="Please input">
           <template #suffix>
@@ -15,16 +15,37 @@
       <div class="setting">
         <el-icon title="添加"><Plus /></el-icon>
         <el-icon title="标签"><PriceTag /></el-icon>
-        <el-icon title="演员"><User /></el-icon>
+        <el-icon title="演员" @click="goToPerformer"><User /></el-icon>
         <el-icon title="设置"><Setting /></el-icon>
+      </div>
+    </div>
+    <div class="right" v-else>
+      <div class="setting">
+        <label class="icon-text-label" @click="router.go(-1)">
+          <el-icon title="返回"><Back /></el-icon>
+          <span class="icon-text-span">返回</span>
+        </label>
       </div>
     </div>
   </div>
 </template>
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, type PropType } from 'vue'
+import { E_headerMode } from '@/dataType/app.dataType'
+import { useRouter } from 'vue-router'
+const router = useRouter()
+
+const props = defineProps({
+  mode: {
+    type: String as PropType<E_headerMode>,
+    default: E_headerMode.Index,
+  },
+})
 
 const searchValue = ref<string[]>([])
+const goToPerformer = () => {
+  router.push('/performer')
+}
 </script>
 <style lang="scss" scoped>
 .header-container {
@@ -46,6 +67,7 @@ const searchValue = ref<string[]>([])
     display: flex;
     justify-content: flex-end;
     flex-grow: 1;
+    padding-right: 0.5em;
 
     .search {
       margin: 0 1em;
@@ -60,6 +82,16 @@ const searchValue = ref<string[]>([])
       flex-shrink: 0;
       font-size: 2em;
       cursor: pointer;
+      .icon-text-label {
+        display: flex;
+        cursor: pointer;
+        &:hover {
+          color: var(--el-color-primary);
+        }
+        .icon-text-span {
+          font-size: 0.65em;
+        }
+      }
       .el-icon {
         margin-left: 0.2em;
         &:hover {

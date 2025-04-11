@@ -45,7 +45,7 @@ import contentTag from './contentTag.vue'
     display: flex;
     flex-wrap: wrap;
     gap: 2px;
-    padding: 0.05em 0.1em;
+    padding: 2px;
   }
 
   .content-cover {
