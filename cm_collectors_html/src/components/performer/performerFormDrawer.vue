@@ -38,8 +38,8 @@
           </el-form-item>
           <el-form-item label="职业" prop="career">
             <el-checkbox-group v-model="formData.career">
-              <el-checkbox :label="E_performerCareer.Performer" border>演员</el-checkbox>
-              <el-checkbox :label="E_performerCareer.Director" border>导演</el-checkbox>
+              <el-checkbox :value="E_performerCareer.Performer" border>演员</el-checkbox>
+              <el-checkbox :value="E_performerCareer.Director" border>导演</el-checkbox>
             </el-checkbox-group>
           </el-form-item>
           <el-form-item label="Cup">
@@ -98,7 +98,7 @@ const open = () => {
 }
 
 // eslint-disable-next-line no-undef
-defineExpose({ open, close })
+defineExpose({ open })
 </script>
 <style lang="scss" scoped>
 .performer-form-container {

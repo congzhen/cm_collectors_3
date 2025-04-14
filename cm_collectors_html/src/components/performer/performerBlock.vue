@@ -6,7 +6,7 @@
       <label v-if="props.attrNationality">日本</label>
       <label v-if="props.attrAge">(28岁)</label>
     </div>
-    <div class="performer-block-tool">
+    <div class="performer-block-tool" v-if="props.tool">
       <div class="performer-block-tool-btn">
         <el-icon><VideoCameraFilled /></el-icon>
       </div>
@@ -28,6 +28,10 @@ const props = defineProps({
     default: false,
   },
   attrNationality: {
+    type: Boolean,
+    default: false,
+  },
+  tool: {
     type: Boolean,
     default: false,
   },

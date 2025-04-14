@@ -12,59 +12,347 @@
         <div class="performer-list-main">
           <el-scrollbar>
             <ul class="performer-list">
-              <li><performerBlock :attrAge="true" :attrNationality="true"></performerBlock></li>
-              <li><performerBlock :attrAge="true" :attrNationality="true"></performerBlock></li>
-              <li><performerBlock :attrAge="true" :attrNationality="true"></performerBlock></li>
-              <li><performerBlock :attrAge="true" :attrNationality="true"></performerBlock></li>
-              <li><performerBlock :attrAge="true" :attrNationality="true"></performerBlock></li>
-              <li><performerBlock :attrAge="true" :attrNationality="true"></performerBlock></li>
-              <li><performerBlock :attrAge="true" :attrNationality="true"></performerBlock></li>
-              <li><performerBlock :attrAge="true" :attrNationality="true"></performerBlock></li>
+              <li>
+                <performerBlock
+                  :tool="true"
+                  :attrAge="true"
+                  :attrNationality="true"
+                ></performerBlock>
+              </li>
+              <li>
+                <performerBlock
+                  :tool="true"
+                  :attrAge="true"
+                  :attrNationality="true"
+                ></performerBlock>
+              </li>
+              <li>
+                <performerBlock
+                  :tool="true"
+                  :attrAge="true"
+                  :attrNationality="true"
+                ></performerBlock>
+              </li>
+              <li>
+                <performerBlock
+                  :tool="true"
+                  :attrAge="true"
+                  :attrNationality="true"
+                ></performerBlock>
+              </li>
+              <li>
+                <performerBlock
+                  :tool="true"
+                  :attrAge="true"
+                  :attrNationality="true"
+                ></performerBlock>
+              </li>
+              <li>
+                <performerBlock
+                  :tool="true"
+                  :attrAge="true"
+                  :attrNationality="true"
+                ></performerBlock>
+              </li>
+              <li>
+                <performerBlock
+                  :tool="true"
+                  :attrAge="true"
+                  :attrNationality="true"
+                ></performerBlock>
+              </li>
+              <li>
+                <performerBlock
+                  :tool="true"
+                  :attrAge="true"
+                  :attrNationality="true"
+                ></performerBlock>
+              </li>
 
-              <li><performerBlock :attrAge="true" :attrNationality="true"></performerBlock></li>
-              <li><performerBlock :attrAge="true" :attrNationality="true"></performerBlock></li>
-              <li><performerBlock :attrAge="true" :attrNationality="true"></performerBlock></li>
-              <li><performerBlock :attrAge="true" :attrNationality="true"></performerBlock></li>
-              <li><performerBlock :attrAge="true" :attrNationality="true"></performerBlock></li>
-              <li><performerBlock :attrAge="true" :attrNationality="true"></performerBlock></li>
-              <li><performerBlock :attrAge="true" :attrNationality="true"></performerBlock></li>
-              <li><performerBlock :attrAge="true" :attrNationality="true"></performerBlock></li>
+              <li>
+                <performerBlock
+                  :tool="true"
+                  :attrAge="true"
+                  :attrNationality="true"
+                ></performerBlock>
+              </li>
+              <li>
+                <performerBlock
+                  :tool="true"
+                  :attrAge="true"
+                  :attrNationality="true"
+                ></performerBlock>
+              </li>
+              <li>
+                <performerBlock
+                  :tool="true"
+                  :attrAge="true"
+                  :attrNationality="true"
+                ></performerBlock>
+              </li>
+              <li>
+                <performerBlock
+                  :tool="true"
+                  :attrAge="true"
+                  :attrNationality="true"
+                ></performerBlock>
+              </li>
+              <li>
+                <performerBlock
+                  :tool="true"
+                  :attrAge="true"
+                  :attrNationality="true"
+                ></performerBlock>
+              </li>
+              <li>
+                <performerBlock
+                  :tool="true"
+                  :attrAge="true"
+                  :attrNationality="true"
+                ></performerBlock>
+              </li>
+              <li>
+                <performerBlock
+                  :tool="true"
+                  :attrAge="true"
+                  :attrNationality="true"
+                ></performerBlock>
+              </li>
+              <li>
+                <performerBlock
+                  :tool="true"
+                  :attrAge="true"
+                  :attrNationality="true"
+                ></performerBlock>
+              </li>
 
-              <li><performerBlock :attrAge="true" :attrNationality="true"></performerBlock></li>
-              <li><performerBlock :attrAge="true" :attrNationality="true"></performerBlock></li>
-              <li><performerBlock :attrAge="true" :attrNationality="true"></performerBlock></li>
-              <li><performerBlock :attrAge="true" :attrNationality="true"></performerBlock></li>
-              <li><performerBlock :attrAge="true" :attrNationality="true"></performerBlock></li>
-              <li><performerBlock :attrAge="true" :attrNationality="true"></performerBlock></li>
-              <li><performerBlock :attrAge="true" :attrNationality="true"></performerBlock></li>
-              <li><performerBlock :attrAge="true" :attrNationality="true"></performerBlock></li>
+              <li>
+                <performerBlock
+                  :tool="true"
+                  :attrAge="true"
+                  :attrNationality="true"
+                ></performerBlock>
+              </li>
+              <li>
+                <performerBlock
+                  :tool="true"
+                  :attrAge="true"
+                  :attrNationality="true"
+                ></performerBlock>
+              </li>
+              <li>
+                <performerBlock
+                  :tool="true"
+                  :attrAge="true"
+                  :attrNationality="true"
+                ></performerBlock>
+              </li>
+              <li>
+                <performerBlock
+                  :tool="true"
+                  :attrAge="true"
+                  :attrNationality="true"
+                ></performerBlock>
+              </li>
+              <li>
+                <performerBlock
+                  :tool="true"
+                  :attrAge="true"
+                  :attrNationality="true"
+                ></performerBlock>
+              </li>
+              <li>
+                <performerBlock
+                  :tool="true"
+                  :attrAge="true"
+                  :attrNationality="true"
+                ></performerBlock>
+              </li>
+              <li>
+                <performerBlock
+                  :tool="true"
+                  :attrAge="true"
+                  :attrNationality="true"
+                ></performerBlock>
+              </li>
+              <li>
+                <performerBlock
+                  :tool="true"
+                  :attrAge="true"
+                  :attrNationality="true"
+                ></performerBlock>
+              </li>
 
-              <li><performerBlock :attrAge="true" :attrNationality="true"></performerBlock></li>
-              <li><performerBlock :attrAge="true" :attrNationality="true"></performerBlock></li>
-              <li><performerBlock :attrAge="true" :attrNationality="true"></performerBlock></li>
-              <li><performerBlock :attrAge="true" :attrNationality="true"></performerBlock></li>
-              <li><performerBlock :attrAge="true" :attrNationality="true"></performerBlock></li>
-              <li><performerBlock :attrAge="true" :attrNationality="true"></performerBlock></li>
-              <li><performerBlock :attrAge="true" :attrNationality="true"></performerBlock></li>
-              <li><performerBlock :attrAge="true" :attrNationality="true"></performerBlock></li>
+              <li>
+                <performerBlock
+                  :tool="true"
+                  :attrAge="true"
+                  :attrNationality="true"
+                ></performerBlock>
+              </li>
+              <li>
+                <performerBlock
+                  :tool="true"
+                  :attrAge="true"
+                  :attrNationality="true"
+                ></performerBlock>
+              </li>
+              <li>
+                <performerBlock
+                  :tool="true"
+                  :attrAge="true"
+                  :attrNationality="true"
+                ></performerBlock>
+              </li>
+              <li>
+                <performerBlock
+                  :tool="true"
+                  :attrAge="true"
+                  :attrNationality="true"
+                ></performerBlock>
+              </li>
+              <li>
+                <performerBlock
+                  :tool="true"
+                  :attrAge="true"
+                  :attrNationality="true"
+                ></performerBlock>
+              </li>
+              <li>
+                <performerBlock
+                  :tool="true"
+                  :attrAge="true"
+                  :attrNationality="true"
+                ></performerBlock>
+              </li>
+              <li>
+                <performerBlock
+                  :tool="true"
+                  :attrAge="true"
+                  :attrNationality="true"
+                ></performerBlock>
+              </li>
+              <li>
+                <performerBlock
+                  :tool="true"
+                  :attrAge="true"
+                  :attrNationality="true"
+                ></performerBlock>
+              </li>
 
-              <li><performerBlock :attrAge="true" :attrNationality="true"></performerBlock></li>
-              <li><performerBlock :attrAge="true" :attrNationality="true"></performerBlock></li>
-              <li><performerBlock :attrAge="true" :attrNationality="true"></performerBlock></li>
-              <li><performerBlock :attrAge="true" :attrNationality="true"></performerBlock></li>
-              <li><performerBlock :attrAge="true" :attrNationality="true"></performerBlock></li>
-              <li><performerBlock :attrAge="true" :attrNationality="true"></performerBlock></li>
-              <li><performerBlock :attrAge="true" :attrNationality="true"></performerBlock></li>
-              <li><performerBlock :attrAge="true" :attrNationality="true"></performerBlock></li>
+              <li>
+                <performerBlock
+                  :tool="true"
+                  :attrAge="true"
+                  :attrNationality="true"
+                ></performerBlock>
+              </li>
+              <li>
+                <performerBlock
+                  :tool="true"
+                  :attrAge="true"
+                  :attrNationality="true"
+                ></performerBlock>
+              </li>
+              <li>
+                <performerBlock
+                  :tool="true"
+                  :attrAge="true"
+                  :attrNationality="true"
+                ></performerBlock>
+              </li>
+              <li>
+                <performerBlock
+                  :tool="true"
+                  :attrAge="true"
+                  :attrNationality="true"
+                ></performerBlock>
+              </li>
+              <li>
+                <performerBlock
+                  :tool="true"
+                  :attrAge="true"
+                  :attrNationality="true"
+                ></performerBlock>
+              </li>
+              <li>
+                <performerBlock
+                  :tool="true"
+                  :attrAge="true"
+                  :attrNationality="true"
+                ></performerBlock>
+              </li>
+              <li>
+                <performerBlock
+                  :tool="true"
+                  :attrAge="true"
+                  :attrNationality="true"
+                ></performerBlock>
+              </li>
+              <li>
+                <performerBlock
+                  :tool="true"
+                  :attrAge="true"
+                  :attrNationality="true"
+                ></performerBlock>
+              </li>
 
-              <li><performerBlock :attrAge="true" :attrNationality="true"></performerBlock></li>
-              <li><performerBlock :attrAge="true" :attrNationality="true"></performerBlock></li>
-              <li><performerBlock :attrAge="true" :attrNationality="true"></performerBlock></li>
-              <li><performerBlock :attrAge="true" :attrNationality="true"></performerBlock></li>
-              <li><performerBlock :attrAge="true" :attrNationality="true"></performerBlock></li>
-              <li><performerBlock :attrAge="true" :attrNationality="true"></performerBlock></li>
-              <li><performerBlock :attrAge="true" :attrNationality="true"></performerBlock></li>
-              <li><performerBlock :attrAge="true" :attrNationality="true"></performerBlock></li>
+              <li>
+                <performerBlock
+                  :tool="true"
+                  :attrAge="true"
+                  :attrNationality="true"
+                ></performerBlock>
+              </li>
+              <li>
+                <performerBlock
+                  :tool="true"
+                  :attrAge="true"
+                  :attrNationality="true"
+                ></performerBlock>
+              </li>
+              <li>
+                <performerBlock
+                  :tool="true"
+                  :attrAge="true"
+                  :attrNationality="true"
+                ></performerBlock>
+              </li>
+              <li>
+                <performerBlock
+                  :tool="true"
+                  :attrAge="true"
+                  :attrNationality="true"
+                ></performerBlock>
+              </li>
+              <li>
+                <performerBlock
+                  :tool="true"
+                  :attrAge="true"
+                  :attrNationality="true"
+                ></performerBlock>
+              </li>
+              <li>
+                <performerBlock
+                  :tool="true"
+                  :attrAge="true"
+                  :attrNationality="true"
+                ></performerBlock>
+              </li>
+              <li>
+                <performerBlock
+                  :tool="true"
+                  :attrAge="true"
+                  :attrNationality="true"
+                ></performerBlock>
+              </li>
+              <li>
+                <performerBlock
+                  :tool="true"
+                  :attrAge="true"
+                  :attrNationality="true"
+                ></performerBlock>
+              </li>
             </ul>
           </el-scrollbar>
         </div>

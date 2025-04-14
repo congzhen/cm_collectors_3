@@ -1,11 +1,9 @@
 <template>
-  <drawerCommon
-    ref="drawerCommonRef"
+  <dialogCommon
+    ref="dialogCommonRef"
     :width="props.width"
-    :direction="props.direction"
     :title="props.title"
     :btnSubmitTitle="props.btnSubmitTitle"
-    :btnSubmit="props.btnSubmit"
     :footer="props.footer"
     @submit="submitHandle(ruleFormTagRef)"
     @closed="close"
@@ -20,32 +18,27 @@
     >
       <slot></slot>
     </el-form>
-  </drawerCommon>
+  </dialogCommon>
 </template>
-<script setup lang="ts">
-import { ref, type PropType, reactive } from 'vue'
+<script lang="ts" setup>
+import { reactive, ref } from 'vue'
+import dialogCommon from './dialog.common.vue'
 import type { FormInstance, FormRules } from 'element-plus'
-import drawerCommon from './drawer.common.vue'
 import { debounceNow } from '@/assets/debounce'
-
-const drawerCommonRef = ref<InstanceType<typeof drawerCommon>>()
+const dialogCommonRef = ref<InstanceType<typeof dialogCommon>>()
 const ruleFormTagRef = ref<FormInstance>()
-
-type directionType = 'rtl' | 'ltr' | 'ttb' | 'btt'
-
-// eslint-disable-next-line no-undef
 const props = defineProps({
   width: {
     type: String,
-    default: '480px',
-  },
-  direction: {
-    type: String as PropType<directionType>,
-    default: 'rtl',
+    default: '800px',
   },
   title: {
     type: String,
     default: '',
+  },
+  footer: {
+    type: Boolean,
+    default: true,
   },
   modelValue: {
     required: true,
@@ -65,20 +58,11 @@ const props = defineProps({
     type: String,
     default: 'right',
   },
-  footer: {
-    type: Boolean,
-    default: true,
-  },
   btnSubmitTitle: {
     type: String,
     default: '',
   },
-  btnSubmit: {
-    type: Boolean,
-    default: true,
-  },
 })
-
 const emits = defineEmits(['closed', 'submit'])
 
 const submitHandle = debounceNow((formEl: FormInstance | undefined) => {
@@ -97,17 +81,11 @@ const submitHandle = debounceNow((formEl: FormInstance | undefined) => {
 })
 
 const open = () => {
-  drawerCommonRef.value?.open()
+  dialogCommonRef.value?.open()
 }
 const close = () => {
-  drawerCommonRef.value?.close()
+  dialogCommonRef.value?.close()
 }
 // eslint-disable-next-line no-undef
 defineExpose({ open, close })
 </script>
-<style lang="scss" scoped>
-.drawer-footer {
-  display: flex;
-  justify-content: space-between;
-}
-</style>

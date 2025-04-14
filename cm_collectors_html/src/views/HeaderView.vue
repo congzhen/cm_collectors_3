@@ -14,7 +14,7 @@
       </div>
       <div class="setting">
         <el-icon title="添加"><Plus /></el-icon>
-        <el-icon title="标签"><PriceTag /></el-icon>
+        <el-icon title="标签" @click="openTagList"><PriceTag /></el-icon>
         <el-icon title="演员" @click="goToPerformer"><User /></el-icon>
         <el-icon title="设置"><Setting /></el-icon>
       </div>
@@ -27,13 +27,17 @@
         </label>
       </div>
     </div>
+    <tagListDrawer ref="tagListDrawerRef" />
   </div>
 </template>
 <script setup lang="ts">
 import { ref, type PropType } from 'vue'
 import { E_headerMode } from '@/dataType/app.dataType'
 import { useRouter } from 'vue-router'
+import tagListDrawer from '@/components/tag/tagListDrawer.vue'
 const router = useRouter()
+
+const tagListDrawerRef = ref<InstanceType<typeof tagListDrawer>>()
 
 const props = defineProps({
   mode: {
@@ -45,6 +49,10 @@ const props = defineProps({
 const searchValue = ref<string[]>([])
 const goToPerformer = () => {
   router.push('/performer')
+}
+
+const openTagList = () => {
+  tagListDrawerRef.value?.open()
 }
 </script>
 <style lang="scss" scoped>
