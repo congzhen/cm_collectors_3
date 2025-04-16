@@ -10,6 +10,16 @@ export enum E_resourceShowMode {
   Name = 'name'
 }
 
+// 资源剧集类型
+export enum E_resourceDramaSeriesType {
+  Movies = 'movies',              // 电影
+  Comic = 'comic',                // 动漫
+  Atlas = 'atlas',                // 画本
+  Files = 'files',                // 文件
+  VideoLink = 'videoLink',        // 视频链接
+  NetDisk = 'netDisk',          //网盘
+}
+
 // 标签类型
 export enum E_tagType {
   DiyTag = 'diyTag',

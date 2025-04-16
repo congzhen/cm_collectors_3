@@ -112,7 +112,7 @@ defineExpose({ open })
     height: 320px;
     padding: 1px;
     border-radius: 5px;
-    border: 1px solid #cdd0d6;
+    border: 1px solid #4c4d4f;
     flex-shrink: 0;
     .performer-form-photo-text {
       width: 100%;
