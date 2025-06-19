@@ -1,0 +1,42 @@
+sqlite3:
+  path: ./db/cm_collectors.db
+  loggerLevel: info
+mysql:
+  host: 127.0.0.1
+  port: 3306
+  db: cm_collectors
+  user: root
+  password: 123456
+  config: charset=utf8mb4&parseTime=True&loc=Local
+  maxIdleConns: 3
+  maxOpenConns: 20
+  loggerLevel: info
+system:
+  serverHost: 127.0.0.1
+  port: 8081
+  database: sqlite3
+  Env: debug
+  responseMsgLanguage: en
+  logFilePath: ./err.log
+  logLevel: Error
+cache:
+  mode: freeCache # ['redis','freeCache','local'] //非必要不使用local
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    password: xxxx
+    db: 0
+    defaultExpireSec: 3600 # 秒(默认过期时间)
+    minIdleConns: 5 # 最小空闲连接
+    poolSize: 20 # 连接池大小
+    connMaxIdleTime: 240 # 秒(最大空闲时间)
+  freeCache:
+    maxMemoryMB: 100 #内存限制MB
+    defaultExpireSec: 3600 # 秒(默认过期时间)
+jwt:
+  expiresAt: 86400
+  issuer: goBase
+  audience: goBase
+  subject: somebody
+  privateKeyPath: ./cert/jwtPrivate.key
+  publicKeyPath: ./cert/jwtPublic.key
