@@ -1,6 +1,7 @@
 <template>
   <div class="index-view">
     <HeaderView class="header"></HeaderView>
+    <dataBaseMenuView></dataBaseMenuView>
     <div class="main">
       <TagView class="tag"></TagView>
       <ContentView class="content"></ContentView>
@@ -10,6 +11,7 @@
 </template>
 <script setup lang="ts">
 import HeaderView from './HeaderView.vue'
+import dataBaseMenuView from './dataBaseMenuView.vue'
 import TagView from './TagView.vue'
 import ContentView from './ContentView.vue'
 import DetailsView from './DetailsView.vue'

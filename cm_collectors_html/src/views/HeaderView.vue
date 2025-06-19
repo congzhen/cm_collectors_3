@@ -8,21 +8,33 @@
       <div class="search">
         <el-input-tag v-model="searchValue" trigger="Space" clearable placeholder="Please input">
           <template #suffix>
-            <el-icon><Search /></el-icon>
+            <el-icon>
+              <Search />
+            </el-icon>
           </template>
         </el-input-tag>
       </div>
       <div class="setting">
-        <el-icon title="添加" @click="oepnResourceForm"><Plus /></el-icon>
-        <el-icon title="标签" @click="openTagList"><PriceTag /></el-icon>
-        <el-icon title="演员" @click="goToPerformer"><User /></el-icon>
-        <el-icon title="设置"><Setting /></el-icon>
+        <el-icon title="添加" @click="oepnResourceForm">
+          <Plus />
+        </el-icon>
+        <el-icon title="标签" @click="openTagList">
+          <PriceTag />
+        </el-icon>
+        <el-icon title="演员" @click="goToPerformer">
+          <User />
+        </el-icon>
+        <el-icon title="设置" @click="goToSetting">
+          <Setting />
+        </el-icon>
       </div>
     </div>
     <div class="right" v-else>
       <div class="setting">
         <label class="icon-text-label" @click="router.go(-1)">
-          <el-icon title="返回"><Back /></el-icon>
+          <el-icon title="返回">
+            <Back />
+          </el-icon>
           <span class="icon-text-span">返回</span>
         </label>
       </div>
@@ -60,16 +72,21 @@ const openTagList = () => {
 const goToPerformer = () => {
   router.push('/performer')
 }
+const goToSetting = () => {
+  router.push('/setting')
+}
 </script>
 <style lang="scss" scoped>
 .header-container {
   display: flex;
   justify-content: space-between;
+
   .title {
     font-size: 1.7em;
     font-weight: 500;
     flex-shrink: 0;
     padding: 0;
+
     img {
       width: 1em;
       height: 1em;
@@ -88,6 +105,7 @@ const goToPerformer = () => {
       width: 30%;
       transition: width 0.3s;
     }
+
     .search:focus-within {
       width: 60%;
     }
@@ -96,18 +114,23 @@ const goToPerformer = () => {
       flex-shrink: 0;
       font-size: 2em;
       cursor: pointer;
+
       .icon-text-label {
         display: flex;
         cursor: pointer;
+
         &:hover {
           color: var(--el-color-primary);
         }
+
         .icon-text-span {
           font-size: 0.65em;
         }
       }
+
       .el-icon {
         margin-left: 0.2em;
+
         &:hover {
           color: var(--el-color-primary);
         }
