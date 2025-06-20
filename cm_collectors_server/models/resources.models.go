@@ -9,14 +9,14 @@ type Resources struct {
 	IssueNumber       string               `json:"issueNumber" gorm:"column:issueNumber;type:varchar(200);"`
 	Mode              string               `json:"mode" gorm:"type:varchar(20);"`
 	CoverPoster       string               `json:"coverPoster" gorm:"column:coverPoster;type:varchar(100);"`
-	CoverPosterMode   int                  `json:"coverPosterMode" gorm:"column:coverPosterMode;type:int(4);"`
-	CoverPosterWidth  int                  `json:"coverPosterWidth" gorm:"column:coverPosterWidth;type:int(8);"`
-	CoverPosterHeight int                  `json:"coverPosterHeight" gorm:"column:coverPosterHeight;type:int(8);"`
+	CoverPosterMode   int                  `json:"coverPosterMode" gorm:"column:coverPosterMode;type:int;"`
+	CoverPosterWidth  int                  `json:"coverPosterWidth" gorm:"column:coverPosterWidth;type:int;"`
+	CoverPosterHeight int                  `json:"coverPosterHeight" gorm:"column:coverPosterHeight;type:int;"`
 	IssuingDate       *datatype.CustomDate `json:"issuingDate" gorm:"column:issuingDate;type:date;"`
 	Country           string               `json:"country" gorm:"type:varchar(50);"`
 	Definition        string               `json:"definition" gorm:"type:varchar(50);"`
-	Stars             int                  `json:"stars" gorm:"type:int(1);"`
-	Hot               int                  `json:"hot" gorm:"type:int(8);"`
+	Stars             int                  `json:"stars" gorm:"type:int;"`
+	Hot               int                  `json:"hot" gorm:"type:int;"`
 	LastPlayTime      *datatype.CustomTime `json:"lastPlayTime" gorm:"column:lastPlayTime;type:datetime;"`
 	LastPlayFile      string               `json:"lastPlayFile" gorm:"column:lastPlayFile;type:varchar(500);"`
 	Abstract          string               `json:"abstract" gorm:"type:text;"`

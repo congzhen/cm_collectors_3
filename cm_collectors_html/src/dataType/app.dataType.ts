@@ -1,3 +1,5 @@
+import type { I_filesBases } from "./filesBases.dataType";
+
 //header模式
 export enum E_headerMode {
   Index = 'index',
@@ -38,4 +40,9 @@ export interface I_cupBWH {
   bust: number;
   waist: string;
   hip: string;
+}
+
+
+export interface I_appData {
+  filesBases: I_filesBases[];
 }

@@ -1,0 +1,96 @@
+export interface I_config_app {
+  country: string[]; // 国家
+  coverDisplayTag: string[]; // 封面显示标签
+  coverDisplayTagColor: string; // 封面显示标签颜色
+  coverDisplayTagColors: string[]; // 封面显示标签颜色
+  coverDisplayTagRgba: string; // 封面显示标签颜色
+  coverDisplayTagRgbas: string[]; // 封面显示标签颜色
+  coverPosterData: I_coverPosterData[]; // 封面数据
+  coverPosterDataDefaultSelect: number; // 封面数据默认选择
+  coverPosterWidthBase: number; // 封面宽度
+  coverPosterWidthStatus: boolean; // 封面宽度状态
+  coverPosterHeightBase: number;  // 封面高度
+  coverPosterHeightStatus: boolean; // 封面高度状态
+  definition: string[]; // 清晰度
+  definitionFontColor: string; // 清晰度颜色
+  definitionRgba: string; // 清晰度颜色
+  detailsDramaSeriesMode: string // 剧集显示模式
+  director_Text: string; // 导演显示文字
+  historyModule: boolean; // 历史记录是否开启
+  historyNumber: number; // 历史记录数量
+  hotModule: boolean; // 热门资源是否开启
+  hotNumber: number; // 热门资源数量
+  leftColumnMode: string; // 左侧栏模式
+  leftColumnWidth: number; // 左侧栏宽度
+  leftDisplay: string[]; // 左侧栏显示内容
+  pageLimit: number; // 分页数量
+  performerPhoto: boolean; // 左侧栏-演员图片是否开启
+  performerPreferred: string[]; // 左侧栏-优先显示演员
+  performerShowNum: number; // 左侧栏-演员显示数量
+  performer_Text: string; // 演员显示名称
+  performer_photo: string; // 默认演员照片
+  playAtlasImageWidth: number; // 图集-图片宽度
+  playAtlasMode: string; // 图集-模式
+  playAtlasPageLimit: number; // 图集-分页数量
+  playAtlasThumbnail: boolean; // 图集-缩略图
+  playComicMode: string; // 漫画-模式
+  playComicrReadingMode: boolean; // 漫画-阅读模式
+  plugInUnit_Cup: boolean; // 插件单元-cup
+  plugInUnit_Cup_Text: string; // 插件单元-cup-文字
+  previewImageFolder: string; // 预览-图片文件夹
+  randomPosterAutoSize: boolean; // 随机海报-自动大小
+  randomPosterWidth: number; // 随机海报-宽度
+  randomPosterHeight: number; // 随机海报-高度
+  randomPosterPath: string; // 随机海报-路径
+  randomPosterStatus: boolean; // 随机海报-状态
+  resourceDetailsShowMode: string; // 资源详情-显示模式
+  resourcesShowMode: string; // 资源-显示模式
+  routeConversion: string[];// 路由转换
+  shieldNoPerformerPhoto: boolean; // 屏蔽无照片演员
+  showPreviewImage: boolean; // 显示预览图片
+  sortMode: string; // 排序模式
+  tagMode: string; // 标签模式
+  youLikeModule: boolean; // 猜你喜欢-模块
+  youLikeNumber: number; // 猜你喜欢-数量
+  youLikeTagClass: string[]; // 猜你喜欢-标签类
+  youLikeWordNumber: number; // 猜你喜欢-匹配词数量
+}
+
+export interface I_coverPosterData {
+  name: string;
+  width: number;
+  height: number;
+  type: string;
+}
+
+export interface I_config_nfo {
+  abstract: string; // 描述
+  autoConverSeries: boolean; // 自动转换剧集
+  country: string; // 国家
+  cover: string; // 封面
+  coverPosterUsesPreSetDimensions: boolean; // 封面-使用预设尺寸
+  coverSuffix: string; // 封面-后缀
+  coverUrl: string; // 封面-URL
+  importCheckTitleAlready: boolean; // 导入-检查标题是否已存在
+  issueNumber: string; // 发行编号
+  performer: string; // 演员
+  performerName: string; // 演员-名称
+  performerThumb: string; // 演员-缩略图
+  removedTag: string; // 删除的标签
+  root: string; // 根节点名称
+  star: string; // 评分
+  suffix: string; // 导入的后缀名
+  tag: string; // 标签
+  title: string; // 标题
+  year: string; // 年份
+}
+
+//简单导入配置
+export interface I_config_simple {
+  cover: string; // 封面
+  coverPosterUsesPreSetDimensions: string; // 封面-使用预设尺寸
+  coverSuffix: string; // 封面-后缀名
+  importCheckTitleAlready: boolean; // 导入时检查标题是否已存在
+  suffix: string; // 导入的后缀名
+  title: string; // 标题
+}

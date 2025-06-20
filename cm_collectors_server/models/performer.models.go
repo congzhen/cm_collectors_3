@@ -16,10 +16,10 @@ type Performer struct {
 	Photo            string               `json:"photo" gorm:"type:varchar(100);"`
 	Introduction     string               `json:"introduction" gorm:"type:text;"`
 	Cup              string               `json:"cup" gorm:"type:varchar(10);index:idx_performer_cup;"`
-	Bust             int                  `json:"bust" gorm:"type:int(4);"`
-	Waist            int                  `json:"waist" gorm:"type:int(4);"`
-	Hip              int                  `json:"hip" gorm:"type:int(4);"`
-	Stars            int                  `json:"stars" gorm:"type:int(1);"`
+	Bust             int                  `json:"bust" gorm:"type:int;"`
+	Waist            int                  `json:"waist" gorm:"type:int;"`
+	Hip              int                  `json:"hip" gorm:"type:int;"`
+	Stars            int                  `json:"stars" gorm:"type:int;"`
 	RetreatStatus    bool                 `json:"retreatStatus" gorm:"column:retreatStatus;type:tinyint(1);default:0"`
 	CreatedAt        datatype.CustomTime  `json:"addTime" gorm:"column:addTime;type:datetime"`
 	Status           bool                 `json:"status" gorm:"type:tinyint(1);default:1"`

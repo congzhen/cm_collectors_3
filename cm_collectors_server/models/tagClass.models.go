@@ -7,8 +7,8 @@ type TagClass struct {
 	FilesBasesID string              `json:"filesBases_id" gorm:"column:filesBases_id;type:char(20);index:idx_tagClass_filesBasesID;"`
 	Name         string              `json:"name" gorm:"type:varchar(200);"`
 	LeftShow     bool                `json:"leftShow" gorm:"column:leftShow;type:tinyint(1);default:1"`
-	Hot          int                 `json:"hot" gorm:"type:int(4);default:0"`
-	Sort         int                 `json:"sort" gorm:"type:int(4);default:0"`
+	Hot          int                 `json:"hot" gorm:"type:int;default:0"`
+	Sort         int                 `json:"sort" gorm:"type:int;default:0"`
 	CreatedAt    datatype.CustomTime `json:"addTime" gorm:"column:addTime;type:datetime"`
 	Status       bool                `json:"status" gorm:"type:tinyint(1);default:1"`
 }
