@@ -21,6 +21,13 @@ func (ct *CustomTime) IsZero() bool {
 	return ct == nil || time.Time(*ct).IsZero()
 }
 
+func (ct *CustomTime) MarshalJSON() ([]byte, error) {
+	if ct == nil || time.Time(*ct).IsZero() {
+		return []byte("null"), nil
+	}
+	return []byte(fmt.Sprintf("\"%s\"", time.Time(*ct).Format("2006-01-02 15:04:05"))), nil
+}
+
 // Value 实现 driver.Valuer 接口
 func (ct *CustomTime) Value() (driver.Value, error) {
 	if ct == nil {
@@ -41,7 +48,8 @@ func (ct *CustomTime) Scan(value interface{}) error {
 	case string:
 		t, err := time.Parse("2006-01-02 15:04:05", v)
 		if err != nil {
-			return err
+			*ct = CustomTime(time.Time{}) // 设置为零值
+			return nil
 		}
 		*ct = CustomTime(t)
 	default:
@@ -56,6 +64,13 @@ type CustomDate time.Time
 // IsZero 判断是否为空日期
 func (cd *CustomDate) IsZero() bool {
 	return cd == nil || time.Time(*cd).IsZero()
+}
+
+func (cd *CustomDate) MarshalJSON() ([]byte, error) {
+	if cd == nil || time.Time(*cd).IsZero() {
+		return []byte("null"), nil
+	}
+	return []byte(fmt.Sprintf("\"%s\"", time.Time(*cd).Format("2006-01-02"))), nil
 }
 
 // Value 实现 driver.Valuer 接口
@@ -78,7 +93,8 @@ func (cd *CustomDate) Scan(value interface{}) error {
 	case string:
 		t, err := time.Parse("2006-01-02", v)
 		if err != nil {
-			return err
+			*cd = CustomDate(time.Time{}) // 设置为零值
+			return nil
 		}
 		*cd = CustomDate(t)
 	default:

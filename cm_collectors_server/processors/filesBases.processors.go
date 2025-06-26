@@ -5,18 +5,12 @@ import (
 	"cm_collectors_server/models"
 )
 
-type FilesBases struct {
-	models.FilesBases
+type FilesBases struct{}
+
+func (FilesBases) DataList() (*[]models.FilesBases, error) {
+	return models.FilesBases{}.DataList(core.DBS())
 }
 
-func (FilesBases) DataList() (*[]FilesBases, error) {
-	dataList, err := models.FilesBases{}.DataList(core.DBS())
-	if err != nil {
-		return nil, err
-	}
-	list := make([]FilesBases, len(*dataList))
-	for i, v := range *dataList {
-		list[i].FilesBases = v
-	}
-	return &list, nil
+func (FilesBases) InfoDetailsById(id string) (*models.FilesBasesDetails, error) {
+	return models.FilesBases{}.InfoDetails(core.DBS(), id)
 }

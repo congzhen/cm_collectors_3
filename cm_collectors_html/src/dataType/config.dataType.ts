@@ -1,3 +1,7 @@
+import { E_detailsDramaSeriesMode, type E_tagType } from "./app.dataType";
+
+
+
 export interface I_config_app {
   country: string[]; // 国家
   coverDisplayTag: string[]; // 封面显示标签
@@ -14,7 +18,7 @@ export interface I_config_app {
   definition: string[]; // 清晰度
   definitionFontColor: string; // 清晰度颜色
   definitionRgba: string; // 清晰度颜色
-  detailsDramaSeriesMode: string // 剧集显示模式
+  detailsDramaSeriesMode: E_detailsDramaSeriesMode; // 剧集显示模式
   director_Text: string; // 导演显示文字
   historyModule: boolean; // 历史记录是否开启
   historyNumber: number; // 历史记录数量
@@ -22,7 +26,7 @@ export interface I_config_app {
   hotNumber: number; // 热门资源数量
   leftColumnMode: string; // 左侧栏模式
   leftColumnWidth: number; // 左侧栏宽度
-  leftDisplay: string[]; // 左侧栏显示内容
+  leftDisplay: E_tagType[]; // 左侧栏显示内容
   pageLimit: number; // 分页数量
   performerPhoto: boolean; // 左侧栏-演员图片是否开启
   performerPreferred: string[]; // 左侧栏-优先显示演员
@@ -56,6 +60,69 @@ export interface I_config_app {
   youLikeWordNumber: number; // 猜你喜欢-匹配词数量
 }
 
+export const defualtConfigApp: I_config_app = {
+  leftDisplay: ['sort', 'country', 'definition', 'year', 'starRating', 'performer', 'diyTag'] as E_tagType[],
+  leftColumnWidth: 319,
+  leftColumnMode: 'fixed',
+  country: ['China', 'Japan', 'SouthKorea', 'America', 'England', 'France', 'OtherCountry'],
+  definition: ['8K', '4K', '2K', '1080P', '720P', 'HighDefinition', 'StandardDefinition'],
+  tagMode: 'fixed',
+  performerPhoto: true,
+  shieldNoPerformerPhoto: true,
+  performerShowNum: 12,
+  performerPreferred: [],
+  pageLimit: 32,
+  sortMode: 'desc',
+  resourcesShowMode: 'coverPoster',
+  detailsDramaSeriesMode: E_detailsDramaSeriesMode.fileName,
+  historyModule: true,
+  hotModule: true,
+  youLikeModule: true,
+  historyNumber: 10,
+  hotNumber: 10,
+  youLikeNumber: 10,
+  youLikeWordNumber: 3,
+  youLikeTagClass: [],
+  resourceDetailsShowMode: 'right',
+  showPreviewImage: false,
+  previewImageFolder: '/',
+  plugInUnit_Cup: false,
+  plugInUnit_Cup_Text: 'Cup',
+  coverPosterData: [
+    { name: 'Default 1', width: 300, height: 420, type: 'default' },
+    { name: 'Default 2', width: 400, height: 275, type: 'default' },
+    { name: 'Default 3', width: 524, height: 270, type: 'default' },
+    { name: 'Default 4', width: 480, height: 270, type: 'default' },
+  ],
+  coverPosterDataDefaultSelect: 0,
+  coverPosterWidthStatus: false,
+  coverPosterWidthBase: 316,
+  coverPosterHeightStatus: true,
+  coverPosterHeightBase: 218,
+  playAtlasImageWidth: 150,
+  playAtlasMode: 'waterfall',
+  playAtlasPageLimit: 100,
+  playAtlasThumbnail: true,
+  playComicMode: 'fullScreen',
+  playComicrReadingMode: false,
+  routeConversion: [],
+  definitionRgba: 'rgba(155, 88, 182,0.5)',
+  definitionFontColor: '#F3F3F3',
+  coverDisplayTag: [],
+  coverDisplayTagRgba: 'rgba(244, 54, 16,0.5)',
+  coverDisplayTagRgbas: ['rgba(244, 54, 16, 0.75)'],
+  coverDisplayTagColor: '#F3F3F3',
+  coverDisplayTagColors: ['#F3F3F3'],
+  randomPosterStatus: false,
+  randomPosterPath: '',
+  randomPosterAutoSize: false,
+  randomPosterWidth: 156,
+  randomPosterHeight: 218,
+  performer_Text: '',
+  director_Text: '',
+  performer_photo: '',
+}
+
 export interface I_coverPosterData {
   name: string;
   width: number;
@@ -85,12 +152,42 @@ export interface I_config_nfo {
   year: string; // 年份
 }
 
+export const defualtConfigNfo: I_config_nfo = {
+  autoConverSeries: false,
+  importCheckTitleAlready: true,
+  coverPosterUsesPreSetDimensions: false,
+  suffix: '.mp4|.avi|.rmvb|.wmv|.mov|.mkv|.flv|.ts|.webm|.iso|.mpg|.m4v',
+  root: 'movie',
+  title: 'originaltitle|title|sorttitle',
+  issueNumber: 'num',
+  year: 'releasedate|premiered|year',
+  cover: 'poster|thumb|fanart',
+  coverSuffix: 'jpg|jpeg|png',
+  coverUrl: 'cover',
+  tag: 'tag|genre',
+  removedTag: '',
+  abstract: 'outline|plot',
+  country: 'country',
+  star: 'star',
+  performer: 'actor',
+  performerName: 'name',
+  performerThumb: 'thumb',
+}
+
 //简单导入配置
 export interface I_config_simple {
   cover: string; // 封面
-  coverPosterUsesPreSetDimensions: string; // 封面-使用预设尺寸
+  coverPosterUsesPreSetDimensions: boolean; // 封面-使用预设尺寸
   coverSuffix: string; // 封面-后缀名
   importCheckTitleAlready: boolean; // 导入时检查标题是否已存在
   suffix: string; // 导入的后缀名
   title: string; // 标题
+}
+export const defualtConfigSimple: I_config_simple = {
+  importCheckTitleAlready: true,
+  coverPosterUsesPreSetDimensions: false,
+  suffix: '.mp4|.avi|.rmvb|.wmv|.mov|.mkv|.flv|.ts|.webm|.iso|.mpg|.m4v',
+  title: 'file|folder',
+  cover: 'poster|thumb|fanart',
+  coverSuffix: 'jpg|jpeg|png|webp',
 }

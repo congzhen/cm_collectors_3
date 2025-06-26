@@ -1,9 +1,16 @@
 package models
 
 import (
+	"cm_collectors_server/utils"
+
 	"github.com/go-gormigrate/gormigrate/v2"
 	"gorm.io/gorm"
 )
+
+func DB_Init(db *gorm.DB) error {
+	RegJoinTable(db)
+	return AutoDatabase(db)
+}
 
 // AutoMigrate 自动迁移数据库表结构，确保数据库中的表与指定的模型结构一致。
 // 参数:
@@ -31,6 +38,14 @@ func autoMigrate(db *gorm.DB) error {
 	)
 }
 
+func RegJoinTable(db *gorm.DB) {
+	// 注册中间表模型
+	db.SetupJoinTable(&Resources{}, "Tags", &ResourcesTags{})
+	db.SetupJoinTable(&Resources{}, "Performers", &ResourcesPerformers{})
+	db.SetupJoinTable(&Resources{}, "Directors", &ResourcesDirectors{})
+	//db.SetupJoinTable(&Tag{}, "Resources", &ResourcesTags{})
+}
+
 // AutoDatabase 执行数据库迁移。
 // 该函数使用 gormigrate 包来管理数据库模式的迁移，确保数据库结构与应用保持同步。
 // 参数:
@@ -46,6 +61,51 @@ func AutoDatabase(db *gorm.DB) error {
 			ID: "20250620-001-initApp",
 			Migrate: func(tx *gorm.DB) error {
 				return autoMigrate(tx)
+			},
+		},
+		{
+			ID: "20250625-001-update_performer_keywords",
+			Migrate: func(tx *gorm.DB) error {
+				// 查询所有 performer 记录
+				var performers []Performer
+				if err := tx.Find(&performers).Error; err != nil {
+					return err
+				}
+
+				for _, p := range performers {
+					// 拼接 name + aliasName 的拼音首字母
+					nameInitials := utils.PinyinInitials(p.Name)
+					aliasInitials := utils.PinyinInitials(p.AliasName)
+					keywords := nameInitials + aliasInitials
+
+					// 更新 keywords 字段
+					if err := tx.Model(&p).Update("KeyWords", keywords).Error; err != nil {
+						return err
+					}
+				}
+
+				return nil
+			},
+		},
+		{
+			ID: "20250625-002-update_resources_keywords",
+			Migrate: func(tx *gorm.DB) error {
+				// 查询所有 performer 记录
+				var resources []Resources
+				if err := tx.Find(&resources).Error; err != nil {
+					return err
+				}
+
+				for _, p := range resources {
+					//  Title 首字母
+					keywords := utils.PinyinInitials(p.Title)
+					// 更新 keywords 字段
+					if err := tx.Model(&p).Update("KeyWords", keywords).Error; err != nil {
+						return err
+					}
+				}
+
+				return nil
 			},
 		},
 	})

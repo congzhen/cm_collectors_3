@@ -1,36 +1,73 @@
 <template>
   <div class="performer-details">
+    <div class="performer-cup" v-if="store.appStoreData.currentConfigApp.plugInUnit_Cup && props.performer.cup != ''">
+      {{ props.performer.cup + '-' + store.appStoreData.currentCupText }}
+    </div>
     <div class="performer-photo">
-      <el-image
-        src="https://picx.zhimg.com/v2-d6f44389971daab7e688e5b37046e4e4_720w.jpg"
-        fit="cover"
-      />
+      <el-image :src="performerPhoto_C" fit="cover" />
     </div>
     <div class="performer-info">
-      <div class="performer-name">櫻茉日</div>
+      <div class="performer-name">{{ props.performer.name }}</div>
       <ul class="performer-info-ul">
-        <li>别名: 堀北実来、堀北实来</li>
-        <li>
+        <li v-if="props.performer.aliasName != ''">别名: {{ props.performer.aliasName }}</li>
+        <li v-if="props.performer.bust != '' || props.performer.waist != '' || props.performer.hip != ''">
           <el-breadcrumb>
-            <el-breadcrumb-item> <span>胸围: </span><label>101 </label> </el-breadcrumb-item>
-            <el-breadcrumb-item> <span>腰围: </span><label>58 </label> </el-breadcrumb-item>
-            <el-breadcrumb-item> <span>臀围: </span><label>90 </label> </el-breadcrumb-item>
+            <el-breadcrumb-item> <span>胸围: </span><label>{{ props.performer.bust }} </label> </el-breadcrumb-item>
+            <el-breadcrumb-item> <span>腰围: </span><label>{{ props.performer.waist }} </label> </el-breadcrumb-item>
+            <el-breadcrumb-item> <span>臀围: </span><label>{{ props.performer.hip }} </label> </el-breadcrumb-item>
           </el-breadcrumb>
         </li>
-        <li>出生日期: 2000-03-03</li>
-        <li>拍摄年龄: 23岁</li>
-        <li>身高：160cm</li>
+        <li v-if="props.performer.birthday != ''">出生日期: {{ props.performer.birthday }}</li>
+        <li v-if="props.performer.birthday != '' && props.issuingDate != ''">
+          拍摄年龄: {{ calculateAge(props.performer.birthday, props.issuingDate) }}岁
+        </li>
+        <li>
+          {{ props.performer.introduction }}
+        </li>
       </ul>
       <div class="performer-btn">
-        <el-button icon="Search" size="small" round> 查看【櫻茉日】所有资源 </el-button>
+        <el-button icon="Search" size="small" round> 查看【{{ props.performer.name }}】所有资源 </el-button>
       </div>
     </div>
   </div>
 </template>
-<script lang="ts" setup></script>
+<script lang="ts" setup>
+import type { I_performer } from '@/dataType/performer.dataType';
+import { computed, type PropType } from 'vue';
+import { calculateAge } from '@/assets/calculate'
+import { appStoreData } from '@/storeData/app.storeData';
+const store = {
+  appStoreData: appStoreData(),
+}
+const props = defineProps({
+  performer: {
+    type: Object as PropType<I_performer>,
+    required: true,
+  },
+  issuingDate: {
+    type: String,
+    default: ''
+  }
+})
+const performerPhoto_C = computed(() => {
+  return `/api/performerFace/${props.performer.performerBases_id}/${props.performer.photo}`
+});
+</script>
 <style lang="scss" scoped>
 .performer-details {
   display: flex;
+  position: relative;
+
+  .performer-cup {
+    position: absolute;
+    z-index: 10;
+    right: -6px;
+    top: -6px;
+    font-weight: bold;
+    font-size: 14px;
+    color: #F56C6C;
+  }
+
   .performer-photo {
     flex-shrink: 0;
     width: 110px;
@@ -39,33 +76,39 @@
     aspect-ratio: 1/1.3;
     box-shadow: 0 0 0 1px #cdd0d6;
     overflow: hidden;
+
     .el-image {
       width: 100%;
       height: 100%;
       border-radius: 5px;
     }
   }
+
   .performer-info {
     flex-grow: 1;
     padding-left: 15px;
     display: flex;
     flex-direction: column;
+
     .performer-name {
       flex-shrink: 0;
       font-family: 300;
       font-size: 1.2em;
       color: #ffaa47;
     }
+
     .performer-info-ul {
       flex-grow: 1;
       list-style-type: none;
       font-size: 0.8em;
+
       :deep(.el-breadcrumb) {
         .el-breadcrumb__inner {
           font-size: 0.8em;
         }
       }
     }
+
     .performer-btn {
       flex-shrink: 0;
       transform: scale(0.85);

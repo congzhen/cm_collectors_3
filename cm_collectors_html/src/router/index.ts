@@ -12,8 +12,9 @@ const router = createRouter({
       component: IndexView,
     },
     {
-      path: '/performer',
+      path: '/performer/:mainPerformerBasesId',
       name: 'performer',
+      props: route => ({ mainPerformerBasesId: route.params.mainPerformerBasesId }),
       component: PerformerView,
     },
     {

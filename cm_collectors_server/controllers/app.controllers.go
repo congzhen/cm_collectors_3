@@ -11,11 +11,7 @@ type App struct{}
 
 func (App) Data(c *gin.Context) {
 	appData, err := processors.App{}.InitData()
-	if err != nil {
-		c.JSON(500, gin.H{
-			"code": 500,
-			"msg":  "服务器错误",
-		})
+	if err := ResError(c, err); err != nil {
 		return
 	}
 	response.OkWithData(appData, c)

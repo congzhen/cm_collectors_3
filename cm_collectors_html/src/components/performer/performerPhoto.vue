@@ -1,12 +1,27 @@
 <template>
   <div class="performer-photo">
-    <el-image
-      src="https://picx.zhimg.com/v2-d6f44389971daab7e688e5b37046e4e4_720w.jpg"
-      fit="cover"
-    />
+    <el-image :src="performerPhoto_C" fit="cover">
+      <template #error>
+        <el-image src="/emptyPhoto.jpg" fit="cover" />
+      </template>
+    </el-image>
   </div>
 </template>
-<script lang="ts" setup></script>
+<script lang="ts" setup>
+import type { I_performer } from '@/dataType/performer.dataType';
+import { computed, type PropType } from 'vue'
+const props = defineProps({
+  performer: {
+    type: Object as PropType<I_performer>,
+    required: true,
+  },
+});
+
+const performerPhoto_C = computed(() => {
+  return `/api/performerFace/${props.performer.performerBases_id}/${props.performer.photo}`
+});
+
+</script>
 <style lang="scss" scoped>
 .performer-photo {
   width: 100%;
@@ -24,6 +39,7 @@
     width: 100%;
     height: 100%;
     border-radius: inherit;
+
     img {
       border-radius: inherit;
       width: 100%;
@@ -31,6 +47,7 @@
       object-fit: cover;
     }
   }
+
   &:hover {
     .el-image {
       transform: scale(1.1);

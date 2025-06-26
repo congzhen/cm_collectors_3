@@ -1,7 +1,10 @@
 package processors
 
+import "cm_collectors_server/models"
+
 type App struct {
-	FilesBases *[]FilesBases `json:"filesBases"`
+	FilesBases     *[]models.FilesBases     `json:"filesBases"`
+	PerformerBases *[]models.PerformerBases `json:"performerBases"`
 }
 
 func (App) InitData() (*App, error) {
@@ -9,5 +12,12 @@ func (App) InitData() (*App, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &App{FilesBases: filesBases}, nil
+	performerBases, err := PerformerBases{}.DataList()
+	if err != nil {
+		return nil, err
+	}
+	return &App{
+		FilesBases:     filesBases,
+		PerformerBases: performerBases,
+	}, nil
 }

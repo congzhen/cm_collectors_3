@@ -1,6 +1,10 @@
 package models
 
-import "cm_collectors_server/datatype"
+import (
+	"cm_collectors_server/datatype"
+
+	"gorm.io/gorm"
+)
 
 type TagClass struct {
 	ID           string              `json:"id" gorm:"primaryKey;type:char(20);"`
@@ -9,10 +13,16 @@ type TagClass struct {
 	LeftShow     bool                `json:"leftShow" gorm:"column:leftShow;type:tinyint(1);default:1"`
 	Hot          int                 `json:"hot" gorm:"type:int;default:0"`
 	Sort         int                 `json:"sort" gorm:"type:int;default:0"`
-	CreatedAt    datatype.CustomTime `json:"addTime" gorm:"column:addTime;type:datetime"`
+	CreatedAt    datatype.CustomTime `json:"-" gorm:"column:addTime;type:datetime"`
 	Status       bool                `json:"status" gorm:"type:tinyint(1);default:1"`
 }
 
 func (TagClass) TableName() string {
 	return "tagClass"
+}
+
+func (t TagClass) DataListByFilesBasesId(db *gorm.DB, filesBasesID string) (*[]TagClass, error) {
+	var dataList []TagClass
+	err := db.Where("filesBases_id = ?", filesBasesID).Order("sort").Find(&dataList).Error
+	return &dataList, err
 }

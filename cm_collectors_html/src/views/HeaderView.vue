@@ -49,7 +49,11 @@ import { E_headerMode } from '@/dataType/app.dataType'
 import { useRouter } from 'vue-router'
 import tagListDrawer from '@/components/tag/tagListDrawer.vue'
 import resourceFormDrawer from '@/components/resource/resourceFormDrawer.vue'
+import { appStoreData } from '@/storeData/app.storeData'
 const router = useRouter()
+const store = {
+  appStoreData: appStoreData(),
+}
 
 const tagListDrawerRef = ref<InstanceType<typeof tagListDrawer>>()
 const resourceFormDrawerRef = ref<InstanceType<typeof resourceFormDrawer>>()
@@ -70,7 +74,7 @@ const openTagList = () => {
   tagListDrawerRef.value?.open()
 }
 const goToPerformer = () => {
-  router.push('/performer')
+  router.push(`/performer/${store.appStoreData.currentMainPerformerBasesId}`)
 }
 const goToSetting = () => {
   router.push('/setting')

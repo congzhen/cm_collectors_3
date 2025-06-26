@@ -1,0 +1,29 @@
+
+import type { I_performerBases } from "@/dataType/performer.dataType";
+import { defineStore } from "pinia";
+export const performerBasesStoreData = defineStore('performerBases', {
+  state: () => ({
+    performerBases: [] as I_performerBases[],
+  }),
+  getters: {
+    activeFirstPerformerBases: function (state) {
+      return state.performerBases.find(item => item.status) || null;
+    },
+  },
+  actions: {
+    init: function (dataList: I_performerBases[]) {
+      this.performerBases = dataList;
+    },
+    getPerformerBasesById: function (id: string) {
+      return this.performerBases.find(item => item.id === id) || null;
+    },
+    update: function (data: I_performerBases) {
+      for (let i = 0; i < this.performerBases.length; i++) {
+        if (this.performerBases[i].id === data.id) {
+          this.performerBases[i] = data;
+          break;
+        }
+      }
+    }
+  }
+})

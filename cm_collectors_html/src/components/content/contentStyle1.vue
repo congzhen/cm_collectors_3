@@ -1,16 +1,11 @@
 <template>
-  <div class="content-style1">
+  <div class="content-style1"
+    :style="{ width: coverPosterSize_C.width + 'px', height: coverPosterSize_C.height + 'px' }">
     <div class="top-bar">
-      <contentTag title="1080P"></contentTag>
-      <contentTag title="1080P"></contentTag>
-      <contentTag title="1080P"></contentTag>
-      <contentTag title="1080P"></contentTag>
+      <contentTagDisplay :resource="props.resource"></contentTagDisplay>
     </div>
     <div class="content-cover">
-      <el-image
-        src="https://picx.zhimg.com/v2-d6f44389971daab7e688e5b37046e4e4_720w.jpg"
-        fit="cover"
-      />
+      <el-image :src="resCoverPoster_C" fit="cover" />
     </div>
     <div class="play-icon">
       <el-icon>
@@ -18,11 +13,45 @@
       </el-icon>
     </div>
     <div class="title-bg"></div>
-    <div class="title">11122312</div>
+    <div class="title">{{ props.resource.title }}</div>
   </div>
 </template>
 <script setup lang="ts">
-import contentTag from './contentTag.vue'
+import type { I_resource } from '@/dataType/resource.dataType';
+import contentTagDisplay from './contentTagDisplay.vue';
+import { computed, h, type PropType } from 'vue';
+import { appStoreData } from '@/storeData/app.storeData';
+const store = {
+  appStoreData: appStoreData(),
+}
+const props = defineProps({
+  resource: {
+    type: Object as PropType<I_resource>,
+    required: true,
+  },
+})
+const resCoverPoster_C = computed(() => {
+  return `/api/resCoverPoster/${props.resource.filesBases_id}/${props.resource.coverPoster}`
+});
+
+const coverPosterSize_C = computed(() => {
+  let width = props.resource.coverPosterWidth;
+  let height = props.resource.coverPosterHeight;
+  if (store.appStoreData.currentConfigApp.coverPosterWidthStatus) {
+    width = store.appStoreData.currentConfigApp.coverPosterWidthBase;
+  }
+  if (store.appStoreData.currentConfigApp.coverPosterHeightStatus) {
+    width = store.appStoreData.currentConfigApp.coverPosterHeightBase / height * width;
+    height = store.appStoreData.currentConfigApp.coverPosterHeightBase;
+  }
+  return {
+    width,
+    height,
+  }
+})
+
+
+
 </script>
 <style lang="scss" scoped>
 .content-style1 {
@@ -42,9 +71,6 @@ import contentTag from './contentTag.vue'
   .top-bar {
     position: absolute;
     z-index: 10;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 2px;
     padding: 2px;
   }
 
@@ -52,6 +78,7 @@ import contentTag from './contentTag.vue'
     width: 100%;
     height: 100%;
     overflow: hidden;
+
     .el-image {
       width: 100%;
       height: 100%;
@@ -86,6 +113,12 @@ import contentTag from './contentTag.vue'
     line-height: 1.7em;
     z-index: 6;
     padding: 0 0.2em;
+    /* 禁止换行 */
+    white-space: nowrap;
+    /* 隐藏溢出内容 */
+    overflow: hidden;
+    /* 添加省略号 */
+    text-overflow: ellipsis;
   }
 }
 </style>

@@ -49,12 +49,4 @@ var ErrorMap = map[int]map[string]string{
 		"ZH": "事务错误",
 		"EN": "Transaction error",
 	},
-	100: {
-		"ZH": "创建Token失败",
-		"EN": "Failed to create Token",
-	},
-	101: {
-		"ZH": "令牌无效或过期",
-		"EN": "Token invalid or expired",
-	},
 }

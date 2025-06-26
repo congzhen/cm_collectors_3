@@ -2,35 +2,59 @@
   <div class="app-container" v-if="initStatus">
     <router-view v-slot="{ Component }">
       <keep-alive>
-        <component :is="Component" />
+        <component :is="Component" :key="$route.fullPath" />
       </keep-alive>
     </router-view>
   </div>
 </template>
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
-import { appDataServer } from './server/app.server';
-import { appStoreData } from './storeData/app.storeData';
-import { LoadingService } from './assets/loading';
-const initStatus = ref(false);
-const init = async () => {
-  LoadingService.show();
-  const addDataResult = await appDataServer.init();
-  if (addDataResult && addDataResult.status) {
-    appStoreData().init(addDataResult.data);
-    LoadingService.hide();
-  } else {
-    alert(addDataResult.msg)
-    return
-  }
-  initStatus.value = true;
+import { onMounted, ref } from 'vue'
+import { appDataServer } from '@/server/app.server'
+import { appStoreData } from '@/storeData/app.storeData'
+import { filesBasesStoreData } from '@/storeData/filesBases.storeData'
+import { performerBasesStoreData } from '@/storeData/performerBases.storeData';
+import { LoadingService } from '@/assets/loading'
+import { ElMessage } from 'element-plus'
+const initStatus = ref(false)
+
+const store = {
+  appStoreData: appStoreData(),
+  filesBasesStoreData: filesBasesStoreData(),
+  performerBasesStoreData: performerBasesStoreData(),
 }
 
+const init = async () => {
+  try {
+    LoadingService.show()
+
+    const appResult = await appDataServer.init()
+    if (!appResult || !appResult.status) {
+      ElMessage.error(appResult.msg);
+      return
+    }
+
+    store.filesBasesStoreData.init(appResult.data.filesBases)
+    store.performerBasesStoreData.init(appResult.data.performerBases)
+
+    const firstFilesBases = store.filesBasesStoreData.filesBasesFirst
+    if (firstFilesBases) {
+      const result = await store.appStoreData.init(firstFilesBases.id)
+      if (result && !result.status) {
+        ElMessage.error(result.message);
+        return
+      }
+    }
+  } catch (err) {
+    console.log(err)
+  } finally {
+    initStatus.value = true
+    LoadingService.hide()
+  }
+}
 
 onMounted(async () => {
-  await init();
-});
-
+  await init()
+})
 </script>
 <style lang="scss" scoped>
 .app-container {

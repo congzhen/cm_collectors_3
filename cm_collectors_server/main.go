@@ -21,7 +21,7 @@ func main() {
 	//初始化核心
 	core.Init()
 	//初始化项目数据库数据库
-	dbInitErr := models.AutoDatabase(core.DBS())
+	dbInitErr := models.DB_Init(core.DBS())
 	if dbInitErr != nil {
 		fmt.Println(dbInitErr)
 		return

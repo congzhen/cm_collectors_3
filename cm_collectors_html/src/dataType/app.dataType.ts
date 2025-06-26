@@ -1,4 +1,6 @@
 import type { I_filesBases } from "./filesBases.dataType";
+import type { I_performerBases } from "./performer.dataType";
+import type { I_tag, I_tagClass } from "./tag.dataType";
 
 //header模式
 export enum E_headerMode {
@@ -10,6 +12,12 @@ export enum E_headerMode {
 export enum E_resourceShowMode {
   Index = 'index',
   Name = 'name'
+}
+
+
+export enum E_detailsDramaSeriesMode {
+  fileName = 'fileName',
+  digit = 'digit',
 }
 
 // 资源剧集类型
@@ -24,9 +32,22 @@ export enum E_resourceDramaSeriesType {
 
 // 标签类型
 export enum E_tagType {
+  Sort = 'sort',
+  Country = 'country',
+  Definition = 'definition',
+  Year = 'year',
+  Star = 'starRating',
   DiyTag = 'diyTag',
   Performer = 'performer',
-  Star = 'star',
+  Cup = 'cup',
+}
+
+
+
+// 标签数据
+export interface I_tagData {
+  id: string;
+  name: string;
 }
 
 // 演员职业
@@ -45,4 +66,5 @@ export interface I_cupBWH {
 
 export interface I_appData {
   filesBases: I_filesBases[];
+  performerBases: I_performerBases[];
 }

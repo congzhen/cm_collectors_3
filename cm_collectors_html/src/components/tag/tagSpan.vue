@@ -1,18 +1,27 @@
 <template>
-  <span class="tag-span">美国美国</span>
+  <span class="tag-span">{{ props.title }}</span>
 </template>
-<script setup lang="ts"></script>
+<script setup lang="ts">
+const props = defineProps({
+  title: {
+    type: String,
+    required: true,
+  },
+})
+
+
+</script>
 <style lang="scss" scoped>
 .tag-span {
-  width: 4em;
-  padding: 0.6em 0.9em;
+  width: 4.8em;
+  padding: 0.6em 0.7em;
   text-align: center;
   border-radius: 2px;
   cursor: pointer;
   user-select: none;
   color: #bdbcbc;
   background-color: #303131;
-  font-size: 0.9em;
+  font-size: 0.85em;
   line-height: 0.9em;
   /*溢出的部分隐藏*/
   overflow: hidden;

@@ -2,7 +2,7 @@
   <div class="performer-view">
     <HeaderView class="header" :mode="E_headerMode.GoBack"></HeaderView>
     <div class="main">
-      <performerDataList></performerDataList>
+      <performerDataList :id="props.mainPerformerBasesId"></performerDataList>
     </div>
   </div>
 </template>
@@ -10,6 +10,18 @@
 import HeaderView from './HeaderView.vue'
 import performerDataList from '@/components/performer/performerDataList.vue'
 import { E_headerMode } from '@/dataType/app.dataType'
+import { appStoreData } from '@/storeData/app.storeData';
+const store = {
+  appStoreData: appStoreData(),
+}
+const props = defineProps({
+  mainPerformerBasesId: {
+    type: String,
+    required: true,
+  },
+})
+
+console.log(props.mainPerformerBasesId);
 
 </script>
 <style lang="scss" scoped>

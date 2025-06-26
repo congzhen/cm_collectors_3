@@ -13,7 +13,10 @@ import (
 func InitRouter(router *gin.Engine) *gin.Engine {
 	//设置信任ip
 	router.SetTrustedProxies([]string{"127.0.0.1", "0.0.0.0"})
+	router.Static("/api/performerFace", "./db/performerFace")
+	router.Static("/api/resCoverPoster", "./db/resCoverPoster")
 	publicRouter(router)
+	AdminRouter(router)
 	router.NoRoute(handleNoRoute)
 	return router
 }
@@ -26,4 +29,14 @@ func handleNoRoute(c *gin.Context) {
 func publicRouter(router *gin.Engine) {
 	routerGroup := router.Group("/api")
 	routerGroup.GET("/app/data", controllers.App{}.Data)
+	routerGroup.GET("/tag/data/:filesBasesId", controllers.Tag{}.TagData)
+	routerGroup.GET("/filesBases/info/:id", controllers.FilesBases{}.InfoDetails)
+	routerGroup.GET("/performer/dataList/:performerBasesId/:fetchCount/:page/:limit", controllers.Performer{}.DataList)
+	routerGroup.POST("/performer/list/top/preferred", controllers.Performer{}.ListTopPreferredPerformers)
+	routerGroup.POST("/resource/dataList", controllers.Resource{}.DataList)
+}
+
+func AdminRouter(router *gin.Engine) {
+	routerGroup := router.Group("/api")
+	routerGroup.PUT("performerBases/update", controllers.Performer{}.PerformerBasesUpdate)
 }

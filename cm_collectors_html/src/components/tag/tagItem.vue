@@ -1,6 +1,6 @@
 <template>
   <div class="tag-item">
-    <label>角色扮演</label>
+    <label>{{ props.name }}</label>
     <div class="tag-item-tool">
       <div class="tag-item-tool-block">
         <el-icon :size="12" color="#bdbcbc">
@@ -13,7 +13,14 @@
     </div>
   </div>
 </template>
-<script lang="ts" setup></script>
+<script lang="ts" setup>
+const props = defineProps({
+  name: {
+    type: String,
+    required: true,
+  },
+})
+</script>
 <style lang="scss" scoped>
 .tag-item {
   font-size: 12px;
@@ -28,15 +35,19 @@
   -ms-user-select: none;
   user-select: none;
   position: relative;
+
   &:hover {
     border: 1px solid #616264;
+
     label {
       color: #babdc5;
     }
+
     .tag-item-tool {
       display: block;
     }
   }
+
   label {
     cursor: pointer;
   }
@@ -46,12 +57,15 @@
     position: absolute;
     margin-top: -28px;
     right: 2px;
+
     .tag-item-tool-block {
       display: flex;
       flex-direction: column;
       gap: 2px;
+
       .el-icon {
         cursor: pointer;
+
         &:hover {
           color: #fff;
         }

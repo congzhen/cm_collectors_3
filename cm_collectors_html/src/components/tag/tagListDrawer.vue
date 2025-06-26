@@ -1,6 +1,6 @@
 <template>
   <drawerCommon ref="drawerCommonRef" width="800px" title="标签" :btnSubmit="false">
-    <tagList></tagList>
+    <tagList :id="store.appStoreData.currentFilesBases.id"></tagList>
     <template #footerBtn>
       <div>
         <el-button @click="tagClassFormHandle('add', '', '')">添加标签分类</el-button>
@@ -14,6 +14,10 @@ import { ref } from 'vue';
 import drawerCommon from '@/components/com/dialog/drawer.common.vue';
 import tagList from './tagList.vue';
 import tagFormClassDialog from './tagFormClassDialog.vue'
+import { appStoreData } from '@/storeData/app.storeData';
+const store = {
+  appStoreData: appStoreData(),
+}
 
 const drawerCommonRef = ref<InstanceType<typeof drawerCommon>>()
 const tagFormClassDialogRef = ref<InstanceType<typeof tagFormClassDialog>>();
