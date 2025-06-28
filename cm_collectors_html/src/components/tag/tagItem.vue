@@ -1,13 +1,16 @@
 <template>
-  <div class="tag-item">
+  <div :class="['tag-item', props.status ? '' : 'disable']">
     <label>{{ props.name }}</label>
     <div class="tag-item-tool">
       <div class="tag-item-tool-block">
-        <el-icon :size="12" color="#bdbcbc">
+        <el-icon :size="12" color="#bdbcbc" @click="emits('edit')">
           <Edit />
         </el-icon>
-        <el-icon :size="12" color="#bdbcbc">
+        <el-icon v-if="props.status" :size="12" color="#bdbcbc" @click="emits('delete')">
           <Delete />
+        </el-icon>
+        <el-icon v-else :size="12" color="#bdbcbc" @click="emits('restore')">
+          <RefreshLeft />
         </el-icon>
       </div>
     </div>
@@ -19,9 +22,22 @@ const props = defineProps({
     type: String,
     required: true,
   },
+  status: {
+    type: Boolean,
+    default: true,
+  }
 })
+const emits = defineEmits(['edit', 'delete', 'restore'])
 </script>
 <style lang="scss" scoped>
+.disable {
+  background-color: rgba(255, 255, 255, 0.3);
+
+  label {
+    text-decoration: line-through;
+  }
+}
+
 .tag-item {
   font-size: 12px;
   height: 30px;

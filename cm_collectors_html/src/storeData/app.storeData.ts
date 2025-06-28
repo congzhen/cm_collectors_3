@@ -78,18 +78,7 @@ export const appStoreData = defineStore('app', {
 
       console.log(this.currentConfigApp);
 
-      // 获取标签数据
-      const tagDataResult = await tagServer.tagDataByFilesBasesId(filesBasesId)
-      if (!tagDataResult.status) {
-        return {
-          status: false,
-          message: tagDataResult.msg
-        };
-      }
-
-      // 设置当前标签与标签分类
-      this.currentTagClass = tagDataResult.data.tagClass;
-      this.currentTag = tagDataResult.data.tag;
+      this.initTagData(filesBasesId)
 
       // 获取优先显示演员数据
       const topPreferredPerformersResult = await performerServer.listTopPreferredPerformers(
@@ -110,6 +99,20 @@ export const appStoreData = defineStore('app', {
         status: true,
         message: 'success'
       };
+    },
+    async initTagData(filesBasesId: string) {
+      // 获取标签数据
+      const tagDataResult = await tagServer.tagDataByFilesBasesId(filesBasesId)
+      if (!tagDataResult.status) {
+        return {
+          status: false,
+          message: tagDataResult.msg
+        };
+      }
+
+      // 设置当前标签与标签分类
+      this.currentTagClass = tagDataResult.data.tagClass;
+      this.currentTag = tagDataResult.data.tag;
     },
     currentTagsByTagClassId(tagClassId: string) {
       return this.currentTag.filter(tag => tag.tagClass_id == tagClassId && tag.status);

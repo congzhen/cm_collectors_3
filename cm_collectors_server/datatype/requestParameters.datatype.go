@@ -27,3 +27,32 @@ type ReqParam_UpdatePerformerBases struct {
 	Sort   int    `json:"sort"`
 	Status bool   `json:"status"`
 }
+
+// 请求参数 - 修改TagClass
+type ReqParam_TagClass struct {
+	ID           string `json:"id"`
+	FilesBasesID string `json:"filesBases_id"`
+	Name         string `json:"name"`
+	LeftShow     bool   `json:"leftShow"`
+	Sort         int    `json:"sort"`
+	Status       bool   `json:"status"`
+}
+
+// 请求参数 - 修改Tag
+type ReqParam_Tag struct {
+	ID         string `json:"id"`
+	TagClassID string `json:"tagClass_id"`
+	Name       string `json:"name"`
+	Sort       int    `json:"sort"`
+	Status     bool   `json:"status"`
+}
+
+// 请求参数 - 修改TagData排序
+type ReqParam_UpdateTagDataSort struct {
+	TagClassSort []TagSort `json:"tagClassSort"`
+	TagSort      []TagSort `json:"tagSort"`
+}
+type TagSort struct {
+	ID   string `json:"id"`
+	Sort int    `json:"sort"`
+}

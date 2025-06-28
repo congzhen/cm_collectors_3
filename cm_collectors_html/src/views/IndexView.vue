@@ -36,7 +36,7 @@ const selectFilesBaseHandle = async (filesBases: I_filesBases) => {
     ElMessage.error(result.message);
     return
   }
-  tagViewRef.value?.init();
+  //tagViewRef.value?.init();
   contentViewRef.value?.init();
   loading.value = false;
 };

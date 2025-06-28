@@ -1,20 +1,13 @@
 <template>
-  <dialogForm
-    ref="dialogFormRef"
-    title="标签"
-    width="400px"
-    labelPosition="top"
-    :modelValue="formData"
-    :rules="formRules"
-  >
+  <dialogForm ref="dialogFormRef" title="标签" width="400px" labelPosition="top" :modelValue="formData" :rules="formRules"
+    @submit="submitHandle">
     <el-form-item label="标签名称" prop="name">
       <el-input v-model="formData.name" />
     </el-form-item>
-    <el-form-item label="标签分类" prop="tag_class_id">
-      <el-select v-model="formData.tag_class_id">
-        <el-option label="韩国" value="4"></el-option>
-        <el-option label="美国" value="3"></el-option>
-        <el-option label="英国" value="2"></el-option>
+    <el-form-item label="标签分类" prop="tagClass_id">
+      <el-select v-model="formData.tagClass_id">
+        <el-option v-for="item, key in store.appStoreData.currentTagClass" :key="key" :label="item.name"
+          :value="item.id"></el-option>
       </el-select>
     </el-form-item>
   </dialogForm>
@@ -22,21 +15,44 @@
 <script lang="ts" setup>
 import { reactive, ref } from 'vue'
 import dialogForm from '../com/dialog/dialog.form.vue'
-import type { FormRules } from 'element-plus'
+import { ElMessage, type FormRules } from 'element-plus'
+import type { I_tag } from '@/dataType/tag.dataType'
+import { appStoreData } from '@/storeData/app.storeData'
+import { LoadingService } from '@/assets/loading'
+import { tagServer } from '@/server/tag.server'
+const store = {
+  appStoreData: appStoreData(),
+}
+const emits = defineEmits(['success'])
 const dialogFormRef = ref<InstanceType<typeof dialogForm>>()
-const formData = reactive({
-  id: '',
-  name: '',
-  tag_class_id: '',
-})
+let mode = 'add';
+const formData = ref<I_tag>({} as I_tag)
 const formRules = reactive<FormRules>({
   name: [{ required: true, trigger: 'blur', message: '请输入标签名称' }],
-  tag_class_id: [{ required: true, trigger: 'blur', message: '请选择标签分类' }],
+  tagClass_id: [{ required: true, trigger: 'blur', message: '请选择标签分类' }],
 })
-const open = (mode: 'add' | 'edit', id: string, name: string, tag_class_id: string) => {
-  formData.id = id
-  formData.name = name
-  formData.tag_class_id = tag_class_id
+const submitHandle = async () => {
+  LoadingService.show();
+  try {
+    const apiCall = mode === 'add'
+      ? tagServer.createTag(formData.value)
+      : tagServer.updateTag(formData.value);
+    const result = await apiCall;
+    if (result.status) {
+      emits('success');
+      dialogFormRef.value?.close();
+    } else {
+      ElMessage.error(result.msg);
+    }
+  } catch (error) {
+    ElMessage.error('提交失败，请稍后再试');
+  } finally {
+    LoadingService.hide();
+  }
+}
+const open = (_mode: 'add' | 'edit', tag: I_tag) => {
+  mode = _mode;
+  formData.value = { ...tag };
   dialogFormRef.value?.open()
 }
 

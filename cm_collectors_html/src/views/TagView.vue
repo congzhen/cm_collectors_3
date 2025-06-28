@@ -8,7 +8,8 @@
               :tag-type="leftDisplay" :data-list="getTagDataList(leftDisplay)">
             </tagCollapseItem>
             <div v-else>
-              <tagCollapseItem v-for="tagClass in store.appStoreData.currentTagClass.filter(item => item.leftShow)"
+              <tagCollapseItem
+                v-for="tagClass in store.appStoreData.currentTagClass.filter(item => item.leftShow && item.status)"
                 :key="tagClass.id" :name="tagClass.id" :tag-type="E_tagType.DiyTag" :title="tagClass.name"
                 :data-list="getDiyTagDataList(tagClass.id)">
               </tagCollapseItem>
@@ -30,11 +31,22 @@ import dataset from '@/assets/dataset'
 import { E_tagType, type I_tagData } from '@/dataType/app.dataType'
 import tagCollapseItem from '@/components/tag/tagCollapseItem.vue'
 import { appStoreData } from '@/storeData/app.storeData'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 const store = {
   appStoreData: appStoreData(),
 }
 const activeNames = ref<string[]>([])
+
+watch(
+  () => [
+    store.appStoreData.currentFilesBasesAppConfig.leftDisplay,
+    store.appStoreData.currentTagClass
+  ],
+  () => {
+    init();
+  },
+  { deep: true }
+);
 
 const init = () => {
   activeNames.value = [

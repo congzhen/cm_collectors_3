@@ -20,3 +20,8 @@ export interface I_tagClass {
   sort: number;
   status: boolean;
 }
+
+export interface I_tagSort {
+  id: string;
+  sort: number;
+}
