@@ -4,16 +4,16 @@
     <div class="main">
       <el-tabs v-model="activeName" class="setting-tabs" type="border-card">
         <el-tab-pane label="软件设置" name="softSettings">
-          <softSettings></softSettings>
+          <softSettings v-if="activeName === 'softSettings'"></softSettings>
         </el-tab-pane>
         <el-tab-pane label="文件数据库" name="fileDatabase">
-          <fileDatabaseSetting></fileDatabaseSetting>
+          <fileDatabaseSetting v-if="activeName === 'fileDatabase'"></fileDatabaseSetting>
         </el-tab-pane>
         <el-tab-pane label="演员数据集" name="performerDatabase">
-          <performerSetting></performerSetting>
+          <performerSetting v-if="activeName === 'performerDatabase'"></performerSetting>
         </el-tab-pane>
         <el-tab-pane label="标签数据集" name="tagDatabase">
-          <tagSetting></tagSetting>
+          <tagSetting v-if="activeName === 'tagDatabase'"></tagSetting>
         </el-tab-pane>
       </el-tabs>
     </div>

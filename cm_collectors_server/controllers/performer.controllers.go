@@ -10,6 +10,18 @@ import (
 
 type Performer struct{}
 
+func (Performer) BasicList_Performer(c *gin.Context) {
+	var par datatype.ReqParam_PerformersList
+	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {
+		return
+	}
+	dataList, err := processors.Performer{}.BasicList_Performer(par.PerformerBasesIds)
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(dataList, c)
+}
+
 func (Performer) DataList(c *gin.Context) {
 	performerBasesId := c.Param("performerBasesId")
 	var fetchCount bool

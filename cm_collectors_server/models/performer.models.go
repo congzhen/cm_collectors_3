@@ -29,8 +29,27 @@ type Performer struct {
 	Status           bool                `json:"status" gorm:"type:tinyint(1);default:1"`
 }
 
+type PerformerBasic struct {
+	ID        string `json:"id"`
+	Name      string `json:"name"`
+	AliasName string `json:"aliasName"  gorm:"column:aliasName;"`
+	KeyWords  string `json:"keyWords" gorm:"column:keyWords;"`
+}
+
 func (Performer) TableName() string {
 	return "performer"
+}
+func (PerformerBasic) TableName() string {
+	return "performer"
+}
+
+func (Performer) BasicList_Performer(db *gorm.DB, performerBasesIds []string) (*[]PerformerBasic, error) {
+	var list []PerformerBasic
+	if len(performerBasesIds) > 0 {
+		db = db.Where("performerBases_id in (?)", performerBasesIds)
+	}
+	err := db.Model(&Performer{}).Where("careerPerformer = ?", true).Order("addTime desc").Find(&list).Error
+	return &list, err
 }
 
 func (Performer) DataList(db *gorm.DB, performerBasesId string, fetchCount bool, page, limit int, search, star, cup string) (*[]Performer, int64, error) {

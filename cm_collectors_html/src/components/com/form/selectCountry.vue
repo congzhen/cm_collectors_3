@@ -1,7 +1,9 @@
 <template>
-  <el-select v-model="selectVal" clearable :style="{ width: props.width }" placeholder="'清晰度" @change="changeHandle"
+  <el-select v-model="selectVal" clearable :style="{ width: props.width }" placeholder="'国家" @change="changeHandle"
     @clear="handleClear" :multiple="props.multiple">
-    <el-option v-for="item, index in dataset.definition" :key="index" :label="item" :value="item"></el-option>
+    <el-option-group v-for="(countryList, key) in dataset.country" :key="key" :label="key">
+      <el-option v-for="item, index in countryList" :key="index" :label="item" :value="item"></el-option>
+    </el-option-group>
   </el-select>
 </template>
 <script setup lang="ts">

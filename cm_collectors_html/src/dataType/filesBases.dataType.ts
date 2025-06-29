@@ -1,9 +1,12 @@
-export interface I_filesBases {
+export interface I_filesBases_base {
   id: string;
   name: string;
   sort: number;
   addTime: string;
   status: boolean;
+}
+
+export interface I_filesBases extends I_filesBases_base {
   filesRelatedPerformerBases: I_filesRelatedPerformerBases[];
   filesBasesSetting: I_filesBasesSetting;
 }

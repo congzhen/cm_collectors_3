@@ -1,11 +1,11 @@
 <template>
-  <div class="setting-data">
-    <el-form label-width="auto">
+  <div class="setting-data" v-loading="loading">
+    <el-form v-if="filesBasesInfo && filesConfig" label-width="auto">
 
       <el-alert title="基础设置" type="success" />
 
       <el-form-item label="文件数据库名称">
-        <el-input />
+        <el-input v-model="filesBasesInfo.name" />
       </el-form-item>
       <el-form-item label="(主)演员集">
         <el-select />
@@ -17,38 +17,39 @@
         <el-checkbox label="写真演员集" />
       </el-form-item>
       <el-form-item label="状态">
-        <el-switch />
+        <el-switch v-model="filesBasesInfo.status" inline-prompt active-text="启用" inactive-text="禁用" />
       </el-form-item>
       <el-form-item label="国家列表">
-        <el-select />
+        <selectCountry v-model="filesConfig.country" multiple />
       </el-form-item>
       <el-form-item label="清晰度">
-        <el-select />
+        <selectDefinition v-model="filesConfig.definition" multiple />
       </el-form-item>
 
       <el-alert title="左侧边栏" type="success" />
 
       <el-form-item label="左侧边栏显示项">
-        <el-select />
+        <selectLeftDisplay v-model="filesConfig.leftDisplay" multiple />
       </el-form-item>
       <el-form-item label="左侧边栏显示模式">
-        <el-select />
+        <selectLeftColumnMode v-model="filesConfig.leftColumnMode" />
       </el-form-item>
       <el-form-item label="左侧边栏宽度">
-        <el-select />
+        <el-input-number v-model="filesConfig.leftColumnWidth" :min="100" />
       </el-form-item>
       <el-form-item label="标签显示模式">
-        <el-select />
+        <selectTagMode v-model="filesConfig.tagMode" />
       </el-form-item>
       <el-form-item label="演员标签">
-        <el-checkbox label="显示演员照片" border />
-        <el-checkbox label="屏蔽无照片演员" border />
+        <el-checkbox v-model="filesConfig.performerPhoto" label="显示演员照片" border />
+        <el-checkbox v-model="filesConfig.shieldNoPerformerPhoto" label="屏蔽无照片演员" border />
       </el-form-item>
       <el-form-item label="演员标签显示数量">
-        <el-input-number />
+        <el-input-number v-model="filesConfig.performerShowNum" />
       </el-form-item>
       <el-form-item label="优先显示演员">
-        <el-select />
+        <selectPerformer v-model="filesConfig.performerPreferred" multiple
+          :performer-bases-ids="[store.filesBasesStoreData.getMainPerformerBasesIdByFilesBasesId(filesBasesInfo.id)]" />
       </el-form-item>
 
       <el-alert title="显示设置" type="success" />
@@ -197,7 +198,63 @@
   </div>
 </template>
 <script lang="ts" setup>
+import { onMounted, ref } from 'vue';
+import selectCountry from '@/components/com/form/selectCountry.vue';
+import selectDefinition from '@/components/com/form/selectDefinition.vue';
+import selectLeftDisplay from '@/components/com/form/selectLeftDisplay.vue';
+import selectLeftColumnMode from '@/components/com/form/selectLeftColumnMode.vue';
+import selectTagMode from '@/components/com/form/selectTagMode.vue';
+import selectPerformer from '@/components/com/form/selectPerformer.vue';
 import alertMsg from '@/components/com/feedback/alertMsg.vue';
+import { filesBasesServer } from '@/server/filesBases.server';
+import { ElMessage } from 'element-plus';
+import type { I_filesBases_base } from '@/dataType/filesBases.dataType';
+import { defualtConfigApp, type I_config_app } from '@/dataType/config.dataType';
+import { filesBasesStoreData } from '@/storeData/filesBases.storeData';
+const store = {
+  filesBasesStoreData: filesBasesStoreData(),
+}
+const props = defineProps({
+  filesBasesId: {
+    type: String,
+    required: true,
+  },
+})
+
+const loading = ref(false);
+const filesBasesInfo = ref<I_filesBases_base>();
+const filesConfig = ref<I_config_app>();
+const init = async () => {
+  await getFielsBasesInfo();
+}
+
+const getFielsBasesInfo = async () => {
+  loading.value = true;
+  const result = await filesBasesServer.infoById(props.filesBasesId);
+  if (!result.status) {
+    ElMessage.error(result.msg);
+    return;
+  }
+  filesBasesInfo.value = {
+    id: result.data.id,
+    name: result.data.name,
+    sort: result.data.sort,
+    addTime: result.data.addTime,
+    status: result.data.status,
+  }
+  if (result.data.filesBasesSetting.config_json_data != '') {
+    filesConfig.value = JSON.parse(result.data.filesBasesSetting.config_json_data);
+  } else {
+    filesConfig.value = defualtConfigApp;
+  }
+  loading.value = false;
+  console.log(result);
+}
+
+onMounted(() => {
+  init()
+})
+
 </script>
 <style lang="scss" scoped>
 .setting-data {

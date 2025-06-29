@@ -1,5 +1,5 @@
 import request from "@/assets/request";
-import type { I_performer, I_search_performer } from "@/dataType/performer.dataType";
+import type { I_performer, I_performerBasic, I_search_performer } from "@/dataType/performer.dataType";
 const routerGroupUri = '';
 export const performerServer = {
   dataList: async (performerBasesId: string, fetchCount: boolean, page: number, limit: number, searchCondition: I_search_performer) => {
@@ -21,4 +21,13 @@ export const performerServer = {
       }
     });
   },
+  basicList: async (performerBasesIds: string[]) => {
+    return await request<I_performerBasic[]>({
+      url: `${routerGroupUri}/performer/basicList`,
+      method: 'post',
+      data: {
+        performerBasesIds,
+      }
+    });
+  }
 }

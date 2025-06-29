@@ -1,8 +1,12 @@
-export interface I_performer {
+export interface I_performerBasic {
   id: string;
-  performerBases_id: string;
   name: string;
   aliasName: string;
+  keyWords: string;
+}
+
+export interface I_performer extends I_performerBasic {
+  performerBases_id: string;
   birthday: string;
   nationality: string;
   careerPerformer: boolean; // 职业演员

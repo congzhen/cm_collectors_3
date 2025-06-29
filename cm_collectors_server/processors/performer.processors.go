@@ -7,6 +7,10 @@ import (
 
 type Performer struct{}
 
+func (Performer) BasicList_Performer(performerBasesIds []string) (*[]models.PerformerBasic, error) {
+	return models.Performer{}.BasicList_Performer(core.DBS(), performerBasesIds)
+}
+
 func (Performer) DataList(performerBasesId string, fetchCount bool, page, limit int, search, star, cup string) (*[]models.Performer, int64, error) {
 	return models.Performer{}.DataList(core.DBS(), performerBasesId, fetchCount, page, limit, search, star, cup)
 }

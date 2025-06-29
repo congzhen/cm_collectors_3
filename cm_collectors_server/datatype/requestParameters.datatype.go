@@ -12,6 +12,11 @@ type ReqParam_ResourcesList struct {
 	FilesBasesId string `json:"filesBasesId"`
 }
 
+// 请求参数 - 获取演员列表
+type ReqParam_PerformersList struct {
+	PerformerBasesIds []string `json:"performerBasesIds"`
+}
+
 // 请求参数 - 获取喜爱的演员列表
 type ReqParam_TopPreferredPerformers struct {
 	PreferredIds           []string `json:"preferredIds"`           //喜欢演员的ids

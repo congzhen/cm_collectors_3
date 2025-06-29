@@ -1,5 +1,5 @@
 <template>
-  <el-select v-model="selectVal" clearable :style="{ width: props.width }" placeholder="请选择星级" @change="changeHandle"
+  <el-select v-model="selectVal" clearable :style="{ width: props.width }" placeholder="星级" @change="changeHandle"
     @clear="handleClear">
     <el-option label="全部" value=""></el-option>
     <el-option label="★★★★★" value="5"></el-option>
