@@ -167,6 +167,9 @@
       <el-form-item label="导演显示文字">
         <el-input v-model="filesConfig.director_Text" />
       </el-form-item>
+      <el-form-item label="自定义头像">
+        <setCustomAvatar v-model="filesConfig.performer_photo" />
+      </el-form-item>
 
       <el-alert title="插件设置" type="success" />
       <el-form-item label="Cup插件">
@@ -228,6 +231,7 @@ import selectTagClass from '@/components/com/form/selectTagClass.vue';
 import selectPlayAtlasMode from '@/components/com/form/selectPlayAtlasMode.vue';
 import coverPosterAdmin from './coverPosterAdmin.vue';
 import routeConversionAdmin from './routeConversionAdmin.vue';
+import setCustomAvatar from '@/components/com/form/setCustomAvatar.vue';
 import alertMsg from '@/components/com/feedback/alertMsg.vue';
 import { filesBasesServer } from '@/server/filesBases.server';
 import { ElMessage } from 'element-plus';
