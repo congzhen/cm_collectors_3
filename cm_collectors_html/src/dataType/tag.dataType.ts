@@ -3,9 +3,13 @@ export interface I_tagData {
   tagClass: I_tagClass[];
 }
 
+
+
+
 export interface I_tag {
   id: string;
   name: string;
+  keyWords: string;
   tagClass_id: string;
   hot: number;
   sort: number;

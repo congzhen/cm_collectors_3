@@ -108,6 +108,27 @@ func AutoDatabase(db *gorm.DB) error {
 				return nil
 			},
 		},
+		{
+			ID: "20250701-001-update_tag_keywords",
+			Migrate: func(tx *gorm.DB) error {
+				// 查询所有 performer 记录
+				var tags []Tag
+				if err := tx.Find(&tags).Error; err != nil {
+					return err
+				}
+
+				for _, p := range tags {
+					//  Title 首字母
+					keywords := utils.PinyinInitials(p.Name)
+					// 更新 keywords 字段
+					if err := tx.Model(&p).Update("KeyWords", keywords).Error; err != nil {
+						return err
+					}
+				}
+
+				return nil
+			},
+		},
 	})
 	return m.Migrate()
 }

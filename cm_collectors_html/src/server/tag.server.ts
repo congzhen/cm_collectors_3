@@ -8,6 +8,18 @@ export const tagServer = {
       method: 'get',
     });
   },
+  tagListByFilesBasesId: async (filesBases_id: string) => {
+    return await request<I_tag[]>({
+      url: `${routerGroupUri}/tag/list/${filesBases_id}`,
+      method: 'get',
+    });
+  },
+  tagClassListByFilesBasesId: async (filesBases_id: string) => {
+    return await request<I_tagClass[]>({
+      url: `${routerGroupUri}/tagClass/list/${filesBases_id}`,
+      method: 'get',
+    });
+  },
   createTag: async (tag: I_tag) => {
     return await request<I_tag>({
       url: `${routerGroupUri}/tag/create`,

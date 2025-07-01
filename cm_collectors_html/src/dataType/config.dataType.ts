@@ -4,6 +4,7 @@ import { E_detailsDramaSeriesMode, type E_tagType } from "./app.dataType";
 
 export interface I_config_app {
   country: string[]; // 国家
+  coverDisplayTagAttribute: string[]; // 封面显示标签属性
   coverDisplayTag: string[]; // 封面显示标签
   coverDisplayTagColor: string; // 封面显示标签颜色
   coverDisplayTagColors: string[]; // 封面显示标签颜色
@@ -49,7 +50,7 @@ export interface I_config_app {
   randomPosterStatus: boolean; // 随机海报-状态
   resourceDetailsShowMode: string; // 资源详情-显示模式
   resourcesShowMode: string; // 资源-显示模式
-  routeConversion: string[];// 路由转换
+  routeConversion: I_routeConversion[];// 路由转换
   shieldNoPerformerPhoto: boolean; // 屏蔽无照片演员
   showPreviewImage: boolean; // 显示预览图片
   sortMode: string; // 排序模式
@@ -108,6 +109,7 @@ export const defualtConfigApp: I_config_app = {
   routeConversion: [],
   definitionRgba: 'rgba(155, 88, 182,0.5)',
   definitionFontColor: '#F3F3F3',
+  coverDisplayTagAttribute: [],
   coverDisplayTag: [],
   coverDisplayTagRgba: 'rgba(244, 54, 16,0.5)',
   coverDisplayTagRgbas: ['rgba(244, 54, 16, 0.75)'],
@@ -128,6 +130,11 @@ export interface I_coverPosterData {
   width: number;
   height: number;
   type: string;
+}
+
+export interface I_routeConversion {
+  from: string;
+  to: string;
 }
 
 export interface I_config_nfo {

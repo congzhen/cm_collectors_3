@@ -18,6 +18,22 @@ func (Tag) TagData(c *gin.Context) {
 	}
 	response.OkWithData(tagData, c)
 }
+func (Tag) TagList(c *gin.Context) {
+	filesBasesId := c.Param("filesBasesId")
+	tagData, err := processors.Tag{}.TagData(filesBasesId)
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(tagData.Tag, c)
+}
+func (Tag) TagClassList(c *gin.Context) {
+	filesBasesId := c.Param("filesBasesId")
+	tagClassList, err := processors.TagClass{}.DataListByFilesBasesId(filesBasesId)
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(tagClassList, c)
+}
 func (Tag) CreateTag(c *gin.Context) {
 	var par datatype.ReqParam_Tag
 	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {

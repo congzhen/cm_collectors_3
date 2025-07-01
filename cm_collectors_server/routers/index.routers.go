@@ -30,6 +30,8 @@ func publicRouter(router *gin.Engine) {
 	routerGroup := router.Group("/api")
 	routerGroup.GET("/app/data", controllers.App{}.Data)
 	routerGroup.GET("/tag/data/:filesBasesId", controllers.Tag{}.TagData)
+	routerGroup.GET("/tag/list/:filesBasesId", controllers.Tag{}.TagList)
+	routerGroup.GET("/tagClass/list/:filesBasesId", controllers.Tag{}.TagClassList)
 	routerGroup.GET("/filesBases/info/:id", controllers.FilesBases{}.InfoDetails)
 	routerGroup.POST("performer/basicList", controllers.Performer{}.BasicList_Performer)
 	routerGroup.GET("/performer/dataList/:performerBasesId/:fetchCount/:page/:limit", controllers.Performer{}.DataList)

@@ -55,79 +55,92 @@
       <el-alert title="显示设置" type="success" />
 
       <el-form-item label="分页显示数量">
-        <el-input-number />
+        <el-input-number v-model="filesConfig.pageLimit" />
       </el-form-item>
-      <el-form-item label="排序方式">
-        <el-select />
-      </el-form-item>
-      <el-form-item label="显示模式">
-        <el-select />
+      <el-form-item label="资源显示模式">
+        <selectResourcesMode v-model="filesConfig.resourcesShowMode" />
       </el-form-item>
       <el-form-item label="详情剧集显示模式">
-        <el-select />
+        <selectDetailsDramaSeriesMode v-model="filesConfig.detailsDramaSeriesMode" />
       </el-form-item>
       <el-form-item label="详情显示模式">
-        <el-select />
+        <selectResourceDetailsShowMode v-model="filesConfig.resourceDetailsShowMode" />
       </el-form-item>
       <el-form-item label="预览图">
-        <el-checkbox label="显示预览图" border />
+        <el-checkbox v-model="filesConfig.showPreviewImage" label="显示预览图" border />
       </el-form-item>
       <el-form-item label="预览图文件夹，多个文件夹用,分割">
-        <el-input />
+        <el-input v-model="filesConfig.previewImageFolder" />
       </el-form-item>
-      <el-form-item label="封面上显示标签">
-        <el-input />
+      <el-form-item label="封面上显示标签(属性)">
+        <el-select v-model="filesConfig.coverDisplayTagAttribute" multiple>
+          <el-option label="definition" value="definition" />
+          <el-option label="year" value="year" />
+          <el-option label="country" value="country" />
+          <el-option label="starRating" value="starRating" />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="封面上显示标签(自定义)">
+        <selectTag v-model="filesConfig.coverDisplayTag" data-source="database" :filesBasesId="props.filesBasesId"
+          multiple />
       </el-form-item>
       <el-form-item label="标签背景色">
-        <el-color-picker show-alpha />
-        <el-button-group size="small">
-          <el-button icon="Plus" />
-          <el-button icon="Minus" />
-        </el-button-group>
+        <div class="color-picker-block">
+          <div v-for="_, index in filesConfig.coverDisplayTagRgbas" :key="index">
+            <el-color-picker v-model="filesConfig.coverDisplayTagRgbas[index]" show-alpha />
+          </div>
+          <el-button-group class="color-picker-btn" size="small">
+            <el-button icon="Plus" />
+            <el-button icon="Minus" />
+          </el-button-group>
+        </div>
       </el-form-item>
       <el-form-item label="标签字体颜色">
-        <el-color-picker show-alpha />
-        <el-button-group size="small">
-          <el-button icon="Plus" />
-          <el-button icon="Minus" />
-        </el-button-group>
+        <div class="color-picker-block">
+          <div v-for="_, index in filesConfig.coverDisplayTagColors" :key="index">
+            <el-color-picker v-model="filesConfig.coverDisplayTagColors[index]" show-alpha />
+          </div>
+          <el-button-group class="color-picker-btn" size="small">
+            <el-button icon="Plus" />
+            <el-button icon="Minus" />
+          </el-button-group>
+        </div>
       </el-form-item>
       <el-form-item label="随机海报">
-        <el-checkbox label="开启随机海报" border />
+        <el-checkbox v-model="filesConfig.randomPosterStatus" label="开启随机海报" border />
+        <el-checkbox v-model="filesConfig.randomPosterAutoSize" label="随机海报自适应宽高" border />
       </el-form-item>
       <el-form-item label="随机海报宽度">
-        <el-input-number />
+        <el-input-number v-model="filesConfig.randomPosterWidth" />
       </el-form-item>
       <el-form-item label="随机海报高度">
-        <el-input-number />
+        <el-input-number v-model="filesConfig.randomPosterHeight" />
       </el-form-item>
       <el-form-item label="随机海报路径">
-        <el-upload>
-          <el-button type="primary">Click to upload</el-button>
-        </el-upload>
+        <el-input v-model="filesConfig.randomPosterPath" placeholder="随机海报文件夹所在路径" />
       </el-form-item>
 
       <el-alert title="参数设置" type="success" />
 
       <el-form-item label="开启记录模块">
-        <el-checkbox label="历史记录" border />
-        <el-checkbox label="当前热度" border />
-        <el-checkbox label="猜你喜欢" border />
+        <el-checkbox v-model="filesConfig.historyModule" label="历史记录" border />
+        <el-checkbox v-model="filesConfig.hotModule" label="当前热度" border />
+        <el-checkbox v-model="filesConfig.youLikeModule" label="猜你喜欢" border />
       </el-form-item>
       <el-form-item label="历史记录显示数量">
-        <el-input-number />
+        <el-input-number v-model="filesConfig.historyNumber" />
       </el-form-item>
       <el-form-item label="当前热度显示数量">
-        <el-input-number />
+        <el-input-number v-model="filesConfig.hotNumber" />
       </el-form-item>
       <el-form-item label="猜你喜欢显示数量">
-        <el-input-number />
+        <el-input-number v-model="filesConfig.youLikeNumber" />
       </el-form-item>
       <el-form-item label="猜你喜欢取词量">
-        <el-input-number />
+        <el-input-number v-model="filesConfig.youLikeWordNumber" />
       </el-form-item>
       <el-form-item label="猜你喜欢参与取词的标签分类">
-        <el-select />
+        <selectTagClass v-model="filesConfig.youLikeTagClass" :filesBasesId="props.filesBasesId" multiple />
       </el-form-item>
       <el-form-item label="当前猜你喜欢词汇">
         <el-tag type="primary">Tag 1</el-tag>
@@ -138,61 +151,63 @@
       <el-alert title="图集设置" type="success" />
 
       <el-form-item label="图集显示模式">
-        <el-select />
+        <selectPlayAtlasMode v-model="filesConfig.playAtlasMode" />
       </el-form-item>
       <el-form-item label="图集分批读取数量">
-        <el-input-number />
+        <el-input-number v-model="filesConfig.playAtlasPageLimit" :min="10" :max="1000" />
+      </el-form-item>
+      <el-form-item label="图集缩略图">
+        <el-checkbox v-model="filesConfig.playAtlasThumbnail" label="图集缩略图" border />
       </el-form-item>
 
       <el-alert title="演员&导演自定义" type="success" />
       <el-form-item label="演员显示文字">
-        <el-input />
+        <el-input v-model="filesConfig.performer_Text" />
       </el-form-item>
       <el-form-item label="导演显示文字">
-        <el-input />
-      </el-form-item>
-      <el-form-item label="演员默认头像">
-        <el-input />
+        <el-input v-model="filesConfig.director_Text" />
       </el-form-item>
 
       <el-alert title="插件设置" type="success" />
-      <el-form-item label="演员Cup插件">
-        <el-checkbox label="开启演员Cup插件" border />
+      <el-form-item label="Cup插件">
+        <el-checkbox v-model="filesConfig.plugInUnit_Cup" label="开启演员Cup插件" border />
         <alert-msg color="warning">
           该插件在演员资料中添加Cup选项，并在左边栏出现Cup标签选择。
         </alert-msg>
       </el-form-item>
       <el-form-item label="Cup显示文字">
-        <el-input />
+        <el-input v-model="filesConfig.plugInUnit_Cup_Text" />
       </el-form-item>
 
       <el-alert title="封面海报设置" type="success" />
+      <el-form-item label="封面海报">
+        <coverPosterAdmin v-model:cover-poster-data-default-select="filesConfig.coverPosterDataDefaultSelect"
+          v-model:cover-poster-data="filesConfig.coverPosterData" />
+      </el-form-item>
       <el-form-item label="封面海报显示宽度">
-        <el-checkbox label="开启封面海报宽度控制" border />
+        <el-checkbox v-model="filesConfig.coverPosterWidthStatus" label="开启封面海报宽度控制" border />
         <alert-msg color="warning">
           开启该功能，会限定每个资源封面海报的宽度。
         </alert-msg>
       </el-form-item>
       <el-form-item label="宽度基数">
-        <el-input-number />
+        <el-input-number v-model="filesConfig.coverPosterWidthBase" />
       </el-form-item>
 
       <el-form-item label="封面海报显示高度">
-        <el-checkbox label="开启封面海报高度控制" border />
+        <el-checkbox v-model="filesConfig.coverPosterHeightStatus" label="开启封面海报高度控制" border />
         <alert-msg color="warning">
           开启该功能，会限定每个资源封面海报的高度。
         </alert-msg>
       </el-form-item>
       <el-form-item label="高度基数">
-        <el-input-number />
+        <el-input-number v-model="filesConfig.coverPosterHeightBase" />
       </el-form-item>
 
       <el-alert title="路径虚拟转换" type="success" />
-      <alert-msg color="warning">
-        视频文件夹整体移动位置时，可以使用虚拟路径转换功能，例如：from D:\video to E:\myVideo，*!to SoftwareDrive:\myVideo
-        则转换至软件当前所在的盘符地址!*，如果需要真实转换数据库中的地址，请使用数据库资源路径替换器。
-      </alert-msg>
-      <el-button>添加虚拟路径</el-button>
+      <el-form-item label="转换配置">
+        <routeConversionAdmin v-model:route-conversion="filesConfig.routeConversion"></routeConversionAdmin>
+      </el-form-item>
 
     </el-form>
   </div>
@@ -205,6 +220,14 @@ import selectLeftDisplay from '@/components/com/form/selectLeftDisplay.vue';
 import selectLeftColumnMode from '@/components/com/form/selectLeftColumnMode.vue';
 import selectTagMode from '@/components/com/form/selectTagMode.vue';
 import selectPerformer from '@/components/com/form/selectPerformer.vue';
+import selectResourcesMode from '@/components/com/form/selectResourcesMode.vue';
+import selectDetailsDramaSeriesMode from '@/components/com/form/selectDetailsDramaSeriesMode.vue';
+import selectResourceDetailsShowMode from '@/components/com/form/selectResourceDetailsShowMode.vue';
+import selectTag from '@/components/com/form/selectTag.vue';
+import selectTagClass from '@/components/com/form/selectTagClass.vue';
+import selectPlayAtlasMode from '@/components/com/form/selectPlayAtlasMode.vue';
+import coverPosterAdmin from './coverPosterAdmin.vue';
+import routeConversionAdmin from './routeConversionAdmin.vue';
 import alertMsg from '@/components/com/feedback/alertMsg.vue';
 import { filesBasesServer } from '@/server/filesBases.server';
 import { ElMessage } from 'element-plus';
@@ -272,6 +295,16 @@ onMounted(() => {
 
     .alert-msg {
       padding: 0 10px;
+    }
+  }
+
+  .color-picker-block {
+    display: flex;
+    gap: 6px;
+
+    .color-picker-btn {
+      display: flex;
+      align-items: center;
     }
   }
 }
