@@ -69,6 +69,9 @@ const getTagDataList = (type: E_tagType): I_tagData[] => {
         { id: 'starAsc', name: '评分正序' },
         { id: 'titleDesc', name: '标题倒叙' },
         { id: 'titleAsc', name: '标题正序' },
+        { id: 'history', name: '历史记录' },
+        { id: 'hot', name: '当前热度' },
+        { id: 'youLike', name: '猜你喜欢' },
       ];
     case E_tagType.Country:
       const resultCountryArr: I_tagData[] = [];

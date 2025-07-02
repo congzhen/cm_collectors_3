@@ -41,6 +41,7 @@ func publicRouter(router *gin.Engine) {
 
 func AdminRouter(router *gin.Engine) {
 	routerGroup := router.Group("/api")
+	routerGroup.PUT("filesBases/setData", controllers.FilesBases{}.SetFilesBases)
 	routerGroup.PUT("performerBases/update", controllers.Performer{}.PerformerBasesUpdate)
 	routerGroup.POST("tag/create", controllers.Tag{}.CreateTag)
 	routerGroup.PUT("tag/update", controllers.Tag{}.UpdateTag)

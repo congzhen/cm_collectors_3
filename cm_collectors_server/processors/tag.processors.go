@@ -4,6 +4,7 @@ import (
 	"cm_collectors_server/core"
 	"cm_collectors_server/datatype"
 	"cm_collectors_server/models"
+	"cm_collectors_server/utils"
 
 	"gorm.io/gorm"
 )
@@ -79,6 +80,7 @@ func (t Tag) Create(par *datatype.ReqParam_Tag) error {
 		ID:         core.GenerateUniqueID(),
 		TagClassID: par.TagClassID,
 		Name:       par.Name,
+		KeyWords:   utils.PinyinInitials(par.Name),
 		Sort:       int(tagTotal) + 1,
 		CreatedAt:  &timeNow,
 		Status:     true,
@@ -92,7 +94,8 @@ func (Tag) Update(tag *datatype.ReqParam_Tag) error {
 		ID:         tag.ID,
 		Name:       tag.Name,
 		TagClassID: tag.TagClassID,
+		KeyWords:   utils.PinyinInitials(tag.Name),
 		Sort:       tag.Sort,
 		Status:     tag.Status,
-	}, []string{"name", "tagClass_id", "sort", "status"})
+	}, []string{"name", "keyWords", "tagClass_id", "sort", "status"})
 }

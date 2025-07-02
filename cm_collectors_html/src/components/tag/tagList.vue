@@ -224,6 +224,7 @@ const createTagHandle = (tagClassId: string) => {
     id: '',
     name: '',
     tagClass_id: tagClassId,
+    keyWords: '',
     hot: 0,
     sort: 0,
     status: true,

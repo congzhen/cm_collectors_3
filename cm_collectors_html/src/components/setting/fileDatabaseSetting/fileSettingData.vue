@@ -1,6 +1,6 @@
 <template>
   <div class="setting-data" v-loading="loading">
-    <el-form v-if="filesBasesInfo && filesConfig" label-width="auto">
+    <el-form v-if="finish" label-width="auto">
 
       <el-alert title="基础设置" type="success" />
 
@@ -8,13 +8,16 @@
         <el-input v-model="filesBasesInfo.name" />
       </el-form-item>
       <el-form-item label="(主)演员集">
-        <el-select />
+        <el-select v-model="mainPerformerBasesId">
+          <el-option v-for="item, index in store.performerBasesStoreData.listByIds(filesBasesRelatedPerformerBases)"
+            :key="index" :label="item.name" :value="item.id"></el-option>
+        </el-select>
       </el-form-item>
       <el-form-item label="关联演员集">
-        <el-checkbox label="日本AV女优演员集" />
-        <el-checkbox label="中国AV女优演员集" />
-        <el-checkbox label="主播演员集" />
-        <el-checkbox label="写真演员集" />
+        <el-checkbox-group v-model="filesBasesRelatedPerformerBases">
+          <el-checkbox v-for="item, key in store.performerBasesStoreData.performerBases" :key="key" :label="item.name"
+            :value="item.id" :disabled="item.id == mainPerformerBasesId" />
+        </el-checkbox-group>
       </el-form-item>
       <el-form-item label="状态">
         <el-switch v-model="filesBasesInfo.status" inline-prompt active-text="启用" inactive-text="禁用" />
@@ -121,7 +124,7 @@
       </el-form-item>
 
       <el-alert title="参数设置" type="success" />
-
+      <!--
       <el-form-item label="开启记录模块">
         <el-checkbox v-model="filesConfig.historyModule" label="历史记录" border />
         <el-checkbox v-model="filesConfig.hotModule" label="当前热度" border />
@@ -136,6 +139,7 @@
       <el-form-item label="猜你喜欢显示数量">
         <el-input-number v-model="filesConfig.youLikeNumber" />
       </el-form-item>
+      -->
       <el-form-item label="猜你喜欢取词量">
         <el-input-number v-model="filesConfig.youLikeWordNumber" />
       </el-form-item>
@@ -212,7 +216,12 @@
         <routeConversionAdmin v-model:route-conversion="filesConfig.routeConversion"></routeConversionAdmin>
       </el-form-item>
 
+
     </el-form>
+    <!-- 保存按钮 -->
+    <div class="save-button-container">
+      <el-button type="primary" @click="saveHandle" icon="Edit">保存</el-button>
+    </div>
   </div>
 </template>
 <script lang="ts" setup>
@@ -238,8 +247,11 @@ import { ElMessage } from 'element-plus';
 import type { I_filesBases_base } from '@/dataType/filesBases.dataType';
 import { defualtConfigApp, type I_config_app } from '@/dataType/config.dataType';
 import { filesBasesStoreData } from '@/storeData/filesBases.storeData';
+import { performerBasesStoreData } from '@/storeData/performerBases.storeData';
+import { debounceNow } from '@/assets/debounce';
 const store = {
   filesBasesStoreData: filesBasesStoreData(),
+  performerBasesStoreData: performerBasesStoreData(),
 }
 const props = defineProps({
   filesBasesId: {
@@ -247,21 +259,34 @@ const props = defineProps({
     required: true,
   },
 })
+const emit = defineEmits(['setSuccess']);
 
+const finish = ref(false);
 const loading = ref(false);
-const filesBasesInfo = ref<I_filesBases_base>();
-const filesConfig = ref<I_config_app>();
+const filesBasesInfo = ref<I_filesBases_base>({} as I_filesBases_base);
+const mainPerformerBasesId = ref('');
+const filesBasesRelatedPerformerBases = ref<string[]>([]);
+const filesConfig = ref<I_config_app>({} as I_config_app);
+
+
 const init = async () => {
   await getFielsBasesInfo();
 }
 
+//获取FielsBases信息
 const getFielsBasesInfo = async () => {
+  // 开始加载时设置加载状态为true
   loading.value = true;
+  // 调用后端API，根据ID获取信息
   const result = await filesBasesServer.infoById(props.filesBasesId);
+
+  // 如果获取信息失败，显示错误消息并返回
   if (!result.status) {
     ElMessage.error(result.msg);
     return;
   }
+
+  // 更新FielsBases信息
   filesBasesInfo.value = {
     id: result.data.id,
     name: result.data.name,
@@ -269,14 +294,52 @@ const getFielsBasesInfo = async () => {
     addTime: result.data.addTime,
     status: result.data.status,
   }
+
+  // 初始化关联信息数组
+  filesBasesRelatedPerformerBases.value = [];
+  // 遍历结果中的关联执信息
+  result.data.filesRelatedPerformerBases.forEach(item => {
+    if (item.main) {
+      // 设置主演员集ID
+      mainPerformerBasesId.value = item.performerBases_id;
+    }
+    // 将演员集ID添加到关联信息数组中
+    filesBasesRelatedPerformerBases.value.push(item.performerBases_id);
+  });
+
+  // 解析配置数据
   if (result.data.filesBasesSetting.config_json_data != '') {
-    filesConfig.value = JSON.parse(result.data.filesBasesSetting.config_json_data);
+    let parsedConfig = JSON.parse(result.data.filesBasesSetting.config_json_data);
+    const mergedConfig: I_config_app = { ...defualtConfigApp };
+    // 如果配置数据不存在，则使用默认配置值
+    for (const key in defualtConfigApp) {
+      if (parsedConfig.hasOwnProperty(key)) {
+        (mergedConfig as any)[key] = parsedConfig[key];
+      }
+    }
+    filesConfig.value = mergedConfig;
   } else {
     filesConfig.value = defualtConfigApp;
   }
+  console.log(filesConfig.value);
+  finish.value = true
+  // 加载完成后设置加载状态为false
   loading.value = false;
-  console.log(result);
 }
+
+const saveHandle = debounceNow(async () => {
+  if (!filesBasesRelatedPerformerBases.value.includes(mainPerformerBasesId.value)) {
+    ElMessage.error('请设置主演员集');
+    return;
+  }
+  const result = await filesBasesServer.setData(props.filesBasesId, filesBasesInfo.value, filesConfig.value, mainPerformerBasesId.value, filesBasesRelatedPerformerBases.value);
+  if (!result.status) {
+    ElMessage.error(result.msg);
+    return;
+  }
+  ElMessage.success('保存成功');
+  emit('setSuccess', props.filesBasesId);
+})
 
 onMounted(() => {
   init()
@@ -285,13 +348,16 @@ onMounted(() => {
 </script>
 <style lang="scss" scoped>
 .setting-data {
-  width: 100%;
+  width: 960px;
   height: 100%;
-  overflow: auto;
+  display: flex;
+  gap: 10px;
+  flex-direction: column;
 
   .el-form {
-    width: 900px;
+    flex: 1;
     padding: 0 20px;
+    overflow: auto;
 
     .el-alert {
       margin-bottom: 10px;
@@ -310,6 +376,14 @@ onMounted(() => {
       display: flex;
       align-items: center;
     }
+  }
+
+  .save-button-container {
+    flex-shrink: 1;
+    padding: 5px 15px;
+    background-color: #262727;
+    display: flex;
+    justify-content: flex-end;
   }
 }
 </style>

@@ -39,3 +39,11 @@ func (t FilesBases) InfoDetails(db *gorm.DB, id string) (*FilesBasesDetails, err
 	err := t.preloadTable(db).Model(&FilesBases{}).Where("id = ?", id).First(&data).Error
 	return &data, err
 }
+
+func (FilesBases) Update(db *gorm.DB, filesBases *FilesBases, fields []string) error {
+	result := db.Model(&filesBases).Select(fields).Updates(filesBases)
+	if result.RowsAffected == 0 {
+		return nil
+	}
+	return result.Error
+}

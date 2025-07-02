@@ -12,6 +12,23 @@ type ReqParam_ResourcesList struct {
 	FilesBasesId string `json:"filesBasesId"`
 }
 
+// 请求参数 - 设置filesBases
+type ReqParam_SetFilesBases struct {
+	ID                    string              `json:"id"`
+	Info                  ReqParam_FielsBases `json:"info"`
+	Config                string              `json:"config"`
+	MainPerformerBasesId  string              `json:"mainPerformerBasesId"`
+	RelatedPerformerBases []string            `json:"relatedPerformerBases"`
+}
+
+// 请求参数 - filesBases信息
+type ReqParam_FielsBases struct {
+	ID     string `json:"id"`
+	Name   string `json:"name"`
+	Sort   int    `json:"sort"`
+	Status bool   `json:"status"`
+}
+
 // 请求参数 - 获取演员列表
 type ReqParam_PerformersList struct {
 	PerformerBasesIds []string `json:"performerBasesIds"`

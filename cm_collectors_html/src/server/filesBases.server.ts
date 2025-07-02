@@ -1,5 +1,6 @@
 import request from "@/assets/request";
-import type { I_filesBases } from "@/dataType/filesBases.dataType";
+import type { I_config_app } from "@/dataType/config.dataType";
+import type { I_filesBases, I_filesBases_base } from "@/dataType/filesBases.dataType";
 const routerGroupUri = '';
 export const filesBasesServer = {
   infoById: async (id: string) => {
@@ -8,4 +9,17 @@ export const filesBasesServer = {
       method: 'get',
     });
   },
+  setData: async (id: string, info: I_filesBases_base, config: I_config_app, mainPerformerBasesId: string, relatedPerformerBases: string[]) => {
+    return await request<boolean>({
+      url: `${routerGroupUri}/filesBases/setData`,
+      method: 'put',
+      data: {
+        id,
+        info,
+        config: JSON.stringify(config),
+        mainPerformerBasesId,
+        relatedPerformerBases
+      }
+    });
+  }
 }
