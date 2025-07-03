@@ -17,4 +17,11 @@ const store = {
 }
 const activeName = ref(store.filesBasesStoreData.filesBasesFirst?.id || '');
 </script>
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.database-setting {
+  :deep(.tag-list) {
+    padding: 0 5px;
+    overflow-y: auto;
+  }
+}
+</style>

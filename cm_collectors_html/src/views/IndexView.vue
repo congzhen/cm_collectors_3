@@ -31,7 +31,7 @@ const resDetails = ref<I_resource | undefined>(undefined);
 
 const selectFilesBaseHandle = async (filesBases: I_filesBases) => {
   loading.value = true;
-  const result = await store.appStoreData.init(filesBases.id)
+  const result = await store.appStoreData.initCurrentFilesBases(filesBases.id)
   if (result && !result.status) {
     ElMessage.error(result.message);
     return

@@ -6,6 +6,13 @@ import { tagServer } from "@/server/tag.server";
 import { filesBasesServer } from "@/server/filesBases.server";
 import type { I_performer } from "@/dataType/performer.dataType";
 import { performerServer } from "@/server/performer.server";
+import { appDataServer } from "@/server/app.server";
+
+import { filesBasesStoreData } from '@/storeData/filesBases.storeData'
+import { performerBasesStoreData } from '@/storeData/performerBases.storeData';
+
+
+
 export const appStoreData = defineStore('app', {
   state: () => ({
     currentFilesBases: {} as I_filesBases,
@@ -35,8 +42,23 @@ export const appStoreData = defineStore('app', {
     }
   },
   actions: {
+    async initApp() {
+      const appResult = await appDataServer.init()
+      if (!appResult || !appResult.status) {
+        return {
+          status: false,
+          message: appResult.msg
+        };
+      }
+      filesBasesStoreData().init(appResult.data.filesBases)
+      performerBasesStoreData().init(appResult.data.performerBases)
+      return {
+        status: true,
+        message: 'success'
+      };
+    },
     // 初始化
-    async init(filesBasesId: string) {
+    async initCurrentFilesBases(filesBasesId: string) {
       // 获取filesBases信息
       const info = await filesBasesServer.infoById(filesBasesId);
       if (!info.status) {

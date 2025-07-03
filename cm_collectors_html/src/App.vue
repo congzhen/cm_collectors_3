@@ -9,7 +9,6 @@
 </template>
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { appDataServer } from '@/server/app.server'
 import { appStoreData } from '@/storeData/app.storeData'
 import { filesBasesStoreData } from '@/storeData/filesBases.storeData'
 import { performerBasesStoreData } from '@/storeData/performerBases.storeData';
@@ -26,19 +25,14 @@ const store = {
 const init = async () => {
   try {
     LoadingService.show()
-
-    const appResult = await appDataServer.init()
-    if (!appResult || !appResult.status) {
-      ElMessage.error(appResult.msg);
+    const result = await store.appStoreData.initApp();
+    if (result && !result.status) {
+      ElMessage.error(result.message);
       return
     }
-
-    store.filesBasesStoreData.init(appResult.data.filesBases)
-    store.performerBasesStoreData.init(appResult.data.performerBases)
-
     const firstFilesBases = store.filesBasesStoreData.filesBasesFirst
     if (firstFilesBases) {
-      const result = await store.appStoreData.init(firstFilesBases.id)
+      const result = await store.appStoreData.initCurrentFilesBases(firstFilesBases.id)
       if (result && !result.status) {
         ElMessage.error(result.message);
         return

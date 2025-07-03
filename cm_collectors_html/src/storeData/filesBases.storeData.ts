@@ -5,6 +5,9 @@ export const filesBasesStoreData = defineStore('filesBases', {
     filesBases: [] as I_filesBases[],
   }),
   getters: {
+    filesBasesStatus: (state) => {
+      return state.filesBases.filter(item => item.status)
+    },
     filesBasesFirst: (state) => {
       if (!state.filesBases || state.filesBases.length == 0) return null;
       return state.filesBases[0];

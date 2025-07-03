@@ -1,8 +1,8 @@
 <template>
   <div class="database-menu">
     <el-menu :default-active="activeDataBase" mode="horizontal" text-color="#fff" active-text-color="#ffd04b">
-      <el-menu-item :index="filesBases.id" v-for="filesBases, key in store.filesBasesStoreData.filesBases" :key="key"
-        @click="changeDataBaseHandle(filesBases)">
+      <el-menu-item :index="filesBases.id" v-for="filesBases, key in store.filesBasesStoreData.filesBasesStatus"
+        :key="key" @click="changeDataBaseHandle(filesBases)">
         {{ filesBases.name }}
       </el-menu-item>
     </el-menu>
