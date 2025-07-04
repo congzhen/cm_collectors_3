@@ -3,7 +3,8 @@
     <el-button icon="DocumentAdd" v-if="props.addBtn" @click="emits('add')">新增</el-button>
     <inputSearch width="280px" placeholder="请输入姓名、别名、首字母" @change="changeSearchHandle" />
     <selectStar width="200px" @change="changeStarHandle" />
-    <selectCup v-if="store.appStoreData.currentConfigApp.plugInUnit_Cup" width="200px" @change="changeCupHandle" />
+    <selectCup v-if="store.appStoreData.currentConfigApp.plugInUnit_Cup" :search-mode="true" width="200px"
+      @change="changeCupHandle" />
   </div>
 </template>
 <script setup lang="ts">

@@ -1,5 +1,5 @@
 <template>
-  <el-select v-model="selectVal" clearable :style="{ width: props.width }" placeholder="'国家" @change="changeHandle"
+  <el-select v-model="selectVal" clearable :style="{ width: props.width }" placeholder="国家" @change="changeHandle"
     @clear="handleClear" :multiple="props.multiple">
     <el-option-group v-for="(countryList, key) in dataset.country" :key="key" :label="key">
       <el-option v-for="item, index in countryList" :key="index" :label="item" :value="item"></el-option>

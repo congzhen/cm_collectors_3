@@ -8,18 +8,18 @@
         ({{ calculateAge(props.performer.birthday) }}岁)
       </label>
     </div>
-    <div class="performer-block-tool" v-if="props.tool">
+    <div class="performer-block-tool" v-if="props.tool" @click.stop="emits('search')">
       <div class="performer-block-tool-btn">
         <el-icon>
           <VideoCameraFilled />
         </el-icon>
       </div>
-      <div class="performer-block-tool-btn" v-if="props.admin">
+      <div class="performer-block-tool-btn displayNone" v-if="props.admin" @click.stop="emits('edit')">
         <el-icon>
           <Edit />
         </el-icon>
       </div>
-      <div class="performer-block-tool-btn" v-if="props.admin">
+      <div class="performer-block-tool-btn displayNone" v-if="props.admin" @click.stop="emits('delete')">
         <el-icon>
           <Delete />
         </el-icon>
@@ -54,7 +54,7 @@ const props = defineProps({
     default: false,
   },
 })
-
+const emits = defineEmits(['search', 'edit', 'delete'])
 const attr_C = computed(() => {
   return props.attrAge || props.attrNationality
 })
@@ -67,6 +67,14 @@ const attr_C = computed(() => {
   padding: 3px;
   overflow: hidden;
   background-color: #262727;
+
+  &:hover {
+    .performer-block-tool-btn.displayNone {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
 
   .performer-block-name {
     text-align: center;
@@ -93,10 +101,15 @@ const attr_C = computed(() => {
       text-align: center;
       border-radius: 2px;
 
+
       &:hover {
         background-color: #333;
         color: #fff;
       }
+    }
+
+    .displayNone {
+      display: none;
     }
   }
 }

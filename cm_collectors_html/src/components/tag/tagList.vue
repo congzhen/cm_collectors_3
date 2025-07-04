@@ -236,7 +236,7 @@ const editTagHandle = (tag: I_tag) => {
 }
 const deleteTagHandle = (tag: I_tag) => {
   messageBoxConfirm({
-    text: '确定要恢复吗？',
+    text: '确定要删除吗？',
     successCallBack: async () => {
       tag.status = false;
       const result = await tagServer.updateTag(tag);
@@ -253,7 +253,7 @@ const deleteTagHandle = (tag: I_tag) => {
 }
 const restoreTagHandle = async (tag: I_tag) => {
   messageBoxConfirm({
-    text: '确定要删除吗？',
+    text: '确定要恢复吗？',
     successCallBack: async () => {
       tag.status = true;
       const result = await tagServer.updateTag(tag);

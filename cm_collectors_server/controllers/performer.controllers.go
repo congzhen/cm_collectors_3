@@ -56,6 +56,40 @@ func (Performer) ListTopPreferredPerformers(c *gin.Context) {
 	response.OkWithData(dataList, c)
 }
 
+func (Performer) CreatePerformer(c *gin.Context) {
+	var par datatype.ReqParam_PerformerData
+	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {
+		return
+	}
+	info, err := processors.Performer{}.Create(&par)
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(info, c)
+}
+func (Performer) UpdatePerformer(c *gin.Context) {
+	var par datatype.ReqParam_PerformerData
+	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {
+		return
+	}
+	info, err := processors.Performer{}.Update(&par)
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(info, c)
+}
+func (Performer) UpdatePerformerStatus(c *gin.Context) {
+	var par datatype.ReqParam_PerformerStatus
+	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {
+		return
+	}
+	err := processors.Performer{}.UpdatePerformerStatus(par.ID, par.Status)
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(true, c)
+}
+
 func (Performer) PerformerBasesUpdate(c *gin.Context) {
 	var par datatype.ReqParam_UpdatePerformerBases
 	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {

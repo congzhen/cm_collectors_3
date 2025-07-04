@@ -50,19 +50,6 @@ export interface I_tagData {
   name: string;
 }
 
-// 演员职业
-export enum E_performerCareer {
-  Performer = 'performer',
-  Director = 'director',
-}
-
-//cup
-export interface I_cupBWH {
-  bust: number;
-  waist: string;
-  hip: string;
-}
-
 
 export interface I_appData {
   filesBases: I_filesBases[];

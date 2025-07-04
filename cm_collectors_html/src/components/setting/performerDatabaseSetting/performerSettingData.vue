@@ -8,7 +8,7 @@
       </el-form-item>
     </el-form>
     <div class="setting-data-performer">
-      <performerDataList :id="props.performerBases.id" :showPerformerInfo="false"></performerDataList>
+      <performerDataList :performerBasesId="props.performerBases.id" :showPerformerInfo="false"></performerDataList>
     </div>
   </div>
 </template>

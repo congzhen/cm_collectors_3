@@ -42,6 +42,35 @@ type ReqParam_TopPreferredPerformers struct {
 	Limit                  int      `json:"limit"`                  //获取数量
 }
 
+type ReqParam_PerformerData struct {
+	Performer   ReqParam_Performer `json:"performer"`
+	PhotoBase64 string             `json:"photoBase64"`
+}
+type ReqParam_Performer struct {
+	ID               string `json:"id"`
+	PerformerBasesID string `json:"performerBases_id"`
+	Name             string `json:"name"`
+	AliasName        string `json:"aliasName"`
+	Birthday         string `json:"birthday"`
+	Nationality      string `json:"nationality"`
+	Photo            string `json:"photo"`
+	CareerPerformer  bool   `json:"careerPerformer"`
+	CareerDirector   bool   `json:"careerDirector"`
+	Introduction     string `json:"introduction"`
+	Cup              string `json:"cup"`
+	Bust             string `json:"bust"`
+	Waist            string `json:"waist"`
+	Hip              string `json:"hip"`
+	Stars            int    `json:"stars"`
+	RetreatStatus    bool   `json:"retreatStatus"`
+	Status           bool   `json:"status"`
+}
+
+type ReqParam_PerformerStatus struct {
+	ID     string `json:"id"`
+	Status bool   `json:"status"`
+}
+
 // 请求参数 - 修改演员集
 type ReqParam_UpdatePerformerBases struct {
 	ID     string `json:"id"`

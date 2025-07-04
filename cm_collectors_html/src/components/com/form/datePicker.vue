@@ -1,15 +1,7 @@
 <template>
-  <el-date-picker
-    v-model="selectVal"
-    type="date"
-    format="YYYY-MM-DD"
-    value-format="YYYY-MM-DD"
-    :placeholder="props.placeholder"
-    :style="{ width: props.width }"
-    @change="changeHandle"
-    :disabled="props.disabled"
-    :editable="false"
-  />
+  <el-date-picker v-model="selectVal" type="date" format="YYYY-MM-DD" value-format="YYYY-MM-DD"
+    :placeholder="props.placeholder" :style="{ width: props.width }" @change="changeHandle"
+    :disabled="props.disabled" />
 </template>
 <script setup lang="ts">
 const selectVal = defineModel({ type: String, default: '' })

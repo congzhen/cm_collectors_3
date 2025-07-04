@@ -9,8 +9,9 @@
         <el-scrollbar>
           <ul class="performer-list">
             <li v-for="(performer, index) in dataList" :key="index">
-              <performerBlock :performer="performer" :tool="true" :attrAge="true" :attrNationality="true"
-                @click.stop="clickPerformerHandle(performer)">
+              <performerBlock :performer="performer" :tool="true" :admin="true" :attrAge="true" :attrNationality="true"
+                @click.stop="clickPerformerHandle(performer)" @edit="editPerformerHandle(performer)"
+                @delete="deletePerformerHandle(performer)">
               </performerBlock>
             </li>
           </ul>
@@ -22,7 +23,7 @@
       </div>
     </div>
   </div>
-  <performerFormDrawer ref="performerFormDrawerRef" />
+  <performerFormDrawer ref="performerFormDrawerRef" :performerBasesId="props.performerBasesId" @success="getDataList" />
 </template>
 <script lang="ts" setup>
 import { ref, onMounted } from 'vue';
@@ -33,9 +34,10 @@ import performerBlock from '@/components/performer/performerBlock.vue';
 import type { I_performer, I_search_performer } from '@/dataType/performer.dataType';
 import { performerServer } from '@/server/performer.server';
 import { ElMessage } from 'element-plus';
+import { messageBoxConfirm } from '../com/feedback/messageBox';
 
 const props = defineProps({
-  id: {
+  performerBasesId: {
     type: String,
     default: '',
   },
@@ -60,17 +62,20 @@ let searchCondition: I_search_performer = {
 
 const currentShowPerformer = ref<I_performer | undefined>(undefined);
 
-const init = async (id: string) => {
-  if (id == '') return;
-  await getDataList();
+const init = async () => {
+  await getDataListAndCount();
   if (dataList.value.length > 0) {
     currentShowPerformer.value = dataList.value[0];
   }
 }
 
+const getDataListAndCount = async () => {
+  fetchCount = true;
+  await getDataList();
+}
 const getDataList = async () => {
   loading.value = true;
-  const result = await performerServer.dataList(props.id, fetchCount, currentPage.value, pageSize.value, searchCondition);
+  const result = await performerServer.dataList(props.performerBasesId, fetchCount, currentPage.value, pageSize.value, searchCondition);
   if (result && result.status) {
     dataList.value = result.data.dataList;
     if (fetchCount) {
@@ -92,8 +97,29 @@ const clickPerformerHandle = (data: I_performer) => {
 }
 
 const addPerformerHandle = () => {
-  performerFormDrawerRef.value?.open()
+  performerFormDrawerRef.value?.open('add')
 }
+const editPerformerHandle = (data: I_performer) => {
+  performerFormDrawerRef.value?.open('edit', data)
+}
+
+const deletePerformerHandle = (performer: I_performer) => {
+  messageBoxConfirm({
+    text: '确定要删除吗？',
+    successCallBack: async () => {
+      const result = await performerServer.updateStatus(performer.id, false);
+      if (result && result.status) {
+        getDataListAndCount()
+      } else {
+        ElMessage.error(result.msg);
+      }
+    },
+    failCallBack: () => {
+      //console.log('取消删除')
+    },
+  })
+}
+
 const changeSearchHandle = (search: I_search_performer) => {
   searchCondition = search;
   fetchCount = true;
@@ -102,7 +128,7 @@ const changeSearchHandle = (search: I_search_performer) => {
 
 
 onMounted(async () => {
-  await init(props.id)
+  await init()
 })
 
 </script>

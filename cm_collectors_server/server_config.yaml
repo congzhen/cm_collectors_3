@@ -15,6 +15,7 @@ system:
   serverHost: 127.0.0.1
   port: 8081
   database: sqlite3
+  filePath: ./db/ # 文件存储路径
   Env: debug
   responseMsgLanguage: en
   logFilePath: ./err.log

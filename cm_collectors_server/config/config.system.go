@@ -6,6 +6,7 @@ type System struct {
 	ServerHost          string `yaml:"serverHost"`
 	Port                int    `yaml:"port"`
 	Database            string `yaml:"database"`
+	FilePath            string `yaml:"filePath"`
 	Env                 string `yaml:"Env"`
 	ResponseMsgLanguage string `yaml:"responseMsgLanguage"`
 	LogFilePath         string `yaml:"logFilePath"`

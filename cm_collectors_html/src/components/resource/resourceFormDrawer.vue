@@ -1,11 +1,5 @@
 <template>
-  <drawerForm
-    ref="drawerFormRef"
-    :modelValue="formData"
-    :rules="formRules"
-    width="1024px"
-    title="资源"
-  >
+  <drawerForm ref="drawerFormRef" :modelValue="formData" :rules="formRules" width="1024px" title="资源">
     <div class="resource-form-container">
       <div class="resource-form-left">
         <div class="resource-form-class-title">
@@ -62,14 +56,8 @@
             </el-button-group>
           </div>
           <div class="resource-drag-upload">
-            <el-upload
-              action="/"
-              :on-change="dropFileOrFolderHere"
-              :show-file-list="false"
-              :auto-upload="false"
-              :multiple="true"
-              drag
-            >
+            <el-upload action="/" :on-change="dropFileOrFolderHere" :show-file-list="false" :auto-upload="false"
+              :multiple="true" drag>
               <div class="el-upload__text">拖拽文件或文件夹至此</div>
             </el-upload>
           </div>
@@ -106,7 +94,7 @@
             </div>
             <div>
               <el-form-item label="国家">
-                <selectNationality v-model="formData.country" />
+                <selectCountry v-model="formData.country" />
               </el-form-item>
             </div>
             <div>
@@ -141,7 +129,7 @@
 import { reactive, ref } from 'vue'
 import drawerForm from '../com/dialog/drawer.form.vue'
 import datePicker from '../com/form/datePicker.vue'
-import selectNationality from '../com/form/selectNationality.vue'
+import selectCountry from '../com/form/selectCountry.vue'
 import selectDefinition from '../com/form/selectDefinition.vue'
 import selectStarSet from '../com/form/selectStarSet.vue'
 import type { FormRules, UploadFile } from 'element-plus'
@@ -205,6 +193,7 @@ defineExpose({ open })
       border-radius: 5px;
       border: 1px solid #4c4d4f;
       flex-shrink: 0;
+
       .resource-form-cover-poster-text {
         width: 100%;
         height: 100%;
@@ -215,6 +204,7 @@ defineExpose({ open })
         font-size: 1.3em;
       }
     }
+
     .resource-form-mode {
       width: 100%;
       overflow: hidden;
@@ -226,11 +216,13 @@ defineExpose({ open })
         flex-wrap: wrap;
         padding: 5px 0;
         gap: 5px;
+
         .el-radio {
           min-width: calc(50% - 3px);
           margin: 0;
           white-space: nowrap;
           overflow: hidden;
+
           :deep(.el-radio__label) {
             white-space: nowrap;
             overflow: hidden;
@@ -240,13 +232,16 @@ defineExpose({ open })
         }
       }
     }
+
     .resource-form-drama-series {
       list-style-type: none;
       padding: 5px 0;
+
       li {
         display: flex;
         gap: 5px;
         padding-top: 5px;
+
         .drama-series-index {
           width: 30px;
           flex-shrink: 0;
@@ -256,26 +251,32 @@ defineExpose({ open })
           font-weight: 500;
           font-style: italic;
         }
+
         .drama-series-tool {
           flex-shrink: 0;
+
           .el-button {
             padding: 8px;
           }
         }
       }
     }
+
     .resource-form-browse {
       display: flex;
       justify-content: center;
       padding: 5px 0;
     }
   }
+
   .resource-form-right {
     flex-grow: 1;
+
     .resource-form-two {
       display: flex;
       flex-wrap: wrap;
-      > div {
+
+      >div {
         width: 50%;
         flex-shrink: 0;
         overflow: hidden;

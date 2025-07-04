@@ -29,5 +29,35 @@ export const performerServer = {
         performerBasesIds,
       }
     });
-  }
+  },
+  create: async (performer: I_performer, photoBase64: string) => {
+    return await request<I_performer>({
+      url: `${routerGroupUri}/performer/create`,
+      method: 'post',
+      data: {
+        performer,
+        photoBase64,
+      },
+    });
+  },
+  update: async (performer: I_performer, photoBase64: string) => {
+    return await request<I_performer>({
+      url: `${routerGroupUri}/performer/update`,
+      method: 'put',
+      data: {
+        performer,
+        photoBase64,
+      },
+    });
+  },
+  updateStatus: async (id: string, status: boolean) => {
+    return await request<boolean>({
+      url: `${routerGroupUri}/performer/updateStatus`,
+      method: 'put',
+      data: {
+        id,
+        status,
+      },
+    });
+  },
 }

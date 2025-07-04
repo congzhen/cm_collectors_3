@@ -2,7 +2,7 @@
   <div class="performer-view">
     <HeaderView class="header" :mode="E_headerMode.GoBack"></HeaderView>
     <div class="main">
-      <performerDataList :id="props.mainPerformerBasesId"></performerDataList>
+      <performerDataList :performerBasesId="props.mainPerformerBasesId"></performerDataList>
     </div>
   </div>
 </template>
@@ -21,7 +21,6 @@ const props = defineProps({
   },
 })
 
-console.log(props.mainPerformerBasesId);
 
 </script>
 <style lang="scss" scoped>
