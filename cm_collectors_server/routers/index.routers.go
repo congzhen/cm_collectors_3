@@ -36,6 +36,7 @@ func publicRouter(router *gin.Engine) {
 	routerGroup.POST("performer/basicList", controllers.Performer{}.BasicList_Performer)
 	routerGroup.GET("/performer/dataList/:performerBasesId/:fetchCount/:page/:limit", controllers.Performer{}.DataList)
 	routerGroup.POST("/performer/list/top/preferred", controllers.Performer{}.ListTopPreferredPerformers)
+	routerGroup.GET("/performer/recycleBin/:performerBasesId", controllers.Performer{}.RecycleBin)
 	routerGroup.POST("/resource/dataList", controllers.Resource{}.DataList)
 }
 

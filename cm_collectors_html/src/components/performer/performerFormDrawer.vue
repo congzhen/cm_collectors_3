@@ -125,7 +125,7 @@ const submitHandle = async () => {
     const result = await apiCall;
     if (result.status) {
       drawerFormRef.value?.close();
-      emits('success');
+      emits('success', mode === 'add' ? true : false);
     } else {
       ElMessage.error(result.msg);
     }

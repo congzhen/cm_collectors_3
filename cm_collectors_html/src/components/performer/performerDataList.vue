@@ -3,7 +3,8 @@
     <performerInfo class="performer-info" v-if="props.showPerformerInfo" :performer="currentShowPerformer">
     </performerInfo>
     <div class="performer-container">
-      <performerSearch class="performer-search" :addBtn="true" @add="addPerformerHandle" @search="changeSearchHandle">
+      <performerSearch class="performer-search" :admin="true" @add="addPerformerHandle" @recycleBin="recycleBinHandle"
+        @search="changeSearchHandle">
       </performerSearch>
       <div class="performer-list-main" v-loading="loading">
         <el-scrollbar>
@@ -23,11 +24,16 @@
       </div>
     </div>
   </div>
-  <performerFormDrawer ref="performerFormDrawerRef" :performerBasesId="props.performerBasesId" @success="getDataList" />
+  <performerFormDrawer ref="performerFormDrawerRef" :performerBasesId="props.performerBasesId"
+    @success="getDataListAndCount" />
+  <performerRecycleBinDialog ref="performerRecycleBinDialogRef" :performerBasesId="props.performerBasesId"
+    @success="getDataListAndCount">
+  </performerRecycleBinDialog>
 </template>
 <script lang="ts" setup>
 import { ref, onMounted } from 'vue';
 import performerFormDrawer from '@/components/performer/performerFormDrawer.vue';
+import performerRecycleBinDialog from '@/components/performer/performerRecycleBinDialog.vue';
 import performerSearch from '@/components/performer/performerSearch.vue';
 import performerInfo from '@/components/performer/performerInfo.vue';
 import performerBlock from '@/components/performer/performerBlock.vue';
@@ -47,6 +53,7 @@ const props = defineProps({
   },
 })
 const performerFormDrawerRef = ref<InstanceType<typeof performerFormDrawer>>();
+const performerRecycleBinDialogRef = ref<InstanceType<typeof performerRecycleBinDialog>>();
 const loading = ref(false);
 const dataList = ref<I_performer[]>([]);
 const dataCount = ref(0);
@@ -63,14 +70,14 @@ let searchCondition: I_search_performer = {
 const currentShowPerformer = ref<I_performer | undefined>(undefined);
 
 const init = async () => {
-  await getDataListAndCount();
+  await getDataListAndCount(true);
   if (dataList.value.length > 0) {
     currentShowPerformer.value = dataList.value[0];
   }
 }
 
-const getDataListAndCount = async () => {
-  fetchCount = true;
+const getDataListAndCount = async (fetchCountStatus: boolean = true) => {
+  fetchCount = fetchCountStatus;
   await getDataList();
 }
 const getDataList = async () => {
@@ -118,6 +125,10 @@ const deletePerformerHandle = (performer: I_performer) => {
       //console.log('取消删除')
     },
   })
+}
+
+const recycleBinHandle = () => {
+  performerRecycleBinDialogRef.value?.open()
 }
 
 const changeSearchHandle = (search: I_search_performer) => {

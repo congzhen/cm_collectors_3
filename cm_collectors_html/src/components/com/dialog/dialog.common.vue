@@ -1,12 +1,6 @@
 <template>
-  <el-dialog
-    v-model="dialogVisible"
-    :title="props.title"
-    :width="width_C"
-    :append-to-body="true"
-    :close-on-click-modal="false"
-    @closed="closed"
-  >
+  <el-dialog v-model="dialogVisible" :title="props.title" :width="width_C" :append-to-body="true"
+    :close-on-click-modal="false" @closed="closed">
     <slot></slot>
     <template v-if="props.footer" #footer>
       <div class="dialog-footer">
@@ -19,12 +13,10 @@
   </el-dialog>
 </template>
 <script setup lang="ts">
-import { ref, computed, type PropType } from 'vue'
-type btnType = 'primary' | 'success' | 'info' | 'warning' | 'danger' | ''
+import { ref, computed } from 'vue'
 
 const dialogVisible = ref(false)
 
-// eslint-disable-next-line no-undef
 const props = defineProps({
   width: {
     type: String,

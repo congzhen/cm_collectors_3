@@ -60,4 +60,9 @@ export const performerServer = {
       },
     });
   },
+  recycleBin: async (performerBasesId: string) => {
+    return await request<I_performer[]>({
+      url: `${routerGroupUri}/performer/recycleBin/${performerBasesId}`,
+    });
+  },
 }

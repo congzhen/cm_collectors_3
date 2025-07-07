@@ -112,6 +112,11 @@ func (t Performer) ListTopPreferredPerformers(db *gorm.DB, preferredIds []string
 
 	return &dataList, err
 }
+func (t Performer) RecycleBin(db *gorm.DB, performerBasesId string) (*[]Performer, error) {
+	var dataList []Performer
+	err := db.Where("performerBases_id = ?", performerBasesId).Where("status = ?", false).Find(&dataList).Error
+	return &dataList, err
+}
 
 func (Performer) ListByIds(db *gorm.DB, ids []string) (*[]Performer, error) {
 	var dataList []Performer

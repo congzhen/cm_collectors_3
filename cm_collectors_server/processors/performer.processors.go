@@ -24,6 +24,10 @@ func (Performer) ListTopPreferredPerformers(preferredIds []string, mainPerformer
 	return models.Performer{}.ListTopPreferredPerformers(core.DBS(), preferredIds, mainPerformerBasesId, shieldNoPerformerPhoto, limit)
 }
 
+func (Performer) RecycleBin(performerBasesId string) (*[]models.Performer, error) {
+	return models.Performer{}.RecycleBin(core.DBS(), performerBasesId)
+}
+
 // SavePerformerPhoto 保存或更新表演者的图片
 func (Performer) SavePerformerPhoto(par *datatype.ReqParam_PerformerData) (string, error) {
 	if par.PhotoBase64 == "" || par.Performer.PerformerBasesID == "" {

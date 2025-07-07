@@ -56,6 +56,15 @@ func (Performer) ListTopPreferredPerformers(c *gin.Context) {
 	response.OkWithData(dataList, c)
 }
 
+func (Performer) RecycleBin(c *gin.Context) {
+	performerBasesId := c.Param("performerBasesId")
+	dataList, err := processors.Performer{}.RecycleBin(performerBasesId)
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(dataList, c)
+}
+
 func (Performer) CreatePerformer(c *gin.Context) {
 	var par datatype.ReqParam_PerformerData
 	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {
