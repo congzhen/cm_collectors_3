@@ -1,65 +1,39 @@
 <template>
-  <drawerForm ref="drawerFormRef" :modelValue="formData" :rules="formRules" width="1024px" title="资源">
+  <drawerForm ref="drawerFormRef" :modelValue="formData" :rules="formRules" width="1024px" title="资源"
+    @submit="submitHandle">
     <div class="resource-form-container">
       <div class="resource-form-left">
         <div class="resource-form-class-title">
           <el-alert title="封面" type="info" :closable="false" />
         </div>
-        <div class="resource-form-cover-poster">
-          <div class="resource-form-cover-poster-text">
-            <label>点击或拖拽上传照片</label>
-          </div>
+        <div ref="resourceFormCoverPosterContainerRef" class="resource-form-cover-poster"
+          :style="{ width: '100%', height: coverPosterHeight_C }">
+          <setImage ref="setImageRef" :src="getResourceCoverPosterSrc()"
+            :cropperWidth="store.appStoreData.currentConfigApp.coverPosterData[formData.coverPosterMode].width"
+            :cropperHeight="store.appStoreData.currentConfigApp.coverPosterData[formData.coverPosterMode].height">
+          </setImage>
         </div>
         <div class="resource-form-mode">
-          <el-radio-group v-model="formData.cover_poster_mode">
-            <el-radio :value="1" border>Default 1</el-radio>
-            <el-radio :value="2" border>Default 2</el-radio>
-            <el-radio :value="3" border>Default 3</el-radio>
-            <el-radio :value="4" border>Default 4</el-radio>
-            <el-radio :value="0" border>
-              Default 5Default 5Default 5Default 5Default 5Default 5Default 5
+          <el-radio-group v-model="formData.coverPosterMode">
+            <el-radio v-for="item, index in store.appStoreData.currentConfigApp.coverPosterData" :key="index"
+              :value="index" border>
+              {{ item.name }}
             </el-radio>
           </el-radio-group>
         </div>
         <div>
           <el-alert title="资源" type="info" :closable="false" />
           <ul class="resource-form-drama-series">
-            <li>
-              <label class="drama-series-index">1.</label>
-              <el-input />
-              <el-button-group class="drama-series-tool">
-                <el-button icon="FolderOpened"></el-button>
-                <el-button icon="Delete"></el-button>
-              </el-button-group>
-            </li>
-            <li>
-              <label class="drama-series-index">2.</label>
-              <el-input />
-              <el-button-group class="drama-series-tool">
-                <el-button icon="FolderOpened"></el-button>
-                <el-button icon="Delete"></el-button>
-              </el-button-group>
-            </li>
-            <li>
-              <label class="drama-series-index">3.</label>
-              <el-input />
-              <el-button-group class="drama-series-tool">
-                <el-button icon="FolderOpened"></el-button>
-                <el-button icon="Delete"></el-button>
+            <li v-for="item, index in dramaSeries" :key="index">
+              <label class="drama-series-index">{{ (index + 1) }}.</label>
+              <el-input v-model="item.src" size="small" />
+              <el-button-group class="drama-series-tool" size="small">
+                <el-button icon="Delete" @click="dramaSeriesDeleteHandle(index)"></el-button>
               </el-button-group>
             </li>
           </ul>
           <div class="resource-form-browse">
-            <el-button-group>
-              <el-button icon="Monitor">浏览本地</el-button>
-              <el-button icon="MostlyCloudy">浏览服务器</el-button>
-            </el-button-group>
-          </div>
-          <div class="resource-drag-upload">
-            <el-upload action="/" :on-change="dropFileOrFolderHere" :show-file-list="false" :auto-upload="false"
-              :multiple="true" drag>
-              <div class="el-upload__text">拖拽文件或文件夹至此</div>
-            </el-upload>
+            <el-button icon="MostlyCloudy" type="primary" plain @click="selectServerFilesHandle">选择资源</el-button>
           </div>
         </div>
       </div>
@@ -84,12 +58,12 @@
             <el-input v-model="formData.title" />
           </el-form-item>
           <el-form-item label="版号 / 番号">
-            <el-input v-model="formData.issue_number" />
+            <el-input v-model="formData.issueNumber" />
           </el-form-item>
           <div class="resource-form-two">
             <div>
               <el-form-item label="发行日期">
-                <datePicker v-model="formData.issuing_date" />
+                <datePicker v-model="formData.issuingDate" />
               </el-form-item>
             </div>
             <div>
@@ -109,10 +83,12 @@
             </div>
           </div>
           <el-form-item label="导演">
-            <el-input v-model="formData.issue_number" />
+            <selectPerformer v-model="directors" :performerBasesIds="store.appStoreData.currentPerformerBasesIds"
+              :careerType="E_performerCareerType.Director" multiple />
           </el-form-item>
           <el-form-item label="演员">
-            <el-input v-model="formData.issue_number" />
+            <selectPerformer v-model="performers" :performerBasesIds="store.appStoreData.currentPerformerBasesIds"
+              :careerType="E_performerCareerType.Performer" multiple />
           </el-form-item>
           <el-form-item label="摘要">
             <el-input v-model="formData.abstract" :rows="4" type="textarea" />
@@ -120,53 +96,170 @@
         </div>
         <div class="resource-form-class-title">
           <el-alert title="标签" type="warning" :closable="false" />
+          <el-form-item v-for="tagClass, index in store.appStoreData.currentTagClass" :key="index"
+            :label="tagClass.name">
+            <selectTag v-model="tags[tagClass.id]" :tagClassId="tagClass.id" dataSource="store" multiple />
+          </el-form-item>
         </div>
       </div>
     </div>
   </drawerForm>
+  <serverFileManagementDialog ref="serverFileManagementDialogRef" @selectedFiles="selectedFilesHandle">
+  </serverFileManagementDialog>
 </template>
 <script lang="ts" setup>
-import { reactive, ref } from 'vue'
+import { reactive, ref, computed } from 'vue'
+import { E_performerCareerType } from '@/dataType/app.dataType';
 import drawerForm from '../com/dialog/drawer.form.vue'
+import setImage from '../com/form/setImage.vue';
 import datePicker from '../com/form/datePicker.vue'
 import selectCountry from '../com/form/selectCountry.vue'
 import selectDefinition from '../com/form/selectDefinition.vue'
 import selectStarSet from '../com/form/selectStarSet.vue'
-import type { FormRules, UploadFile } from 'element-plus'
+import selectTag from '../com/form/selectTag.vue'
+import selectPerformer from '../com/form/selectPerformer.vue'
+import { ElMessage, type FormRules } from 'element-plus'
 import { E_resourceDramaSeriesType } from '@/dataType/app.dataType'
-import type { I_resource } from '@/dataType/resource.dataType'
-import { el } from 'element-plus/es/locales.mjs'
-const drawerFormRef = ref<InstanceType<typeof drawerForm>>()
-const formData = reactive<I_resource>({
+import type { I_resource, I_resource_base, I_resourceDramaSeries_base } from '@/dataType/resource.dataType'
+import serverFileManagementDialog from '../serverFileManagement/serverFileManagementDialog.vue';
+import { appStoreData } from '@/storeData/app.storeData'
+import type { I_sfm_FileEntry } from '@/components/serverFileManagement/com/dataType';
+import { LoadingService } from '@/assets/loading';
+import { resourceServer } from '@/server/resource.server';
+const store = {
+  appStoreData: appStoreData(),
+}
+
+const emits = defineEmits(['success'])
+
+const drawerFormRef = ref<InstanceType<typeof drawerForm>>();
+const setImageRef = ref<InstanceType<typeof setImage>>();
+const serverFileManagementDialogRef = ref<InstanceType<typeof serverFileManagementDialog>>();
+const resourceFormCoverPosterContainerRef = ref<HTMLElement | null>(null);
+
+let mode: 'add' | 'edit' = 'add'
+
+const defaultFormData: I_resource_base = {
   id: '',
-  files_bases_id: '',
+  filesBases_id: '',
   mode: E_resourceDramaSeriesType.Movies,
   title: '',
-  issue_number: '',
-  cover_poster: '',
-  cover_poster_mode: 0,
-  cover_poster_width: '',
-  cover_poster_height: '',
-  issuing_date: '',
+  issueNumber: '',
+  coverPoster: '',
+  coverPosterMode: 0,
+  coverPosterWidth: 0,
+  coverPosterHeight: 0,
+  issuingDate: '',
   country: '',
   definition: '',
   stars: 0,
   abstract: '',
-  tags: {},
-  directors: [],
-  performers: [],
-  drama_series: [],
-})
+  status: true,
+}
+
+const formData = ref<I_resource_base>({ ...defaultFormData })
+const performers = ref<string[]>([]);
+const directors = ref<string[]>([]);
+const tags = ref<Record<string, string[]>>({});
+const dramaSeries = ref<I_resourceDramaSeries_base[]>([]);
+
 const formRules = reactive<FormRules>({
   title: [{ required: true, trigger: 'blur', message: '请输入标题' }],
 })
 
-const dropFileOrFolderHere = async (uploadFile: UploadFile) => {
-  console.log(uploadFile.raw)
+const coverPosterHeight_C = computed(() => {
+  const index = formData.value.coverPosterMode;
+  const coverPosterData = store.appStoreData.currentConfigApp.coverPosterData[index];
+  const ratio = coverPosterData.height / coverPosterData.width;
+  const containerWidth = drawerFormRef.value?.$el.offsetWidth || 300;
+  return `${containerWidth * ratio}px`;
+})
+
+const init = (_mode: 'add' | 'edit', res: I_resource | null = null) => {
+  mode = _mode;
+  setImageRef.value?.init();
+  store.appStoreData.currentTagClass.forEach(item => {
+    if (mode == 'edit' && res) {
+      tags.value[item.id] = res.tags.filter(tag => tag.tagClass_id == item.id).map(tag => tag.id);
+    } else {
+      tags.value[item.id] = [];
+    }
+  })
+  if (mode == 'edit' && res) {
+    const formKeys = Object.keys(defaultFormData);
+    formKeys.forEach(key => {
+      if (res.hasOwnProperty(key) && key in formData.value) {
+        (formData.value as any)[key] = (res as any)[key];
+      }
+    })
+    performers.value = res.performers.map(item => item.id);
+    directors.value = res.directors.map(item => item.id);
+    dramaSeries.value = res.dramaSeries.map(item => ({ id: item.id, src: item.src }));
+  } else {
+    formData.value = { ...defaultFormData }
+    performers.value = [];
+    directors.value = [];
+    dramaSeries.value = [];
+  }
 }
 
-const open = () => {
-  drawerFormRef.value?.open()
+const getResourceCoverPosterSrc = () => {
+  if (!formData.value || formData.value.coverPoster == '') {
+    return '';
+  }
+  return `/api/resCoverPoster/${formData.value.filesBases_id}/${formData.value.coverPoster}`
+}
+
+const selectServerFilesHandle = () => {
+  serverFileManagementDialogRef.value?.open();
+}
+const selectedFilesHandle = (slc: I_sfm_FileEntry[]) => {
+  slc.forEach(item => {
+    dramaSeries.value.push({
+      id: "",
+      src: item.path
+    })
+  })
+}
+const dramaSeriesDeleteHandle = (index: number) => {
+  dramaSeries.value.splice(index, 1)
+}
+
+const submitHandle = async () => {
+  if (formData.value.filesBases_id === '') {
+    formData.value.filesBases_id = store.appStoreData.currentFilesBases.id;
+  }
+  const photoBase64 = setImageRef.value?.getImageBase64() || '';
+  const _tags: string[] = [];
+  for (const tagClassId in tags.value) {
+    _tags.push(...tags.value[tagClassId]);
+  }
+  LoadingService.show();
+  try {
+    const apiCall = mode === 'add'
+      ? resourceServer.create(formData.value, photoBase64, performers.value, directors.value, _tags, dramaSeries.value)
+      : resourceServer.update(formData.value, photoBase64, performers.value, directors.value, _tags, dramaSeries.value);
+    const result = await apiCall;
+    if (result.status) {
+      emits('success', result.data);
+      close();
+    } else {
+      ElMessage.error(result.msg);
+    }
+  } catch (error) {
+    ElMessage.error('提交失败，请稍后再试');
+    console.log(error);
+  } finally {
+    LoadingService.hide();
+  }
+}
+
+const open = (_mode: 'add' | 'edit', res: I_resource | null = null) => {
+  init(_mode, res);
+  drawerFormRef.value?.open();
+}
+const close = () => {
+  drawerFormRef.value?.close();
 }
 
 // eslint-disable-next-line no-undef
@@ -179,10 +272,11 @@ defineExpose({ open })
 
   .el-alert {
     padding: 4px 10px;
+    margin-bottom: 8px;
   }
 
   .resource-form-left {
-    width: 380px;
+    width: 300px;
     flex-shrink: 0;
 
     .resource-form-cover-poster {
@@ -235,18 +329,17 @@ defineExpose({ open })
 
     .resource-form-drama-series {
       list-style-type: none;
-      padding: 5px 0;
 
       li {
         display: flex;
         gap: 5px;
-        padding-top: 5px;
+        padding-bottom: 5px;
 
         .drama-series-index {
-          width: 30px;
+          width: 24px;
           flex-shrink: 0;
           text-align: center;
-          line-height: 32px;
+          line-height: 24px;
           font-size: 12px;
           font-weight: 500;
           font-style: italic;

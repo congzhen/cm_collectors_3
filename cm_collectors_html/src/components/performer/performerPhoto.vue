@@ -18,6 +18,7 @@ const props = defineProps({
 });
 
 const performerPhoto_C = computed(() => {
+  if (!props.performer.photo || props.performer.photo == '') return '';
   return `/api/performerFace/${props.performer.performerBases_id}/${props.performer.photo}`
 });
 

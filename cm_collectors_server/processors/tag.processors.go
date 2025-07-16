@@ -34,6 +34,9 @@ func (t Tag) TagData(filesBasesID string) (*TagData, error) {
 		Tag:      tags,
 	}, nil
 }
+func (t Tag) TagListByTagClassId(tagClassId string) (*[]models.Tag, error) {
+	return t.TagListByTagClassIds([]string{tagClassId})
+}
 
 func (t Tag) TagDataUpdateSort(par *datatype.ReqParam_UpdateTagDataSort) error {
 	db := core.DBS()

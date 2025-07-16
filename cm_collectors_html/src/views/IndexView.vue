@@ -1,11 +1,12 @@
 <template>
   <div class="index-view" v-loading="loading">
-    <HeaderView class="header"></HeaderView>
+    <HeaderView class="header" @create-resouce-success="createResouceSuccessHandle"></HeaderView>
     <dataBaseMenuView @select-files-base="selectFilesBaseHandle"></dataBaseMenuView>
     <div class="main">
       <TagView ref="tagViewRef" class="tag"></TagView>
       <ContentView ref="contentViewRef" class="content" @select-resources="selectResourcesHandle"></ContentView>
-      <DetailsView class="details" :resource="resDetails"></DetailsView>
+      <DetailsView class="details" :resource="resDetails" @update-resouce-success="updateResouceSuccessHandle">
+      </DetailsView>
     </div>
   </div>
 </template>
@@ -43,6 +44,12 @@ const selectFilesBaseHandle = async (filesBases: I_filesBases) => {
 
 const selectResourcesHandle = (resource: I_resource) => {
   resDetails.value = resource;
+}
+const createResouceSuccessHandle = (data: I_resource) => {
+  contentViewRef.value?.init();
+}
+const updateResouceSuccessHandle = (data: I_resource) => {
+  contentViewRef.value?.init_DataList();
 }
 
 </script>

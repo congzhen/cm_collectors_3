@@ -1,4 +1,5 @@
 import request from "@/assets/request";
+import { E_performerCareerType } from "@/dataType/app.dataType";
 import type { I_performer, I_performerBasic, I_search_performer } from "@/dataType/performer.dataType";
 const routerGroupUri = '';
 export const performerServer = {
@@ -21,12 +22,26 @@ export const performerServer = {
       }
     });
   },
-  basicList: async (performerBasesIds: string[]) => {
+  basicList: async (performerBasesIds: string[], careerType: E_performerCareerType) => {
+    let careerPerformer = false;
+    let careerDirector = false;
+    switch (careerType) {
+      case E_performerCareerType.All:
+        break;
+      case E_performerCareerType.Director:
+        careerDirector = true;
+        break;
+      case E_performerCareerType.Performer:
+        careerPerformer = true;
+        break;
+    }
     return await request<I_performerBasic[]>({
       url: `${routerGroupUri}/performer/basicList`,
       method: 'post',
       data: {
         performerBasesIds,
+        careerPerformer,
+        careerDirector,
       }
     });
   },

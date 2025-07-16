@@ -7,11 +7,11 @@ import (
 )
 
 type PerformerBases struct {
-	ID        string              `json:"id" gorm:"primaryKey;type:char(20);"`
-	Name      string              `json:"name" gorm:"type:varchar(200);"`
-	Sort      int                 `json:"sort" gorm:"type:int;"`
-	CreatedAt datatype.CustomTime `json:"-" gorm:"column:addTime;type:datetime"`
-	Status    bool                `json:"status" gorm:"type:tinyint(1);default:1"`
+	ID        string               `json:"id" gorm:"primaryKey;type:char(20);"`
+	Name      string               `json:"name" gorm:"type:varchar(200);"`
+	Sort      int                  `json:"sort" gorm:"type:int;"`
+	CreatedAt *datatype.CustomTime `json:"-" gorm:"column:addTime;type:datetime"`
+	Status    bool                 `json:"status" gorm:"type:tinyint(1);default:1"`
 }
 
 func (PerformerBases) TableName() string {

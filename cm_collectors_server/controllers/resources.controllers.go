@@ -25,3 +25,26 @@ func (Resource) DataList(c *gin.Context) {
 	}
 	response.OkWithData(resDataList, c)
 }
+
+func (Resource) CreateResource(c *gin.Context) {
+	var par datatype.ReqParam_Resource
+	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {
+		return
+	}
+	info, err := processors.Resources{}.CreateResource(&par)
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(info, c)
+}
+func (Resource) UpdateResource(c *gin.Context) {
+	var par datatype.ReqParam_Resource
+	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {
+		return
+	}
+	info, err := processors.Resources{}.UpdateResource(&par)
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(info, c)
+}

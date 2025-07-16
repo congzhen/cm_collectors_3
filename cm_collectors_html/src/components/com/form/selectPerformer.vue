@@ -12,10 +12,11 @@
 </template>
 <script setup lang="ts">
 import { debounce } from '@/assets/debounce';
+import type { E_performerCareerType } from '@/dataType/app.dataType';
 import type { I_performerBasic } from '@/dataType/performer.dataType';
 import { performerServer } from '@/server/performer.server';
 import { ElMessage } from 'element-plus';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, type PropType } from 'vue';
 
 const selectVal = defineModel<string | string[]>({ type: [String, Array], default: "" as string | string[] });
 const props = defineProps({
@@ -30,6 +31,10 @@ const props = defineProps({
   performerBasesIds: {
     type: Array<string>,
     default: () => []
+  },
+  careerType: {
+    type: String as PropType<E_performerCareerType>,
+    default: 'all'
   }
 })
 const emit = defineEmits(['change'])
@@ -43,7 +48,7 @@ const init = async () => {
 }
 const getPerformerList = async () => {
   loading.value = true;
-  const result = await performerServer.basicList(props.performerBasesIds)
+  const result = await performerServer.basicList(props.performerBasesIds, props.careerType)
   if (!result.status) {
     ElMessage.error(result.msg)
     return

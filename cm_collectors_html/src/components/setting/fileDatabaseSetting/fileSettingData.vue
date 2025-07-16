@@ -51,7 +51,7 @@
         <el-input-number v-model="filesConfig.performerShowNum" />
       </el-form-item>
       <el-form-item label="优先显示演员">
-        <selectPerformer v-model="filesConfig.performerPreferred" multiple
+        <selectPerformer v-model="filesConfig.performerPreferred" multiple :careerType="E_performerCareerType.Performer"
           :performer-bases-ids="[store.filesBasesStoreData.getMainPerformerBasesIdByFilesBasesId(filesBasesInfo.id)]" />
       </el-form-item>
 
@@ -226,6 +226,7 @@
 </template>
 <script lang="ts" setup>
 import { onMounted, ref } from 'vue';
+import { E_performerCareerType } from '@/dataType/app.dataType';
 import selectCountry from '@/components/com/form/selectCountry.vue';
 import selectDefinition from '@/components/com/form/selectDefinition.vue';
 import selectLeftDisplay from '@/components/com/form/selectLeftDisplay.vue';

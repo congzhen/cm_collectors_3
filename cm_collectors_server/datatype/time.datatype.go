@@ -28,9 +28,34 @@ func (ct *CustomTime) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf("\"%s\"", time.Time(*ct).Format("2006-01-02 15:04:05"))), nil
 }
 
+// SetValue 设置 CustomTime 的值，支持 string 或 time.Time 类型，空字符串或 nil 将被设置为零值
+func (ct *CustomTime) SetValue(value interface{}) error {
+	if value == nil {
+		*ct = CustomTime(time.Time{})
+		return nil
+	}
+	switch v := value.(type) {
+	case time.Time:
+		*ct = CustomTime(v)
+	case string:
+		if v == "" {
+			*ct = CustomTime(time.Time{})
+			return nil
+		}
+		t, err := time.Parse("2006-01-02 15:04:05", v)
+		if err != nil {
+			return err
+		}
+		*ct = CustomTime(t)
+	default:
+		return fmt.Errorf("unsupported type for CustomTime: %T", value)
+	}
+	return nil
+}
+
 // Value 实现 driver.Valuer 接口
 func (ct *CustomTime) Value() (driver.Value, error) {
-	if ct == nil {
+	if ct.IsZero() {
 		return nil, nil
 	}
 	return time.Time(*ct).Format("2006-01-02 15:04:05"), nil
@@ -73,9 +98,34 @@ func (cd *CustomDate) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf("\"%s\"", time.Time(*cd).Format("2006-01-02"))), nil
 }
 
+// SetValue 设置 CustomDate 的值，支持 string 或 time.Time 类型，空字符串或 nil 将被设置为零值
+func (cd *CustomDate) SetValue(value interface{}) error {
+	if value == nil {
+		*cd = CustomDate(time.Time{})
+		return nil
+	}
+	switch v := value.(type) {
+	case time.Time:
+		*cd = CustomDate(v)
+	case string:
+		if v == "" {
+			*cd = CustomDate(time.Time{})
+			return nil
+		}
+		t, err := time.Parse("2006-01-02", v)
+		if err != nil {
+			return err
+		}
+		*cd = CustomDate(t)
+	default:
+		return fmt.Errorf("unsupported type for CustomDate: %T", value)
+	}
+	return nil
+}
+
 // Value 实现 driver.Valuer 接口
 func (cd *CustomDate) Value() (driver.Value, error) {
-	if cd == nil {
+	if cd.IsZero() {
 		return nil, nil
 	}
 	return time.Time(*cd).Format("2006-01-02"), nil

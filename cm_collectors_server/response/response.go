@@ -51,6 +51,10 @@ func FailWithError(code int, err error, c *gin.Context) {
 	Result(false, int(code), GetErrorMsg(code)+" "+err.Error(), map[string]any{}, c)
 }
 
+func FailWithCodeMsg(code int, message string, c *gin.Context) {
+	Result(false, code, message, map[string]any{}, c)
+}
+
 func FailPermissions(c *gin.Context) {
 	c.JSON(401, Response{
 		Status:     false,

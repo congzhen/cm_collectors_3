@@ -105,9 +105,7 @@ const formRules = reactive<FormRules>({
 })
 
 const getPerformerPhotoSrc = () => {
-  if (formData.value.photo == '') {
-    return '';
-  }
+  if (!formData.value.photo || formData.value.photo == '') return '';
   return `/api/performerFace/${formData.value.performerBases_id}/${formData.value.photo}`
 }
 

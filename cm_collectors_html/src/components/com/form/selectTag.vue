@@ -30,7 +30,11 @@ const props = defineProps({
   },
   filesBasesId: {
     type: String,
-    required: true
+    default: ''
+  },
+  tagClassId: {
+    type: String,
+    default: ''
   }
 })
 const emit = defineEmits(['change'])
@@ -45,7 +49,11 @@ const init = async () => {
 const getTagList = async () => {
   loading.value = true;
   if (props.dataSource === 'database') {
-    const result = await tagServer.tagListByFilesBasesId(props.filesBasesId)
+    const apiCall = props.tagClassId === ''
+      ? tagServer.tagListByFilesBasesId(props.filesBasesId)
+      : tagServer.tagListByTagClassId(props.tagClassId);
+
+    const result = await apiCall;
     if (!result.status) {
       ElMessage.error(result.msg)
       return
@@ -53,8 +61,12 @@ const getTagList = async () => {
     list = result.data
     options.value = result.data
   } else {
-    list = store.appStoreData.currentTag;
-    options.value = store.appStoreData.currentTag;
+    if (props.tagClassId != '') {
+      list = store.appStoreData.currentTag.filter(item => item.tagClass_id === props.tagClassId);
+    } else {
+      list = store.appStoreData.currentTag;
+    }
+    options.value = list;
   }
 
   loading.value = false;

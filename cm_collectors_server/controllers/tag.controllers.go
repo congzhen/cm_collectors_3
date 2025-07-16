@@ -18,13 +18,21 @@ func (Tag) TagData(c *gin.Context) {
 	}
 	response.OkWithData(tagData, c)
 }
-func (Tag) TagList(c *gin.Context) {
+func (Tag) TagList_FilesBasesId(c *gin.Context) {
 	filesBasesId := c.Param("filesBasesId")
 	tagData, err := processors.Tag{}.TagData(filesBasesId)
 	if err := ResError(c, err); err != nil {
 		return
 	}
 	response.OkWithData(tagData.Tag, c)
+}
+func (Tag) TagList_TagClassId(c *gin.Context) {
+	tagClassId := c.Param("tagClassId")
+	tagList, err := processors.Tag{}.TagListByTagClassId(tagClassId)
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(tagList, c)
 }
 func (Tag) TagClassList(c *gin.Context) {
 	filesBasesId := c.Param("filesBasesId")

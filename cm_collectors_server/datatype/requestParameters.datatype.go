@@ -12,6 +12,35 @@ type ReqParam_ResourcesList struct {
 	FilesBasesId string `json:"filesBasesId"`
 }
 
+type ReqParam_Resource struct {
+	Resource    ReqParam_ResourceBase               `json:"resource"`
+	PhotoBase64 string                              `json:"photoBase64"`
+	Performers  []string                            `json:"performers"`
+	Directors   []string                            `json:"directors"`
+	Tags        []string                            `json:"tags"`
+	DramaSeries []ReqParam_resourceDramaSeries_Base `json:"dramaSeries"`
+}
+type ReqParam_ResourceBase struct {
+	ID                string         `json:"id"`
+	FilesBasesID      string         `json:"filesBases_id" binding:"required"`
+	Mode              E_resourceMode `json:"mode" binding:"required"`
+	Title             string         `json:"title" binding:"required"`
+	IssueNumber       string         `json:"issueNumber"`
+	CoverPoster       string         `json:"coverPoster"`
+	CoverPosterMode   int            `json:"coverPosterMode"`
+	CoverPosterWidth  int            `json:"coverPosterWidth"`
+	CoverPosterHeight int            `json:"coverPosterHeight"`
+	IssuingDate       string         `json:"issuingDate"`
+	Country           string         `json:"country"`
+	Definition        string         `json:"definition"`
+	Stars             int            `json:"stars"`
+	Abstract          string         `json:"abstract"`
+}
+type ReqParam_resourceDramaSeries_Base struct {
+	ID  string `json:"id"`
+	Src string `json:"src"`
+}
+
 // 请求参数 - 设置filesBases
 type ReqParam_SetFilesBases struct {
 	ID                    string              `json:"id"`
@@ -32,6 +61,8 @@ type ReqParam_FielsBases struct {
 // 请求参数 - 获取演员列表
 type ReqParam_PerformersList struct {
 	PerformerBasesIds []string `json:"performerBasesIds"`
+	CareerPerformer   bool     `json:"careerPerformer"`
+	CareerDirector    bool     `json:"careerDirector"`
 }
 
 // 请求参数 - 获取喜爱的演员列表
@@ -48,8 +79,8 @@ type ReqParam_PerformerData struct {
 }
 type ReqParam_Performer struct {
 	ID               string `json:"id"`
-	PerformerBasesID string `json:"performerBases_id"`
-	Name             string `json:"name"`
+	PerformerBasesID string `json:"performerBases_id" binding:"required"`
+	Name             string `json:"name" binding:"required"`
 	AliasName        string `json:"aliasName"`
 	Birthday         string `json:"birthday"`
 	Nationality      string `json:"nationality"`

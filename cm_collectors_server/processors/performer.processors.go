@@ -3,6 +3,7 @@ package processors
 import (
 	"cm_collectors_server/core"
 	"cm_collectors_server/datatype"
+	"cm_collectors_server/errorMessage"
 	"cm_collectors_server/models"
 	"cm_collectors_server/utils"
 	"fmt"
@@ -12,8 +13,8 @@ import (
 
 type Performer struct{}
 
-func (Performer) BasicList_Performer(performerBasesIds []string) (*[]models.PerformerBasic, error) {
-	return models.Performer{}.BasicList_Performer(core.DBS(), performerBasesIds)
+func (Performer) BasicList(performerBasesIds []string, careerPerformer, careerDirector bool) (*[]models.PerformerBasic, error) {
+	return models.Performer{}.BasicList(core.DBS(), performerBasesIds, careerPerformer, careerDirector)
 }
 
 func (Performer) DataList(performerBasesId string, fetchCount bool, page, limit int, search, star, cup string) (*[]models.Performer, int64, error) {
@@ -41,20 +42,20 @@ func (Performer) SavePerformerPhoto(par *datatype.ReqParam_PerformerData) (strin
 	// 将Base64图片保存为文件
 	err := utils.SaveBase64AsImage(par.PhotoBase64, filePath)
 	if err != nil {
-		return "", fmt.Errorf("failed to save performer photo: %w", err)
+		return "", errorMessage.WrapError(errorMessage.Err_performer_Save_Photo_Failed, err)
 	}
 	return photoName, nil
 }
 
-// DeleteOldPerformerPhoto 删除旧的表演者图片
-func (Performer) DeleteOldPerformerPhoto(performerBasesID, oldPhotoName string) error {
-	if oldPhotoName == "" {
+// DeletePerformerPhoto 删除旧的表演者图片
+func (Performer) DeletePerformerPhoto(performerBasesID, photoName string) error {
+	if photoName == "" {
 		return nil // 如果没有旧图片，则不处理
 	}
-	oldFilePath := path.Join(core.Config.System.FilePath, "performerFace", performerBasesID, oldPhotoName)
+	oldFilePath := path.Join(core.Config.System.FilePath, "performerFace", performerBasesID, photoName)
 	err := os.Remove(oldFilePath)
 	if err != nil && !os.IsNotExist(err) {
-		return fmt.Errorf("failed to delete old performer photo: %w", err)
+		return errorMessage.WrapError(errorMessage.Err_performer_Delete_Photo_Failed, err)
 	}
 	return nil
 }
@@ -113,7 +114,7 @@ func (t Performer) Update(par *datatype.ReqParam_PerformerData) (*models.Perform
 
 	// 删除旧图片
 	if newPhotoName != "" {
-		t.DeleteOldPerformerPhoto(par.Performer.PerformerBasesID, par.Performer.Photo)
+		t.DeletePerformerPhoto(par.Performer.PerformerBasesID, par.Performer.Photo)
 	}
 
 	db := core.DBS()

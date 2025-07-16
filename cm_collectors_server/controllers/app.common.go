@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"cm_collectors_server/core"
+	"cm_collectors_server/errorMessage"
 	"cm_collectors_server/response"
 	"cm_collectors_server/tool/filter"
 	"errors"
@@ -210,21 +211,11 @@ func ResError(c *gin.Context, err error) error {
 		return nil
 	}
 
-	// 创建一个映射表，键是错误类型，值是对应的错误码
-	errorCodes := map[error]int{}
-
-	// 使用 errors.Is 遍历映射表查找匹配的错误
-	var errorCode int
-	found := false
-	for knownErr, code := range errorCodes {
-		if errors.Is(err, knownErr) {
-			errorCode = code
-			found = true
-			break
-		}
-	}
-
-	if !found {
+	// 检查错误是否为自定义错误类型
+	errorData, codeStatus := errorMessage.GetErrorData(err)
+	if codeStatus {
+		response.FailWithCodeMsg(errorData.GetCode(), errorData.GetMsg(), c)
+	} else {
 		// 获取调用者的信息
 		_, file, line, ok := runtime.Caller(1)
 		if !ok {
@@ -233,9 +224,7 @@ func ResError(c *gin.Context, err error) error {
 		}
 		// 记录错误日志，包括文件名和行号
 		logrus.Errorf("Error:%v; Api:%s; at %s:%d", err, c.Request.URL.String(), file, line)
-		errorCode = 8
+		response.FailWithCode(8, c)
 	}
-
-	response.FailWithCode(errorCode, c)
 	return err
 }

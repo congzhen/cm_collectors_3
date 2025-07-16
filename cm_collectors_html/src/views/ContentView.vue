@@ -42,10 +42,14 @@ const init = async () => {
   currentPage.value = 1;
   pageSize.value = store.appStoreData.currentConfigApp.pageLimit;
 
-  await getDataList();
+  await init_DataList();
   if (dataList.value.length > 0) {
     emits('selectResources', dataList.value[0]);
   }
+}
+
+const init_DataList = async () => {
+  await getDataList();
 }
 
 const getDataList = async () => {
@@ -71,7 +75,7 @@ const changePageHandle = () => {
 onMounted(async () => {
   await init()
 })
-defineExpose({ init });
+defineExpose({ init, init_DataList });
 </script>
 <style lang="scss" scoped>
 .content-view {

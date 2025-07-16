@@ -1,6 +1,5 @@
 import type { I_filesBases } from "./filesBases.dataType";
 import type { I_performerBases } from "./performer.dataType";
-import type { I_tag, I_tagClass } from "./tag.dataType";
 
 //header模式
 export enum E_headerMode {
@@ -30,6 +29,12 @@ export enum E_resourceDramaSeriesType {
   NetDisk = 'netDisk',          //网盘
 }
 
+export enum E_resourceStorageLocation {
+  Local = 'local',
+  Server = 'server',
+  NetDisk = 'netDisk',
+}
+
 // 标签类型
 export enum E_tagType {
   Sort = 'sort',
@@ -40,6 +45,13 @@ export enum E_tagType {
   DiyTag = 'diyTag',
   Performer = 'performer',
   Cup = 'cup',
+}
+
+// performer 职业类型
+export enum E_performerCareerType {
+  All = 'all',
+  Performer = 'performer',
+  Director = 'director',
 }
 
 

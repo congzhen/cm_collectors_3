@@ -40,7 +40,7 @@
       </div>
     </div>
     <tagListDrawer ref="tagListDrawerRef" />
-    <resourceFormDrawer ref="resourceFormDrawerRef" />
+    <resourceFormDrawer ref="resourceFormDrawerRef" @success="createResouceSuccessHandle" />
   </div>
 </template>
 <script setup lang="ts">
@@ -50,10 +50,12 @@ import { useRouter } from 'vue-router'
 import tagListDrawer from '@/components/tag/tagListDrawer.vue'
 import resourceFormDrawer from '@/components/resource/resourceFormDrawer.vue'
 import { appStoreData } from '@/storeData/app.storeData'
+import type { I_resource } from '@/dataType/resource.dataType'
 const router = useRouter()
 const store = {
   appStoreData: appStoreData(),
 }
+const emits = defineEmits(['createResouceSuccess'])
 
 const tagListDrawerRef = ref<InstanceType<typeof tagListDrawer>>()
 const resourceFormDrawerRef = ref<InstanceType<typeof resourceFormDrawer>>()
@@ -68,7 +70,7 @@ const props = defineProps({
 const searchValue = ref<string[]>([])
 
 const oepnResourceForm = () => {
-  resourceFormDrawerRef.value?.open()
+  resourceFormDrawerRef.value?.open('add')
 }
 const openTagList = () => {
   tagListDrawerRef.value?.open()
@@ -78,6 +80,9 @@ const goToPerformer = () => {
 }
 const goToSetting = () => {
   router.push('/setting')
+}
+const createResouceSuccessHandle = (data: I_resource) => {
+  emits('createResouceSuccess', data)
 }
 </script>
 <style lang="scss" scoped>

@@ -10,7 +10,13 @@ export const tagServer = {
   },
   tagListByFilesBasesId: async (filesBases_id: string) => {
     return await request<I_tag[]>({
-      url: `${routerGroupUri}/tag/list/${filesBases_id}`,
+      url: `${routerGroupUri}/tag/list/filesBasesId/${filesBases_id}`,
+      method: 'get',
+    });
+  },
+  tagListByTagClassId: async (tagClassId: string) => {
+    return await request<I_tag[]>({
+      url: `${routerGroupUri}/tag/list/tagClassId/${tagClassId}`,
       method: 'get',
     });
   },

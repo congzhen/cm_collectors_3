@@ -58,6 +58,20 @@ func RegJoinTable(db *gorm.DB) {
 func AutoDatabase(db *gorm.DB) error {
 	m := gormigrate.New(db, gormigrate.DefaultOptions, []*gormigrate.Migration{
 		{
+			ID: "20250620-000-dataConvert",
+			Migrate: func(tx *gorm.DB) error {
+				// 更新 resources 表中 coverPosterMode 字段，将非数字值替换为 0
+				return tx.Exec(`
+					UPDATE resources 
+					SET coverPosterMode = CASE 
+						WHEN typeof(coverPosterMode) = 'integer' THEN coverPosterMode 
+						WHEN length(trim(coverPosterMode, '0123456789')) < length(coverPosterMode) THEN coverPosterMode 
+						ELSE '0' 
+					END;
+				`).Error
+			},
+		},
+		{
 			ID: "20250620-001-initApp",
 			Migrate: func(tx *gorm.DB) error {
 				return autoMigrate(tx)

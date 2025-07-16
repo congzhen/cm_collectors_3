@@ -1,6 +1,10 @@
 package models
 
-import "cm_collectors_server/datatype"
+import (
+	"cm_collectors_server/datatype"
+
+	"gorm.io/gorm"
+)
 
 type ResourcesDramaSeries struct {
 	ID                string               `json:"id" gorm:"primaryKey;type:char(20);"`
@@ -14,4 +18,20 @@ type ResourcesDramaSeries struct {
 
 func (ResourcesDramaSeries) TableName() string {
 	return "resourcesDramaSeries"
+}
+
+func (ResourcesDramaSeries) ListByResourceID(db *gorm.DB, resourceID string) (*[]ResourcesDramaSeries, error) {
+	var dataList []ResourcesDramaSeries
+	err := db.Where("resources_id = ?", resourceID).Order("sort").Find(&dataList).Error
+	return &dataList, err
+}
+
+func (ResourcesDramaSeries) Creates(db *gorm.DB, resourcesDramaSeriesSlc *[]ResourcesDramaSeries) error {
+	return db.Create(resourcesDramaSeriesSlc).Error
+}
+func (ResourcesDramaSeries) DeleteIDS(db *gorm.DB, ids []string) error {
+	return db.Unscoped().Where("id in (?) ", ids).Delete(&ResourcesDramaSeries{}).Error
+}
+func (ResourcesDramaSeries) DeleteByResourcesID(db *gorm.DB, resourcesID string) error {
+	return db.Unscoped().Where("resources_id = ? ", resourcesID).Delete(&ResourcesDramaSeries{}).Error
 }

@@ -43,12 +43,19 @@ func (PerformerBasic) TableName() string {
 	return "performer"
 }
 
-func (Performer) BasicList_Performer(db *gorm.DB, performerBasesIds []string) (*[]PerformerBasic, error) {
+func (Performer) BasicList(db *gorm.DB, performerBasesIds []string, careerPerformer, careerDirector bool) (*[]PerformerBasic, error) {
 	var list []PerformerBasic
+	db = db.Model(&Performer{})
 	if len(performerBasesIds) > 0 {
 		db = db.Where("performerBases_id in (?) and status = 1", performerBasesIds)
 	}
-	err := db.Model(&Performer{}).Where("careerPerformer = ?", true).Order("addTime desc").Find(&list).Error
+	if careerPerformer {
+		db = db.Where("careerPerformer = 1")
+	}
+	if careerDirector {
+		db = db.Where("careerDirector = 1")
+	}
+	err := db.Order("addTime desc").Find(&list).Error
 	return &list, err
 }
 

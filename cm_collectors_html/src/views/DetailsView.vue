@@ -8,7 +8,7 @@
         <el-button-group>
           <el-button icon="VideoPlay" />
           <el-button icon="Folder" />
-          <el-button icon="Edit" />
+          <el-button icon="Edit" @click="editResourceHandle" />
           <el-button icon="Delete" />
         </el-button-group>
       </div>
@@ -39,9 +39,9 @@
           </div>
           <div class="info-block">
             <el-alert class="tagAlert" title="资源" type="info" :closable="false" />
-            <resourceList class="resource" :drama-series="props.resource.dramaSeries"
+            <resourceDramaSeriesList class="resource" :drama-series="props.resource.dramaSeries"
               :show-mode="store.appStoreData.currentFilesBasesAppConfig.detailsDramaSeriesMode">
-            </resourceList>
+            </resourceDramaSeriesList>
           </div>
           <div class="info-block">
             <el-alert class="tagAlert" title="演员" type="success" :closable="false" />
@@ -69,12 +69,14 @@
         </el-scrollbar>
       </div>
     </div>
+    <resourceFormDrawer ref="resourceFormDrawerRef" @success="updateResouceSuccessHandle"></resourceFormDrawer>
   </div>
 </template>
 <script lang="ts" setup>
-import resourceList from '@/components/resource/resourceList.vue'
+import resourceDramaSeriesList from '@/components/resource/resourceDramaSeriesList.vue'
+import resourceFormDrawer from '@/components/resource/resourceFormDrawer.vue'
 import performerPopoverBlock from '@/components/performer/performerPopoverBlock.vue'
-import { computed, type PropType } from 'vue'
+import { computed, ref, type PropType } from 'vue'
 import type { I_resource } from '@/dataType/resource.dataType'
 import { appStoreData } from '@/storeData/app.storeData'
 const store = {
@@ -86,10 +88,20 @@ const props = defineProps({
     default: undefined
   },
 })
+const emits = defineEmits(['updateResouceSuccess'])
+
+const resourceFormDrawerRef = ref<InstanceType<typeof resourceFormDrawer>>()
 
 const resCoverPoster_C = computed(() => {
   return `/api/resCoverPoster/${props.resource?.filesBases_id}/${props.resource?.coverPoster}`
 });
+
+const editResourceHandle = () => {
+  resourceFormDrawerRef.value?.open('edit', props.resource)
+}
+const updateResouceSuccessHandle = (data: I_resource) => {
+  emits('updateResouceSuccess', data)
+}
 
 </script>
 <style lang="scss" scoped>

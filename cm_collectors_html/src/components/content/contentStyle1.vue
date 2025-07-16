@@ -31,6 +31,7 @@ const props = defineProps({
   },
 })
 const resCoverPoster_C = computed(() => {
+  if (!props.resource.coverPoster || props.resource.coverPoster == '') return '';
   return `/api/resCoverPoster/${props.resource.filesBases_id}/${props.resource.coverPoster}`
 });
 

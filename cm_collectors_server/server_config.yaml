@@ -41,3 +41,5 @@ jwt:
   subject: somebody
   privateKeyPath: ./cert/jwtPrivate.key
   publicKeyPath: ./cert/jwtPublic.key
+serverFileManagement:
+  rootPath:

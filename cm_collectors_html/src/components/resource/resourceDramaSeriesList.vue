@@ -1,11 +1,11 @@
 <template>
-  <div class="resource-list">
-    <div class="resource-list-index" v-if="props.showMode === E_detailsDramaSeriesMode.digit">
+  <div class="resourceDramaSeries-list">
+    <div class="resourceDramaSeries-list-index" v-if="props.showMode === E_detailsDramaSeriesMode.digit">
       <ul>
         <li v-for="(item, key) in props.dramaSeries" :key="key">{{ (key + 1) }}</li>
       </ul>
     </div>
-    <div class="resource-list-name" v-else>
+    <div class="resourceDramaSeries-list-name" v-else>
       <ul>
         <li v-for="(item, key) in props.dramaSeries" :key="key">
           <label>{{ (key + 1) }}.</label>
@@ -17,7 +17,7 @@
 </template>
 <script lang="ts" setup>
 import type { PropType } from 'vue'
-import { E_detailsDramaSeriesMode, E_resourceShowMode } from '@/dataType/app.dataType'
+import { E_detailsDramaSeriesMode } from '@/dataType/app.dataType'
 import type { I_resourceDramaSeries } from '@/dataType/resource.dataType';
 import { getFinalPathSegment } from '@/assets/tool'
 const props = defineProps({
@@ -32,11 +32,11 @@ const props = defineProps({
 })
 </script>
 <style lang="scss" scoped>
-.resource-list {
+.resourceDramaSeries-list {
   padding-bottom: 0.5em;
 }
 
-.resource-list-index {
+.resourceDramaSeries-list-index {
   ul {
     width: 100%;
     list-style-type: none;
@@ -71,7 +71,7 @@ const props = defineProps({
   }
 }
 
-.resource-list-name {
+.resourceDramaSeries-list-name {
   ul {
     width: calc(100% - 0.4em);
     margin: 0 0.2em;
