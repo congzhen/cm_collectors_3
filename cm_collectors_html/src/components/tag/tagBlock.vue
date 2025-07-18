@@ -1,8 +1,9 @@
 <template>
   <div class="tag-block">
     <div class="tag-content">
-      <tagSpan title="全部"></tagSpan>
-      <tagSpan v-for="item, key in dataList" :key="key" :title="item.name"></tagSpan>
+      <tagSpan v-for="item, key in props.dataList" :class="[item.status ? 'check' : '']" :key="key" :title="item.name"
+        @click="tagClickHandle(item.id)">
+      </tagSpan>
     </div>
   </div>
 </template>
@@ -15,11 +16,13 @@ const props = defineProps({
     type: Array as PropType<I_tagData[]>,
     default: () => []
   },
-  searchType: {
-    type: String as PropType<E_tagType>,
-    default: ''
-  },
 })
+
+const emits = defineEmits(['tagClick'])
+
+const tagClickHandle = (option: string) => {
+  emits('tagClick', option)
+}
 
 </script>
 <style lang="scss" scoped>
@@ -34,6 +37,11 @@ const props = defineProps({
     display: flex;
     flex-wrap: wrap;
     gap: 0.3em;
+
+    .check {
+      background-color: #868686;
+      color: #FFF;
+    }
   }
 }
 </style>

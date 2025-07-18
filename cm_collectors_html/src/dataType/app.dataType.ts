@@ -60,6 +60,7 @@ export enum E_performerCareerType {
 export interface I_tagData {
   id: string;
   name: string;
+  status: boolean;
 }
 
 
