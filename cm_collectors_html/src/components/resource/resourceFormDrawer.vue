@@ -230,6 +230,11 @@ const submitHandle = async () => {
     formData.value.filesBases_id = store.appStoreData.currentFilesBases.id;
   }
   const photoBase64 = setImageRef.value?.getImageBase64() || '';
+  if (photoBase64 != '' && setImageRef.value) {
+    const { width, height } = setImageRef.value.getImageSize();
+    formData.value.coverPosterWidth = width;
+    formData.value.coverPosterHeight = height;
+  }
   const _tags: string[] = [];
   for (const tagClassId in tags.value) {
     _tags.push(...tags.value[tagClassId]);

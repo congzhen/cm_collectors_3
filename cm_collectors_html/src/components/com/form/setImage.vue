@@ -65,8 +65,14 @@ const cropperSubmit = (fileData: string) => {
 const getImageBase64 = () => {
   return imageBase64.value;
 }
+const getImageSize = () => {
+  return {
+    width: props.cropperWidth,
+    height: props.cropperHeight,
+  }
+}
 
-defineExpose({ init, getImageBase64 })
+defineExpose({ init, getImageBase64, getImageSize })
 
 
 </script>
