@@ -8,7 +8,7 @@
         ({{ calculateAge(props.performer.birthday) }}岁)
       </label>
     </div>
-    <div class="performer-block-tool" v-if="props.tool" @click.stop="emits('search')">
+    <div class="performer-block-tool" v-if="props.tool" @click.stop="emits('search', props.performer)">
       <div class="performer-block-tool-btn">
         <el-icon>
           <VideoCameraFilled />

@@ -1,12 +1,16 @@
 <template>
   <div class="tag-block-stars">
     <div class="tag-content">
-      <tagSpan title="全部"></tagSpan>
-      <tagSpan title="未评分"></tagSpan>
+      <tagSpan :title="store.searchStoreData.allName" @click="starItemClickHandle(store.searchStoreData.allId)"
+        :class="[checkStatus(store.searchStoreData.allId) ? 'check' : '']">
+      </tagSpan>
+      <tagSpan :title="store.searchStoreData.notStar" @click="starItemClickHandle(store.searchStoreData.notId)"
+        :class="[checkStatus(store.searchStoreData.notId) ? 'check' : '']">
+      </tagSpan>
     </div>
     <ul class="tag-stars">
-      <li v-for="(star, index) in starData" :key="index">
-        <el-rate v-model="starData[index]" disabled />
+      <li v-for="(star, index) in starData" :key="index" :class="[checkStatus(star.toString()) ? 'check' : '']">
+        <el-rate v-model="starData[index]" disabled @click="starItemClickHandle(star.toString())" />
       </li>
     </ul>
   </div>
@@ -14,7 +18,21 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import tagSpan from './tagSpan.vue'
+import { searchStoreData } from '@/storeData/search.storeData'
+import { E_tagType } from '@/dataType/app.dataType'
+const store = {
+  searchStoreData: searchStoreData()
+}
+const emits = defineEmits(['starClick'])
 const starData = ref([1, 2, 3, 4, 5])
+
+const starItemClickHandle = (data: string) => {
+  emits('starClick', data)
+}
+const checkStatus = (data: string) => {
+  return store.searchStoreData.checkSelected(E_tagType.Star, data);
+}
+
 </script>
 <style lang="scss" scoped>
 .tag-block-stars {
@@ -54,6 +72,11 @@ const starData = ref([1, 2, 3, 4, 5])
         }
       }
     }
+  }
+
+  .check {
+    background-color: #868686 !important;
+    color: #FFF;
   }
 }
 </style>

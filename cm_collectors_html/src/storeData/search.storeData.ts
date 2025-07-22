@@ -5,6 +5,9 @@ export const searchStoreData = defineStore('search', {
   state: () => ({
     allId: 'all',
     allName: '全部',
+    notId: 'not',
+    notStar: '未评分',
+    notPerformer: '无演员',
     searchData: {
       searchTextSlc: [],
       sort: E_searchSort.AddTimeDesc,
@@ -36,9 +39,31 @@ export const searchStoreData = defineStore('search', {
     } as I_searchData,
   }),
   getters: {
-
+    tagAllOptions: (state) => {
+      const opts: string[] = [];
+      for (const tagClass in state.searchData.tag) {
+        const tagClassData = state.searchData.tag[tagClass];
+        opts.push(...tagClassData.options);
+      }
+      return opts;
+    },
   },
   actions: {
+    init: function () {
+
+    },
+    clear: function () {
+      this.searchData.searchTextSlc = [];
+      this.searchData.country.options = [];
+      this.searchData.definition.options = [];
+      this.searchData.year.options = [];
+      this.searchData.star.options = [];
+      this.searchData.performer.options = [];
+      this.searchData.cup.options = [];
+      for (const key in this.searchData.tag) {
+        this.searchData.tag[key].options = [];
+      }
+    },
     // 获取I_searchGroup
     getSearchGroup: function (type: E_tagType, diyTagClassId: string = ''): I_searchGroup | E_searchSort {
       let result: I_searchGroup | E_searchSort = this.searchData.sort;
@@ -115,13 +140,14 @@ export const searchStoreData = defineStore('search', {
               searchGroup.options = [option];
               break;
             case E_searchLogic.MultiAnd:
-              searchGroup.options.push(option);
-              break;
             case E_searchLogic.MultiOr:
-              searchGroup.options.push(option);
-              break;
             case E_searchLogic.Not:
-              searchGroup.options.push(option);
+              const index = searchGroup.options.indexOf(option);
+              if (index >= 0) {
+                searchGroup.options.splice(index, 1);
+              } else {
+                searchGroup.options.push(option);
+              }
               break;
           }
         }
@@ -138,6 +164,18 @@ export const searchStoreData = defineStore('search', {
       }
       return b;
     },
-
+    // 删除搜索的diy标签
+    deleteDiyTagById: function (tagId: string): boolean {
+      for (const tags in this.searchData.tag) {
+        const tagGroup = this.searchData.tag[tags];
+        for (const index in tagGroup.options) {
+          if (tagGroup.options[index] === tagId) {
+            tagGroup.options.splice(parseInt(index, 10), 1);
+            return true;
+          }
+        }
+      }
+      return false;
+    },
   }
 })

@@ -129,7 +129,7 @@ const getTagDataList = (type: E_tagType): I_tagData[] => {
       dataset.cup.forEach(cup => {
         resultCupArr.push({
           id: cup,
-          name: cup + '-' + store.appStoreData.currentCupText,
+          name: store.appStoreData.cupText(cup),
           status: store.searchStoreData.checkSelected(type, cup),
         });
       });

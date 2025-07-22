@@ -5,8 +5,9 @@
         @logicClick="logicClickHandle">
       </tagLogic>
     </template>
-    <tagBlockPerformer v-if="props.tagType === E_tagType.Performer"></tagBlockPerformer>
-    <tagBlockStar v-else-if="props.tagType === E_tagType.Star"></tagBlockStar>
+    <tagBlockPerformer v-if="props.tagType === E_tagType.Performer" @performerClick="tagClickHandle">
+    </tagBlockPerformer>
+    <tagBlockStar v-else-if="props.tagType === E_tagType.Star" @starClick="tagClickHandle"></tagBlockStar>
     <tagBlock v-else :dataList="props.dataList" @tagClick="tagClickHandle"></tagBlock>
   </el-collapse-item>
 </template>

@@ -6,13 +6,7 @@
     </div>
     <div class="right" v-if="props.mode === E_headerMode.Index">
       <div class="search">
-        <el-input-tag v-model="searchValue" trigger="Space" clearable placeholder="Please input">
-          <template #suffix>
-            <el-icon>
-              <Search />
-            </el-icon>
-          </template>
-        </el-input-tag>
+        <searchInputTagByStore />
       </div>
       <div class="setting">
         <el-icon title="添加" @click="oepnResourceForm">
@@ -48,6 +42,7 @@ import { ref, type PropType } from 'vue'
 import { E_headerMode } from '@/dataType/app.dataType'
 import { useRouter } from 'vue-router'
 import tagListDrawer from '@/components/tag/tagListDrawer.vue'
+import searchInputTagByStore from '@/components/com/form/searchInputTagByStore.vue'
 import resourceFormDrawer from '@/components/resource/resourceFormDrawer.vue'
 import { appStoreData } from '@/storeData/app.storeData'
 import type { I_resource } from '@/dataType/resource.dataType'
@@ -67,7 +62,7 @@ const props = defineProps({
   },
 })
 
-const searchValue = ref<string[]>([])
+const searchTextSlc = ref<string[]>([])
 
 const oepnResourceForm = () => {
   resourceFormDrawerRef.value?.open('add')
@@ -111,13 +106,9 @@ const createResouceSuccessHandle = (data: I_resource) => {
 
     .search {
       margin: 0 1em;
-      width: 30%;
-      transition: width 0.3s;
+      width: 75%;
     }
 
-    .search:focus-within {
-      width: 60%;
-    }
 
     .setting {
       flex-shrink: 0;

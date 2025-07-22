@@ -136,9 +136,17 @@ export const appStoreData = defineStore('app', {
       this.currentTagClass = tagDataResult.data.tagClass;
       this.currentTag = tagDataResult.data.tag;
     },
+    // 根据标签分类获取当前标签列表
     currentTagsByTagClassId(tagClassId: string) {
       return this.currentTag.filter(tag => tag.tagClass_id == tagClassId && tag.status);
-    }
-
+    },
+    //根据标签id获取标签信息
+    currentTagInfoById(tagId: string) {
+      return this.currentTag.find(tag => tag.id == tagId);
+    },
+    //获取cup文字
+    cupText(cup: string, separator = ' ') {
+      return `${cup}${separator}${this.currentCupText}`;
+    },
   }
 })

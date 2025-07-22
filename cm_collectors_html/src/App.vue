@@ -12,6 +12,7 @@ import { onMounted, ref } from 'vue'
 import { appStoreData } from '@/storeData/app.storeData'
 import { filesBasesStoreData } from '@/storeData/filesBases.storeData'
 import { performerBasesStoreData } from '@/storeData/performerBases.storeData';
+import { searchStoreData } from './storeData/search.storeData';
 import { LoadingService } from '@/assets/loading'
 import { ElMessage } from 'element-plus'
 const initStatus = ref(false)
@@ -20,6 +21,7 @@ const store = {
   appStoreData: appStoreData(),
   filesBasesStoreData: filesBasesStoreData(),
   performerBasesStoreData: performerBasesStoreData(),
+  searchStoreData: searchStoreData(),
 }
 
 const init = async () => {
@@ -38,6 +40,7 @@ const init = async () => {
         return
       }
     }
+    store.searchStoreData.init();
   } catch (err) {
     console.log(err)
   } finally {

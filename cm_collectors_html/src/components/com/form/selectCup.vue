@@ -2,7 +2,7 @@
   <el-select v-model="selectVal" clearable :style="{ width: props.width }"
     :placeholder="'请选择 ' + store.appStoreData.currentCupText" @change="changeHandle" @clear="handleClear">
     <el-option v-if="props.searchMode" label="全部" value="ALL"></el-option>
-    <el-option v-for="cup, key in dataset.cup" :key="key" :label="cup + ' - ' + store.appStoreData.currentCupText"
+    <el-option v-for="cup, key in dataset.cup" :key="key" :label="store.appStoreData.cupText(cup, ' - ')"
       :value="cup"></el-option>
     <el-option v-if="props.searchMode" label="未定义" value="noCup"></el-option>
   </el-select>
