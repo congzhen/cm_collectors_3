@@ -1,8 +1,9 @@
 import request from "@/assets/request";
 import type { I_resource, I_resource_base, I_resourceDramaSeries_base } from "@/dataType/resource.dataType";
+import type { I_searchData } from "@/dataType/search.dataType";
 const routerGroupUri = '';
 export const resourceServer = {
-  dataList: async (filesBasesId: string, fetchCount: boolean, page: number, limit: number) => {
+  dataList: async (filesBasesId: string, fetchCount: boolean, page: number, limit: number, searchData: I_searchData) => {
     return await request<{ total: number, dataList: I_resource[] }>({
       url: `${routerGroupUri}/resource/dataList`,
       method: 'post',
@@ -11,6 +12,7 @@ export const resourceServer = {
         page,
         limit,
         filesBasesId,
+        searchData,
       }
     })
   },

@@ -17,13 +17,17 @@
 </template>
 <script setup lang="ts">
 import contentItem from '@/components/content/contentItem.vue'
-import { ref, onMounted } from 'vue'
-import { appStoreData } from '@/storeData/app.storeData'
+import { ref, onMounted, watch } from 'vue'
+import { appStoreData } from '@/storeData/app.storeData';
+import { searchStoreData } from '@/storeData/search.storeData';
 import type { I_resource } from '@/dataType/resource.dataType';
 import { ElMessage } from 'element-plus';
 import { resourceServer } from '@/server/resource.server';
+import { debounce } from '@/assets/debounce';
+import { ca } from 'element-plus/es/locales.mjs';
 const store = {
   appStoreData: appStoreData(),
+  searchStoreData: searchStoreData(),
 }
 const emits = defineEmits(['selectResources']);
 
@@ -34,38 +38,53 @@ let fetchCount = true;
 const currentPage = ref(1);
 const pageSize = ref(store.appStoreData.currentConfigApp.pageLimit);
 
-const init = async () => {
+watch(
+  () => store.searchStoreData.searchData,
+  () => {
+    init();
+  },
+  { deep: true }
+)
 
+const init = async () => {
   dataList.value = [];
   dataCount.value = 0;
   fetchCount = true;
   currentPage.value = 1;
   pageSize.value = store.appStoreData.currentConfigApp.pageLimit;
 
-  await init_DataList();
-  if (dataList.value.length > 0) {
-    emits('selectResources', dataList.value[0]);
-  }
-}
-
-const init_DataList = async () => {
-  await getDataList();
-}
-
-const getDataList = async () => {
-  loading.value = true;
-  const result = await resourceServer.dataList(store.appStoreData.currentFilesBases.id, fetchCount, currentPage.value, pageSize.value,);
-  if (result && result.status) {
-    dataList.value = result.data.dataList;
-    if (fetchCount) {
-      dataCount.value = result.data.total;
-      fetchCount = false;
+  await init_DataList(() => {
+    if (dataList.value.length > 0) {
+      emits('selectResources', dataList.value[0]);
     }
-  } else {
-    ElMessage.error(result.msg);
-  }
-  loading.value = false;
+  });
+
 }
+
+const init_DataList = async (fn: Function) => {
+  await getDataList(fn);
+}
+
+const getDataList = debounce(async (fn: Function) => {
+  try {
+    loading.value = true;
+    const result = await resourceServer.dataList(store.appStoreData.currentFilesBases.id, fetchCount, currentPage.value, pageSize.value, store.searchStoreData.searchData);
+    if (result && result.status) {
+      dataList.value = result.data.dataList;
+      if (fetchCount) {
+        dataCount.value = result.data.total;
+        fetchCount = false;
+      }
+      fn();
+    } else {
+      ElMessage.error(result.msg);
+    }
+  } catch (error) {
+    console.log(error);
+  } finally {
+    loading.value = false;
+  }
+}, 200)
 
 const changePageHandle = () => {
   getDataList();

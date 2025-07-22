@@ -65,7 +65,6 @@ const clearHandle = () => {
 }
 
 const getElTagType = (logic: E_searchLogic) => {
-  console.log('logic', logic);
   switch (logic) {
     case E_searchLogic.Single:
       return 'success';
@@ -87,7 +86,7 @@ const getYearText = (year: string) => {
 }
 
 const getStarText = (star: string) => {
-  if (star == store.searchStoreData.notId) {
+  if (star == store.searchStoreData.notId || star == '0') {
     return store.searchStoreData.notStar;
   } else {
     return star + '星';

@@ -4,8 +4,8 @@
       <tagSpan :title="store.searchStoreData.allName" @click="starItemClickHandle(store.searchStoreData.allId)"
         :class="[checkStatus(store.searchStoreData.allId) ? 'check' : '']">
       </tagSpan>
-      <tagSpan :title="store.searchStoreData.notStar" @click="starItemClickHandle(store.searchStoreData.notId)"
-        :class="[checkStatus(store.searchStoreData.notId) ? 'check' : '']">
+      <tagSpan :title="store.searchStoreData.notStar" @click="starItemClickHandle('0')"
+        :class="[checkStatus('0') ? 'check' : '']">
       </tagSpan>
     </div>
     <ul class="tag-stars">

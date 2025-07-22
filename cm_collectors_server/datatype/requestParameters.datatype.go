@@ -9,7 +9,8 @@ type ParPaging struct {
 // 请求参数 - 获取资源列表
 type ReqParam_ResourcesList struct {
 	ParPaging
-	FilesBasesId string `json:"filesBasesId"`
+	FilesBasesId string              `json:"filesBasesId"`
+	SearchData   ReqParam_SearchData `json:"searchData"`
 }
 
 type ReqParam_Resource struct {
