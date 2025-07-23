@@ -77,7 +77,7 @@ const getTagDataList = (type: E_tagType): I_tagData[] => {
         { id: 'titleAsc', name: '标题正序', status: false },
         { id: 'history', name: '历史记录', status: false },
         { id: 'hot', name: '当前热度', status: false },
-        { id: 'youLike', name: '猜你喜欢', status: false },
+        //   { id: 'youLike', name: '猜你喜欢', status: false },
       ]
       for (let i = 0; i < sortSlc.length; i++) {
         sortSlc[i].status = store.searchStoreData.checkSelected(type, sortSlc[i].id)
@@ -112,7 +112,7 @@ const getTagDataList = (type: E_tagType): I_tagData[] => {
       const years: I_tagData[] = [
         { id: allId, name: allName, status: store.searchStoreData.checkSelected(type, allId) }
       ];
-      for (let year = currentYear; year >= 2001; year--) {
+      for (let year = currentYear; year >= 2000; year--) {
         const _id = year.toString();
         years.push({ name: `${year}年`, id: _id, status: store.searchStoreData.checkSelected(type, _id) });
       }

@@ -1,7 +1,11 @@
 package models
 
 import (
+	"cm_collectors_server/core"
 	"cm_collectors_server/datatype"
+	"fmt"
+	"strconv"
+	"strings"
 
 	"gorm.io/gorm"
 )
@@ -105,9 +109,11 @@ func (t Resources) setDbSearchData(db *gorm.DB, searchData *datatype.ReqParam_Se
 	}
 	db = t.setDbSearchGroup(db, "country", &searchData.Country)
 	db = t.setDbSearchGroup(db, "definition", &searchData.Definition)
-	db = t.setDbSearchGroup(db, "year", &searchData.Year)
 	db = t.setDbSearchGroup(db, "stars", &searchData.Star)
-
+	db = t.setDbSearchYear(db, &searchData.Year)
+	db = t.setDbSearchPerformer(db, &searchData.Performer)
+	db = t.setDbSearchCup(db, &searchData.Cup)
+	db = t.setDbSearchTags(db, &searchData.Tag)
 	return db
 }
 func (Resources) setDbSearchGroup(db *gorm.DB, field string, searchGroup *datatype.I_searchGroup) *gorm.DB {
@@ -120,10 +126,11 @@ func (Resources) setDbSearchGroup(db *gorm.DB, field string, searchGroup *dataty
 		db = db.Where(field+" = ?", searchGroup.Options[0])
 	case datatype.E_searchLogic_multiOr:
 		// 多个 OR 查询
-		db = db.Where(field+" = ?", searchGroup.Options[0])
+		subQuery := core.DBS().Where(field+" = ?", searchGroup.Options[0])
 		for _, option := range searchGroup.Options[1:] {
-			db = db.Or(field+" = ?", option)
+			subQuery.Or(field+" = ?", option)
 		}
+		db = db.Where(subQuery)
 
 	case datatype.E_searchLogic_multiAnd:
 		// 多个 AND 查询（例如 tag=1 AND tag=2）
@@ -138,6 +145,107 @@ func (Resources) setDbSearchGroup(db *gorm.DB, field string, searchGroup *dataty
 
 	return db
 }
+
+func (Resources) setDbSearchYear(db *gorm.DB, searchYearGroup *datatype.I_searchGroup) *gorm.DB {
+	if len(searchYearGroup.Options) == 0 {
+		return db
+	}
+
+	var conditions []string
+	var params []interface{}
+
+	for _, option := range searchYearGroup.Options {
+		if option == datatype.V_Search_Before2000 {
+			conditions = append(conditions, "issuingDate < ?")
+			params = append(params, "2000-01-01")
+		} else if year, err := strconv.Atoi(option); err == nil {
+			startDate := fmt.Sprintf("%d-01-01", year)
+			endDate := fmt.Sprintf("%d-12-31", year)
+			conditions = append(conditions, "issuingDate BETWEEN ? AND ?")
+			params = append(params, startDate, endDate)
+		}
+	}
+
+	if len(conditions) > 0 {
+		// 构建 OR 连接的条件
+		query := "(" + strings.Join(conditions, " OR ") + ")"
+		db = db.Where(query, params...)
+	}
+
+	return db
+}
+
+func (Resources) setDbSearchPerformer(db *gorm.DB, searchPerformerGroup *datatype.I_searchGroup) *gorm.DB {
+	if len(searchPerformerGroup.Options) == 0 {
+		return db
+	}
+	switch searchPerformerGroup.Logic {
+	case datatype.E_searchLogic_single:
+		// 单个等于查询
+		if searchPerformerGroup.Options[0] == datatype.V_Search_Not {
+			db = db.Where("(select count(*) from resourcesPerformers where resources_id = resources.id) = 0")
+		} else {
+			db = db.Where("id in (select resources_id from resourcesPerformers where performer_id = ?)", searchPerformerGroup.Options[0])
+		}
+	case datatype.E_searchLogic_multiOr:
+		// 多个 OR 查询
+		// 构建 IN 查询，实现 OR 逻辑
+		db = db.Where("id IN (SELECT resources_id FROM resourcesPerformers WHERE performer_id IN (?))", searchPerformerGroup.Options)
+
+	case datatype.E_searchLogic_multiAnd:
+		// 多个 AND 查询（例如 tag=1 AND tag=2）
+		// 构建多个 EXISTS 子句，每个对应一个 performer_id
+		for _, option := range searchPerformerGroup.Options {
+			db = db.Where("EXISTS (SELECT 1 FROM resourcesPerformers WHERE performer_id = ? AND resources_id = resources.id)", option)
+		}
+	case datatype.E_searchLogic_not:
+		// NOT IN 查询
+		// NOT IN 查询，排除具有特定 performer_id 的资源
+		db = db.Where("NOT EXISTS (SELECT 1 FROM resourcesPerformers WHERE performer_id IN (?) AND resources_id = resources.id)", searchPerformerGroup.Options)
+	}
+	return db
+}
+
+func (Resources) setDbSearchCup(db *gorm.DB, searchCupGroup *datatype.I_searchGroup) *gorm.DB {
+	if len(searchCupGroup.Options) == 0 {
+		return db
+	}
+	switch searchCupGroup.Logic {
+	case datatype.E_searchLogic_single:
+		db = db.Where("id in (select resources_id from resourcesPerformers where performer_id in (select id from performer where cup = ?))", searchCupGroup.Options[0])
+	case datatype.E_searchLogic_multiOr:
+		db = db.Where("id in (select resources_id from resourcesPerformers where performer_id in (select id from performer where cup in (?)))", searchCupGroup.Options)
+	case datatype.E_searchLogic_multiAnd:
+		for _, option := range searchCupGroup.Options {
+			db = db.Where("EXISTS (SELECT 1 FROM resourcesPerformers WHERE performer_id in (select id from performer where cup = ?) AND resources_id = resources.id)", option)
+		}
+	case datatype.E_searchLogic_not:
+		db = db.Where("NOT EXISTS (SELECT 1 FROM resourcesPerformers WHERE performer_id in (select id from performer where cup in (?)) AND resources_id = resources.id)", searchCupGroup.Options)
+	}
+	return db
+}
+
+func (Resources) setDbSearchTags(db *gorm.DB, tagGroupMap *map[string]datatype.I_searchGroup) *gorm.DB {
+	for _, tagGroup := range *tagGroupMap {
+		if len(tagGroup.Options) == 0 {
+			continue
+		}
+		switch tagGroup.Logic {
+		case datatype.E_searchLogic_single:
+			db = db.Where("id in (select resources_id from resourcesTags where tag_id = ?)", tagGroup.Options[0])
+		case datatype.E_searchLogic_multiOr:
+			db = db.Where("id in (select resources_id from resourcesTags where tag_id in (?))", tagGroup.Options)
+		case datatype.E_searchLogic_multiAnd:
+			for _, option := range tagGroup.Options {
+				db = db.Where("EXISTS (SELECT 1 FROM resourcesTags WHERE tag_id = ? AND resources_id = resources.id)", option)
+			}
+		case datatype.E_searchLogic_not:
+			db = db.Where("NOT EXISTS (SELECT 1 FROM resourcesTags WHERE tag_id in (?) AND resources_id = resources.id)", tagGroup.Options)
+		}
+	}
+	return db
+}
+
 func (Resources) setDbSearchDataOrder(db *gorm.DB, searchSort datatype.E_searchSort) *gorm.DB {
 	switch searchSort {
 	case datatype.E_searchSort_addTimeAsc:
@@ -160,8 +268,8 @@ func (Resources) setDbSearchDataOrder(db *gorm.DB, searchSort datatype.E_searchS
 		db = db.Order("lastPlayTime DESC")
 	case datatype.E_searchSort_hot:
 		db = db.Order("hot DESC")
-	case datatype.E_searchSort_youLike:
-		db = db.Order("youLike DESC")
+	default:
+		db = db.Order("addTime DESC")
 	}
 	return db
 }

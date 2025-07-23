@@ -1,7 +1,7 @@
 package datatype
 
-const V_Search_BeforeYear string = "before_2000"
 const V_Search_Not string = "not"
+const V_Search_Before2000 string = "before_2000"
 
 type ReqParam_SearchData struct {
 	SearchTextSlc []string                 `json:"searchTextSlc"`

@@ -134,17 +134,25 @@ export const searchStoreData = defineStore('search', {
         const searchGroup = this.getSearchGroup(type, diyTagClassId) as I_searchGroup;
         if (option == '' || option == this.allId) {
           searchGroup.options = [];
+        } else if (option == this.notId) {
+          searchGroup.options = [this.notId];
+          searchGroup.logic = E_searchLogic.Single;
         } else {
           switch (searchGroup.logic) {
             case E_searchLogic.Single:
-              searchGroup.options = [option];
+              const indexSingle = searchGroup.options.indexOf(option);
+              if (indexSingle >= 0) {
+                searchGroup.options = [];
+              } else {
+                searchGroup.options = [option];
+              }
               break;
             case E_searchLogic.MultiAnd:
             case E_searchLogic.MultiOr:
             case E_searchLogic.Not:
-              const index = searchGroup.options.indexOf(option);
-              if (index >= 0) {
-                searchGroup.options.splice(index, 1);
+              const indexOther = searchGroup.options.indexOf(option);
+              if (indexOther >= 0) {
+                searchGroup.options.splice(indexOther, 1);
               } else {
                 searchGroup.options.push(option);
               }
