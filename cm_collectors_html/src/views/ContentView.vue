@@ -61,11 +61,11 @@ const init = async () => {
 
 }
 
-const init_DataList = async (fn: Function) => {
+const init_DataList = async (fn: Function = () => { }) => {
   await getDataList(fn);
 }
 
-const getDataList = debounce(async (fn: Function) => {
+const getDataList = debounce(async (fn: Function = () => { }) => {
   try {
     loading.value = true;
     const result = await resourceServer.dataList(store.appStoreData.currentFilesBases.id, fetchCount, currentPage.value, pageSize.value, store.searchStoreData.searchData);
