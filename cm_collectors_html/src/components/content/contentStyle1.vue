@@ -7,7 +7,7 @@
     <div class="content-cover">
       <el-image :src="resCoverPoster_C" fit="cover" />
     </div>
-    <div class="play-icon">
+    <div class="play-icon" @click="playResource(props.resource)">
       <el-icon>
         <VideoPlay />
       </el-icon>
@@ -21,6 +21,7 @@ import type { I_resource } from '@/dataType/resource.dataType';
 import contentTagDisplay from './contentTagDisplay.vue';
 import { computed, h, type PropType } from 'vue';
 import { appStoreData } from '@/storeData/app.storeData';
+import { playResource } from '@/common/play';
 const store = {
   appStoreData: appStoreData(),
 }

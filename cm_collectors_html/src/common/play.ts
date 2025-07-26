@@ -2,7 +2,7 @@ import { E_resourceDramaSeriesType, E_resourceOpenMode } from "@/dataType/app.da
 import type { I_resource } from "@/dataType/resource.dataType";
 import { appDataServer } from "@/server/app.server";
 import { appStoreData } from "@/storeData/app.storeData";
-import { ElMessage } from "element-plus";
+import { ElMessage, ElNotification } from "element-plus";
 import router from '@/router';
 
 export const playResource = async (resource: I_resource, dramaSeriesId: string = '') => {
@@ -34,9 +34,17 @@ export const playResource = async (resource: I_resource, dramaSeriesId: string =
   if (openMode == E_resourceOpenMode.Soft) {
     router.push(`/play/${E_resourceDramaSeriesType.Movies}/${resource.id}` + (dramaSeriesId != '' ? `/${dramaSeriesId}` : ''));
   } else if (openMode == E_resourceOpenMode.System) {
+    const eln = ElNotification({
+      message: `正在打开资源 ${resource.title} ...`,
+      type: 'success',
+    })
     const result = await appDataServer.playOpenResource(resource.id, dramaSeriesId);
     if (!result || !result.status) {
-      ElMessage.error(result.msg);
+      eln.close();
+      ElNotification({
+        message: `${result.msg} ${resource.title}`,
+        type: 'error',
+      })
       return;
     }
   }
