@@ -154,7 +154,7 @@
 </template>
 <script setup lang="ts">
 import { computed, ref, onMounted, type PropType } from 'vue'
-import { E_sfm_ToolBar, E_sfm_FileOperate, type I_sfm_FileEntry, E_sfm_FileType, type I_sfm_FilesAction, imageExtensions, textExtensions, codeExtensions, E_sfm_Column } from './com/dataType'
+import { E_sfm_ToolBar, E_sfm_FileOperate, type I_sfm_FileEntry, E_sfm_FileType, type I_sfm_FilesAction, imageExtensions, textExtensions, codeExtensions, E_sfm_Column, E_LangType } from './com/dataType'
 import { dateFormat, generateRandomNumber, getFileExtension, type IMessageBox, message, messageBoxAlert, messageBoxConfirm, messageBoxPrompt, pathToArray, sizeFormat } from './com/fn'
 import { Back, Right, Top, Refresh, ArrowRight, HomeFilled, Folder, Document } from '@element-plus/icons-vue'
 import { sfm_GetPathDir, sfm_DownloadFile, sfm_PasteCopy, sfm_PasteMove, type IResponse, sfm_DeleteFile, sfm_CompressFile, sfm_UnCompressFile } from './com/request'
@@ -171,7 +171,7 @@ const sfmLang = (key: string) => (sfm_languages[props.lang] as Record<string, st
 
 const props = defineProps({
   lang: {
-    type: String as PropType<'zhCn' | 'en'>,
+    type: String as PropType<E_LangType>,
     default: 'zhCn',
   },
   uploadTimeout: { // 上传超时时间

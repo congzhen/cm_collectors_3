@@ -48,3 +48,12 @@ func (Resource) UpdateResource(c *gin.Context) {
 	}
 	response.OkWithData(info, c)
 }
+
+func (Resource) DeleteResource(c *gin.Context) {
+	resourceId := c.Param("resourceId")
+	err := processors.Resources{}.DeleteResource(resourceId)
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(true, c)
+}

@@ -1,6 +1,7 @@
 import request from "@/assets/request";
 import type { I_resource, I_resource_base, I_resourceDramaSeries_base } from "@/dataType/resource.dataType";
 import type { I_searchData } from "@/dataType/search.dataType";
+import { de } from "element-plus/es/locales.mjs";
 const routerGroupUri = '';
 export const resourceServer = {
   dataList: async (filesBasesId: string, fetchCount: boolean, page: number, limit: number, searchData: I_searchData) => {
@@ -44,4 +45,10 @@ export const resourceServer = {
       },
     });
   },
+  delete: async (id: string) => {
+    return await request<boolean>({
+      url: `${routerGroupUri}/resource/delete/${id}`,
+      method: 'delete',
+    });
+  }
 }

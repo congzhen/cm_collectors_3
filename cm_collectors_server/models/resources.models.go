@@ -284,3 +284,7 @@ func (Resources) Update(db *gorm.DB, resources *Resources, fields []string) erro
 func (Resources) Create(db *gorm.DB, resources *Resources) error {
 	return db.Create(&resources).Error
 }
+
+func (Resources) DeleteById(db *gorm.DB, id string) error {
+	return db.Unscoped().Where("id = ? ", id).Delete(&Resources{}).Error
+}

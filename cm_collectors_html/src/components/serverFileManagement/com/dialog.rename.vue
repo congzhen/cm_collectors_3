@@ -17,12 +17,13 @@
   </el-dialog>
 </template>
 <script lang="ts" setup>
-import { FormInstance, FormRules } from 'element-plus';
-import { reactive, ref } from 'vue';
+import { type FormInstance, type FormRules } from 'element-plus';
+import { reactive, ref, type PropType } from 'vue';
 import { sfm_RenameFile } from './request';
 import { message, messageBoxAlert } from './fn';
 import { sfm_languages } from './lang';
-const sfmLang = (key: string) => sfm_languages[props.lang][key];
+import type { E_LangType } from './dataType';
+const sfmLang = (key: string) => (sfm_languages[props.lang] as Record<string, string>)[key];
 
 const dialogVisible = ref(false)
 const loading = ref(false)
@@ -40,7 +41,7 @@ const props = defineProps({
     default: '400px',
   },
   lang: {
-    type: String,
+    type: String as PropType<E_LangType>,
     required: true,
   },
 })

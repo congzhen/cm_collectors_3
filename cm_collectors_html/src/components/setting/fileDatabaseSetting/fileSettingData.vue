@@ -78,9 +78,9 @@
       <el-form-item label="封面上显示标签(属性)">
         <el-select v-model="filesConfig.coverDisplayTagAttribute" multiple>
           <el-option label="definition" value="definition" />
-          <el-option label="year" value="year" />
+          <el-option label="issuingDate" value="issuingDate" />
           <el-option label="country" value="country" />
-          <el-option label="starRating" value="starRating" />
+          <el-option label="stars" value="stars" />
         </el-select>
       </el-form-item>
       <el-form-item label="封面上显示标签(自定义)">
@@ -93,8 +93,8 @@
             <el-color-picker v-model="filesConfig.coverDisplayTagRgbas[index]" show-alpha />
           </div>
           <el-button-group class="color-picker-btn" size="small">
-            <el-button icon="Plus" />
-            <el-button icon="Minus" />
+            <el-button icon="Plus" @click="filesConfig.coverDisplayTagRgbas.push(getRandomColor())" />
+            <el-button icon="Minus" @click="filesConfig.coverDisplayTagRgbas.pop()" />
           </el-button-group>
         </div>
       </el-form-item>
@@ -104,8 +104,8 @@
             <el-color-picker v-model="filesConfig.coverDisplayTagColors[index]" show-alpha />
           </div>
           <el-button-group class="color-picker-btn" size="small">
-            <el-button icon="Plus" />
-            <el-button icon="Minus" />
+            <el-button icon="Plus" @click="filesConfig.coverDisplayTagColors.push(getRandomColor())" />
+            <el-button icon="Minus" @click="filesConfig.coverDisplayTagColors.pop()" />
           </el-button-group>
         </div>
       </el-form-item>
@@ -124,6 +124,25 @@
       </el-form-item>
 
       <el-alert title="参数设置" type="success" />
+
+      <el-form-item label="视频 - 打开方式">
+        <el-select v-model="filesConfig.openResModeMovies">
+          <el-option label="软件" :value="E_resourceOpenMode.Soft" />
+          <el-option label="系统" :value="E_resourceOpenMode.System" />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="漫画 - 打开方式">
+        <el-select v-model="filesConfig.openResModeComic">
+          <el-option label="软件" :value="E_resourceOpenMode.Soft" />
+          <el-option label="系统" :value="E_resourceOpenMode.System" />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="图集 - 打开方式">
+        <el-select v-model="filesConfig.openResModeAtlas">
+          <el-option label="软件" :value="E_resourceOpenMode.Soft" />
+          <el-option label="系统" :value="E_resourceOpenMode.System" />
+        </el-select>
+      </el-form-item>
       <!--
       <el-form-item label="开启记录模块">
         <el-checkbox v-model="filesConfig.historyModule" label="历史记录" border />
@@ -139,7 +158,7 @@
       <el-form-item label="猜你喜欢显示数量">
         <el-input-number v-model="filesConfig.youLikeNumber" />
       </el-form-item>
-      -->
+
       <el-form-item label="猜你喜欢取词量">
         <el-input-number v-model="filesConfig.youLikeWordNumber" />
       </el-form-item>
@@ -151,7 +170,7 @@
         <el-tag type="primary">Tag 2</el-tag>
         <el-tag type="primary">Tag 3</el-tag>
       </el-form-item>
-
+      -->
       <el-alert title="图集设置" type="success" />
 
       <el-form-item label="图集显示模式">
@@ -226,7 +245,7 @@
 </template>
 <script lang="ts" setup>
 import { onMounted, ref } from 'vue';
-import { E_performerCareerType } from '@/dataType/app.dataType';
+import { E_performerCareerType, E_resourceOpenMode } from '@/dataType/app.dataType';
 import selectCountry from '@/components/com/form/selectCountry.vue';
 import selectDefinition from '@/components/com/form/selectDefinition.vue';
 import selectLeftDisplay from '@/components/com/form/selectLeftDisplay.vue';
@@ -237,7 +256,6 @@ import selectResourcesMode from '@/components/com/form/selectResourcesMode.vue';
 import selectDetailsDramaSeriesMode from '@/components/com/form/selectDetailsDramaSeriesMode.vue';
 import selectResourceDetailsShowMode from '@/components/com/form/selectResourceDetailsShowMode.vue';
 import selectTag from '@/components/com/form/selectTag.vue';
-import selectTagClass from '@/components/com/form/selectTagClass.vue';
 import selectPlayAtlasMode from '@/components/com/form/selectPlayAtlasMode.vue';
 import coverPosterAdmin from './coverPosterAdmin.vue';
 import routeConversionAdmin from './routeConversionAdmin.vue';
@@ -250,6 +268,7 @@ import { defualtConfigApp, type I_config_app } from '@/dataType/config.dataType'
 import { filesBasesStoreData } from '@/storeData/filesBases.storeData';
 import { performerBasesStoreData } from '@/storeData/performerBases.storeData';
 import { debounceNow } from '@/assets/debounce';
+import { getRandomColor } from '@/assets/tool';
 const store = {
   filesBasesStoreData: filesBasesStoreData(),
   performerBasesStoreData: performerBasesStoreData(),

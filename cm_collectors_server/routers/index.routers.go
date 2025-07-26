@@ -40,12 +40,16 @@ func publicRouter(router *gin.Engine) {
 	routerGroup.POST("/performer/list/top/preferred", controllers.Performer{}.ListTopPreferredPerformers)
 	routerGroup.GET("/performer/recycleBin/:performerBasesId", controllers.Performer{}.RecycleBin)
 	routerGroup.POST("/resource/dataList", controllers.Resource{}.DataList)
+
+	routerGroup.GET("/app/play/open/resource/:resourceId", controllers.Play{}.PlayOpenResource)
+	routerGroup.GET("/app/play/open/resource/folder/:resourceId", controllers.Play{}.PlayOpenResourceFolder)
 }
 
 func AdminRouter(router *gin.Engine) {
 	routerGroup := router.Group("/api")
 	routerGroup.POST("resource/create", controllers.Resource{}.CreateResource)
 	routerGroup.PUT("resource/update", controllers.Resource{}.UpdateResource)
+	routerGroup.DELETE("resource/delete/:resourceId", controllers.Resource{}.DeleteResource)
 	routerGroup.PUT("filesBases/setData", controllers.FilesBases{}.SetFilesBases)
 	routerGroup.PUT("performerBases/update", controllers.Performer{}.PerformerBasesUpdate)
 	routerGroup.POST("performer/create", controllers.Performer{}.CreatePerformer)

@@ -83,17 +83,20 @@ export const appStoreData = defineStore('app', {
 
       // 解析配置文件
       if (info.data.filesBasesSetting.config_json_data != '') {
-        this.currentConfigApp = JSON.parse(info.data.filesBasesSetting.config_json_data);
+        const configApp = JSON.parse(info.data.filesBasesSetting.config_json_data);
+        this.currentConfigApp = { ...defualtConfigApp, ...configApp };
       } else {
         this.currentConfigApp = defualtConfigApp;
       }
       if (info.data.filesBasesSetting.nfo_json_data != '') {
-        this.currentConfigNfo = JSON.parse(info.data.filesBasesSetting.nfo_json_data);
+        const configNfo = JSON.parse(info.data.filesBasesSetting.nfo_json_data);
+        this.currentConfigNfo = { ...defualtConfigApp, ...configNfo };
       } else {
         this.currentConfigNfo = defualtConfigNfo;
       }
       if (info.data.filesBasesSetting.simple_json_data != '') {
-        this.currentConfigSimple = JSON.parse(info.data.filesBasesSetting.simple_json_data);
+        const configSimple = JSON.parse(info.data.filesBasesSetting.simple_json_data);
+        this.currentConfigNfo = { ...defualtConfigApp, ...configSimple };
       } else {
         this.currentConfigSimple = defualtConfigSimple;
       }

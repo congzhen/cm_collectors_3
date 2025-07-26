@@ -25,3 +25,7 @@ func (ResourcesPerformers) Creates(db *gorm.DB, resourcesPerformerSlc *[]Resourc
 func (ResourcesPerformers) DeleteIDS(db *gorm.DB, ids []string) error {
 	return db.Unscoped().Where("id in (?) ", ids).Delete(&ResourcesPerformers{}).Error
 }
+
+func (ResourcesPerformers) DeleteByResourcesID(db *gorm.DB, resourcesID string) error {
+	return db.Unscoped().Where("resources_id = ?", resourcesID).Delete(&ResourcesPerformers{}).Error
+}

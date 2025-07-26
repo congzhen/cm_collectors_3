@@ -25,3 +25,7 @@ func (ResourcesTags) Creates(db *gorm.DB, resourcesTagSlc *[]ResourcesTags) erro
 func (ResourcesTags) DeleteIDS(db *gorm.DB, ids []string) error {
 	return db.Unscoped().Where("id in (?) ", ids).Delete(&ResourcesTags{}).Error
 }
+
+func (ResourcesTags) DeleteByResourcesID(db *gorm.DB, resourcesID string) error {
+	return db.Unscoped().Where("resources_id = ?", resourcesID).Delete(&ResourcesTags{}).Error
+}

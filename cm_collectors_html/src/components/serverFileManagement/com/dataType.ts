@@ -51,6 +51,11 @@ export interface I_sfm_FilesAction {
   files: string[]
 }
 
+export enum E_LangType {
+  zhCn = 'zhCn',
+  en = 'en',
+}
+
 
 //文件扩展名
 export const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];

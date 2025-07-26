@@ -1,4 +1,4 @@
-import { E_detailsDramaSeriesMode, type E_tagType } from "./app.dataType";
+import { E_detailsDramaSeriesMode, E_resourceOpenMode, type E_tagType } from "./app.dataType";
 
 
 
@@ -59,6 +59,10 @@ export interface I_config_app {
   youLikeNumber: number; // 猜你喜欢-数量
   youLikeTagClass: string[]; // 猜你喜欢-标签类
   youLikeWordNumber: number; // 猜你喜欢-匹配词数量
+
+  openResModeMovies: E_resourceOpenMode; // 视频 - 打开方式
+  openResModeComic: E_resourceOpenMode;  // 漫画 - 打开方式
+  openResModeAtlas: E_resourceOpenMode; // 图集 - 打开方式
 }
 
 export const defualtConfigApp: I_config_app = {
@@ -123,6 +127,10 @@ export const defualtConfigApp: I_config_app = {
   performer_Text: '',
   director_Text: '',
   performer_photo: '',
+
+  openResModeMovies: E_resourceOpenMode.Soft,
+  openResModeComic: E_resourceOpenMode.Soft,
+  openResModeAtlas: E_resourceOpenMode.Soft,
 }
 
 export interface I_coverPosterData {

@@ -2,12 +2,15 @@
   <el-select v-model="selectVal" clearable :style="{ width: props.width }" placeholder="国家" @change="changeHandle"
     @clear="handleClear" :multiple="props.multiple">
     <el-option-group v-for="(countryList, key) in dataset.country" :key="key" :label="key">
-      <el-option v-for="item, index in countryList" :key="index" :label="item" :value="item"></el-option>
+      <el-option v-for="item, index in countryList" :key="index" :label="appLang.country(item)"
+        :value="item"></el-option>
     </el-option-group>
   </el-select>
 </template>
 <script setup lang="ts">
 import dataset from '@/assets/dataset';
+import { appLang } from '@/language/app.lang'
+
 const selectVal = defineModel<string | string[]>({ type: [String, Array], default: "" as string | string[] });
 const props = defineProps({
   width: {

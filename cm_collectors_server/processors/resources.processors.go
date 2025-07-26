@@ -19,7 +19,12 @@ func (Resources) DataList(par *datatype.ReqParam_ResourcesList) (*[]models.Resou
 	return models.Resources{}.DataList(core.DBS(), par)
 }
 func (Resources) Info(id string) (*models.Resources, error) {
-	return models.Resources{}.Info(core.DBS(), id)
+	info, err := models.Resources{}.Info(core.DBS(), id)
+	if err == nil && info.ID == "" || err == gorm.ErrRecordNotFound {
+		err = errorMessage.Err_Resources_Not_Found
+		return info, err
+	}
+	return info, nil
 }
 
 func (t Resources) CreateResource(par *datatype.ReqParam_Resource) (*models.Resources, error) {
@@ -54,6 +59,38 @@ func (t Resources) UpdateResource(par *datatype.ReqParam_Resource) (*models.Reso
 		return nil, err
 	}
 	return t.Info(id)
+}
+
+func (t Resources) DeleteResource(resourceId string) error {
+	info, err := t.Info(resourceId)
+	if err != nil {
+		return err
+	}
+	db := core.DBS()
+	return db.Transaction(func(tx *gorm.DB) error {
+		err := ResourcesDirectors{}.DeleteByResourcesID(tx, resourceId)
+		if err != nil {
+			return err
+		}
+		err = ResourcesPerformers{}.DeleteByResourcesID(tx, resourceId)
+		if err != nil {
+			return err
+		}
+		err = ResourcesTags{}.DeleteByResourcesID(tx, resourceId)
+		if err != nil {
+			return err
+		}
+		err = ResourcesDramaSeries{}.DeleteByResourcesID(tx, resourceId)
+		if err != nil {
+			return err
+		}
+		err = t.DeleteById(tx, resourceId)
+		if err != nil {
+			return err
+		}
+		t.DeleteResourcePhoto(info.FilesBasesID, info.CoverPoster)
+		return nil
+	})
 }
 
 func (Resources) SetResources(db *gorm.DB, resourceID string, par *datatype.ReqParam_Resource) error {
@@ -185,4 +222,8 @@ func (t Resources) Update(db *gorm.DB, par *datatype.ReqParam_Resource) (string,
 		fieldsToUpdate = append(fieldsToUpdate, "coverPoster")
 	}
 	return id, resourcesModels.Update(db, &resourcesModels, fieldsToUpdate)
+}
+
+func (t Resources) DeleteById(db *gorm.DB, id string) error {
+	return models.Resources{}.DeleteById(db, id)
 }

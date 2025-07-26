@@ -24,7 +24,6 @@ import type { I_resource } from '@/dataType/resource.dataType';
 import { ElMessage } from 'element-plus';
 import { resourceServer } from '@/server/resource.server';
 import { debounce } from '@/assets/debounce';
-import { ca } from 'element-plus/es/locales.mjs';
 const store = {
   appStoreData: appStoreData(),
   searchStoreData: searchStoreData(),
@@ -61,7 +60,10 @@ const init = async () => {
 
 }
 
-const init_DataList = async (fn: Function = () => { }) => {
+const init_DataList = async (fn: Function = () => { }, fetch: boolean = false) => {
+  if (fetch) {
+    fetchCount = true;
+  }
   await getDataList(fn);
 }
 

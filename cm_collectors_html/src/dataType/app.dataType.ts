@@ -29,6 +29,12 @@ export enum E_resourceDramaSeriesType {
   NetDisk = 'netDisk',          //网盘
 }
 
+//资源打开方式
+export enum E_resourceOpenMode {
+  Soft = 'soft',
+  System = 'system',
+}
+
 export enum E_resourceStorageLocation {
   Local = 'local',
   Server = 'server',

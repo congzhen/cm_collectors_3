@@ -20,3 +20,22 @@ export const getFinalPathSegment = (src: string): string => {
 
   return ''
 }
+
+
+
+/**
+ * 生成一个随机的RGBA颜色字符串
+ * @returns 返回格式为rgba(r, g, b, a)的随机颜色字符串，其中r、g、b为0-255之间的整数，a为0-1之间保留两位小数的小数
+ */
+export const getRandomColor = (): string => {
+  // 生成0-255之间的随机整数作为RGB颜色值
+  const r = Math.floor(Math.random() * 256);
+  const g = Math.floor(Math.random() * 256);
+  const b = Math.floor(Math.random() * 256);
+
+  // 生成0-1之间的小数作为透明度，保留两位小数
+  const a = Math.random().toFixed(2);
+
+  // 将随机生成的RGBA值组合成颜色字符串并返回
+  return `rgba(${r}, ${g}, ${b}, ${a})`;
+};

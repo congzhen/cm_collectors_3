@@ -41,7 +41,7 @@ import { ref, onMounted } from 'vue';
 import tagFormClassDialog from './tagFormClassDialog.vue';
 import tagFormItemDialog from './tagFormItemDialog.vue';
 import tagItem from './tagItem.vue';
-import { messageBoxConfirm } from '@/components/com/feedback/messageBox'
+import { messageBoxConfirm } from '@/common/messageBox'
 import { tagServer } from '@/server/tag.server';
 import { ElMessage } from 'element-plus';
 import type { I_tag, I_tagClass, I_tagSort } from '@/dataType/tag.dataType';

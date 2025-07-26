@@ -48,6 +48,7 @@ import { appStoreData } from '@/storeData/app.storeData';
 import { searchStoreData } from '@/storeData/search.storeData';
 import { cacheData } from '@/cache/index.cache';
 import { E_searchLogic } from '@/dataType/search.dataType';
+import { appLang } from '@/language/app.lang'
 const store = {
   appStoreData: appStoreData(),
   searchStoreData: searchStoreData(),
@@ -78,24 +79,16 @@ const getElTagType = (logic: E_searchLogic) => {
 }
 
 const getYearText = (year: string) => {
-  if (year === 'before_2000') {
-    return '2000前';
-  } else {
-    return `${year}年`;
-  }
+  return appLang.year(year);
 }
 
 const getStarText = (star: string) => {
-  if (star == store.searchStoreData.notId || star == '0') {
-    return store.searchStoreData.notStar;
-  } else {
-    return star + '星';
-  }
+  return appLang.stars(star);
 }
 
 const getPerformerText = (performerId: string) => {
   if (performerId == store.searchStoreData.notId) {
-    return store.searchStoreData.notPerformer;
+    return appLang.lang('notPerformer')
   } else {
     return cacheData[performerId] || performerId
   }

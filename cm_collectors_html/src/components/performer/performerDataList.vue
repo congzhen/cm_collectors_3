@@ -40,7 +40,7 @@ import performerBlock from '@/components/performer/performerBlock.vue';
 import type { I_performer, I_search_performer } from '@/dataType/performer.dataType';
 import { performerServer } from '@/server/performer.server';
 import { ElMessage } from 'element-plus';
-import { messageBoxConfirm } from '../com/feedback/messageBox';
+import { messageBoxConfirm } from '../../common/messageBox';
 import { E_tagType } from '@/dataType/app.dataType';
 import { searchStoreData } from '@/storeData/search.storeData';
 import { cacheData } from '@/cache/index.cache';

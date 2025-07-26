@@ -4,8 +4,9 @@
       <div class="tag-block-list">
         <el-collapse v-model="activeNames">
           <div v-for="leftDisplay, key in store.appStoreData.currentFilesBasesAppConfig.leftDisplay" :key="key">
-            <tagCollapseItem v-if="leftDisplay !== E_tagType.DiyTag" :name="leftDisplay" :title="leftDisplay"
-              :tag-type="leftDisplay" :data-list="getTagDataList(leftDisplay)" :logic="getLogic(leftDisplay)">
+            <tagCollapseItem v-if="leftDisplay !== E_tagType.DiyTag" :name="leftDisplay"
+              :title="appLang.attributeTags(leftDisplay)" :tag-type="leftDisplay"
+              :data-list="getTagDataList(leftDisplay)" :logic="getLogic(leftDisplay)">
             </tagCollapseItem>
             <div v-else>
               <tagCollapseItem
@@ -34,6 +35,7 @@ import { appStoreData } from '@/storeData/app.storeData'
 import { searchStoreData } from '@/storeData/search.storeData'
 import { ref, onMounted, watch } from 'vue'
 import { E_searchLogic } from '@/dataType/search.dataType'
+import { appLang } from '@/language/app.lang'
 const store = {
   appStoreData: appStoreData(),
   searchStoreData: searchStoreData(),
@@ -67,19 +69,20 @@ const getTagDataList = (type: E_tagType): I_tagData[] => {
   switch (type) {
     case E_tagType.Sort:
       const sortSlc: I_tagData[] = [
-        { id: 'addTimeDesc', name: '时间倒叙', status: false },
-        { id: 'addTimeAsc', name: '时间正序', status: false },
-        { id: 'issueNumberDesc', name: '发行倒叙', status: false },
-        { id: 'issueNumberAsc', name: '发行正序', status: false },
-        { id: 'starDesc', name: '评分倒叙', status: false },
-        { id: 'starAsc', name: '评分正序', status: false },
-        { id: 'titleDesc', name: '标题倒叙', status: false },
-        { id: 'titleAsc', name: '标题正序', status: false },
-        { id: 'history', name: '历史记录', status: false },
-        { id: 'hot', name: '当前热度', status: false },
+        { id: 'addTimeDesc', name: '', status: false },
+        { id: 'addTimeAsc', name: '', status: false },
+        { id: 'issueNumberDesc', name: '', status: false },
+        { id: 'issueNumberAsc', name: '', status: false },
+        { id: 'starDesc', name: '', status: false },
+        { id: 'starAsc', name: '', status: false },
+        { id: 'titleDesc', name: '', status: false },
+        { id: 'titleAsc', name: '', status: false },
+        { id: 'history', name: '', status: false },
+        { id: 'hot', name: '', status: false },
         //   { id: 'youLike', name: '猜你喜欢', status: false },
       ]
       for (let i = 0; i < sortSlc.length; i++) {
+        sortSlc[i].name = appLang.sort(sortSlc[i].id)
         sortSlc[i].status = store.searchStoreData.checkSelected(type, sortSlc[i].id)
       }
       return sortSlc
@@ -90,7 +93,7 @@ const getTagDataList = (type: E_tagType): I_tagData[] => {
       store.appStoreData.currentFilesBasesAppConfig.country.forEach(item => {
         resultCountryArr.push({
           id: item,
-          name: item,
+          name: appLang.country(item),
           status: store.searchStoreData.checkSelected(type, item),
         });
       });
@@ -102,7 +105,7 @@ const getTagDataList = (type: E_tagType): I_tagData[] => {
       store.appStoreData.currentFilesBasesAppConfig.definition.forEach(item => {
         resultDefinitionArr.push({
           id: item,
-          name: item,
+          name: appLang.definition(item),
           status: store.searchStoreData.checkSelected(type, item),
         });
       });
@@ -114,10 +117,10 @@ const getTagDataList = (type: E_tagType): I_tagData[] => {
       ];
       for (let year = currentYear; year >= 2000; year--) {
         const _id = year.toString();
-        years.push({ name: `${year}年`, id: _id, status: store.searchStoreData.checkSelected(type, _id) });
+        years.push({ name: appLang.year(_id), id: _id, status: store.searchStoreData.checkSelected(type, _id) });
       }
       // 添加 "2000年以前"
-      years.push({ name: '2000前', id: 'before_2000', status: store.searchStoreData.checkSelected(type, 'before_2000') });
+      years.push({ name: appLang.year('before_2000'), id: 'before_2000', status: store.searchStoreData.checkSelected(type, 'before_2000') });
 
       return years;
     case E_tagType.Performer:

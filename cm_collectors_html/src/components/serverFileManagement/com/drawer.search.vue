@@ -44,20 +44,20 @@
   </div>
 </template>
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { ref, type PropType } from 'vue'
 import { Search, Folder, Document } from '@element-plus/icons-vue'
 import { sfm_languages } from './lang';
 import { sfm_SearchFiles } from './request';
 import { message, messageBoxAlert } from './fn';
-import { I_sfm_FileEntry } from './dataType';
-const sfmLang = (key: string) => sfm_languages[props.lang][key];
+import { E_LangType, type I_sfm_FileEntry } from './dataType';
+const sfmLang = (key: string) => (sfm_languages[props.lang] as Record<string, string>)[key];
 const props = defineProps({
   width: {
     type: String,
     default: '680px',
   },
   lang: {
-    type: String,
+    type: String as PropType<E_LangType>,
     required: true,
   },
 })

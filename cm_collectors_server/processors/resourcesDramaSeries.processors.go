@@ -31,3 +31,7 @@ func (t ResourcesDramaSeries) SetResourcesDramaSeries(db *gorm.DB, resourceID st
 		return models.ResourcesDramaSeries{}.Creates(tx, &resourcesDramaSeriesModelsSlc)
 	})
 }
+
+func (ResourcesDramaSeries) DeleteByResourcesID(tx *gorm.DB, resourceID string) error {
+	return models.ResourcesDramaSeries{}.DeleteByResourcesID(tx, resourceID)
+}

@@ -6,10 +6,10 @@
       </div>
       <div class="tool">
         <el-button-group>
-          <el-button icon="VideoPlay" />
-          <el-button icon="Folder" />
+          <el-button icon="VideoPlay" @click="playResourceHandle" />
+          <el-button icon="Folder" @click="playOpenResourceFolder(props.resource.id)" />
           <el-button icon="Edit" @click="editResourceHandle" />
-          <el-button icon="Delete" />
+          <el-button icon="Delete" @click="resourceDeleteHandle" />
         </el-button-group>
       </div>
       <div class="details-container">
@@ -25,10 +25,10 @@
                   年份: {{ props.resource.issuingDate }}
                 </el-breadcrumb-item>
                 <el-breadcrumb-item v-if="props.resource.country != ''">
-                  国家: {{ props.resource.country }}
+                  国家: {{ appLang.country(props.resource.country) }}
                 </el-breadcrumb-item>
                 <el-breadcrumb-item v-if="props.resource.definition != ''">
-                  清晰度: {{ props.resource.definition }}
+                  清晰度: {{ appLang.definition(props.resource.definition) }}
                 </el-breadcrumb-item>
               </el-breadcrumb>
             </div>
@@ -40,7 +40,8 @@
           <div class="info-block">
             <el-alert class="tagAlert" title="资源" type="info" :closable="false" />
             <resourceDramaSeriesList class="resource" :drama-series="props.resource.dramaSeries"
-              :show-mode="store.appStoreData.currentFilesBasesAppConfig.detailsDramaSeriesMode">
+              :show-mode="store.appStoreData.currentFilesBasesAppConfig.detailsDramaSeriesMode"
+              @play-resource-drama-series="playResourceDramaSeriesHandle">
             </resourceDramaSeriesList>
           </div>
           <div class="info-block">
@@ -77,8 +78,11 @@ import resourceDramaSeriesList from '@/components/resource/resourceDramaSeriesLi
 import resourceFormDrawer from '@/components/resource/resourceFormDrawer.vue'
 import performerPopoverBlock from '@/components/performer/performerPopoverBlock.vue'
 import { computed, ref, type PropType } from 'vue'
-import type { I_resource } from '@/dataType/resource.dataType'
+import type { I_resource, I_resourceDramaSeries } from '@/dataType/resource.dataType'
 import { appStoreData } from '@/storeData/app.storeData'
+import { appLang } from '@/language/app.lang'
+import { playResource, playOpenResourceFolder } from '@/common/play'
+import { resourceDelete } from '@/common/resource'
 const store = {
   appStoreData: appStoreData(),
 }
@@ -88,7 +92,7 @@ const props = defineProps({
     default: undefined
   },
 })
-const emits = defineEmits(['updateResouceSuccess'])
+const emits = defineEmits(['updateResouceSuccess', 'deleteResourceSuccess'])
 
 const resourceFormDrawerRef = ref<InstanceType<typeof resourceFormDrawer>>()
 
@@ -96,11 +100,27 @@ const resCoverPoster_C = computed(() => {
   return `/api/resCoverPoster/${props.resource?.filesBases_id}/${props.resource?.coverPoster}`
 });
 
+const playResourceHandle = () => {
+  if (!props.resource) return
+  playResource(props.resource)
+}
+const playResourceDramaSeriesHandle = (ds: I_resourceDramaSeries) => {
+  if (!props.resource) return
+  playResource(props.resource, ds.id)
+}
+
 const editResourceHandle = () => {
   resourceFormDrawerRef.value?.open('edit', props.resource)
 }
 const updateResouceSuccessHandle = (data: I_resource) => {
   emits('updateResouceSuccess', data)
+}
+
+const resourceDeleteHandle = () => {
+  if (!props.resource) return
+  resourceDelete(props.resource, () => {
+    emits('deleteResourceSuccess')
+  })
 }
 
 </script>

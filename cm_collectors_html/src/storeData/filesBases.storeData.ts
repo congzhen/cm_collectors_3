@@ -9,8 +9,8 @@ export const filesBasesStoreData = defineStore('filesBases', {
       return state.filesBases.filter(item => item.status)
     },
     filesBasesFirst: (state) => {
-      if (!state.filesBases || state.filesBases.length == 0) return null;
-      return state.filesBases[0];
+      if (!state.filesBases || state.filesBases.filter(item => item.status).length == 0) return null;
+      return state.filesBases.filter(item => item.status)[0];
     },
   },
   actions: {

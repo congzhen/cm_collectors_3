@@ -2,12 +2,14 @@
   <div class="resourceDramaSeries-list">
     <div class="resourceDramaSeries-list-index" v-if="props.showMode === E_detailsDramaSeriesMode.digit">
       <ul>
-        <li v-for="(item, key) in props.dramaSeries" :key="key">{{ (key + 1) }}</li>
+        <li v-for="(item, key) in props.dramaSeries" :key="key" @click="emits('playResourceDramaSeries', item)">
+          {{ (key + 1) }}
+        </li>
       </ul>
     </div>
     <div class="resourceDramaSeries-list-name" v-else>
       <ul>
-        <li v-for="(item, key) in props.dramaSeries" :key="key">
+        <li v-for="(item, key) in props.dramaSeries" :key="key" @click="emits('playResourceDramaSeries', item)">
           <label>{{ (key + 1) }}.</label>
           <span>{{ getFinalPathSegment(item.src) }}</span>
         </li>
@@ -30,6 +32,10 @@ const props = defineProps({
     required: true,
   }
 })
+
+const emits = defineEmits(['playResourceDramaSeries']);
+
+
 </script>
 <style lang="scss" scoped>
 .resourceDramaSeries-list {

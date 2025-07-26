@@ -51,11 +51,12 @@
 </template>
 <script lang="ts" setup>
 import { UploadFilled, Delete } from '@element-plus/icons-vue'
-import { ref } from 'vue';
+import { ref, type PropType } from 'vue';
 import { message } from './fn';
 import { apiList } from './request';
 import { sfm_languages } from './lang';
-const sfmLang = (key: string) => sfm_languages[props.lang][key];
+import type { E_LangType } from './dataType';
+const sfmLang = (key: string) => (sfm_languages[props.lang] as Record<string, string>)[key];
 
 
 // 定义带路径的文件类型
@@ -78,7 +79,7 @@ const props = defineProps({
     default: 300000 // 默认300秒
   },
   lang: {
-    type: String,
+    type: String as PropType<E_LangType>,
     required: true,
   },
 })
