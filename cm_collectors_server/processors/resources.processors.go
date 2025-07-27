@@ -115,6 +115,32 @@ func (Resources) SetResources(db *gorm.DB, resourceID string, par *datatype.ReqP
 	})
 }
 
+func (Resources) UpdateResourcePlay(resourceInfo *models.Resources, lastPlayFile string) error {
+	db := core.DBS()
+	return db.Transaction(func(tx *gorm.DB) error {
+		lastPlayTime := datatype.CustomTime(core.TimeNow())
+		resourceModels := models.Resources{
+			ID:           resourceInfo.ID,
+			Hot:          resourceInfo.Hot + 1,
+			LastPlayTime: &lastPlayTime,
+			LastPlayFile: lastPlayFile,
+		}
+		err := resourceModels.Update(tx, &resourceModels, []string{"Hot", "LastPlayTime", "LastPlayFile"})
+		if err != nil {
+			return err
+		}
+		tagIds := []string{}
+		for _, tag := range resourceInfo.Tags {
+			tagIds = append(tagIds, tag.ID)
+		}
+		err = Tag{}.UpdateHot(tx, tagIds)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+}
+
 func (Resources) SaveResourcePhoto(par *datatype.ReqParam_Resource) (string, error) {
 	if par.PhotoBase64 == "" || par.Resource.FilesBasesID == "" {
 		return "", nil // 如果没有图片数据或PerformerBasesID，则不处理

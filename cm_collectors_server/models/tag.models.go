@@ -40,6 +40,16 @@ func (Tag) Update(db *gorm.DB, tag *Tag, fields []string) error {
 	}
 	return result.Error
 }
+
+// 根据给定的ids数组，将匹配的记录hot值加1
+func (Tag) UpdateHot(db *gorm.DB, ids []string) error {
+	result := db.Model(&Tag{}).Where("id in (?)", ids).Update("hot", gorm.Expr("hot + ?", 1))
+	if result.RowsAffected == 0 {
+		return nil
+	}
+	return result.Error
+}
+
 func (Tag) Create(db *gorm.DB, tag *Tag) error {
 	return db.Create(&tag).Error
 }

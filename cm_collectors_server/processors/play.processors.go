@@ -29,6 +29,11 @@ func (p Play) PlayOpenResource(resourceId, dramaSeriesId string) error {
 		return err
 	}
 
+	err = Resources{}.UpdateResourcePlay(resourceInfo, playSrc)
+	if err != nil {
+		return err
+	}
+
 	// 调用系统执行该路径文件
 	return open.Run(playSrc)
 }

@@ -102,3 +102,7 @@ func (Tag) Update(tag *datatype.ReqParam_Tag) error {
 		Status:     tag.Status,
 	}, []string{"name", "keyWords", "tagClass_id", "sort", "status"})
 }
+
+func (Tag) UpdateHot(db *gorm.DB, ids []string) error {
+	return models.Tag{}.UpdateHot(db, ids)
+}
