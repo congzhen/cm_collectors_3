@@ -3,7 +3,7 @@
     <el-alert title="演员信息" type="success" :closable="false" />
     <div v-if="props.performer">
       <div class="performer-cover">
-        <el-image :src="performerPhoto_C" fit="cover">
+        <el-image :src="getPerformerPhoto(props.performer)" fit="cover">
           <template #error>
             <el-image src="/emptyPhoto.jpg" fit="cover" />
           </template>
@@ -44,6 +44,7 @@
 import type { I_performer } from '@/dataType/performer.dataType';
 import { computed, type PropType } from 'vue';
 import { appStoreData } from '@/storeData/app.storeData';
+import { getPerformerPhoto } from '@/common/photo';
 const store = {
   appStoreData: appStoreData(),
 }
@@ -55,10 +56,7 @@ const props = defineProps({
 });
 
 
-const performerPhoto_C = computed(() => {
-  if (!props.performer || !props.performer.photo || props.performer.photo == '') return '';
-  return `/api/performerFace/${props.performer.performerBases_id}/${props.performer.photo}`
-});
+
 </script>
 <style lang="scss" scoped>
 .performer-info {

@@ -1,6 +1,6 @@
 <template>
   <div class="performer-photo">
-    <el-image :src="performerPhoto_C" fit="cover">
+    <el-image :src="getPerformerPhoto(props.performer)" fit="cover">
       <template #error>
         <el-image src="/emptyPhoto.jpg" fit="cover" />
       </template>
@@ -10,6 +10,7 @@
 <script lang="ts" setup>
 import type { I_performer } from '@/dataType/performer.dataType';
 import { computed, type PropType } from 'vue'
+import { getPerformerPhoto } from '@/common/photo';
 const props = defineProps({
   performer: {
     type: Object as PropType<I_performer>,
@@ -17,10 +18,6 @@ const props = defineProps({
   },
 });
 
-const performerPhoto_C = computed(() => {
-  if (!props.performer.photo || props.performer.photo == '') return '';
-  return `/api/performerFace/${props.performer.performerBases_id}/${props.performer.photo}`
-});
 
 </script>
 <style lang="scss" scoped>

@@ -3,7 +3,8 @@
     <template #reference>
       <performerBlock :performer="props.performer"></performerBlock>
     </template>
-    <performerDetails :performer="props.performer" :issuing-date="props.issuingDate"></performerDetails>
+    <performerDetails :performer="props.performer" :issuing-date="props.issuingDate">
+    </performerDetails>
   </el-popover>
 </template>
 <script lang="ts" setup>

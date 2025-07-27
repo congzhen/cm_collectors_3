@@ -10,6 +10,15 @@ import (
 
 type Resource struct{}
 
+func (Resource) Info(c *gin.Context) {
+	resourceId := c.Param("resourceId")
+	resourceInfo, err := processors.Resources{}.Info(resourceId)
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(resourceInfo, c)
+}
+
 func (Resource) DataList(c *gin.Context) {
 	var par datatype.ReqParam_ResourcesList
 	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {

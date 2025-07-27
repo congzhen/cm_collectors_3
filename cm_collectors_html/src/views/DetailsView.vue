@@ -2,7 +2,7 @@
   <div class="details-view-k">
     <div class="details-view" v-if="props.resource">
       <div class="content-cover">
-        <el-image :src="resCoverPoster_C" fit="cover" />
+        <el-image :src="getResourceCoverPoster(props.resource)" fit="cover" />
       </div>
       <div class="tool">
         <el-button-group>
@@ -18,10 +18,12 @@
             {{ props.resource.title }}
           </div>
           <div class="info-base">
-            <div class="info-base-item">版号、番号、刊号: {{ props.resource.issueNumber }}</div>
+            <div class="info-base-item" v-if="props.resource.issueNumber != ''">
+              版号、番号、刊号: {{ props.resource.issueNumber }}
+            </div>
             <div class="info-base-item">
               <el-breadcrumb separator="|">
-                <el-breadcrumb-item v-if="props.resource.issuingDate != ''">
+                <el-breadcrumb-item v-if="props.resource.issuingDate && props.resource.issuingDate != ''">
                   年份: {{ props.resource.issuingDate }}
                 </el-breadcrumb-item>
                 <el-breadcrumb-item v-if="props.resource.country != ''">
@@ -77,12 +79,13 @@
 import resourceDramaSeriesList from '@/components/resource/resourceDramaSeriesList.vue'
 import resourceFormDrawer from '@/components/resource/resourceFormDrawer.vue'
 import performerPopoverBlock from '@/components/performer/performerPopoverBlock.vue'
-import { computed, ref, type PropType } from 'vue'
+import { ref, type PropType } from 'vue'
 import type { I_resource, I_resourceDramaSeries } from '@/dataType/resource.dataType'
 import { appStoreData } from '@/storeData/app.storeData'
 import { appLang } from '@/language/app.lang'
 import { playResource, playOpenResourceFolder } from '@/common/play'
 import { resourceDelete } from '@/common/resource'
+import { getResourceCoverPoster } from '@/common/photo';
 const store = {
   appStoreData: appStoreData(),
 }
@@ -96,9 +99,6 @@ const emits = defineEmits(['updateResouceSuccess', 'deleteResourceSuccess'])
 
 const resourceFormDrawerRef = ref<InstanceType<typeof resourceFormDrawer>>()
 
-const resCoverPoster_C = computed(() => {
-  return `/api/resCoverPoster/${props.resource?.filesBases_id}/${props.resource?.coverPoster}`
-});
 
 const playResourceHandle = () => {
   if (!props.resource) return

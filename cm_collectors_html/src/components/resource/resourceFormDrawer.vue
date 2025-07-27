@@ -8,7 +8,7 @@
         </div>
         <div ref="resourceFormCoverPosterContainerRef" class="resource-form-cover-poster"
           :style="{ width: '100%', height: coverPosterHeight_C }">
-          <setImage ref="setImageRef" :src="getResourceCoverPosterSrc()"
+          <setImage ref="setImageRef" :src="getResourceCoverPoster(formData)"
             :cropperWidth="store.appStoreData.currentConfigApp.coverPosterData[formData.coverPosterMode].width"
             :cropperHeight="store.appStoreData.currentConfigApp.coverPosterData[formData.coverPosterMode].height">
           </setImage>
@@ -126,6 +126,7 @@ import { appStoreData } from '@/storeData/app.storeData'
 import type { I_sfm_FileEntry } from '@/components/serverFileManagement/com/dataType';
 import { LoadingService } from '@/assets/loading';
 import { resourceServer } from '@/server/resource.server';
+import { getResourceCoverPoster } from '@/common/photo';
 const store = {
   appStoreData: appStoreData(),
 }
@@ -201,13 +202,6 @@ const init = (_mode: 'add' | 'edit', res: I_resource | null = null) => {
     directors.value = [];
     dramaSeries.value = [];
   }
-}
-
-const getResourceCoverPosterSrc = () => {
-  if (!formData.value || formData.value.coverPoster == '') {
-    return '';
-  }
-  return `/api/resCoverPoster/${formData.value.filesBases_id}/${formData.value.coverPoster}`
 }
 
 const selectServerFilesHandle = () => {

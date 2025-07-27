@@ -5,7 +5,7 @@
       <contentTagDisplay :resource="props.resource"></contentTagDisplay>
     </div>
     <div class="content-cover">
-      <el-image :src="resCoverPoster_C" fit="cover" />
+      <el-image :src="getResourceCoverPoster(props.resource)" fit="cover" />
     </div>
     <div class="play-icon" @click="playResource(props.resource)">
       <el-icon>
@@ -22,6 +22,7 @@ import contentTagDisplay from './contentTagDisplay.vue';
 import { computed, h, type PropType } from 'vue';
 import { appStoreData } from '@/storeData/app.storeData';
 import { playResource } from '@/common/play';
+import { getResourceCoverPoster } from '@/common/photo';
 const store = {
   appStoreData: appStoreData(),
 }
@@ -31,10 +32,6 @@ const props = defineProps({
     required: true,
   },
 })
-const resCoverPoster_C = computed(() => {
-  if (!props.resource.coverPoster || props.resource.coverPoster == '') return '';
-  return `/api/resCoverPoster/${props.resource.filesBases_id}/${props.resource.coverPoster}`
-});
 
 const coverPosterSize_C = computed(() => {
   let width = props.resource.coverPosterWidth;

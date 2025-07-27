@@ -4,7 +4,7 @@
     <div class="performer-form-container">
       <div class="performer-form-left">
         <div class="performer-form-photo">
-          <setImage ref="setImageRef" :src="getPerformerPhotoSrc()"></setImage>
+          <setImage ref="setImageRef" :src="getPerformerPhoto(formData)"></setImage>
         </div>
         <div class="performer-form-column performer-form-short-label" style="padding-top: 1em">
           <el-form-item label="评分">
@@ -62,6 +62,7 @@ import type { I_performer } from '@/dataType/performer.dataType'
 import { appStoreData } from '@/storeData/app.storeData'
 import { LoadingService } from '@/assets/loading'
 import { performerServer } from '@/server/performer.server'
+import { getPerformerPhoto } from '@/common/photo';
 const store = {
   appStoreData: appStoreData(),
 }
@@ -104,10 +105,6 @@ const formRules = reactive<FormRules>({
   name: [{ required: true, trigger: 'blur', message: '请输入姓名' }],
 })
 
-const getPerformerPhotoSrc = () => {
-  if (!formData.value.photo || formData.value.photo == '') return '';
-  return `/api/performerFace/${formData.value.performerBases_id}/${formData.value.photo}`
-}
 
 
 const submitHandle = async () => {

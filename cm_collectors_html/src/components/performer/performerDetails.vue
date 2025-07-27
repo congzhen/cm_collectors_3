@@ -4,7 +4,7 @@
       {{ props.performer.cup + '-' + store.appStoreData.currentCupText }}
     </div>
     <div class="performer-photo">
-      <el-image :src="performerPhoto_C" fit="cover" />
+      <el-image :src="getPerformerPhoto(props.performer)" fit="cover" />
     </div>
     <div class="performer-info">
       <div class="performer-name">{{ props.performer.name }}</div>
@@ -25,7 +25,7 @@
           {{ props.performer.introduction }}
         </li>
       </ul>
-      <div class="performer-btn">
+      <div class="performer-btn" v-if="props.performerBtn">
         <el-button icon="Search" size="small" round> 查看【{{ props.performer.name }}】所有资源 </el-button>
       </div>
     </div>
@@ -33,9 +33,10 @@
 </template>
 <script lang="ts" setup>
 import type { I_performer } from '@/dataType/performer.dataType';
-import { computed, type PropType } from 'vue';
+import { type PropType } from 'vue';
 import { calculateAge } from '@/assets/calculate'
 import { appStoreData } from '@/storeData/app.storeData';
+import { getPerformerPhoto } from '@/common/photo';
 const store = {
   appStoreData: appStoreData(),
 }
@@ -47,12 +48,12 @@ const props = defineProps({
   issuingDate: {
     type: String,
     default: ''
-  }
+  },
+  performerBtn: {
+    type: Boolean,
+    default: true,
+  },
 })
-const performerPhoto_C = computed(() => {
-  if (!props.performer.photo || props.performer.photo == '') return '';
-  return `/api/performerFace/${props.performer.performerBases_id}/${props.performer.photo}`
-});
 </script>
 <style lang="scss" scoped>
 .performer-details {
@@ -72,10 +73,8 @@ const performerPhoto_C = computed(() => {
   .performer-photo {
     flex-shrink: 0;
     width: 110px;
-    padding: 1px;
     border-radius: 5px;
     aspect-ratio: 1/1.3;
-    box-shadow: 0 0 0 1px #cdd0d6;
     overflow: hidden;
 
     .el-image {

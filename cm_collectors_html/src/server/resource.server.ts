@@ -4,6 +4,12 @@ import type { I_searchData } from "@/dataType/search.dataType";
 import { de } from "element-plus/es/locales.mjs";
 const routerGroupUri = '';
 export const resourceServer = {
+  info: async (id: string) => {
+    return await request<I_resource>({
+      url: `${routerGroupUri}/resource/info/${id}`,
+      method: 'get',
+    })
+  },
   dataList: async (filesBasesId: string, fetchCount: boolean, page: number, limit: number, searchData: I_searchData) => {
     return await request<{ total: number, dataList: I_resource[] }>({
       url: `${routerGroupUri}/resource/dataList`,
