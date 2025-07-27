@@ -127,7 +127,7 @@ onMounted(async () => {
       height: calc(100% - 20px);
       padding: 10px 40px;
       display: flex;
-      gap: 10px;
+      gap: 20px;
       overflow-y: auto;
 
       .main-left {

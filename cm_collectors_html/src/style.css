@@ -124,3 +124,7 @@ a,
     width: 360px;
   }
 }
+
+.el-image {
+  border-radius: 4px;
+}

@@ -56,7 +56,6 @@ const coverPosterSize_C = computed(() => {
 .content-style1 {
   width: 158px;
   height: 214px;
-  background-color: aqua;
   overflow: hidden;
   position: relative;
   cursor: pointer;
@@ -103,6 +102,7 @@ const coverPosterSize_C = computed(() => {
     background-color: #282923;
     opacity: 0.5;
     z-index: 5;
+    border-radius: 0px 0px 4px 4px;
   }
 
   .title {
