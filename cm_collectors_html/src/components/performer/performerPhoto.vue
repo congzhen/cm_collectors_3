@@ -9,7 +9,7 @@
 </template>
 <script lang="ts" setup>
 import type { I_performer } from '@/dataType/performer.dataType';
-import { computed, type PropType } from 'vue'
+import { type PropType } from 'vue'
 import { getPerformerPhoto } from '@/common/photo';
 const props = defineProps({
   performer: {

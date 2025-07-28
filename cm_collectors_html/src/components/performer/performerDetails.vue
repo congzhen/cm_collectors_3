@@ -3,8 +3,11 @@
     <div class="performer-cup" v-if="store.appStoreData.currentConfigApp.plugInUnit_Cup && props.performer.cup != ''">
       {{ props.performer.cup + '-' + store.appStoreData.currentCupText }}
     </div>
-    <div class="performer-photo">
-      <el-image :src="getPerformerPhoto(props.performer)" fit="cover" />
+    <div class="performer-photo-k">
+      <div class="rectangle" v-if="!props.roundAvatar">
+        <el-image :src="getPerformerPhoto(props.performer)" fit="cover" />
+      </div>
+      <performerPhoto v-else :performer="props.performer"></performerPhoto>
     </div>
     <div class="performer-info">
       <div class="performer-name">{{ props.performer.name }}</div>
@@ -37,6 +40,7 @@ import { type PropType } from 'vue';
 import { calculateAge } from '@/assets/calculate'
 import { appStoreData } from '@/storeData/app.storeData';
 import { getPerformerPhoto } from '@/common/photo';
+import performerPhoto from './performerPhoto.vue'
 const store = {
   appStoreData: appStoreData(),
 }
@@ -53,6 +57,10 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  roundAvatar: {
+    type: Boolean,
+    default: false,
+  }
 })
 </script>
 <style lang="scss" scoped>
@@ -70,18 +78,22 @@ const props = defineProps({
     color: #F56C6C;
   }
 
-  .performer-photo {
+  .performer-photo-k {
     flex-shrink: 0;
     width: 110px;
-    border-radius: 5px;
-    aspect-ratio: 1/1.3;
-    overflow: hidden;
 
-    .el-image {
-      width: 100%;
-      height: 100%;
+    .rectangle {
       border-radius: 5px;
+      aspect-ratio: 1/1.3;
+      overflow: hidden;
+
+      .el-image {
+        width: 100%;
+        height: 100%;
+        border-radius: 5px;
+      }
     }
+
   }
 
   .performer-info {

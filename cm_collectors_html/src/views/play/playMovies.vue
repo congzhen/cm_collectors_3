@@ -26,7 +26,8 @@
           <el-alert class="tagAlert" title="演员" type="success" :closable="false" />
           <div class="performer-list">
             <div class="performer-item" v-for="performer, key in resourceInfo.performers" :key="key">
-              <performerDetails :performer="performer" :issuing-date="resourceInfo.issuingDate" :performerBtn="false">
+              <performerDetails :performer="performer" :issuing-date="resourceInfo.issuingDate" :performerBtn="false"
+                :roundAvatar="true">
               </performerDetails>
             </div>
           </div>
@@ -182,10 +183,13 @@ onMounted(async () => {
         .performer-list {
           display: flex;
           flex-wrap: wrap;
-          gap: 30px;
+          gap: 10px;
 
           .performer-item {
             width: 300px;
+            border-radius: 10px;
+            padding: 15px;
+            background-color: #434343;
           }
         }
 
