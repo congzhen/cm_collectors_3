@@ -2,14 +2,16 @@
   <div class="resourceDramaSeries-list">
     <div class="resourceDramaSeries-list-index" v-if="props.showMode === E_detailsDramaSeriesMode.digit">
       <ul>
-        <li v-for="(item, key) in props.dramaSeries" :key="key" @click="emits('playResourceDramaSeries', item)">
+        <li :class="[selectedClass(item.id)]" v-for="(item, key) in props.dramaSeries" :key="key"
+          @click="emits('playResourceDramaSeries', item)">
           {{ (key + 1) }}
         </li>
       </ul>
     </div>
     <div class="resourceDramaSeries-list-name" v-else>
       <ul>
-        <li v-for="(item, key) in props.dramaSeries" :key="key" @click="emits('playResourceDramaSeries', item)">
+        <li :class="[selectedClass(item.id)]" v-for="(item, key) in props.dramaSeries" :key="key"
+          @click="emits('playResourceDramaSeries', item)">
           <label>{{ (key + 1) }}.</label>
           <span>{{ getFinalPathSegment(item.src) }}</span>
         </li>
@@ -30,16 +32,34 @@ const props = defineProps({
   dramaSeries: {
     type: Array as PropType<I_resourceDramaSeries[]>,
     required: true,
-  }
+  },
+  //当前选中
+  selectedId: {
+    type: String,
+    default: '',
+  },
 })
 
 const emits = defineEmits(['playResourceDramaSeries']);
 
+const selectedClass = (id: string) => {
+  if (props.selectedId != '' && id === props.selectedId) {
+    return 'selected'
+  }
+  return '';
+}
 
 </script>
 <style lang="scss" scoped>
 .resourceDramaSeries-list {
   padding-bottom: 0.5em;
+}
+
+.selected {
+  background-color: #E6A23C;
+  border-radius: 5px;
+  color: #303133;
+  font-weight: 500;
 }
 
 .resourceDramaSeries-list-index {
@@ -48,11 +68,10 @@ const emits = defineEmits(['playResourceDramaSeries']);
     list-style-type: none;
     display: flex;
     flex-wrap: wrap;
-    justify-content: center;
     gap: 5px;
 
     li {
-      width: 17%;
+      width: 17.5%;
       height: 1.2em;
       line-height: 1.2em;
       font-weight: 500;

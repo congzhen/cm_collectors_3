@@ -11,7 +11,7 @@ export const appDataServer = {
   },
   playOpenResource: async (resourceId: string, dramaSeriesId: string = '') => {
     const obj: IRequest = {
-      url: `${routerGroupUri}/app/play/open/resource/${resourceId}`,
+      url: `${routerGroupUri}/play/open/resource/${resourceId}`,
       method: 'get',
     }
     if (dramaSeriesId != '') {
@@ -23,7 +23,7 @@ export const appDataServer = {
   },
   playOpenResourceFolder: async (resourceId: string) => {
     return await request<boolean>({
-      url: `${routerGroupUri}/app/play/open/resource/folder/${resourceId}`,
+      url: `${routerGroupUri}/play/open/resource/folder/${resourceId}`,
       method: 'get',
     });
   },

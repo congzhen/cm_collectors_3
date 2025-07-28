@@ -45,7 +45,7 @@
         <div class="main-right">
           <el-image :src="getResourceCoverPoster(resourceInfo)" fit="cover" />
           <div class="title">{{ resourceInfo.title }}</div>
-          <resourceDramaSeriesList :drama-series="resourceInfo.dramaSeries"
+          <resourceDramaSeriesList :drama-series="resourceInfo.dramaSeries" :selected-id="selectedDramaSeriesId"
             :show-mode="store.appStoreData.currentFilesBasesAppConfig.detailsDramaSeriesMode"
             @play-resource-drama-series="playResourceDramaSeriesHandle">
           </resourceDramaSeriesList>
@@ -84,11 +84,12 @@ const props = defineProps({
 })
 const videoPlayRef = ref<InstanceType<typeof videoPlay>>();
 const resourceInfo = ref<I_resource>();
+const selectedDramaSeriesId = ref<string>('');
 const loading = ref(false);
 
 const init = async () => {
   await getResourceInfo();
-  videoPlayRef.value?.setVideoSource('/tmpVideo.mp4');
+  setVideoDramaSeries();
 }
 
 const getResourceInfo = async () => {
@@ -102,8 +103,37 @@ const getResourceInfo = async () => {
   loading.value = false;
 };
 
-const playResourceDramaSeriesHandle = (ds: I_resourceDramaSeries) => {
+const setVideoDramaSeries = () => {
+  let dramaSeriesId = '';
+  if (props.dramaSeriesId != '') {
+    dramaSeriesId = props.dramaSeriesId;
+  } else if (resourceInfo.value && resourceInfo.value.dramaSeries.length > 0) {
+    dramaSeriesId = resourceInfo.value.dramaSeries[0].id;
+  }
+  if (dramaSeriesId != '') {
+    setVideoSource(dramaSeriesId);
+  }
+}
 
+const setVideoSource = (dramaSeriesId: string) => {
+  selectedDramaSeriesId.value = dramaSeriesId;
+  const vp = videoPlayRef.value;
+  if (!vp) return;
+  vp.resetPlayer();
+  vp.setVideoSource('/api/video/mp4/' + dramaSeriesId, 'mp4', () => {
+    vp.addTextTrack(
+      `/api/video/subtitle/${dramaSeriesId}`,
+      '默认字幕',
+      'zh',
+      true // 设为默认字幕
+    )
+    vp.play();
+  });
+
+}
+
+const playResourceDramaSeriesHandle = (ds: I_resourceDramaSeries) => {
+  setVideoSource(ds.id)
 }
 
 onMounted(async () => {

@@ -42,8 +42,11 @@ func publicRouter(router *gin.Engine) {
 	routerGroup.GET("/resource/info/:resourceId", controllers.Resource{}.Info)
 	routerGroup.POST("/resource/dataList", controllers.Resource{}.DataList)
 
-	routerGroup.GET("/app/play/open/resource/:resourceId", controllers.Play{}.PlayOpenResource)
-	routerGroup.GET("/app/play/open/resource/folder/:resourceId", controllers.Play{}.PlayOpenResourceFolder)
+	routerGroup.GET("play/open/resource/:resourceId", controllers.Play{}.PlayOpenResource)
+	routerGroup.GET("play/open/resource/folder/:resourceId", controllers.Play{}.PlayOpenResourceFolder)
+
+	routerGroup.GET("/video/mp4/:dramaSeriesId", controllers.Play{}.PlayVideoMP4)
+	routerGroup.GET("/video/subtitle/:dramaSeriesId", controllers.Play{}.VideoSubtitle)
 }
 
 func AdminRouter(router *gin.Engine) {

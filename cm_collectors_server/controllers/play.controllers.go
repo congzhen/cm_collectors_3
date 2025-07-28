@@ -27,3 +27,13 @@ func (Play) PlayOpenResourceFolder(c *gin.Context) {
 	}
 	response.OkWithData(true, c)
 }
+
+func (Play) PlayVideoMP4(c *gin.Context) {
+	dramaSeriesId := c.Param("dramaSeriesId")
+	processors.Video{}.VideoMP4Stream(c, dramaSeriesId)
+}
+
+func (Play) VideoSubtitle(c *gin.Context) {
+	dramaSeriesId := c.Param("dramaSeriesId")
+	processors.VideoSubtitle{}.GetVideoSubtitle(c, dramaSeriesId)
+}

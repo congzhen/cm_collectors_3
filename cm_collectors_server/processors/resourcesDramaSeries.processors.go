@@ -3,12 +3,25 @@ package processors
 import (
 	"cm_collectors_server/core"
 	"cm_collectors_server/datatype"
+	"cm_collectors_server/errorMessage"
 	"cm_collectors_server/models"
 
 	"gorm.io/gorm"
 )
 
 type ResourcesDramaSeries struct{}
+
+func (ResourcesDramaSeries) Info(id string) (*models.ResourcesDramaSeries, error) {
+	return models.ResourcesDramaSeries{}.Info(core.DBS(), id)
+}
+
+func (t ResourcesDramaSeries) GetSrc(id string) (string, error) {
+	info, err := t.Info(id)
+	if err == nil && info.Src == "" {
+		return info.Src, errorMessage.Err_Resources_Play_DramaSeries_Not_Found
+	}
+	return info.Src, err
+}
 
 func (t ResourcesDramaSeries) SetResourcesDramaSeries(db *gorm.DB, resourceID string, dramaSeriesSlc []datatype.ReqParam_resourceDramaSeries_Base) error {
 	if len(dramaSeriesSlc) == 0 {

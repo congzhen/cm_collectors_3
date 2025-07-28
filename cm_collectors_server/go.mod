@@ -1,6 +1,8 @@
 module cm_collectors_server
 
-go 1.21.7
+go 1.23.0
+
+toolchain go1.23.11
 
 require (
 	github.com/coocood/freecache v1.2.4
@@ -10,6 +12,9 @@ require (
 
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
+	github.com/asticode/go-astikit v0.20.0 // indirect
+	github.com/asticode/go-astisub v0.34.0 // indirect
+	github.com/asticode/go-astits v1.8.0 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/bytedance/sonic v1.11.6 // indirect
 	github.com/bytedance/sonic/loader v0.1.1 // indirect
@@ -45,7 +50,7 @@ require (
 	golang.org/x/crypto v0.24.0 // indirect
 	golang.org/x/net v0.26.0 // indirect
 	golang.org/x/sys v0.21.0 // indirect
-	golang.org/x/text v0.22.0 // indirect
+	golang.org/x/text v0.27.0 // indirect
 	google.golang.org/protobuf v1.34.1 // indirect
 	modernc.org/libc v1.22.5 // indirect
 	modernc.org/mathutil v1.5.0 // indirect
