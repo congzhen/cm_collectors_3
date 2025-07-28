@@ -50,7 +50,7 @@ export const searchStoreData = defineStore('search', {
   },
   actions: {
     init: function () {
-
+      this.clear();
     },
     clear: function () {
       this.searchData.searchTextSlc = [];

@@ -21,9 +21,11 @@ import type { I_resource } from '@/dataType/resource.dataType'
 import { ref } from 'vue'
 import type { I_filesBases } from '@/dataType/filesBases.dataType'
 import { appStoreData } from '@/storeData/app.storeData'
+import { searchStoreData } from '@/storeData/search.storeData'
 import { ElMessage } from 'element-plus'
 const store = {
   appStoreData: appStoreData(),
+  searchStoreData: searchStoreData(),
 }
 const tagViewRef = ref<InstanceType<typeof TagView>>();
 const contentViewRef = ref<InstanceType<typeof ContentView>>();
@@ -38,6 +40,7 @@ const selectFilesBaseHandle = async (filesBases: I_filesBases) => {
     ElMessage.error(result.message);
     return
   }
+  store.searchStoreData.init();
   //tagViewRef.value?.init();
   contentViewRef.value?.init();
   loading.value = false;
