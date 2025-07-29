@@ -32,7 +32,8 @@ export const playResource = async (resource: I_resource, dramaSeriesId: string =
   }
 
   if (openMode == E_resourceOpenMode.Soft) {
-    router.push(`/play/${E_resourceDramaSeriesType.Movies}/${resource.id}` + (dramaSeriesId != '' ? `/${dramaSeriesId}` : ''));
+    console.log('软打开', resource.mode)
+    router.push(`/play/${resource.mode}/${resource.id}` + (dramaSeriesId != '' ? `/${dramaSeriesId}` : ''));
   } else if (openMode == E_resourceOpenMode.System) {
     const eln = ElNotification({
       message: `正在打开资源 ${resource.title} ...`,

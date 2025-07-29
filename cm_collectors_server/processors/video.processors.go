@@ -17,11 +17,6 @@ func (v Video) VideoMP4Stream(c *gin.Context, dramaSeriesId string) error {
 	if err != nil {
 		return err
 	}
-	if src == "" {
-		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "Video src not found"})
-		return nil
-	}
-
 	// 检查文件是否存在
 	fileInfo, err := os.Stat(src)
 	if err != nil {

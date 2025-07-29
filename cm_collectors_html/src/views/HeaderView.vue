@@ -2,7 +2,7 @@
   <div class="header-container">
     <div class="title">
       <img src="/public/icon32.png" />
-      <label>CM File Collectors</label>
+      <label>{{ props.title }}</label>
     </div>
     <div class="right" v-if="props.mode === E_headerMode.Index">
       <div class="search">
@@ -56,6 +56,10 @@ const tagListDrawerRef = ref<InstanceType<typeof tagListDrawer>>()
 const resourceFormDrawerRef = ref<InstanceType<typeof resourceFormDrawer>>()
 
 const props = defineProps({
+  title: {
+    type: String,
+    default: 'CM File Collectors',
+  },
   mode: {
     type: String as PropType<E_headerMode>,
     default: E_headerMode.Index,
@@ -85,11 +89,15 @@ const createResouceSuccessHandle = (data: I_resource) => {
   display: flex;
   justify-content: space-between;
 
+
   .title {
-    font-size: 1.7em;
+    font-size: 1.5em;
     font-weight: 500;
-    flex-shrink: 0;
     padding: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+
 
     img {
       width: 1em;
@@ -101,8 +109,8 @@ const createResouceSuccessHandle = (data: I_resource) => {
   .right {
     display: flex;
     justify-content: flex-end;
-    flex-grow: 1;
     padding-right: 0.5em;
+    flex-shrink: 0;
 
     .search {
       margin: 0 1em;

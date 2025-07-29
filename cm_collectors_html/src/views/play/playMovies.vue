@@ -1,6 +1,6 @@
 <template>
   <div class="play-movies-container">
-    <HeaderView class="header" :mode="E_headerMode.GoBack"></HeaderView>
+    <HeaderView class="header" :mode="E_headerMode.GoBack" :title="resourceInfo?.title || ''"></HeaderView>
     <div class="main-container" v-loading="loading">
       <div class="main" v-if="resourceInfo">
         <div class="main-left">

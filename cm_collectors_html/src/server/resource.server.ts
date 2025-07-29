@@ -1,7 +1,6 @@
 import request from "@/assets/request";
 import type { I_resource, I_resource_base, I_resourceDramaSeries_base } from "@/dataType/resource.dataType";
 import type { I_searchData } from "@/dataType/search.dataType";
-import { de } from "element-plus/es/locales.mjs";
 const routerGroupUri = '';
 export const resourceServer = {
   info: async (id: string) => {
@@ -58,3 +57,4 @@ export const resourceServer = {
     });
   }
 }
+

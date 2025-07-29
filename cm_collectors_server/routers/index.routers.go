@@ -47,6 +47,9 @@ func publicRouter(router *gin.Engine) {
 
 	routerGroup.GET("/video/mp4/:dramaSeriesId", controllers.Play{}.PlayVideoMP4)
 	routerGroup.GET("/video/subtitle/:dramaSeriesId", controllers.Play{}.VideoSubtitle)
+
+	routerGroup.GET("files/list/image/:dramaSeriesId", controllers.FilesCL{}.FilesList_Image)
+	routerGroup.GET("files/image/:dramaSeriesId/:fileNameBase64", controllers.FilesCL{}.Files_Image)
 }
 
 func AdminRouter(router *gin.Engine) {

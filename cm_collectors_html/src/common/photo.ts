@@ -10,3 +10,10 @@ export const getPerformerPhoto = (performer: I_performer | undefined) => {
   if (!performer || !performer.photo || performer.photo == '') return '';
   return `/api/performerFace/${performer.performerBases_id}/${performer.photo}`
 }
+
+
+export const getFileImageByDramaSeriesId = (dramaSeriesId: string, filesName: string) => {
+  if (dramaSeriesId == '' || filesName == '') return '';
+  const encodedFileName = btoa(encodeURIComponent(filesName));
+  return `/api/files/image/${dramaSeriesId}/${encodedFileName}`
+}
