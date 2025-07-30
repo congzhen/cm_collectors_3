@@ -128,7 +128,7 @@ const setVideoSource = (dramaSeriesId: string) => {
       'zh',
       true // 设为默认字幕
     )
-    vp.play();
+    //vp.play();
   });
 
 }

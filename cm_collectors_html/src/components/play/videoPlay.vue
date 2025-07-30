@@ -1,6 +1,6 @@
 <template>
   <div class="video-player-container">
-    <video ref="videoPlayerRef" class="video-js vjs-theme-city" controls preload="auto" width="100%" height="400">
+    <video ref="videoPlayerRef" class="video-js vjs-theme-city" controls preload="auto" width="100%">
       <source :src="videoSrc" :type="isHls ? 'application/x-mpegURL' : 'video/mp4'">
     </video>
   </div>
@@ -22,8 +22,14 @@ import '@videojs/themes/dist/city/index.css';
 import '@videojs/http-streaming'
 
 import { ref, onMounted, onBeforeUnmount } from 'vue'
-import { tr } from 'element-plus/es/locales.mjs';
+import { ElMessage } from 'element-plus';
 
+const props = defineProps({
+  aspectRatio: {
+    type: String,
+    default: '16:9',
+  },
+})
 
 const videoPlayerRef = ref<HTMLVideoElement | null>(null)
 const player = ref<any>(null) // 指定更合适的类型
@@ -50,6 +56,8 @@ const initializePlayer = () => {
       },
       sources: [],
       track: [],
+      fill: false,
+      aspectRatio: props.aspectRatio,
     }, function () {
       //console.log('Player is ready');
     })
@@ -92,6 +100,12 @@ const setVideoSource = (src: string, type = 'mp4', fn = () => { }) => {
     player.value.on('error', function () {
       const error = player.value.error()
       console.error('Video.js Error:', error.code, error.message)
+      ElMessage({
+        showClose: true,
+        message: error.message,
+        type: 'error',
+        duration: 5000,
+      })
     })
 
     // 添加 loadeddata 事件监听
@@ -185,7 +199,7 @@ const resetPlayer = () => {
 
       // 暂停并重置
       player.value.pause()
-      player.value.src('')
+      //player.value.src('')
       player.value.load()
 
       // 清理字幕轨道
@@ -225,11 +239,17 @@ defineExpose({
 .video-player-container {
   width: 100%;
   margin: 0 auto;
+  overflow: hidden;
 }
 
 /* 可选：自定义视频播放器样式 */
 .video-js {
   background-color: #000;
+
+  video {
+    /* 保证视频完整显示 */
+    object-fit: contain;
+  }
 }
 
 .video-js .vjs-control-bar {
