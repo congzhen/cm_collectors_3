@@ -61,6 +61,18 @@ const initializePlayer = () => {
     }, function () {
       //console.log('Player is ready');
     })
+
+    //监控音量变化
+    player.value.on('volumechange', function () {
+      // 获取当前音量
+      const currentVolume = player.value.volume();
+      // 获取当前静音状态
+      const isMuted = player.value.muted();
+      // 保存音量到本地存储
+      if (!isMuted) {
+        saveVolumeToStorage(currentVolume);
+      }
+    });
   }
 }
 
@@ -76,7 +88,11 @@ const setVideoSource = (src: string, type = 'mp4', fn = () => { }) => {
 
   if (player.value) {
     // 先重置播放器
-    player.value.reset()
+    resetPlayer();
+
+    // 从本地存储读取并设置音量
+    const savedVolume = getVolumeFromStorage();
+    setVolume(savedVolume)
 
     // 设置新的源
     player.value.src({
@@ -114,13 +130,22 @@ const setVideoSource = (src: string, type = 'mp4', fn = () => { }) => {
     })
   }
 }
-// 添加这个函数来设置音量
+// 设置音量（0~1）
 const setVolume = (volumeLevel: number) => {
   if (player.value) {
     // 确保音量值在有效范围内
     const validVolume = Math.min(1, Math.max(0, volumeLevel))
     player.value.volume(validVolume)
+    // 触发音量变化事件，更新UI
+    player.value.trigger('volumechange')
+    console.log('设置声音');
   }
+}
+const getVolume = () => {
+  if (player.value) {
+    return player.value.volume()
+  }
+  return 0
 }
 
 // 添加字幕轨道
@@ -192,6 +217,10 @@ const removeAllTextTracks = () => {
 const resetPlayer = () => {
   if (player.value) {
     try {
+      // 保存当前状态
+      const currentVolume = player.value.volume();
+      const isMuted = player.value.muted();
+
       // 清理所有事件监听
       player.value.off('loadedmetadata')
       player.value.off('error')
@@ -199,8 +228,12 @@ const resetPlayer = () => {
 
       // 暂停并重置
       player.value.pause()
-      //player.value.src('')
       player.value.load()
+      //player.value.reset()
+
+      // 恢复音量状态
+      player.value.volume(currentVolume);
+      player.value.muted(isMuted);
 
       // 清理字幕轨道
       removeAllTextTracks()
@@ -210,6 +243,28 @@ const resetPlayer = () => {
   }
 }
 
+// 定义本地存储的键名
+const VOLUME_STORAGE_KEY = 'video-player-volume';
+
+// 保存音量到本地存储
+const saveVolumeToStorage = (volume: number) => {
+  try {
+    localStorage.setItem(VOLUME_STORAGE_KEY, volume.toString());
+  } catch (e) {
+    console.warn('无法保存音量到本地存储:', e);
+  }
+};
+
+// 从本地存储读取音量
+const getVolumeFromStorage = (): number => {
+  try {
+    const savedVolume = localStorage.getItem(VOLUME_STORAGE_KEY);
+    return savedVolume ? parseFloat(savedVolume) : 1; // 默认音量为1
+  } catch (e) {
+    console.warn('无法从本地存储读取音量:', e);
+    return 1;
+  }
+};
 
 
 // 组件挂载时初始化播放器
@@ -231,6 +286,7 @@ defineExpose({
   resetPlayer,
   setVideoSource,
   setVolume,
+  getVolume,
   addTextTrack
 })
 </script>
@@ -254,6 +310,10 @@ defineExpose({
 
 .video-js .vjs-control-bar {
   background: rgba(0, 0, 0, 0.7);
+}
+
+.vjs-playback-rate .vjs-playback-rate-value {
+  padding-top: 9px;
 }
 
 

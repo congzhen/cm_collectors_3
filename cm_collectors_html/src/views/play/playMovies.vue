@@ -66,7 +66,7 @@ import { E_headerMode } from '@/dataType/app.dataType'
 import type { I_resource, I_resourceDramaSeries } from '@/dataType/resource.dataType';
 import { resourceServer } from '@/server/resource.server';
 import { ElMessage } from 'element-plus';
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onActivated } from "vue";
 import { getResourceCoverPoster } from '@/common/photo';
 import { appStoreData } from '@/storeData/app.storeData';
 import { appLang } from '@/language/app.lang'
@@ -106,13 +106,15 @@ const getResourceInfo = async () => {
 
 const setVideoDramaSeries = () => {
   let dramaSeriesId = '';
-  if (props.dramaSeriesId != '') {
+  if (props.dramaSeriesId !== '') {
     dramaSeriesId = props.dramaSeriesId;
   } else if (resourceInfo.value && resourceInfo.value.dramaSeries.length > 0) {
     dramaSeriesId = resourceInfo.value.dramaSeries[0].id;
   }
   if (dramaSeriesId != '') {
     setVideoSource(dramaSeriesId);
+  } else {
+    noPlayList()
   }
 }
 
@@ -120,7 +122,6 @@ const setVideoSource = (dramaSeriesId: string) => {
   selectedDramaSeriesId.value = dramaSeriesId;
   const vp = videoPlayRef.value;
   if (!vp) return;
-  vp.resetPlayer();
   vp.setVideoSource('/api/video/mp4/' + dramaSeriesId, 'mp4', () => {
     vp.addTextTrack(
       `/api/video/subtitle/${dramaSeriesId}`,
@@ -130,7 +131,14 @@ const setVideoSource = (dramaSeriesId: string) => {
     )
     //vp.play();
   });
+}
 
+const noPlayList = () => {
+  ElMessage({
+    showClose: true,
+    message: '播放列表为空',
+    type: 'error',
+  })
 }
 
 const playResourceDramaSeriesHandle = (ds: I_resourceDramaSeries) => {

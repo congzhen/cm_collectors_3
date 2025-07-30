@@ -93,6 +93,7 @@ const createResouceSuccessHandle = (data: I_resource) => {
     font-size: 1.5em;
     font-weight: 500;
     flex-shrink: 0;
+    max-width: 50%;
     padding: 0;
     overflow: hidden;
     white-space: nowrap;

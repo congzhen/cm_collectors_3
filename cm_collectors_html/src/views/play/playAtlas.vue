@@ -3,10 +3,10 @@
     <HeaderView class="header" :mode="E_headerMode.GoBack" :title="resourceInfo?.title || ''"></HeaderView>
     <div class="main-container" v-loading="loading">
       <div class="main" v-if="resourceInfo">
-        <Waterfall :list="waterfallList" :gutter="10" :breakpoints="waterfallBreakpoints" :img-selector="'src'"
-          class="atlas-list" @scroll="handleScroll">
+        <Waterfall ref="waterfallRef" :list="waterfallList" :gutter="10" :breakpoints="waterfallBreakpoints"
+          :img-selector="'src'" class="atlas-list" @scroll="handleScroll">
           <template #default="{ item }">
-            <el-image class="atlas-image" :src="item.src" @click="openImageViewer(item.id)" />
+            <el-image class="atlas-image" :src="item.src" @click="openImageViewer(item.id)" @load="onImageLoad" />
           </template>
         </Waterfall>
 
@@ -43,6 +43,7 @@ import { getFinalPathSegment } from '@/assets/tool'
 import { getFileImageByDramaSeriesId } from '@/common/photo'
 import { Waterfall } from 'vue-waterfall-plugin-next'
 import 'vue-waterfall-plugin-next/dist/style.css'
+import { debounce } from '@/assets/debounce';
 const props = defineProps({
   resourceId: {
     type: String,
@@ -55,13 +56,16 @@ const props = defineProps({
 })
 
 
+const waterfallRef = ref<InstanceType<typeof Waterfall>>();
+
 const loading = ref(false);
 const resourceInfo = ref<I_resource>();
 const atlasImageList = ref<string[]>([]);
 const selectedDramaSeriesId = ref<string>('');
 const waterfallColumn = ref(6);
 
-
+const isFirstLoadCompleted = ref(false); // 是否首次加载完成
+const loadedImageCount = ref(0); // 已加载的图片数量
 const displayedCount = ref(60);//控制当前显示的图片数量
 const incrementCount = 20; // 每次加载的图片数量
 
@@ -148,6 +152,9 @@ const scrollTimer = ref<number | null>(null);
 
 // 检查并加载更多图片
 const checkAndLoadMore = () => {
+  // 只有在首次加载完成后才执行自动加载更多
+  if (!isFirstLoadCompleted.value) return;
+
   const container = document.querySelector('.atlas-list');
   if (!container) return;
 
@@ -218,6 +225,25 @@ const loadMoreImages = () => {
     }, 50);
   });
 }
+
+// 图片加载完成事件处理
+const onImageLoad = debounce(() => {
+  nextTick(() => {
+    waterfallRef.value?.renderer();
+  });
+  // 增加已加载图片计数
+  loadedImageCount.value++;
+
+  // 当加载的图片数量达到当前显示的数量时，标记首次加载完成
+  if (!isFirstLoadCompleted.value && loadedImageCount.value >= displayedCount.value) {
+    isFirstLoadCompleted.value = true;
+
+    // 延迟一点时间再检查是否需要加载更多，确保布局已经稳定
+    setTimeout(() => {
+      checkAndLoadMore();
+    }, 200);
+  }
+}, 1000);
 
 // 打开图片查看器
 const openImageViewer = (index: number) => {
