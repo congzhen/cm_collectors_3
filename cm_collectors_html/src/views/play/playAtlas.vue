@@ -2,7 +2,7 @@
   <div class="play-atlas-container">
     <HeaderView class="header" :mode="E_headerMode.GoBack" :title="resourceInfo?.title || ''"></HeaderView>
     <div class="main-container" v-loading="loading">
-      <div class="main" v-if="resourceInfo">
+      <div class="main" ref="mainRef" v-if="resourceInfo">
         <Waterfall ref="waterfallRef" :list="waterfallList" :gutter="10" :breakpoints="waterfallBreakpoints"
           :img-selector="'src'" class="atlas-list" @scroll="handleScroll">
           <template #default="{ item }">
@@ -55,7 +55,7 @@ const props = defineProps({
   },
 })
 
-
+const mainRef = ref<HTMLDivElement>();
 const waterfallRef = ref<InstanceType<typeof Waterfall>>();
 
 const loading = ref(false);
@@ -84,10 +84,14 @@ watch(waterfallColumn, () => {
 
 // 计算瀑布流列表数据
 const waterfallList = computed(() => {
+
+  const mainWidth = mainRef.value?.clientWidth || 0;
+  const thumbWidth = Math.floor(mainWidth / waterfallColumn.value);
+
   return atlasImageList.value
     .slice(0, displayedCount.value)
     .map((fileName, index) => ({
-      src: getFileImageByDramaSeriesId(selectedDramaSeriesId.value, fileName),
+      src: getFileImageByDramaSeriesId(selectedDramaSeriesId.value, fileName, thumbWidth),
       id: index
     }))
 })

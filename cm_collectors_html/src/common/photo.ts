@@ -12,8 +12,8 @@ export const getPerformerPhoto = (performer: I_performer | undefined) => {
 }
 
 
-export const getFileImageByDramaSeriesId = (dramaSeriesId: string, filesName: string) => {
+export const getFileImageByDramaSeriesId = (dramaSeriesId: string, filesName: string, thumbWidth: number = 0) => {
   if (dramaSeriesId == '' || filesName == '') return '';
   const encodedFileName = btoa(encodeURIComponent(filesName));
-  return `/api/files/image/${dramaSeriesId}/${encodedFileName}`
+  return `/api/files/image/${dramaSeriesId}/${encodedFileName}` + (thumbWidth > 0 ? `?thumbWidth=${thumbWidth}` : '')
 }

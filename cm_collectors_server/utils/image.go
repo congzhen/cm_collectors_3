@@ -1,12 +1,17 @@
 package utils
 
 import (
+	"bytes"
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"image"
+	"image/jpeg"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"golang.org/x/image/draw"
 )
 
 func SaveBase64AsImage(base64Str, filePath string) error {
@@ -53,4 +58,53 @@ func SaveBase64AsImage(base64Str, filePath string) error {
 		return err
 	}
 	return nil
+}
+
+// ScaleImage 按指定宽度缩放图片
+// 如果原图宽度大于指定宽度，则进行缩放，否则返回原图
+func ScaleImage(data []byte, maxWidth int) ([]byte, error) {
+	if maxWidth <= 0 {
+		return data, nil
+	}
+	// 将字节数据解码为图像
+	img, _, err := image.Decode(bytes.NewReader(data))
+	if err != nil {
+		return nil, err
+	}
+
+	// 获取原始图像的边界
+	bounds := img.Bounds()
+	srcWidth := bounds.Dx()
+	srcHeight := bounds.Dy()
+
+	// 如果原始宽度小于等于指定宽度，直接返回原数据
+	if srcWidth <= maxWidth {
+		return data, nil
+	}
+
+	// 计算缩放后的尺寸
+	ratio := float64(maxWidth) / float64(srcWidth)
+	newWidth := maxWidth
+	newHeight := int(float64(srcHeight) * ratio)
+
+	// 创建新的RGBA图像
+	dst := image.NewRGBA(image.Rect(0, 0, newWidth, newHeight))
+
+	// 使用CatmullRom算法进行重采样 (下面的采样器选着，质量到速度依次如下)
+	// CatmullRom
+	// ApproxBiLinear
+	// NearestNeighbor
+	draw.NearestNeighbor.Scale(dst, dst.Bounds(), img, bounds, draw.Over, nil)
+
+	// 创建缓冲区用于存储编码后的图像
+	buf := new(bytes.Buffer)
+
+	// 根据原始图像格式进行编码
+	// 这里假设使用JPEG格式，实际应用中可能需要根据文件扩展名判断
+	err = jpeg.Encode(buf, dst, &jpeg.Options{Quality: 90})
+	if err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
 }
