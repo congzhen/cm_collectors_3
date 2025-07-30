@@ -3,7 +3,7 @@ package controllers
 import (
 	"cm_collectors_server/processors"
 	"cm_collectors_server/response"
-	"encoding/base64"
+	"fmt"
 	"path/filepath"
 	"strings"
 
@@ -24,12 +24,12 @@ func (FilesCL) FilesList_Image(c *gin.Context) {
 func (FilesCL) Files_Image(c *gin.Context) {
 	dramaSeriesId := c.Param("dramaSeriesId")
 	fileNameBase64 := c.Param("fileNameBase64")
-	fileNameBytes, err := base64.StdEncoding.DecodeString(fileNameBase64)
+	fileName, err := UrlDecode(fileNameBase64)
 	if err != nil {
-		response.FailWithMessage(err.Error(), c)
+		response.FailWithMessage("Base64解码失败: "+err.Error(), c)
 		return
 	}
-	fileName := string(fileNameBytes)
+	fmt.Println("-----------------------", fileName)
 	data, err := processors.FilesCL{}.FilesImage(dramaSeriesId, fileName)
 	if err := ResError(c, err); err != nil {
 		return

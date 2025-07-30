@@ -3877,6 +3877,11 @@ vue-tsc@^2.2.8:
     "@volar/typescript" "~2.4.11"
     "@vue/language-core" "2.2.8"
 
+vue-waterfall-plugin-next@^2.6.7:
+  version "2.6.7"
+  resolved "https://registry.yarnpkg.com/vue-waterfall-plugin-next/-/vue-waterfall-plugin-next-2.6.7.tgz#978cfeedba66c3e3a363df5ece1ab4dcbe9fb30a"
+  integrity sha512-B7D/6W/t/iT6yv5RlpiwmD4adkBdoF4I39sxg5hTn3GMQXhs6H5jORinzjzYW2ls4h2zqxT0NJmXRFQgPldOsQ==
+
 vue@^3.5.13:
   version "3.5.13"
   resolved "https://registry.yarnpkg.com/vue/-/vue-3.5.13.tgz#9f760a1a982b09c0c04a867903fc339c9f29ec0a"

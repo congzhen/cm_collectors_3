@@ -5,8 +5,10 @@ import (
 	"cm_collectors_server/errorMessage"
 	"cm_collectors_server/response"
 	"cm_collectors_server/tool/filter"
+	"encoding/base64"
 	"errors"
 	"fmt"
+	"net/url"
 	"reflect"
 	"runtime"
 	"strconv"
@@ -227,4 +229,17 @@ func ResError(c *gin.Context, err error) error {
 		response.FailWithCode(8, c)
 	}
 	return err
+}
+
+func UrlDecode(base64Str string) (string, error) {
+	strBytes, err := base64.StdEncoding.DecodeString(base64Str)
+	if err != nil {
+		return "", err
+	}
+	str := string(strBytes)
+	str, err = url.QueryUnescape(str)
+	if err != nil {
+		return "", err
+	}
+	return str, nil
 }

@@ -5,6 +5,7 @@ import SettingView from '@/views/SettingView.vue'
 
 import playMovies from '@/views/play/playMovies.vue'
 import playComic from '@/views/play/playComic.vue'
+import playAtlas from '@/views/play/playAtlas.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -42,6 +43,15 @@ const router = createRouter({
         dramaSeriesId: route.params.dramaSeriesId || ''
       }),
       component: playComic,
+    },
+    {
+      path: '/play/atlas/:resourceId/:dramaSeriesId?',
+      name: 'playAtlas',
+      props: route => ({
+        resourceId: route.params.resourceId,
+        dramaSeriesId: route.params.dramaSeriesId || ''
+      }),
+      component: playAtlas,
     },
   ],
 })

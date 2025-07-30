@@ -2,6 +2,7 @@ package processors
 
 import (
 	"cm_collectors_server/errorMessage"
+	"errors"
 	"os"
 	"path"
 	"path/filepath"
@@ -49,7 +50,7 @@ func (t FilesCL) FilesImage(dramaSeriesId, fileName string) ([]byte, error) {
 	filePath := path.Join(dirPath, fileName)
 	// 检查文件是否存在
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		return nil, errorMessage.Err_Resources_Play_Src_Error
+		return nil, errorMessage.WrapError(errorMessage.Err_Resources_Play_Src_Error, errors.New(fileName))
 	}
 	// 读取文件内容
 	fileData, err := os.ReadFile(filePath)
