@@ -66,7 +66,6 @@ const props = defineProps({
   },
 })
 
-const searchTextSlc = ref<string[]>([])
 
 const oepnResourceForm = () => {
   resourceFormDrawerRef.value?.open('add')
@@ -93,6 +92,7 @@ const createResouceSuccessHandle = (data: I_resource) => {
   .title {
     font-size: 1.5em;
     font-weight: 500;
+    flex-shrink: 0;
     padding: 0;
     overflow: hidden;
     white-space: nowrap;
@@ -110,7 +110,7 @@ const createResouceSuccessHandle = (data: I_resource) => {
     display: flex;
     justify-content: flex-end;
     padding-right: 0.5em;
-    flex-shrink: 0;
+    flex-grow: 1;
 
     .search {
       margin: 0 1em;
