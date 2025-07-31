@@ -59,6 +59,7 @@ func AdminRouter(router *gin.Engine) {
 	routerGroup.DELETE("resource/delete/:resourceId", controllers.Resource{}.DeleteResource)
 	routerGroup.POST("filesBases/create", controllers.FilesBases{}.Create)
 	routerGroup.PUT("filesBases/setData", controllers.FilesBases{}.SetFilesBases)
+	routerGroup.POST("performerBases/create", controllers.Performer{}.Create)
 	routerGroup.PUT("performerBases/update", controllers.Performer{}.PerformerBasesUpdate)
 	routerGroup.POST("performer/create", controllers.Performer{}.CreatePerformer)
 	routerGroup.PUT("performer/update", controllers.Performer{}.UpdatePerformer)

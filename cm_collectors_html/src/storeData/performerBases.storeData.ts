@@ -19,6 +19,9 @@ export const performerBasesStoreData = defineStore('performerBases', {
     init: function (dataList: I_performerBases[]) {
       this.performerBases = dataList;
     },
+    add: function (data: I_performerBases) {
+      this.performerBases.push(data);
+    },
     getPerformerBasesById: function (id: string) {
       return this.performerBases.find(item => item.id === id) || null;
     },

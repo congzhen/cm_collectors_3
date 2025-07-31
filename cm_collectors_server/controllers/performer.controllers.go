@@ -110,3 +110,19 @@ func (Performer) PerformerBasesUpdate(c *gin.Context) {
 	}
 	response.OkWithData(true, c)
 }
+
+func (Performer) Create(c *gin.Context) {
+	var par datatype.ReqParam_CreatePerformerBases
+	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {
+		return
+	}
+	id, err := processors.PerformerBases{}.Create(par.Name)
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	info, err := processors.PerformerBases{}.InfoById(id)
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(info, c)
+}

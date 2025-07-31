@@ -23,10 +23,25 @@ func (PerformerBases) DataList(db *gorm.DB) (*[]PerformerBases, error) {
 	err := db.Model(&PerformerBases{}).Order("sort").Find(&dataList).Error
 	return &dataList, err
 }
+
+func (PerformerBases) InfoById(db *gorm.DB, id string) (*PerformerBases, error) {
+	var info PerformerBases
+	err := db.Model(&PerformerBases{}).Where("id = ?", id).First(&info).Error
+	return &info, err
+}
+func (PerformerBases) GetTotal(db *gorm.DB) (int64, error) {
+	var total int64
+	err := db.Model(&PerformerBases{}).Count(&total).Error
+	return total, err
+}
+
 func (PerformerBases) Update(db *gorm.DB, performerBases *PerformerBases, fields []string) error {
 	result := db.Model(&performerBases).Select(fields).Updates(performerBases)
 	if result.RowsAffected == 0 {
 		return nil
 	}
 	return result.Error
+}
+func (PerformerBases) Create(db *gorm.DB, performerBases *PerformerBases) error {
+	return db.Create(&performerBases).Error
 }

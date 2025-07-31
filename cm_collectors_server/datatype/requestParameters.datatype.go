@@ -110,10 +110,14 @@ type ReqParam_PerformerStatus struct {
 	Status bool   `json:"status"`
 }
 
+type ReqParam_CreatePerformerBases struct {
+	Name string `json:"name" binding:"required"`
+}
+
 // 请求参数 - 修改演员集
 type ReqParam_UpdatePerformerBases struct {
-	ID     string `json:"id"`
-	Name   string `json:"name"`
+	ID     string `json:"id" binding:"required"`
+	Name   string `json:"name" binding:"required"`
 	Sort   int    `json:"sort"`
 	Status bool   `json:"status"`
 }
