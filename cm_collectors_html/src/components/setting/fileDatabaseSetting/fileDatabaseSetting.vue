@@ -1,18 +1,22 @@
 <template>
   <div class="database-setting">
     <div class="database-setting-btn">
-      <el-button icon="Plus" type="success" plain>创建新文件数据库</el-button>
+      <el-button icon="Plus" type="success" @click="createNewFilesBases()" plain>创建新文件数据库</el-button>
       <el-button type="warning" plain>路径替换</el-button>
       <el-button type="warning" plain>批量删除</el-button>
     </div>
     <el-tabs tab-position="left" class="setting-tabs" v-model="activeName">
-      <el-tab-pane v-for="item, key in store.filesBasesStoreData.filesBases" :key="key" :name="item.id"
-        :label="item.name">
+      <el-tab-pane v-for="item, key in store.filesBasesStoreData.filesBases" :class="[item.status ? '' : 'disabled']"
+        :key="key" :name="item.id" :label="item.name">
+        <template #label>
+          <span :class="[item.status ? '' : 'disabled']">{{ item.name }}</span>
+        </template>
         <fileSettingData v-if="activeName === item.id" :filesBasesId="item.id" @set-success="setSuccessHandle">
         </fileSettingData>
       </el-tab-pane>
     </el-tabs>
   </div>
+  <fileDatabaseFormDialog ref="fileDatabaseFormDialogRef"></fileDatabaseFormDialog>
 </template>
 <script setup lang="ts">
 import { ref } from 'vue';
@@ -21,11 +25,15 @@ import { filesBasesStoreData } from '@/storeData/filesBases.storeData';
 import { LoadingService } from '@/assets/loading';
 import { appStoreData } from '@/storeData/app.storeData';
 import { ElMessage } from 'element-plus';
+import fileDatabaseFormDialog from './fileDatabaseFormDialog.vue';
 
 const store = {
   appStoreData: appStoreData(),
   filesBasesStoreData: filesBasesStoreData(),
 }
+
+const fileDatabaseFormDialogRef = ref<InstanceType<typeof fileDatabaseFormDialog>>();
+
 const activeName = ref(store.filesBasesStoreData.filesBasesFirst?.id);
 
 
@@ -51,5 +59,24 @@ const setSuccessHandle = async (filesBasesId: string) => {
   }
 }
 
+const createNewFilesBases = () => {
+  fileDatabaseFormDialogRef.value?.open();
+}
+
 </script>
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+:deep(.el-tabs__item) {
+  .disabled {
+    color: #909399 !important;
+    text-decoration: line-through;
+    font-style: italic;
+    opacity: 0.7;
+  }
+
+  // 选中状态覆盖 disabled 样式
+  &.is-active .disabled {
+    color: var(--el-color-primary) !important;
+    opacity: 1;
+  }
+}
+</style>

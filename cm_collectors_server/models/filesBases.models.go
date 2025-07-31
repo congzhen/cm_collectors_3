@@ -27,11 +27,20 @@ func (FilesBases) TableName() string {
 func (FilesBases) preloadTable(db *gorm.DB) *gorm.DB {
 	return db.Preload("FilesBasesSetting").Preload("FilesRelatedPerformerBases")
 }
+func (FilesBases) preloadTableBase(db *gorm.DB) *gorm.DB {
+	return db.Preload("FilesRelatedPerformerBases")
+}
 
 func (t FilesBases) DataList(db *gorm.DB) (*[]FilesBases, error) {
 	var dataList []FilesBases
-	err := db.Preload("FilesRelatedPerformerBases").Model(&FilesBases{}).Order("sort").Find(&dataList).Error
+	err := t.preloadTableBase(db).Model(&FilesBases{}).Order("sort").Find(&dataList).Error
 	return &dataList, err
+}
+
+func (t FilesBases) Info(db *gorm.DB, id string) (*FilesBases, error) {
+	var info FilesBases
+	err := t.preloadTableBase(db).First(&info, "id = ?", id).Error
+	return &info, err
 }
 
 func (t FilesBases) InfoDetails(db *gorm.DB, id string) (*FilesBasesDetails, error) {
@@ -40,10 +49,19 @@ func (t FilesBases) InfoDetails(db *gorm.DB, id string) (*FilesBasesDetails, err
 	return &data, err
 }
 
+func (FilesBases) GetTotal(db *gorm.DB) (int64, error) {
+	var total int64
+	err := db.Model(&FilesBases{}).Count(&total).Error
+	return total, err
+}
+
 func (FilesBases) Update(db *gorm.DB, filesBases *FilesBases, fields []string) error {
 	result := db.Model(&filesBases).Select(fields).Updates(filesBases)
 	if result.RowsAffected == 0 {
 		return nil
 	}
 	return result.Error
+}
+func (FilesBases) Create(db *gorm.DB, filesBases *FilesBases) error {
+	return db.Create(&filesBases).Error
 }

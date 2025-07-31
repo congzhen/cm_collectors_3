@@ -42,6 +42,13 @@ type ReqParam_resourceDramaSeries_Base struct {
 	Src string `json:"src"`
 }
 
+// 请求参数 - 创建filesBases
+type ReqParam_CreateFilesBases struct {
+	Name                     string   `json:"name" binding:"required"`
+	MainPerformerBasesId     string   `json:"mainPerformerBasesId" binding:"required"`
+	RelatedPerformerBasesIds []string `json:"relatedPerformerBasesIds"`
+}
+
 // 请求参数 - 设置filesBases
 type ReqParam_SetFilesBases struct {
 	ID                    string              `json:"id"`

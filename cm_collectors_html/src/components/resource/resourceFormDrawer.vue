@@ -43,15 +43,19 @@
         </div>
         <div class="resource-form-block">
           <el-form-item label="资源类型">
-            <el-radio-group v-model="formData.mode" size="small">
+            <el-radio-group v-model="formData.mode">
               <el-radio-button :value="E_resourceDramaSeriesType.Movies">视频</el-radio-button>
               <el-radio-button :value="E_resourceDramaSeriesType.Comic">漫画</el-radio-button>
               <el-radio-button :value="E_resourceDramaSeriesType.Atlas">图集</el-radio-button>
               <el-radio-button :value="E_resourceDramaSeriesType.Files">文件</el-radio-button>
+              <!--
               <el-radio-button :value="E_resourceDramaSeriesType.VideoLink">
                 视频链接
               </el-radio-button>
-              <el-radio-button :value="E_resourceDramaSeriesType.NetDisk">网盘</el-radio-button>
+              <el-radio-button :value="E_resourceDramaSeriesType.NetDisk">
+                网盘
+              </el-radio-button>
+              -->
             </el-radio-group>
           </el-form-item>
           <el-form-item label="资源标题" prop="title">

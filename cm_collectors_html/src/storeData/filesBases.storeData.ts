@@ -17,6 +17,9 @@ export const filesBasesStoreData = defineStore('filesBases', {
     init: function (dataList: I_filesBases[]) {
       this.filesBases = dataList;
     },
+    add: function (data: I_filesBases) {
+      this.filesBases.push(data);
+    },
     getPerformerRelatedFilesBases: function (performerBasesId: string): I_filesBases[] {
       return this.filesBases.filter(item => item.filesRelatedPerformerBases.find(item => item.performerBases_id === performerBasesId))
     },

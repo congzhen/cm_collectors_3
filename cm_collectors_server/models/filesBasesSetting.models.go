@@ -20,3 +20,10 @@ func (FilesBasesSetting) Update(db *gorm.DB, filesBasesID string, filesBasesSett
 	}
 	return result.Error
 }
+
+func (FilesBasesSetting) CreateNull(db *gorm.DB, filesBasesID string) error {
+	fbm := &FilesBasesSetting{
+		FilesBasesID: filesBasesID,
+	}
+	return db.Create(&fbm).Error
+}

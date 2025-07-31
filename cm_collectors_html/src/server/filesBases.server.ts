@@ -21,5 +21,16 @@ export const filesBasesServer = {
         relatedPerformerBases
       }
     });
-  }
+  },
+  create: async (name: string, mainPerformerBasesId: string, relatedPerformerBasesIds: string[]) => {
+    return await request<I_filesBases>({
+      url: `${routerGroupUri}/filesBases/create`,
+      method: 'post',
+      data: {
+        name,
+        mainPerformerBasesId,
+        relatedPerformerBasesIds,
+      },
+    });
+  },
 }

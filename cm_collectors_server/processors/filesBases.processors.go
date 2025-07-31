@@ -15,6 +15,10 @@ func (FilesBases) DataList() (*[]models.FilesBases, error) {
 	return models.FilesBases{}.DataList(core.DBS())
 }
 
+func (FilesBases) InfoById(id string) (*models.FilesBases, error) {
+	return models.FilesBases{}.Info(core.DBS(), id)
+}
+
 func (FilesBases) InfoDetailsById(id string) (*models.FilesBasesDetails, error) {
 	return models.FilesBases{}.InfoDetails(core.DBS(), id)
 }
@@ -137,4 +141,64 @@ func (FilesBases) handleAdds(tx *gorm.DB, toAdd []string, filesBasesID string, m
 	}
 
 	return models.FilesRelatedPerformerBases{}.Creates(tx, &newRecords)
+}
+
+func (FilesBases) GetTotal() (int64, error) {
+	return models.FilesBases{}.GetTotal(core.DBS())
+}
+
+func (t FilesBases) Create(name, mainPerformerBasesId string, relatedPerformerBasesIds []string) (string, error) {
+	db := core.DBS()
+	id := core.GenerateUniqueID()
+	tagTotal, err := t.GetTotal()
+	if err != nil {
+		return id, err
+	}
+	err = db.Transaction(func(tx *gorm.DB) error {
+		createdAt := datatype.CustomTime(core.TimeNow())
+		filesBaseModels := models.FilesBases{
+			ID:        id,
+			Name:      name,
+			Sort:      int(tagTotal) + 1,
+			CreatedAt: &createdAt,
+			Status:    true,
+		}
+		err := filesBaseModels.Create(tx, &filesBaseModels)
+		if err != nil {
+			return err
+		}
+		err = models.FilesBasesSetting{}.CreateNull(tx, id)
+		if err != nil {
+			return err
+		}
+		filesRelatedPerformerBasesModelsSlc := []models.FilesRelatedPerformerBases{}
+		if len(relatedPerformerBasesIds) > 0 {
+			for _, performerBasesID := range relatedPerformerBasesIds {
+				main := false
+				if performerBasesID == mainPerformerBasesId {
+					main = true
+				}
+				relatedModels := models.FilesRelatedPerformerBases{
+					ID:               core.GenerateUniqueID(),
+					FilesBasesID:     id,
+					PerformerBasesID: performerBasesID,
+					Main:             main,
+				}
+				filesRelatedPerformerBasesModelsSlc = append(filesRelatedPerformerBasesModelsSlc, relatedModels)
+			}
+		} else {
+			filesRelatedPerformerBasesModelsSlc = append(filesRelatedPerformerBasesModelsSlc, models.FilesRelatedPerformerBases{
+				ID:               core.GenerateUniqueID(),
+				FilesBasesID:     id,
+				PerformerBasesID: mainPerformerBasesId,
+				Main:             true,
+			})
+		}
+		err = models.FilesRelatedPerformerBases{}.Creates(tx, &filesRelatedPerformerBasesModelsSlc)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+	return id, err
 }

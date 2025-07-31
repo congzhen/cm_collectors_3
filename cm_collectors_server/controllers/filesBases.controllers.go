@@ -30,3 +30,19 @@ func (FilesBases) SetFilesBases(c *gin.Context) {
 	}
 	response.OkWithData(true, c)
 }
+
+func (FilesBases) Create(c *gin.Context) {
+	var par datatype.ReqParam_CreateFilesBases
+	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {
+		return
+	}
+	id, err := processors.FilesBases{}.Create(par.Name, par.MainPerformerBasesId, par.RelatedPerformerBasesIds)
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	info, err := processors.FilesBases{}.InfoById(id)
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(info, c)
+}

@@ -11,6 +11,9 @@ export const performerBasesStoreData = defineStore('performerBases', {
     activeFirstPerformerBases: function (state) {
       return state.performerBases.find(item => item.status) || null;
     },
+    activeFirstPerformerBasesId: function (state) {
+      return state.performerBases.find(item => item.status)?.id || '';
+    },
   },
   actions: {
     init: function (dataList: I_performerBases[]) {
