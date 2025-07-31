@@ -224,7 +224,7 @@ const submitHandle = async () => {
     formData.value.filesBases_id = store.appStoreData.currentFilesBases.id;
   }
   const photoBase64 = setImageRef.value?.getImageBase64() || '';
-  if (photoBase64 != '' && setImageRef.value) {
+  if (setImageRef.value) {
     const { width, height } = setImageRef.value.getImageSize();
     formData.value.coverPosterWidth = width;
     formData.value.coverPosterHeight = height;

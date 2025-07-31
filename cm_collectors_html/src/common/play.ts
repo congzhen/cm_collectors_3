@@ -21,6 +21,7 @@ export const playResource = async (resource: I_resource, dramaSeriesId: string =
       openMode = store.appStoreData.currentConfigApp.openResModeAtlas;
       break;
     case E_resourceDramaSeriesType.Files:
+      openMode = E_resourceOpenMode.System;
       break;
     case E_resourceDramaSeriesType.NetDisk:
       break;

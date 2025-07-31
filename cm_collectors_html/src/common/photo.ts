@@ -12,8 +12,23 @@ export const getPerformerPhoto = (performer: I_performer | undefined) => {
 }
 
 
-export const getFileImageByDramaSeriesId = (dramaSeriesId: string, filesName: string, thumbWidth: number = 0) => {
+export const getFileImageByDramaSeriesId = (dramaSeriesId: string, filesName: string, thumbWidth: number = 0, thumbLevel: number = 0) => {
   if (dramaSeriesId == '' || filesName == '') return '';
   const encodedFileName = btoa(encodeURIComponent(filesName));
-  return `/api/files/image/${dramaSeriesId}/${encodedFileName}` + (thumbWidth > 0 ? `?thumbWidth=${thumbWidth}` : '')
+
+  // 构建基础URL
+  let url = `/api/files/image/${dramaSeriesId}/${encodedFileName}`;
+
+  // 添加查询参数
+  const params = new URLSearchParams();
+  if (thumbWidth > 0) {
+    params.append('thumbWidth', thumbWidth.toString());
+  }
+  if (thumbLevel > 0) {
+    params.append('thumbLevel', thumbLevel.toString());
+  }
+
+  // 拼接查询参数
+  const queryString = params.toString();
+  return url + (queryString ? `?${queryString}` : '');
 }

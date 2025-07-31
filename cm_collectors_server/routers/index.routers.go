@@ -49,7 +49,7 @@ func publicRouter(router *gin.Engine) {
 	routerGroup.GET("/video/subtitle/:dramaSeriesId", controllers.Play{}.VideoSubtitle)
 
 	routerGroup.GET("files/list/image/:dramaSeriesId", controllers.FilesCL{}.FilesList_Image)
-	routerGroup.GET("files/image/:dramaSeriesId/:fileNameBase64", controllers.FilesCL{}.Files_Image) //Query("thumbWidth")缩率图宽度
+	routerGroup.GET("files/image/:dramaSeriesId/:fileNameBase64", controllers.FilesCL{}.Files_Image) //Query("thumbWidth")缩率图宽度,Query("thumbLevel") 缩率图质量
 }
 
 func AdminRouter(router *gin.Engine) {

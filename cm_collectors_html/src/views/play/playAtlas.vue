@@ -9,11 +9,6 @@
             <el-image class="atlas-image" :src="item.src" @click="openImageViewer(item.id)" @load="onImageLoad" />
           </template>
         </Waterfall>
-
-        <!-- 使用 Element Plus 的图片查看器 -->
-        <el-image-viewer v-if="showImageViewer" :url-list="atlasImageListSrc_C" :initial-index="initialIndex"
-          @close="closeImageViewer" />
-
         <div class="atlas-tool-btn">
           <el-slider v-model="waterfallColumn" :min="1" :max="20" style="width: 200px;" />
           <div>Total: {{ atlasImageList.length }}</div>
@@ -29,11 +24,13 @@
         </div>
       </div>
     </div>
+    <imageViewer ref="imageViewerRef" :imageList="atlasImageListSrc_C"></imageViewer>
   </div>
 </template>
 <script lang="ts" setup>
 import type { I_resource } from '@/dataType/resource.dataType';
 import HeaderView from '../HeaderView.vue'
+import imageViewer from '@/components/play/imageViewer.vue';
 import { E_headerMode } from '@/dataType/app.dataType'
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { resourceServer } from '@/server/resource.server';
@@ -57,6 +54,7 @@ const props = defineProps({
 
 const mainRef = ref<HTMLDivElement>();
 const waterfallRef = ref<InstanceType<typeof Waterfall>>();
+const imageViewerRef = ref<InstanceType<typeof imageViewer>>();
 
 const loading = ref(false);
 const resourceInfo = ref<I_resource>();
@@ -69,10 +67,6 @@ const loadedImageCount = ref(0); // 已加载的图片数量
 const displayedCount = ref(60);//控制当前显示的图片数量
 const incrementCount = 20; // 每次加载的图片数量
 
-// 图片查看器相关状态
-const showImageViewer = ref(false);
-const initialIndex = ref(0);
-
 watch(waterfallColumn, () => {
   // 列数改变时，重新检查是否需要加载更多
   nextTick(() => {
@@ -84,10 +78,8 @@ watch(waterfallColumn, () => {
 
 // 计算瀑布流列表数据
 const waterfallList = computed(() => {
-
   const mainWidth = mainRef.value?.clientWidth || 0;
   const thumbWidth = Math.floor(mainWidth / waterfallColumn.value);
-
   return atlasImageList.value
     .slice(0, displayedCount.value)
     .map((fileName, index) => ({
@@ -98,6 +90,8 @@ const waterfallList = computed(() => {
 const atlasImageListSrc_C = computed(() => {
   return atlasImageList.value.map(fileName => getFileImageByDramaSeriesId(selectedDramaSeriesId.value, fileName))
 })
+
+
 
 // 计算动态 breakpoints
 const waterfallBreakpoints = computed(() => {
@@ -249,16 +243,10 @@ const onImageLoad = debounce(() => {
   }
 }, 1000);
 
-// 打开图片查看器
-const openImageViewer = (index: number) => {
-  initialIndex.value = index;
-  showImageViewer.value = true;
-};
 
-// 关闭图片查看器
-const closeImageViewer = () => {
-  showImageViewer.value = false;
-};
+const openImageViewer = (index: number) => {
+  imageViewerRef.value?.openImageViewer(index);
+}
 
 onMounted(async () => {
   await init();

@@ -34,6 +34,12 @@ func (FilesCL) Files_Image(c *gin.Context) {
 	if thumbWidthStr != "" {
 		thumbWidth, _ = strconv.Atoi(thumbWidthStr)
 	}
+	// 获取缩略图质量参数
+	thumbLevel := 0
+	thumbLevelStr := c.Query("thumbLevel")
+	if thumbLevelStr != "" {
+		thumbLevel, _ = strconv.Atoi(thumbLevelStr)
+	}
 
 	if err != nil {
 		response.FailWithMessage("Base64解码失败: "+err.Error(), c)
@@ -43,7 +49,7 @@ func (FilesCL) Files_Image(c *gin.Context) {
 	if err := ResError(c, err); err != nil {
 		return
 	}
-	data, err = utils.ScaleImage(data, thumbWidth)
+	data, err = utils.ScaleImage(data, thumbWidth, thumbLevel)
 	if err := ResError(c, err); err != nil {
 		return
 	}

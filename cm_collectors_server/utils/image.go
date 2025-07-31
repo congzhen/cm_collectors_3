@@ -60,9 +60,16 @@ func SaveBase64AsImage(base64Str, filePath string) error {
 	return nil
 }
 
-// ScaleImage 按指定宽度缩放图片
-// 如果原图宽度大于指定宽度，则进行缩放，否则返回原图
-func ScaleImage(data []byte, maxWidth int) ([]byte, error) {
+// ScaleImage 将图像数据按指定最大宽度进行缩放，并根据质量级别选择不同的采样算法。
+// 参数：
+//   - data: 原始图像的字节数据
+//   - maxWidth: 图像缩放后的最大宽度，若小于等于0则不进行缩放
+//   - level: 缩放质量级别，1表示低质量（快速），2表示中等质量，3表示高质量（较慢）
+//
+// 返回值：
+//   - []byte: 缩放后图像的字节数据
+//   - error: 如果在解码、缩放或编码过程中发生错误，则返回相应的错误信息
+func ScaleImage(data []byte, maxWidth int, level int) ([]byte, error) {
 	if maxWidth <= 0 {
 		return data, nil
 	}
@@ -90,11 +97,25 @@ func ScaleImage(data []byte, maxWidth int) ([]byte, error) {
 	// 创建新的RGBA图像
 	dst := image.NewRGBA(image.Rect(0, 0, newWidth, newHeight))
 
-	// 使用CatmullRom算法进行重采样 (下面的采样器选着，质量到速度依次如下)
-	// CatmullRom
-	// ApproxBiLinear
-	// NearestNeighbor
-	draw.NearestNeighbor.Scale(dst, dst.Bounds(), img, bounds, draw.Over, nil)
+	// 根据质量级别选择不同的采样器
+	var scaler draw.Scaler
+	switch level {
+	case 1:
+		// 低质量，最快的速度
+		scaler = draw.NearestNeighbor
+	case 2:
+		// 中等质量
+		scaler = draw.ApproxBiLinear
+	case 3:
+		// 高质量，较慢的速度
+		scaler = draw.CatmullRom
+	default:
+		// 默认使用中等质量
+		scaler = draw.ApproxBiLinear
+	}
+
+	// 使用选定的采样器进行缩放
+	scaler.Scale(dst, dst.Bounds(), img, bounds, draw.Over, nil)
 
 	// 创建缓冲区用于存储编码后的图像
 	buf := new(bytes.Buffer)
