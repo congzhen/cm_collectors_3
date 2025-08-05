@@ -46,3 +46,15 @@ func (FilesBases) Create(c *gin.Context) {
 	}
 	response.OkWithData(info, c)
 }
+
+func (FilesBases) Sort(c *gin.Context) {
+	var par datatype.ReqParam_FilesBasesSort
+	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {
+		return
+	}
+	err := processors.FilesBases{}.Sort(par.SortData)
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(true, c)
+}

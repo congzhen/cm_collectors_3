@@ -58,6 +58,16 @@ type ReqParam_SetFilesBases struct {
 	RelatedPerformerBases []string            `json:"relatedPerformerBases"`
 }
 
+// 请求参数 - filesBases排序
+type ReqParam_FilesBasesSort struct {
+	SortData []FilesBasesSort `json:"sortData"`
+}
+
+type FilesBasesSort struct {
+	ID   string `json:"id"`
+	Sort int    `json:"sort"`
+}
+
 // 请求参数 - filesBases信息
 type ReqParam_FielsBases struct {
 	ID     string `json:"id"`

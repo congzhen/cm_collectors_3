@@ -143,6 +143,26 @@ func (FilesBases) handleAdds(tx *gorm.DB, toAdd []string, filesBasesID string, m
 	return models.FilesRelatedPerformerBases{}.Creates(tx, &newRecords)
 }
 
+func (FilesBases) Sort(par []datatype.FilesBasesSort) error {
+	db := core.DBS()
+	return db.Transaction(func(tx *gorm.DB) error {
+		if len(par) == 0 {
+			return nil
+		}
+		for _, v := range par {
+			filesBasesModels := models.FilesBases{
+				ID:   v.ID,
+				Sort: v.Sort,
+			}
+			err := filesBasesModels.Update(tx, &filesBasesModels, []string{"sort"})
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+}
+
 func (FilesBases) GetTotal() (int64, error) {
 	return models.FilesBases{}.GetTotal(core.DBS())
 }

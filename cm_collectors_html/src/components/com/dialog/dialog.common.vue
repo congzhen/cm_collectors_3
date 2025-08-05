@@ -53,7 +53,6 @@ const width_C = computed(() => {
 })
 
 const closed = () => {
-  console.log('closed')
   emits('closed')
 }
 

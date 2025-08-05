@@ -1,6 +1,6 @@
 import request from "@/assets/request";
 import type { I_config_app } from "@/dataType/config.dataType";
-import type { I_filesBases, I_filesBases_base } from "@/dataType/filesBases.dataType";
+import type { I_filesBases, I_filesBases_base, I_filesBases_sort } from "@/dataType/filesBases.dataType";
 const routerGroupUri = '';
 export const filesBasesServer = {
   infoById: async (id: string) => {
@@ -33,4 +33,13 @@ export const filesBasesServer = {
       },
     });
   },
+  sort: async (sortObj: I_filesBases_sort[]) => {
+    return await request<boolean>({
+      url: `${routerGroupUri}/filesBases/sort`,
+      method: 'put',
+      data: {
+        sortData: sortObj,
+      },
+    });
+  }
 }

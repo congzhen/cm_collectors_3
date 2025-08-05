@@ -2,6 +2,7 @@
   <div class="database-setting">
     <div class="database-setting-btn">
       <el-button icon="Plus" type="success" @click="createNewFilesBases()" plain>创建新文件数据库</el-button>
+      <el-button type="warning" @click="sortFilesBasesHandle()" plain>排序</el-button>
       <el-button type="warning" plain>路径替换</el-button>
       <el-button type="warning" plain>批量删除</el-button>
     </div>
@@ -17,6 +18,7 @@
     </el-tabs>
   </div>
   <fileDatabaseFormDialog ref="fileDatabaseFormDialogRef"></fileDatabaseFormDialog>
+  <fileDatabaseSortDialog ref="fileDatabaseSortDialogRef"></fileDatabaseSortDialog>"
 </template>
 <script setup lang="ts">
 import { ref } from 'vue';
@@ -26,6 +28,7 @@ import { LoadingService } from '@/assets/loading';
 import { appStoreData } from '@/storeData/app.storeData';
 import { ElMessage } from 'element-plus';
 import fileDatabaseFormDialog from './fileDatabaseFormDialog.vue';
+import fileDatabaseSortDialog from './fileDatabaseSortDialog.vue';
 
 const store = {
   appStoreData: appStoreData(),
@@ -33,6 +36,7 @@ const store = {
 }
 
 const fileDatabaseFormDialogRef = ref<InstanceType<typeof fileDatabaseFormDialog>>();
+const fileDatabaseSortDialogRef = ref<InstanceType<typeof fileDatabaseSortDialog>>();
 
 const activeName = ref(store.filesBasesStoreData.filesBasesFirst?.id);
 
@@ -61,6 +65,10 @@ const setSuccessHandle = async (filesBasesId: string) => {
 
 const createNewFilesBases = () => {
   fileDatabaseFormDialogRef.value?.open();
+}
+
+const sortFilesBasesHandle = () => {
+  fileDatabaseSortDialogRef.value?.open();
 }
 
 </script>

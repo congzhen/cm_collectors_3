@@ -25,3 +25,9 @@ export interface I_filesRelatedPerformerBases {
   performerBases_id: string;
   main: boolean;
 }
+
+
+export interface I_filesBases_sort {
+  id: string;
+  sort: number;
+}
