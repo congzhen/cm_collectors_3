@@ -42,6 +42,15 @@ type ReqParam_resourceDramaSeries_Base struct {
 	Src string `json:"src"`
 }
 
+type ReqParam_ResourceDramaSeries_SearchPath struct {
+	FilesBasesIds []string `json:"filesBasesIds"`
+	SearchPath    string   `json:"searchPath"`
+}
+type ReqParam_ResourceDramaSeries_ReplacePath struct {
+	ReqParam_ResourceDramaSeries_SearchPath
+	ReplacePath string `json:"replacePath"`
+}
+
 // 请求参数 - 创建filesBases
 type ReqParam_CreateFilesBases struct {
 	Name                     string   `json:"name" binding:"required"`

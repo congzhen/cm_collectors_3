@@ -66,3 +66,29 @@ func (Resource) DeleteResource(c *gin.Context) {
 	}
 	response.OkWithData(true, c)
 }
+
+type ResourceDramaSeries struct{}
+
+func (ResourceDramaSeries) SearchPath(c *gin.Context) {
+	var par datatype.ReqParam_ResourceDramaSeries_SearchPath
+	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {
+		return
+	}
+	dataList, err := processors.ResourcesDramaSeries{}.SearchPath(par.FilesBasesIds, par.SearchPath)
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(dataList, c)
+}
+
+func (ResourceDramaSeries) ReplacePath(c *gin.Context) {
+	var par datatype.ReqParam_ResourceDramaSeries_ReplacePath
+	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {
+		return
+	}
+	dataList, err := processors.ResourcesDramaSeries{}.ReplacePath(par.FilesBasesIds, par.SearchPath, par.ReplacePath)
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(dataList, c)
+}

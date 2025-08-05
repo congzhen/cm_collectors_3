@@ -3,7 +3,7 @@
     <div class="database-setting-btn">
       <el-button icon="Plus" type="success" @click="createNewFilesBases()" plain>创建新文件数据库</el-button>
       <el-button type="warning" @click="sortFilesBasesHandle()" plain>排序</el-button>
-      <el-button type="warning" plain>路径替换</el-button>
+      <el-button type="warning" @click="replacePathHandle()" plain>路径替换</el-button>
       <el-button type="warning" plain>批量删除</el-button>
     </div>
     <el-tabs tab-position="left" class="setting-tabs" v-model="activeName">
@@ -18,7 +18,8 @@
     </el-tabs>
   </div>
   <fileDatabaseFormDialog ref="fileDatabaseFormDialogRef"></fileDatabaseFormDialog>
-  <fileDatabaseSortDialog ref="fileDatabaseSortDialogRef"></fileDatabaseSortDialog>"
+  <fileDatabaseSortDialog ref="fileDatabaseSortDialogRef"></fileDatabaseSortDialog>
+  <pathReplaceDialog ref="pathReplaceDialogRef"></pathReplaceDialog>
 </template>
 <script setup lang="ts">
 import { ref } from 'vue';
@@ -29,6 +30,7 @@ import { appStoreData } from '@/storeData/app.storeData';
 import { ElMessage } from 'element-plus';
 import fileDatabaseFormDialog from './fileDatabaseFormDialog.vue';
 import fileDatabaseSortDialog from './fileDatabaseSortDialog.vue';
+import pathReplaceDialog from './pathReplaceDialog.vue';
 
 const store = {
   appStoreData: appStoreData(),
@@ -37,6 +39,7 @@ const store = {
 
 const fileDatabaseFormDialogRef = ref<InstanceType<typeof fileDatabaseFormDialog>>();
 const fileDatabaseSortDialogRef = ref<InstanceType<typeof fileDatabaseSortDialog>>();
+const pathReplaceDialogRef = ref<InstanceType<typeof pathReplaceDialog>>();
 
 const activeName = ref(store.filesBasesStoreData.filesBasesFirst?.id);
 
@@ -69,6 +72,10 @@ const createNewFilesBases = () => {
 
 const sortFilesBasesHandle = () => {
   fileDatabaseSortDialogRef.value?.open();
+}
+
+const replacePathHandle = () => {
+  pathReplaceDialogRef.value?.open();
 }
 
 </script>

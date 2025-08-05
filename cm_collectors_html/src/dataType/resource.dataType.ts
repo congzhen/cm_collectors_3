@@ -51,3 +51,10 @@ export interface I_resourceDisplayTag {
   textColor: string;
   bgColor: string;
 }
+
+export interface I_dramaSeriesWithResource {
+  id: string;
+  resources_id: string;
+  src: string;
+  title: string;
+}

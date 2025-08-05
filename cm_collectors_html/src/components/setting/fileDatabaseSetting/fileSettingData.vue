@@ -2,7 +2,7 @@
   <div class="setting-data" v-loading="loading">
     <el-form v-if="finish" label-width="auto">
 
-      <el-alert title="基础设置" type="success" />
+      <el-alert title="基础设置" type="success" :closable="false" />
 
       <el-form-item label="文件数据库名称">
         <el-input v-model="filesBasesInfo.name" />
@@ -29,7 +29,7 @@
         <selectDefinition v-model="filesConfig.definition" multiple />
       </el-form-item>
 
-      <el-alert title="左侧边栏" type="success" />
+      <el-alert title="左侧边栏" type="success" :closable="false" />
 
       <el-form-item label="左侧边栏显示项">
         <selectLeftDisplay v-model="filesConfig.leftDisplay" multiple />
@@ -55,7 +55,7 @@
           :performer-bases-ids="[store.filesBasesStoreData.getMainPerformerBasesIdByFilesBasesId(filesBasesInfo.id)]" />
       </el-form-item>
 
-      <el-alert title="显示设置" type="success" />
+      <el-alert title="显示设置" type="success" :closable="false" />
 
       <el-form-item label="分页显示数量">
         <el-input-number v-model="filesConfig.pageLimit" />
@@ -123,7 +123,7 @@
         <el-input v-model="filesConfig.randomPosterPath" placeholder="随机海报文件夹所在路径" />
       </el-form-item>
 
-      <el-alert title="参数设置" type="success" />
+      <el-alert title="参数设置" type="success" :closable="false" />
 
       <el-form-item label="视频 - 打开方式">
         <el-select v-model="filesConfig.openResModeMovies">
@@ -171,7 +171,7 @@
         <el-tag type="primary">Tag 3</el-tag>
       </el-form-item>
       -->
-      <el-alert title="图集设置" type="success" />
+      <el-alert title="图集设置" type="success" :closable="false" />
 
       <el-form-item label="图集显示模式">
         <selectPlayAtlasMode v-model="filesConfig.playAtlasMode" />
@@ -183,7 +183,7 @@
         <el-checkbox v-model="filesConfig.playAtlasThumbnail" label="图集缩略图" border />
       </el-form-item>
 
-      <el-alert title="演员&导演自定义" type="success" />
+      <el-alert title="演员&导演自定义" type="success" :closable="false" />
       <el-form-item label="演员显示文字">
         <el-input v-model="filesConfig.performer_Text" />
       </el-form-item>
@@ -194,7 +194,7 @@
         <setCustomAvatar v-model="filesConfig.performer_photo" />
       </el-form-item>
 
-      <el-alert title="插件设置" type="success" />
+      <el-alert title="插件设置" type="success" :closable="false" />
       <el-form-item label="Cup插件">
         <el-checkbox v-model="filesConfig.plugInUnit_Cup" label="开启演员Cup插件" border />
         <alert-msg color="warning">
@@ -205,7 +205,7 @@
         <el-input v-model="filesConfig.plugInUnit_Cup_Text" />
       </el-form-item>
 
-      <el-alert title="封面海报设置" type="success" />
+      <el-alert title="封面海报设置" type="success" :closable="false" />
       <el-form-item label="封面海报">
         <coverPosterAdmin v-model:cover-poster-data-default-select="filesConfig.coverPosterDataDefaultSelect"
           v-model:cover-poster-data="filesConfig.coverPosterData" />
@@ -230,7 +230,7 @@
         <el-input-number v-model="filesConfig.coverPosterHeightBase" />
       </el-form-item>
 
-      <el-alert title="路径虚拟转换" type="success" />
+      <el-alert title="路径虚拟转换" type="success" :closable="false" />
       <el-form-item label="转换配置">
         <routeConversionAdmin v-model:route-conversion="filesConfig.routeConversion"></routeConversionAdmin>
       </el-form-item>
@@ -341,7 +341,6 @@ const getFielsBasesInfo = async () => {
   } else {
     filesConfig.value = defualtConfigApp;
   }
-  console.log(filesConfig.value);
   finish.value = true
   // 加载完成后设置加载状态为false
   loading.value = false;

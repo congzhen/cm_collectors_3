@@ -11,6 +11,13 @@ import (
 
 type ResourcesDramaSeries struct{}
 
+func (ResourcesDramaSeries) SearchPath(filesBasesIds []string, searchPath string) (*[]models.DramaSeriesWithResource, error) {
+	return models.ResourcesDramaSeries{}.SearchPath(core.DBS(), filesBasesIds, searchPath)
+}
+func (ResourcesDramaSeries) ReplacePath(filesBasesIds []string, searchPath, replacePath string) (*[]models.DramaSeriesWithResource, error) {
+	return models.ResourcesDramaSeries{}.ReplacePath(core.DBS(), filesBasesIds, searchPath, replacePath)
+}
+
 func (ResourcesDramaSeries) Info(id string) (*models.ResourcesDramaSeries, error) {
 	return models.ResourcesDramaSeries{}.Info(core.DBS(), id)
 }

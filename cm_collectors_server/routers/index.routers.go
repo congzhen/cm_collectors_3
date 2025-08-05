@@ -39,6 +39,7 @@ func publicRouter(router *gin.Engine) {
 	routerGroup.GET("/performer/dataList/:performerBasesId/:fetchCount/:page/:limit", controllers.Performer{}.DataList)
 	routerGroup.POST("/performer/list/top/preferred", controllers.Performer{}.ListTopPreferredPerformers)
 	routerGroup.GET("/performer/recycleBin/:performerBasesId", controllers.Performer{}.RecycleBin)
+
 	routerGroup.GET("/resource/info/:resourceId", controllers.Resource{}.Info)
 	routerGroup.POST("/resource/dataList", controllers.Resource{}.DataList)
 
@@ -57,6 +58,8 @@ func AdminRouter(router *gin.Engine) {
 	routerGroup.POST("resource/create", controllers.Resource{}.CreateResource)
 	routerGroup.PUT("resource/update", controllers.Resource{}.UpdateResource)
 	routerGroup.DELETE("resource/delete/:resourceId", controllers.Resource{}.DeleteResource)
+	routerGroup.POST("resourceDramaSeries/searchPath", controllers.ResourceDramaSeries{}.SearchPath)
+	routerGroup.POST("resourceDramaSeries/replacePath", controllers.ResourceDramaSeries{}.ReplacePath)
 	routerGroup.POST("filesBases/create", controllers.FilesBases{}.Create)
 	routerGroup.PUT("filesBases/setData", controllers.FilesBases{}.SetFilesBases)
 	routerGroup.PUT("filesBases/sort", controllers.FilesBases{}.Sort)
