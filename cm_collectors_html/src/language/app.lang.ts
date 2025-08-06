@@ -15,7 +15,10 @@ export const appLang = {
   sort: function (sort: string): string {
     return this._l()(`sort.${sort}`)
   },
-  country: function (country: string): string {
+  country: function (country: string | undefined | null): string {
+    if (country === '' || country === undefined || country === null) {
+      return '';
+    }
     return this._l()(`country.${country}`)
   },
   definition: function (definition: string): string {

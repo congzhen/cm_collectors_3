@@ -4,7 +4,6 @@
       <el-button icon="Plus" type="success" @click="createNewFilesBases()" plain>创建新文件数据库</el-button>
       <el-button type="warning" @click="sortFilesBasesHandle()" plain>排序</el-button>
       <el-button type="warning" @click="replacePathHandle()" plain>路径替换</el-button>
-      <el-button type="warning" plain>批量删除</el-button>
     </div>
     <el-tabs tab-position="left" class="setting-tabs" v-model="activeName">
       <el-tab-pane v-for="item, key in store.filesBasesStoreData.filesBases" :class="[item.status ? '' : 'disabled']"

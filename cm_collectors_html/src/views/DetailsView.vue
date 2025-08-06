@@ -72,7 +72,7 @@
         </el-scrollbar>
       </div>
     </div>
-    <resourceFormDrawer ref="resourceFormDrawerRef" @success="updateResouceSuccessHandle"></resourceFormDrawer>
+    <resourceFormDrawer ref="resourceFormDrawerRef" @success="updateResourceSuccessHandle"></resourceFormDrawer>
   </div>
 </template>
 <script lang="ts" setup>
@@ -112,7 +112,7 @@ const playResourceDramaSeriesHandle = (ds: I_resourceDramaSeries) => {
 const editResourceHandle = () => {
   resourceFormDrawerRef.value?.open('edit', props.resource)
 }
-const updateResouceSuccessHandle = (data: I_resource) => {
+const updateResourceSuccessHandle = (data: I_resource) => {
   emits('updateResouceSuccess', data)
 }
 

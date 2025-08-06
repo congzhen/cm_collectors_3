@@ -5,8 +5,8 @@
     <div class="main">
       <TagView ref="tagViewRef" class="tag"></TagView>
       <ContentView ref="contentViewRef" class="content" @select-resources="selectResourcesHandle"></ContentView>
-      <DetailsView class="details" :resource="resDetails" @update-resouce-success="updateResouceSuccessHandle"
-        @delete-resource-success="deleteResouceSuccessHandle">
+      <DetailsView v-if="store.appStoreData.detailsViewStatus" class="details" :resource="resDetails"
+        @update-resouce-success="updateResouceSuccessHandle" @delete-resource-success="deleteResouceSuccessHandle">
       </DetailsView>
     </div>
   </div>

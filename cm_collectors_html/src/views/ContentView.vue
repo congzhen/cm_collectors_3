@@ -1,13 +1,10 @@
 <template>
   <div class="content-view" v-loading="loading">
     <div class="list">
-      <el-scrollbar>
-        <ul class="list-ul">
-          <li v-for="(item, key) in dataList" :key="key">
-            <contentItem :resource="item" @click="emits('selectResources', item)"></contentItem>
-          </li>
-        </ul>
-      </el-scrollbar>
+      <contentList v-if="!store.appStoreData.adminStatus" :data-list="dataList"
+        @select-resources="selectResourcesHandle"></contentList>
+      <contentListAdmin v-else :data-list="dataList" @select-resources="selectResourcesHandle"
+        @update-data="init_DataList"></contentListAdmin>
     </div>
     <div class="paging">
       <el-pagination background layout="total, prev, pager, next, jumper" v-model:current-page="currentPage"
@@ -16,7 +13,8 @@
   </div>
 </template>
 <script setup lang="ts">
-import contentItem from '@/components/content/contentItem.vue'
+import contentList from '@/components/content/contentList.vue'
+import contentListAdmin from '@/components/content/contentListAdmin.vue';
 import { ref, onMounted, watch } from 'vue'
 import { appStoreData } from '@/storeData/app.storeData';
 import { searchStoreData } from '@/storeData/search.storeData';
@@ -91,7 +89,9 @@ const getDataList = debounce(async (fn: Function = () => { }) => {
 const changePageHandle = () => {
   getDataList();
 }
-
+const selectResourcesHandle = (item: I_resource) => {
+  emits('selectResources', item)
+}
 
 onMounted(async () => {
   await init()
@@ -109,14 +109,6 @@ defineExpose({ init, init_DataList });
   .list {
     flex-grow: 1;
     overflow: hidden;
-
-    .list-ul {
-      list-style-type: none;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.4em;
-      padding-bottom: 1em;
-    }
   }
 
   .paging {
