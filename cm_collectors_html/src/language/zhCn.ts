@@ -1,4 +1,25 @@
 export default {
+  leftColumnMode: {
+    fixed: '固定',
+    float: '浮动'
+  },
+  tagMode: {
+    fixed: '固定宽度',
+    auto: '自适应宽度'
+  },
+  detailsDramaSeriesMode: {
+    fileName: '文件名',
+    digit: '数字',
+  },
+  resourcesShowMode: {
+    coverPoster: '封面海报',
+    table: '表格'
+  },
+  resourceDetailsShowMode: {
+    right: '右侧',
+    popup: '弹出',
+    none: '无'
+  },
   sort: {
     addTimeDesc: '时间倒叙',
     addTimeAsc: '时间正序',

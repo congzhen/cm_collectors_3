@@ -1,7 +1,8 @@
 <template>
   <el-select v-model="selectVal" clearable :style="{ width: props.width }" placeholder="'资源显示模式" @change="changeHandle"
     @clear="handleClear" :multiple="props.multiple">
-    <el-option v-for="item, index in dataset.resourcesShowMode" :key="index" :label="item" :value="item"></el-option>
+    <el-option v-for="item, index in dataset.resourcesShowMode" :key="index" :label="$t(`resourcesShowMode.${item}`)"
+      :value="item"></el-option>
   </el-select>
 </template>
 <script setup lang="ts">

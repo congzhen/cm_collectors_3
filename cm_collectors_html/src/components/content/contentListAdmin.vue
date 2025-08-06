@@ -6,7 +6,7 @@
       </el-button-group>
     </div>
     <div class="table-container">
-      <el-table ref="tableRef" :data="props.dataList" border height="100%" style="width: 100%">
+      <el-table ref="tableRef" :data="props.dataList" border height="100%" size="small" style="width: 100%">
         <el-table-column type="selection" width="55" />
         <el-table-column width="120" label="操作">
           <template #default="{ row }">

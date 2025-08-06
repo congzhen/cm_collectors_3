@@ -77,10 +77,10 @@
       </el-form-item>
       <el-form-item label="封面上显示标签(属性)">
         <el-select v-model="filesConfig.coverDisplayTagAttribute" multiple>
-          <el-option label="definition" value="definition" />
-          <el-option label="issuingDate" value="issuingDate" />
-          <el-option label="country" value="country" />
-          <el-option label="stars" value="stars" />
+          <el-option :label="appLang.attributeTags('definition')" value="definition" />
+          <el-option :label="appLang.attributeTags('year')" value="issuingDate" />
+          <el-option :label="appLang.attributeTags('country')" value="country" />
+          <el-option :label="appLang.attributeTags('starRating')" value="stars" />
         </el-select>
       </el-form-item>
       <el-form-item label="封面上显示标签(自定义)">
@@ -171,8 +171,9 @@
         <el-tag type="primary">Tag 3</el-tag>
       </el-form-item>
       -->
-      <el-alert title="图集设置" type="success" :closable="false" />
 
+      <!--
+      <el-alert title="图集设置" type="success" :closable="false" />
       <el-form-item label="图集显示模式">
         <selectPlayAtlasMode v-model="filesConfig.playAtlasMode" />
       </el-form-item>
@@ -182,6 +183,7 @@
       <el-form-item label="图集缩略图">
         <el-checkbox v-model="filesConfig.playAtlasThumbnail" label="图集缩略图" border />
       </el-form-item>
+      -->
 
       <el-alert title="演员&导演自定义" type="success" :closable="false" />
       <el-form-item label="演员显示文字">
@@ -230,10 +232,12 @@
         <el-input-number v-model="filesConfig.coverPosterHeightBase" />
       </el-form-item>
 
+      <!--
       <el-alert title="路径虚拟转换" type="success" :closable="false" />
       <el-form-item label="转换配置">
         <routeConversionAdmin v-model:route-conversion="filesConfig.routeConversion"></routeConversionAdmin>
       </el-form-item>
+      -->
 
 
     </el-form>
@@ -269,6 +273,7 @@ import { filesBasesStoreData } from '@/storeData/filesBases.storeData';
 import { performerBasesStoreData } from '@/storeData/performerBases.storeData';
 import { debounceNow } from '@/assets/debounce';
 import { getRandomColor } from '@/assets/tool';
+import { appLang } from '@/language/app.lang';
 const store = {
   filesBasesStoreData: filesBasesStoreData(),
   performerBasesStoreData: performerBasesStoreData(),

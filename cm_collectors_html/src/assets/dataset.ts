@@ -18,6 +18,6 @@ export default {
   detailsDramaSeriesMode: ['fileName', 'digit'],
   playAtlasMode: ['waterfall', 'flex'],
   playComicMode: ['scaleToOriginal', 'fullScreen'],
-  resourceDetailsShowMode: ['right', 'popup'],
+  resourceDetailsShowMode: ['right', 'popup', 'none'],
   videoSuffixName: ['.mp4', '.avi', '.rmvb', '.wmv', '.mov', '.mkv', '.flv', '.ts', '.webm', '.iso', '.mpg', '.m4v'],
 }

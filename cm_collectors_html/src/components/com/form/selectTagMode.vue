@@ -1,7 +1,8 @@
 <template>
   <el-select v-model="selectVal" :clearable="props.clearable" :style="{ width: props.width }" placeholder="标签显示模式"
     @change="changeHandle" @clear="handleClear">
-    <el-option v-for="item, index in dataset.tagMode" :key="index" :label="item" :value="item"></el-option>
+    <el-option v-for="item, index in dataset.tagMode" :key="index" :label="$t(`tagMode.${item}`)"
+      :value="item"></el-option>
   </el-select>
 </template>
 <script setup lang="ts">

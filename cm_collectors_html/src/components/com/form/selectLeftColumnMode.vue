@@ -1,7 +1,8 @@
 <template>
   <el-select v-model="selectVal" :clearable="props.clearable" :style="{ width: props.width }" placeholder="左侧边栏显示模式"
     @change="changeHandle" @clear="handleClear">
-    <el-option v-for="item, index in dataset.leftColumnMode" :key="index" :label="item" :value="item"></el-option>
+    <el-option v-for="item, index in dataset.leftColumnMode" :key="index" :label="$t(`leftColumnMode.${item}`)"
+      :value="item"></el-option>
   </el-select>
 </template>
 <script setup lang="ts">
