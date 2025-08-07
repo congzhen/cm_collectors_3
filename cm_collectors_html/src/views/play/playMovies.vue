@@ -105,6 +105,7 @@ const getResourceInfo = async () => {
 };
 
 const setVideoDramaSeries = () => {
+  loading.value = true;
   let dramaSeriesId = '';
   if (props.dramaSeriesId !== '') {
     dramaSeriesId = props.dramaSeriesId;
@@ -116,6 +117,7 @@ const setVideoDramaSeries = () => {
   } else {
     noPlayList()
   }
+  loading.value = false;
 }
 
 const setVideoSource = (dramaSeriesId: string) => {

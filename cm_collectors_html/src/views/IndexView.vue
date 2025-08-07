@@ -5,8 +5,9 @@
     <div class="main">
       <TagView ref="tagViewRef" class="tag"></TagView>
       <ContentView ref="contentViewRef" class="content" @select-resources="selectResourcesHandle"></ContentView>
-      <DetailsView v-if="store.appStoreData.detailsViewStatus" class="details" :resource="resDetails"
-        @update-resouce-success="updateResouceSuccessHandle" @delete-resource-success="deleteResouceSuccessHandle">
+      <DetailsView ref="detailsViewRef" v-if="store.appStoreData.detailsViewStatus" class="details"
+        :resource="resDetails" @update-resouce-success="updateResouceSuccessHandle"
+        @delete-resource-success="deleteResouceSuccessHandle">
       </DetailsView>
     </div>
   </div>
@@ -29,6 +30,7 @@ const store = {
 }
 const tagViewRef = ref<InstanceType<typeof TagView>>();
 const contentViewRef = ref<InstanceType<typeof ContentView>>();
+const detailsViewRef = ref<InstanceType<typeof DetailsView>>();
 
 const loading = ref(false);
 const resDetails = ref<I_resource | undefined>(undefined);
@@ -46,8 +48,11 @@ const selectFilesBaseHandle = async (filesBases: I_filesBases) => {
   loading.value = false;
 };
 
-const selectResourcesHandle = (resource: I_resource) => {
+const selectResourcesHandle = (resource: I_resource, isInit: boolean) => {
   resDetails.value = resource;
+  if (!isInit) {
+    detailsViewRef.value?.init();
+  }
 }
 const createResouceSuccessHandle = (data: I_resource) => {
   contentViewRef.value?.init();

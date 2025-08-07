@@ -1,5 +1,5 @@
 <template>
-  <div class="tag-container">
+  <div ref="tagContainerRef" class="tag-container" :style="{ ...tagContainerStyle_C }">
     <el-scrollbar>
       <div class="tag-block-list">
         <el-collapse v-model="activeNames">
@@ -25,6 +25,15 @@
         </el-collapse>
       </div>
     </el-scrollbar>
+
+    <div ref="arrowRef" class="arrow" v-if="store.appStoreData.currentConfigApp.leftColumnMode !== 'fixed'"
+      :style="{ left: arrowLeftStyle }" @click="arrowClickHandle">
+      <el-icon>
+        <ArrowLeftBold v-if="arrowStatus" />
+        <ArrowRightBold v-else />
+      </el-icon>
+    </div>
+
   </div>
 </template>
 <script setup lang="ts">
@@ -33,7 +42,7 @@ import { E_tagType, type I_tagData } from '@/dataType/app.dataType'
 import tagCollapseItem from '@/components/tag/tagCollapseItem.vue'
 import { appStoreData } from '@/storeData/app.storeData'
 import { searchStoreData } from '@/storeData/search.storeData'
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed, type CSSProperties } from 'vue'
 import { E_searchLogic } from '@/dataType/search.dataType'
 import { appLang } from '@/language/app.lang'
 const store = {
@@ -41,6 +50,9 @@ const store = {
   searchStoreData: searchStoreData(),
 }
 const activeNames = ref<string[]>([])
+const arrowStatus = ref(false);
+
+const tagContainerRef = ref<HTMLDivElement | null>(null)
 
 const allId = store.searchStoreData.allId;
 const allName = store.searchStoreData.allName;
@@ -55,6 +67,28 @@ watch(
   },
   { deep: true }
 );
+
+
+const tagContainerStyle_C = computed<CSSProperties>(() => {
+  return {
+    width: store.appStoreData.currentConfigApp.leftColumnWidth + 'px',
+    height: store.appStoreData.currentConfigApp.leftColumnMode == 'fixed' ? '100%' : '100%',
+    left: arrowStatus.value ? '0px' : -store.appStoreData.currentConfigApp.leftColumnWidth + 'px',
+    position: store.appStoreData.currentConfigApp.leftColumnMode == 'fixed' ? 'unset' : 'absolute',
+    zIndex: 90,
+    transition: 'left 0.3s ease',
+  }
+})
+
+const arrowLeftStyle = computed<string>(() => {
+  if (arrowStatus.value) {
+    return store.appStoreData.currentConfigApp.leftColumnWidth + 'px';
+  } else {
+    return '0px';
+  }
+});
+
+
 
 const init = () => {
   activeNames.value = [
@@ -172,6 +206,10 @@ const getLogic = (type: E_tagType) => {
   }
 }
 
+const arrowClickHandle = () => {
+  arrowStatus.value = !arrowStatus.value;
+}
+
 onMounted(() => {
   init();
 })
@@ -184,6 +222,7 @@ defineExpose({ init });
   overflow: hidden;
   border-right: 0.1em solid #414243;
   margin-right: 6px;
+  background-color: #1F1F1F;
 
   .el-collapse {
     border: 0;
@@ -207,5 +246,26 @@ defineExpose({ init });
     padding-right: 6px;
     padding-bottom: 10px;
   }
+
+  .arrow {
+    width: 15px;
+    height: 80px;
+    line-height: 82px;
+    overflow: hidden;
+    background-color: #262727;
+    color: #E4E7ED;
+    position: fixed;
+    top: 50%;
+    margin-top: -40px;
+    border-top-right-radius: 7px;
+    border-bottom-right-radius: 7px;
+    z-index: 89;
+    cursor: pointer;
+
+    &:hover {
+      background-color: #79BBFF;
+    }
+  }
+
 }
 </style>

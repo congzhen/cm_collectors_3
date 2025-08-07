@@ -12,7 +12,7 @@
         <el-icon title="添加" @click="oepnResourceForm">
           <Plus />
         </el-icon>
-        <el-icon v-if="!store.appStoreData.adminStatus" @click="switchAdminStatus">
+        <el-icon v-if="!store.appStoreData.adminResourceStatus" @click="switchAdminStatus">
           <TurnOff />
         </el-icon>
         <el-icon v-else color="#409EFF" @click="switchAdminStatus">
@@ -78,7 +78,7 @@ const oepnResourceForm = () => {
 }
 
 const switchAdminStatus = () => {
-  store.appStoreData.adminStatus = !store.appStoreData.adminStatus
+  store.appStoreData.adminResourceStatus = !store.appStoreData.adminResourceStatus
 }
 
 const openTagList = () => {

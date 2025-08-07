@@ -10,13 +10,11 @@ import { appDataServer } from "@/server/app.server";
 
 import { filesBasesStoreData } from '@/storeData/filesBases.storeData'
 import { performerBasesStoreData } from '@/storeData/performerBases.storeData';
-import { fa } from "element-plus/es/locales.mjs";
-
 
 
 export const appStoreData = defineStore('app', {
   state: () => ({
-    adminStatus: false,
+    adminResourceStatus: false,
 
     currentFilesBases: {} as I_filesBases,
     currentMainPerformerBasesId: "",
@@ -30,7 +28,7 @@ export const appStoreData = defineStore('app', {
   }),
   getters: {
     detailsViewStatus(state): boolean {
-      return state.adminStatus ? false : true
+      return state.adminResourceStatus ? false : true;
     },
     // 获取当前filesBases的app config
     currentFilesBasesAppConfig(state): I_config_app {

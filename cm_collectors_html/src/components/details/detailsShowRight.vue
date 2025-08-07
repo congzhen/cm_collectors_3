@@ -1,22 +1,26 @@
 <template>
-  <detailsShowRight v-if="store.appStoreData.currentConfigApp.resourceDetailsShowMode == 'right'"
-    :resource="props.resource" @update-resouce-success="updateResourceSuccessHandle"
-    @delete-resource-success="deleteResourceSuccessHandle">
-  </detailsShowRight>
-  <detailsShowDialog ref="detailsShowDialogRef"
-    v-else="store.appStoreData.currentConfigApp.resourceDetailsShowMode == 'popup'" :resource="props.resource"
-    @update-resouce-success="updateResourceSuccessHandle" @delete-resource-success="deleteResourceSuccessHandle">
-  </detailsShowDialog>
+  <div class="details-view-k">
+    <div class="details-view" v-if="props.resource">
+      <div class="content-cover">
+        <el-image :src="getResourceCoverPoster(props.resource)" fit="cover" />
+      </div>
+      <div class="tool">
+        <detailsBtn :resource="props.resource" @update-resouce-success="updateResourceSuccessHandle"
+          @delete-resource-success="deleteResourceSuccessHandle"></detailsBtn>
+      </div>
+      <div class="details-container">
+        <detailsInfo :resource="props.resource"></detailsInfo>
+      </div>
+    </div>
+  </div>
 </template>
 <script lang="ts" setup>
-import { ref, type PropType } from 'vue'
+import { type PropType } from 'vue'
 import type { I_resource } from '@/dataType/resource.dataType'
-import { appStoreData } from '@/storeData/app.storeData';
-import detailsShowRight from '@/components/details/detailsShowRight.vue';
-import detailsShowDialog from '@/components/details/detailsShowDialog.vue';
-const store = {
-  appStoreData: appStoreData(),
-}
+import { getResourceCoverPoster } from '@/common/photo';
+import detailsInfo from '@/components/details/detailsInfo.vue'
+import detailsBtn from '@/components/details/detailsBtn.vue'
+
 const props = defineProps({
   resource: {
     type: Object as PropType<I_resource> | undefined,
@@ -25,15 +29,6 @@ const props = defineProps({
 })
 const emits = defineEmits(['updateResouceSuccess', 'deleteResourceSuccess'])
 
-const detailsShowDialogRef = ref<InstanceType<typeof detailsShowDialog>>();
-
-const init = () => {
-  if (store.appStoreData.currentConfigApp.resourceDetailsShowMode == 'popup') {
-    detailsShowDialogRef.value?.open();
-  }
-}
-
-
 const updateResourceSuccessHandle = (data: I_resource) => {
   emits('updateResouceSuccess', data)
 }
@@ -41,7 +36,7 @@ const updateResourceSuccessHandle = (data: I_resource) => {
 const deleteResourceSuccessHandle = () => {
   emits('deleteResourceSuccess')
 }
-defineExpose({ init });
+
 </script>
 <style lang="scss" scoped>
 .details-view-k {

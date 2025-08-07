@@ -8,9 +8,10 @@
   </div>
 </template>
 <script setup lang="ts">
-import type { PropType } from 'vue';
+import { type PropType } from 'vue';
 import tagSpan from './tagSpan.vue'
-import type { E_tagType, I_tagData } from '@/dataType/app.dataType';
+import type { I_tagData } from '@/dataType/app.dataType';
+
 const props = defineProps({
   dataList: {
     type: Array as PropType<I_tagData[]>,

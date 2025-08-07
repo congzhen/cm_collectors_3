@@ -1,10 +1,11 @@
 <template>
   <div class="tag-block-stars">
     <div class="tag-content">
-      <tagSpan :title="store.searchStoreData.allName" @click="starItemClickHandle(store.searchStoreData.allId)"
+      <tagSpan :title="store.searchStoreData.allName" :tagModeFixed="true"
+        @click="starItemClickHandle(store.searchStoreData.allId)"
         :class="[checkStatus(store.searchStoreData.allId) ? 'check' : '']">
       </tagSpan>
-      <tagSpan :title="store.searchStoreData.notStar" @click="starItemClickHandle('0')"
+      <tagSpan :title="store.searchStoreData.notStar" :tagModeFixed="true" @click="starItemClickHandle('0')"
         :class="[checkStatus('0') ? 'check' : '']">
       </tagSpan>
     </div>

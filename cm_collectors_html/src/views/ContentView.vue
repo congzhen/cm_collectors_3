@@ -1,7 +1,7 @@
 <template>
   <div class="content-view" v-loading="loading">
     <div class="list">
-      <contentList v-if="!store.appStoreData.adminStatus" :data-list="dataList"
+      <contentList v-if="!store.appStoreData.adminResourceStatus" :data-list="dataList"
         @select-resources="selectResourcesHandle"></contentList>
       <contentListAdmin v-else :data-list="dataList" @select-resources="selectResourcesHandle"
         @update-data="init_DataList"></contentListAdmin>
@@ -52,7 +52,7 @@ const init = async () => {
 
   await init_DataList(() => {
     if (dataList.value.length > 0) {
-      emits('selectResources', dataList.value[0]);
+      emits('selectResources', dataList.value[0], true);
     }
   });
 
@@ -90,7 +90,7 @@ const changePageHandle = () => {
   getDataList();
 }
 const selectResourcesHandle = (item: I_resource) => {
-  emits('selectResources', item)
+  emits('selectResources', item, false)
 }
 
 onMounted(async () => {

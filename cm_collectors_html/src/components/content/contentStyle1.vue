@@ -7,7 +7,7 @@
     <div class="content-cover">
       <el-image :src="getResourceCoverPoster(props.resource)" fit="cover" />
     </div>
-    <div class="play-icon" @click="playResource(props.resource)">
+    <div class="play-icon" @click.stop="playResource(props.resource)">
       <el-icon>
         <VideoPlay />
       </el-icon>
