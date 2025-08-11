@@ -1,5 +1,5 @@
 <template>
-  <el-select-v2 v-model="selectVal" clearable :style="{ width: props.width }" placeholder="演员" @change="changeHandle"
+  <el-select-v2 v-model="selectVal" clearable :style="{ width: props.width }" @change="changeHandle"
     @clear="handleClear" :multiple="props.multiple" filterable :options="options" :loading="loading"
     :filter-method="filterMethod" :props="{ label: 'name', value: 'id' }">
     <template #default="{ item }">

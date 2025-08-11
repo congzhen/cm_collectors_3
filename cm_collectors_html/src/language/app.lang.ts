@@ -1,4 +1,5 @@
 import { useI18n, type ComposerTranslation } from "vue-i18n";
+import { appStoreData } from "@/storeData/app.storeData";
 
 export const appLang = {
   _t: null as ComposerTranslation | null,
@@ -39,6 +40,14 @@ export const appLang = {
   },
   attributeTags: function (attrTag: string): string {
     return this._l()(`attributeTags.${attrTag}`)
+  },
+  performer: function (): string {
+    const performerText = appStoreData().currentConfigApp.performer_Text;
+    return performerText == '' ? this._l()(`performer`) : performerText;
+  },
+  director: function (): string {
+    const directorText = appStoreData().currentConfigApp.director_Text;
+    return directorText == '' ? this._l()(`director`) : directorText;
   },
 }
 

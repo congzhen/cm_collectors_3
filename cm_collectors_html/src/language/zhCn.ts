@@ -45,6 +45,8 @@ export default {
   before_2000: '2000前',
   stars: '星',
   notStar: '未评分',
+  director: '导演',
+  performer: '演员',
   notPerformer: '无演员',
   country: {
     China: '中国', Japan: '日本', India: '印度', SaudiArabia: '沙特阿拉伯', SouthKorea: '韩国', NorthKorea: '朝鲜', Philippines: '菲律宾', Singapore: '新加坡', Kazakhstan: '哈萨克斯坦', Indonesia: '印度尼西亚', Iraq: '伊拉克', Afghanistan: '阿富汗', Pakistan: '巴基斯坦', Turkey: '土耳其',

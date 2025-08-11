@@ -86,11 +86,11 @@
               </el-form-item>
             </div>
           </div>
-          <el-form-item label="导演">
+          <el-form-item :label="appLang.director()">
             <selectPerformer v-model="directors" :performerBasesIds="store.appStoreData.currentPerformerBasesIds"
               :careerType="E_performerCareerType.Director" multiple />
           </el-form-item>
-          <el-form-item label="演员">
+          <el-form-item :label="appLang.performer()">
             <selectPerformer v-model="performers" :performerBasesIds="store.appStoreData.currentPerformerBasesIds"
               :careerType="E_performerCareerType.Performer" multiple />
           </el-form-item>
@@ -131,6 +131,7 @@ import type { I_sfm_FileEntry } from '@/components/serverFileManagement/com/data
 import { LoadingService } from '@/assets/loading';
 import { resourceServer } from '@/server/resource.server';
 import { getResourceCoverPoster } from '@/common/photo';
+import { appLang } from '@/language/app.lang';
 const store = {
   appStoreData: appStoreData(),
 }
@@ -194,6 +195,7 @@ const init = (_mode: 'add' | 'edit', res: I_resource | null = null) => {
     const formKeys = Object.keys(defaultFormData);
     formKeys.forEach(key => {
       if (res.hasOwnProperty(key) && key in formData.value) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (formData.value as any)[key] = (res as any)[key];
       }
     })

@@ -109,6 +109,7 @@
           </el-button-group>
         </div>
       </el-form-item>
+      <!--
       <el-form-item label="随机海报">
         <el-checkbox v-model="filesConfig.randomPosterStatus" label="开启随机海报" border />
         <el-checkbox v-model="filesConfig.randomPosterAutoSize" label="随机海报自适应宽高" border />
@@ -122,7 +123,7 @@
       <el-form-item label="随机海报路径">
         <el-input v-model="filesConfig.randomPosterPath" placeholder="随机海报文件夹所在路径" />
       </el-form-item>
-
+      -->
       <el-alert title="参数设置" type="success" :closable="false" />
 
       <el-form-item label="视频 - 打开方式">
@@ -260,9 +261,9 @@ import selectResourcesMode from '@/components/com/form/selectResourcesMode.vue';
 import selectDetailsDramaSeriesMode from '@/components/com/form/selectDetailsDramaSeriesMode.vue';
 import selectResourceDetailsShowMode from '@/components/com/form/selectResourceDetailsShowMode.vue';
 import selectTag from '@/components/com/form/selectTag.vue';
-import selectPlayAtlasMode from '@/components/com/form/selectPlayAtlasMode.vue';
+//import selectPlayAtlasMode from '@/components/com/form/selectPlayAtlasMode.vue';
 import coverPosterAdmin from './coverPosterAdmin.vue';
-import routeConversionAdmin from './routeConversionAdmin.vue';
+//import routeConversionAdmin from './routeConversionAdmin.vue';
 import setCustomAvatar from '@/components/com/form/setCustomAvatar.vue';
 import alertMsg from '@/components/com/feedback/alertMsg.vue';
 import { filesBasesServer } from '@/server/filesBases.server';
@@ -334,11 +335,12 @@ const getFielsBasesInfo = async () => {
 
   // 解析配置数据
   if (result.data.filesBasesSetting.config_json_data != '') {
-    let parsedConfig = JSON.parse(result.data.filesBasesSetting.config_json_data);
+    const parsedConfig = JSON.parse(result.data.filesBasesSetting.config_json_data);
     const mergedConfig: I_config_app = { ...defualtConfigApp };
     // 如果配置数据不存在，则使用默认配置值
     for (const key in defualtConfigApp) {
       if (parsedConfig.hasOwnProperty(key)) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (mergedConfig as any)[key] = parsedConfig[key];
       }
     }

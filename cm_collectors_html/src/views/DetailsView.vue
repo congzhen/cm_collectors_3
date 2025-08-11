@@ -4,7 +4,7 @@
     @delete-resource-success="deleteResourceSuccessHandle">
   </detailsShowRight>
   <detailsShowDialog ref="detailsShowDialogRef"
-    v-else="store.appStoreData.currentConfigApp.resourceDetailsShowMode == 'popup'" :resource="props.resource"
+    v-else-if="store.appStoreData.currentConfigApp.resourceDetailsShowMode == 'popup'" :resource="props.resource"
     @update-resouce-success="updateResourceSuccessHandle" @delete-resource-success="deleteResourceSuccessHandle">
   </detailsShowDialog>
 </template>

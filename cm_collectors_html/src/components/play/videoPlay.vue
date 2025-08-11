@@ -32,6 +32,7 @@ const props = defineProps({
 })
 
 const videoPlayerRef = ref<HTMLVideoElement | null>(null)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const player = ref<any>(null) // 指定更合适的类型
 const videoSrc = ref('')
 const isHls = ref(false)

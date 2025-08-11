@@ -23,7 +23,7 @@
             <div> 收录时间: {{ resourceInfo.addTime }}</div>
             <el-rate v-model="resourceInfo.stars" disabled />
           </div>
-          <el-alert class="tagAlert" title="演员" type="success" :closable="false" />
+          <el-alert class="tagAlert" :title="appLang.performer()" type="success" :closable="false" />
           <div class="performer-list">
             <div class="performer-item" v-for="performer, key in resourceInfo.performers" :key="key">
               <performerDetails :performer="performer" :issuing-date="resourceInfo.issuingDate" :performerBtn="false"
@@ -66,7 +66,7 @@ import { E_headerMode } from '@/dataType/app.dataType'
 import type { I_resource, I_resourceDramaSeries } from '@/dataType/resource.dataType';
 import { resourceServer } from '@/server/resource.server';
 import { ElMessage } from 'element-plus';
-import { ref, onMounted, onActivated } from "vue";
+import { ref, onMounted } from "vue";
 import { getResourceCoverPoster } from '@/common/photo';
 import { appStoreData } from '@/storeData/app.storeData';
 import { appLang } from '@/language/app.lang'

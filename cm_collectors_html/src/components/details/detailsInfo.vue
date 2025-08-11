@@ -23,7 +23,7 @@
         </div>
         <div class="info-base-item">收录时间: {{ props.resource.addTime }}</div>
         <div class="info-base-rate">
-          <el-rate v-model="props.resource.stars" disabled />
+          <el-rate v-model="localStars" disabled />
         </div>
       </div>
       <div class="info-block">
@@ -34,7 +34,7 @@
         </resourceDramaSeriesList>
       </div>
       <div class="info-block">
-        <el-alert class="tagAlert" title="演员" type="success" :closable="false" />
+        <el-alert class="tagAlert" :title="appLang.performer()" type="success" :closable="false" />
         <div class="performer-list">
           <div class="performer-item" v-for="performer, key in props.resource.performers" :key="key">
             <performerPopoverBlock :performer="performer" :issuing-date="props.resource.issuingDate">
@@ -61,7 +61,7 @@
 </template>
 <script lang="ts" setup>
 import type { I_resource, I_resourceDramaSeries } from '@/dataType/resource.dataType';
-import type { PropType } from 'vue';
+import { ref, watch, type PropType } from 'vue';
 import { appLang } from '@/language/app.lang'
 import { appStoreData } from '@/storeData/app.storeData';
 import { playResource } from '@/common/play';
@@ -77,6 +77,19 @@ const props = defineProps({
     default: undefined
   },
 })
+// 本地响应式变量，用于替代直接修改 props.resource.stars
+const localStars = ref(props.resource?.stars || 0);
+
+// 当 props.resource 变化时更新本地变量
+watch(
+  () => props.resource?.stars,
+  (newVal) => {
+    if (newVal !== undefined) {
+      localStars.value = newVal;
+    }
+  },
+  { immediate: true }
+);
 
 const playResourceDramaSeriesHandle = (ds: I_resourceDramaSeries) => {
   if (!props.resource) return

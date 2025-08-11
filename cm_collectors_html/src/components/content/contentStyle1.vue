@@ -19,7 +19,7 @@
 <script setup lang="ts">
 import type { I_resource } from '@/dataType/resource.dataType';
 import contentTagDisplay from './contentTagDisplay.vue';
-import { computed, h, type PropType } from 'vue';
+import { computed, type PropType } from 'vue';
 import { appStoreData } from '@/storeData/app.storeData';
 import { playResource } from '@/common/play';
 import { getResourceCoverPoster } from '@/common/photo';

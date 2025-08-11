@@ -6,8 +6,6 @@ export const searchStoreData = defineStore('search', {
     allId: 'all',
     allName: '全部',
     notId: 'not',
-    notStar: '未评分',
-    notPerformer: '无演员',
     searchData: {
       searchTextSlc: [],
       sort: E_searchSort.AddTimeDesc,

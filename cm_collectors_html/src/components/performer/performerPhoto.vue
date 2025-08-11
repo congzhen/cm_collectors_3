@@ -2,21 +2,32 @@
   <div class="performer-photo">
     <el-image :src="getPerformerPhoto(props.performer)" fit="cover">
       <template #error>
-        <el-image src="/emptyPhoto.jpg" fit="cover" />
+        <el-image :src="emptyPhoto_C" fit="cover" />
       </template>
     </el-image>
   </div>
 </template>
 <script lang="ts" setup>
 import type { I_performer } from '@/dataType/performer.dataType';
-import { type PropType } from 'vue'
+import { type PropType, computed } from 'vue'
 import { getPerformerPhoto } from '@/common/photo';
+import { appStoreData } from '@/storeData/app.storeData';
+const store = {
+  appStoreData: appStoreData(),
+}
 const props = defineProps({
   performer: {
     type: Object as PropType<I_performer>,
     required: true,
   },
 });
+
+const emptyPhoto_C = computed(() => {
+  if (store.appStoreData.currentConfigApp.performer_photo == '') {
+    return '/emptyPhoto.jpg';
+  }
+  return store.appStoreData.currentConfigApp.performer_photo;
+})
 
 
 </script>

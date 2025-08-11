@@ -35,7 +35,7 @@ const props = defineProps({
   },
   logic: {
     type: Array as PropType<E_searchLogic[]>,
-    default: [E_searchLogic.Single, E_searchLogic.MultiOr, E_searchLogic.MultiAnd, E_searchLogic.Not],
+    default: () => [E_searchLogic.Single, E_searchLogic.MultiOr, E_searchLogic.MultiAnd, E_searchLogic.Not],
   },
   dataList: {
     type: Array as PropType<I_tagData[]>,

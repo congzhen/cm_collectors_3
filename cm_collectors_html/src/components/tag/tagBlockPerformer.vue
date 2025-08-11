@@ -4,17 +4,22 @@
       <tagSpan :title="store.searchStoreData.allName" @click="performerItemClickHandle(store.searchStoreData.allId)"
         :class="[checkStatus(store.searchStoreData.allId) ? 'check' : '']">
       </tagSpan>
-      <tagSpan :title="store.searchStoreData.notPerformer"
-        @click="performerItemClickHandle(store.searchStoreData.notId)"
+      <tagSpan :title="$t('notPerformer')" @click="performerItemClickHandle(store.searchStoreData.notId)"
         :class="[checkStatus(store.searchStoreData.notId) ? 'check' : '']">
       </tagSpan>
 
     </div>
-    <div class="tag-performer">
+    <div class="tag-performer" v-if="store.appStoreData.currentConfigApp.performerPhoto">
       <performerBlock class="tag-performer-item"
         v-for="performer, key in store.appStoreData.currentTopPreferredPerformers" :key="key" :performer="performer"
         :class="[checkStatus(performer.id) ? 'check' : '']" @click="performerObjectClickHandle(performer)">
       </performerBlock>
+    </div>
+    <div class="tag-performer" v-else>
+      <tagSpan v-for="performer, key in store.appStoreData.currentTopPreferredPerformers"
+        :class="[checkStatus(performer.id) ? 'check' : '']" :key="key" :title="performer.name"
+        @click="performerObjectClickHandle(performer)">
+      </tagSpan>
     </div>
   </div>
 </template>

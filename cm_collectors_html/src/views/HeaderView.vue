@@ -21,7 +21,7 @@
         <el-icon title="标签" @click="openTagList">
           <PriceTag />
         </el-icon>
-        <el-icon title="演员" @click="goToPerformer">
+        <el-icon :title="appLang.performer()" @click="goToPerformer">
           <User />
         </el-icon>
         <el-icon title="设置" @click="goToSetting">
@@ -52,6 +52,7 @@ import searchInputTagByStore from '@/components/com/form/searchInputTagByStore.v
 import resourceFormDrawer from '@/components/resource/resourceFormDrawer.vue'
 import { appStoreData } from '@/storeData/app.storeData'
 import type { I_resource } from '@/dataType/resource.dataType'
+import { appLang } from '@/language/app.lang';
 const router = useRouter()
 const store = {
   appStoreData: appStoreData(),

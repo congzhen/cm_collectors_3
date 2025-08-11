@@ -54,9 +54,11 @@ const selectResourcesHandle = (resource: I_resource, isInit: boolean) => {
     detailsViewRef.value?.init();
   }
 }
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const createResouceSuccessHandle = (data: I_resource) => {
   contentViewRef.value?.init();
 }
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const updateResouceSuccessHandle = (data: I_resource) => {
   contentViewRef.value?.init_DataList();
 }

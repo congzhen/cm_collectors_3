@@ -27,7 +27,7 @@ const store = {
   searchStoreData: searchStoreData(),
 }
 const emits = defineEmits(['selectResources']);
-
+const isInitializing = ref(false);
 const loading = ref(false);
 const dataList = ref<I_resource[]>([]);
 const dataCount = ref(0);
@@ -44,6 +44,7 @@ watch(
 )
 
 const init = async () => {
+  isInitializing.value = true;
   dataList.value = [];
   dataCount.value = 0;
   fetchCount = true;
@@ -54,18 +55,19 @@ const init = async () => {
     if (dataList.value.length > 0) {
       emits('selectResources', dataList.value[0], true);
     }
+    isInitializing.value = false;
   });
 
 }
 
-const init_DataList = async (fn: Function = () => { }, fetch: boolean = false) => {
+const init_DataList = async (fn: () => void = () => { }, fetch: boolean = false) => {
   if (fetch) {
     fetchCount = true;
   }
   await getDataList(fn);
 }
 
-const getDataList = debounce(async (fn: Function = () => { }) => {
+const getDataList = debounce(async (fn: () => void = () => { }) => {
   try {
     loading.value = true;
     const result = await resourceServer.dataList(store.appStoreData.currentFilesBases.id, fetchCount, currentPage.value, pageSize.value, store.searchStoreData.searchData);
@@ -87,7 +89,9 @@ const getDataList = debounce(async (fn: Function = () => { }) => {
 }, 200)
 
 const changePageHandle = () => {
-  getDataList();
+  if (!isInitializing.value) {
+    getDataList();
+  }
 }
 const selectResourcesHandle = (item: I_resource) => {
   emits('selectResources', item, false)

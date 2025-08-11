@@ -1,6 +1,6 @@
 <template>
   <div class="performer-info">
-    <el-alert title="演员信息" type="success" :closable="false" />
+    <el-alert :title="appLang.performer()" type="success" :closable="false" />
     <div v-if="props.performer">
       <div class="performer-cover">
         <el-image :src="getPerformerPhoto(props.performer)" fit="cover">
@@ -42,9 +42,10 @@
 </template>
 <script lang="ts" setup>
 import type { I_performer } from '@/dataType/performer.dataType';
-import { computed, type PropType } from 'vue';
+import { type PropType } from 'vue';
 import { appStoreData } from '@/storeData/app.storeData';
 import { getPerformerPhoto } from '@/common/photo';
+import { appLang } from '@/language/app.lang';
 const store = {
   appStoreData: appStoreData(),
 }

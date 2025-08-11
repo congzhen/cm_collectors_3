@@ -1,5 +1,5 @@
 <template>
-  <drawerForm ref="drawerFormRef" :modelValue="formData" :rules="formRules" width="800px" title="演员"
+  <drawerForm ref="drawerFormRef" :modelValue="formData" :rules="formRules" width="800px" :title="appLang.performer()"
     @submit="submitHandle">
     <div class="performer-form-container">
       <div class="performer-form-left">
@@ -63,6 +63,7 @@ import { appStoreData } from '@/storeData/app.storeData'
 import { LoadingService } from '@/assets/loading'
 import { performerServer } from '@/server/performer.server'
 import { getPerformerPhoto } from '@/common/photo';
+import { appLang } from '@/language/app.lang';
 const store = {
   appStoreData: appStoreData(),
 }
