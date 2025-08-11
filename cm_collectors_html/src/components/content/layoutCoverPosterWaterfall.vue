@@ -90,6 +90,10 @@ const selectResourcesHandle = (item: I_resource) => {
         }
       }
 
+      .el-image:hover {
+        transform: scale(1.01);
+      }
+
       .play-icon {
         position: absolute;
         z-index: 10;
