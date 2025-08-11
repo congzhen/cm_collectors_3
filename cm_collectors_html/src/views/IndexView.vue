@@ -1,7 +1,7 @@
 <template>
   <div class="index-view" v-loading="loading">
     <HeaderView class="header" @create-resouce-success="createResouceSuccessHandle"></HeaderView>
-    <dataBaseMenuView @select-files-base="selectFilesBaseHandle"></dataBaseMenuView>
+    <dataBaseMenuView class="menu" @select-files-base="selectFilesBaseHandle"></dataBaseMenuView>
     <div class="main">
       <TagView ref="tagViewRef" class="tag"></TagView>
       <ContentView ref="contentViewRef" class="content" @select-resources="selectResourcesHandle"></ContentView>
@@ -77,6 +77,11 @@ const deleteResouceSuccessHandle = () => {
 
   .header {
     width: 100%;
+  }
+
+  .menu {
+    overflow: hidden;
+    flex-shrink: 0;
   }
 
   .main {

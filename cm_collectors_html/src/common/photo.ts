@@ -17,7 +17,7 @@ export const getFileImageByDramaSeriesId = (dramaSeriesId: string, filesName: st
   const encodedFileName = btoa(encodeURIComponent(filesName));
 
   // 构建基础URL
-  let url = `/api/files/image/${dramaSeriesId}/${encodedFileName}`;
+  const url = `/api/files/image/${dramaSeriesId}/${encodedFileName}`;
 
   // 添加查询参数
   const params = new URLSearchParams();
@@ -31,4 +31,21 @@ export const getFileImageByDramaSeriesId = (dramaSeriesId: string, filesName: st
   // 拼接查询参数
   const queryString = params.toString();
   return url + (queryString ? `?${queryString}` : '');
+}
+
+
+export const coverPosterSize = (coverPosterWidth: number, coverPosterHeight: number, configCoverPosterWidthStatus: boolean, configCoverPosterWidthBase: number, configCoverPosterHeightStatus: boolean, configCoverPosterHeightBase: number) => {
+  let width = coverPosterWidth;
+  let height = coverPosterHeight;
+  if (configCoverPosterWidthStatus) {
+    width = configCoverPosterWidthBase;
+  }
+  if (configCoverPosterHeightStatus) {
+    width = configCoverPosterHeightBase / height * width;
+    height = configCoverPosterHeightBase;
+  }
+  return {
+    width,
+    height,
+  }
 }

@@ -14,7 +14,7 @@ export default {
   sortMode: ['desc', 'asc', 'issuingDateDesc', 'issuingDateAsc', 'titleDesc', 'titleAsc'],
   cup: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'Max'],
   resMode: ['movies', 'comic', 'atlas', 'files', 'videoLink'],
-  resourcesShowMode: ['coverPoster', 'table'],
+  resourcesShowMode: ['coverPoster', 'coverPosterBox', 'table'],
   detailsDramaSeriesMode: ['fileName', 'digit'],
   playAtlasMode: ['waterfall', 'flex'],
   playComicMode: ['scaleToOriginal', 'fullScreen'],

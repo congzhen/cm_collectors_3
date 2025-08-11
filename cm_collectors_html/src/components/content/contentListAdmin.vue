@@ -69,6 +69,7 @@ const emits = defineEmits(['selectResources', 'updateData']);
 
 const tableRef = ref<InstanceType<typeof ElTable>>()
 const resourceFormDrawerRef = ref<InstanceType<typeof resourceFormDrawer>>()
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const selectResourcesHandle = (item: I_resource) => {
   emits('selectResources', item)
 }

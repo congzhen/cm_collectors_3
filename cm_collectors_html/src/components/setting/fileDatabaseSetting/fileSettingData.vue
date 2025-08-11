@@ -63,18 +63,23 @@
       <el-form-item label="资源显示模式">
         <selectResourcesMode v-model="filesConfig.resourcesShowMode" />
       </el-form-item>
+      <el-form-item v-if="filesConfig.resourcesShowMode == 'coverPosterBox'" label="封面海报盒子-信息宽度">
+        <el-input-number v-model="filesConfig.coverPosterBoxInfoWidth" min="20" max="9999" />
+      </el-form-item>
       <el-form-item label="详情剧集显示模式">
         <selectDetailsDramaSeriesMode v-model="filesConfig.detailsDramaSeriesMode" />
       </el-form-item>
       <el-form-item label="详情显示模式">
         <selectResourceDetailsShowMode v-model="filesConfig.resourceDetailsShowMode" />
       </el-form-item>
+      <!--
       <el-form-item label="预览图">
         <el-checkbox v-model="filesConfig.showPreviewImage" label="显示预览图" border />
       </el-form-item>
       <el-form-item label="预览图文件夹，多个文件夹用,分割">
         <el-input v-model="filesConfig.previewImageFolder" />
       </el-form-item>
+      -->
       <el-form-item label="封面上显示标签(属性)">
         <el-select v-model="filesConfig.coverDisplayTagAttribute" multiple>
           <el-option :label="appLang.attributeTags('definition')" value="definition" />

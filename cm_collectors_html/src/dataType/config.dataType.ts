@@ -50,6 +50,7 @@ export interface I_config_app {
   randomPosterStatus: boolean; // 随机海报-状态
   resourceDetailsShowMode: string; // 资源详情-显示模式
   resourcesShowMode: string; // 资源-显示模式
+  coverPosterBoxInfoWidth: number; // 资源-显示模式-封面海报盒子-信息宽度
   routeConversion: I_routeConversion[];// 路由转换
   shieldNoPerformerPhoto: boolean; // 屏蔽无照片演员
   showPreviewImage: boolean; // 显示预览图片
@@ -79,6 +80,7 @@ export const defualtConfigApp: I_config_app = {
   pageLimit: 32,
   sortMode: 'desc',
   resourcesShowMode: 'coverPoster',
+  coverPosterBoxInfoWidth: 200,
   detailsDramaSeriesMode: E_detailsDramaSeriesMode.fileName,
   historyModule: true,
   hotModule: true,
