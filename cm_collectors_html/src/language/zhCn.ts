@@ -14,6 +14,7 @@ export default {
   resourcesShowMode: {
     coverPoster: '封面海报',
     coverPosterBox: '封面海报盒子',
+    coverPosterWaterfall: '封面海报瀑布流',
     table: '表格'
   },
   resourceDetailsShowMode: {

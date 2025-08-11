@@ -1,4 +1,3 @@
-import { playResource } from "@/common/play";
 import request, { type IRequest } from "@/assets/request";
 import type { I_appData } from "@/dataType/app.dataType";
 const routerGroupUri = '';

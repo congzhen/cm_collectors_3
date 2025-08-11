@@ -210,7 +210,6 @@ const loadMoreImages = () => {
   isHandlingScroll.value = true;
 
   // 增加显示数量
-  const previousCount = displayedCount.value;
   displayedCount.value = Math.min(
     displayedCount.value + incrementCount,
     atlasImageList.value.length

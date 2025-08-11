@@ -6,6 +6,10 @@
     <layoutCoverPosterBox v-else-if="store.appStoreData.currentConfigApp.resourcesShowMode == 'coverPosterBox'"
       :data-list="props.dataList" @select-resources="selectResourcesHandle">
     </layoutCoverPosterBox>
+    <layoutCoverPosterWaterfall
+      v-else-if="store.appStoreData.currentConfigApp.resourcesShowMode == 'coverPosterWaterfall'"
+      :data-list="props.dataList" @select-resources="selectResourcesHandle">
+    </layoutCoverPosterWaterfall>
     <layoutTable v-else-if="store.appStoreData.currentConfigApp.resourcesShowMode == 'table'"
       :data-list="props.dataList" @select-resources="selectResourcesHandle">
     </layoutTable>
@@ -14,6 +18,7 @@
 <script lang="ts" setup>
 import layoutCoverPoster from './layoutCoverPoster.vue';
 import layoutCoverPosterBox from './layoutCoverPosterBox.vue';
+import layoutCoverPosterWaterfall from './layoutCoverPosterWaterfall.vue';
 import layoutTable from './layoutTable.vue';
 import type { I_resource } from '@/dataType/resource.dataType';
 import type { PropType } from 'vue';
