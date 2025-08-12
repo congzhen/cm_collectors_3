@@ -6,7 +6,7 @@
           :img-selector="'src'" class="waterfall-list">
           <template #default="{ item }">
             <div class="waterfall-item" @click="selectResourcesHandle(item)">
-              <el-image :src="item.src" :title="item.title" />
+              <el-image :src="item.src" :title="item.title" @load="onImageLoad" />
               <div class="play-icon" @click.stop="playResource(item)">
                 <el-icon>
                   <VideoPlay />
@@ -26,10 +26,11 @@
 import { Waterfall } from 'vue-waterfall-plugin-next'
 import 'vue-waterfall-plugin-next/dist/style.css'
 import type { I_resource } from '@/dataType/resource.dataType';
-import { computed, ref, type PropType } from 'vue';
+import { computed, nextTick, ref, type PropType } from 'vue';
 import { getResourceCoverPoster } from '@/common/photo';
 import { playResource } from '@/common/play';
 import { appStoreData } from '@/storeData/app.storeData';
+import { debounce } from '@/assets/debounce';
 const store = {
   appStoreData: appStoreData(),
 }
@@ -41,6 +42,7 @@ const props = defineProps({
 })
 const emits = defineEmits(['selectResources']);
 
+const waterfallRef = ref<InstanceType<typeof Waterfall>>();
 const waterfallColumn = ref(store.appStoreData.currentConfigApp.coverPosterWaterfallColumn);
 
 const dataList_C = computed(() => {
@@ -63,6 +65,13 @@ const waterfallBreakpoints = computed(() => {
 const selectResourcesHandle = (item: I_resource) => {
   emits('selectResources', item)
 }
+
+// 图片加载完成事件处理
+const onImageLoad = debounce(() => {
+  nextTick(() => {
+    waterfallRef.value?.renderer();
+  });
+}, 300);
 
 </script>
 <style lang="scss" scoped>

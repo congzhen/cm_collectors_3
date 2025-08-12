@@ -45,5 +45,11 @@ const selectResourcesHandle = (item: I_resource) => {
   height: 100%;
   overflow: hidden;
 
+  :deep(.play-icon) {
+    .el-icon {
+      color: #f3f3f3;
+      filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.9));
+    }
+  }
 }
 </style>

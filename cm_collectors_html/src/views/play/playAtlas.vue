@@ -248,7 +248,9 @@ const openImageViewer = (index: number) => {
 }
 
 onMounted(async () => {
-  await init();
+  nextTick(async () => {
+    await init();
+  })
 });
 
 </script>

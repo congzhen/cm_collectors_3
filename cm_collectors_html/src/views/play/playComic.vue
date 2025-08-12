@@ -188,7 +188,7 @@ const setContentScrollbar = (num = 0, mode: EsetContentScrollbarMode = EsetConte
     readImageRef.value.scrollTo(0, 0);
   } else {
     const offsetTop = readImageRef.value.scrollTop || 0;
-    let top = offsetTop + num;
+    const top = offsetTop + num;
     readImageRef.value?.scrollTo(0, top);
   }
 }
@@ -219,8 +219,11 @@ watch(nowPage, () => {
 });
 
 onMounted(async () => {
-  await init();
-  addEventListeners();
+  nextTick(async () => {
+    await init();
+    addEventListeners();
+  })
+
 });
 
 onUnmounted(() => {

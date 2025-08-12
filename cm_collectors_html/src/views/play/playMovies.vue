@@ -66,7 +66,7 @@ import { E_headerMode } from '@/dataType/app.dataType'
 import type { I_resource, I_resourceDramaSeries } from '@/dataType/resource.dataType';
 import { resourceServer } from '@/server/resource.server';
 import { ElMessage } from 'element-plus';
-import { ref, onMounted } from "vue";
+import { ref, onMounted, nextTick } from "vue";
 import { getResourceCoverPoster } from '@/common/photo';
 import { appStoreData } from '@/storeData/app.storeData';
 import { appLang } from '@/language/app.lang'
@@ -148,7 +148,9 @@ const playResourceDramaSeriesHandle = (ds: I_resourceDramaSeries) => {
 }
 
 onMounted(async () => {
-  await init();
+  nextTick(async () => {
+    await init();
+  })
 });
 </script>
 <style lang="scss" scoped>
