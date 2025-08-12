@@ -23,6 +23,23 @@ func (FilesBases) InfoDetailsById(id string) (*models.FilesBasesDetails, error) 
 	return models.FilesBases{}.InfoDetails(core.DBS(), id)
 }
 
+func (FilesBases) ConfigById(id, configType string) (string, error) {
+	filesBasesSettingInfo, err := models.FilesBasesSetting{}.InfoByFilesBasesID(core.DBS(), id)
+	if err != nil {
+		return "", err
+	}
+	switch configType {
+	case "importScanDisk":
+		return filesBasesSettingInfo.ScanDiskJsonData, nil
+	case "importNfo":
+		return filesBasesSettingInfo.NfoJsonData, nil
+	case "importSimple":
+		return filesBasesSettingInfo.SimpleJsonData, nil
+	default:
+		return filesBasesSettingInfo.ConfigJsonData, nil
+	}
+}
+
 // 设置FilesBases信息
 func (t FilesBases) SetFilesBases(par *datatype.ReqParam_SetFilesBases) error {
 	db := core.DBS()

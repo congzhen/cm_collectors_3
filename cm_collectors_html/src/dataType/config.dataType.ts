@@ -1,5 +1,13 @@
 import { E_detailsDramaSeriesMode, E_resourceOpenMode, type E_tagType } from "./app.dataType";
 
+import dataset from "@/assets/dataset";
+
+export enum E_config_type {
+  app = 'app',
+  importScanDisk = 'importScanDisk',
+  importNfo = 'importNfo',
+  importSimple = 'importSimple',
+}
 
 
 export interface I_config_app {
@@ -148,6 +156,28 @@ export interface I_routeConversion {
   from: string;
   to: string;
 }
+
+
+export interface I_config_scanDisk {
+  scanDiskPaths: string[]; // 扫描磁盘路径
+  videoSuffixName: string[]; // 视频文件后缀名
+  coverPosterSuffixName: string[]; // 封面海报文件后缀名
+  coverPosterType: number; // 封面海报类型
+  autoCreatePoster: boolean; // 自动创建封面海报
+  checkTitle: boolean;  // 检查标题
+  checkPath: boolean; // 检查路径
+}
+
+export const defualtConfigScanDisk: I_config_scanDisk = {
+  scanDiskPaths: [],
+  videoSuffixName: dataset.videoSuffixName,
+  coverPosterSuffixName: dataset.imageSuffixName,
+  coverPosterType: -1,
+  autoCreatePoster: true,
+  checkTitle: true,
+  checkPath: true,
+}
+
 
 export interface I_config_nfo {
   abstract: string; // 描述

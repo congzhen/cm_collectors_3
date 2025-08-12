@@ -15,8 +15,8 @@ export interface I_filesBases extends I_filesBases_base {
 export interface I_filesBasesSetting {
   filesBases_id: string;
   config_json_data: string;
-  nfo_json_data: string;
-  simple_json_data: string;
+  //nfo_json_data: string;
+  //simple_json_data: string;
 }
 
 export interface I_filesRelatedPerformerBases {

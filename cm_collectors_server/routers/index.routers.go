@@ -34,7 +34,10 @@ func publicRouter(router *gin.Engine) {
 	routerGroup.GET("/tag/list/filesBasesId/:filesBasesId", controllers.Tag{}.TagList_FilesBasesId)
 	routerGroup.GET("/tag/list/tagClassId/:tagClassId", controllers.Tag{}.TagList_TagClassId)
 	routerGroup.GET("/tagClass/list/:filesBasesId", controllers.Tag{}.TagClassList)
+
 	routerGroup.GET("/filesBases/info/:id", controllers.FilesBases{}.InfoDetails)
+	routerGroup.GET("/filesBases/config/:id/:configType", controllers.FilesBases{}.Config)
+
 	routerGroup.POST("performer/basicList", controllers.Performer{}.BasicList)
 	routerGroup.GET("/performer/dataList/:performerBasesId/:fetchCount/:page/:limit", controllers.Performer{}.DataList)
 	routerGroup.POST("/performer/list/top/preferred", controllers.Performer{}.ListTopPreferredPerformers)

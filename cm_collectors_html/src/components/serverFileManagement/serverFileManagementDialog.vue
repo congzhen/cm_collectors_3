@@ -2,7 +2,8 @@
   <el-dialog v-model="dialogVisible" title="文件管理" width="860" :append-to-body="true" :close-on-click-modal="false">
     <serverFileManagement ref="serverFileManagementRef" class="serverFileManagement"
       :fileOperate="[E_sfm_FileOperate.Rename, E_sfm_FileOperate.Delete]"
-      :column="[E_sfm_Column.Name, E_sfm_Column.Size, E_sfm_Column.ModifiedAt, E_sfm_Column.Operate]">
+      :column="[E_sfm_Column.Name, E_sfm_Column.Size, E_sfm_Column.ModifiedAt, E_sfm_Column.Operate]"
+      :show="props.show">
     </serverFileManagement>
     <template #footer>
       <div class="dialog-footer">
@@ -13,10 +14,17 @@
 </template>
 <script lang="ts" setup>
 import { ref } from 'vue';
-import { E_sfm_FileOperate, E_sfm_Column } from './com/dataType.ts';
+import { E_sfm_FileOperate, E_sfm_Column, E_sfm_FileType } from './com/dataType.ts';
 import serverFileManagement from './serverFileManagement.vue';
 import { ElMessage } from 'element-plus';
-
+const props = defineProps({
+  show: { // 显示的文件类型
+    type: Array<E_sfm_FileType>,
+    default: () => {
+      return [E_sfm_FileType.Directory, E_sfm_FileType.File]
+    }
+  },
+})
 const emit = defineEmits(['selectedFiles'])
 
 const dialogVisible = ref(false)

@@ -58,3 +58,13 @@ func (FilesBases) Sort(c *gin.Context) {
 	}
 	response.OkWithData(true, c)
 }
+
+func (FilesBases) Config(c *gin.Context) {
+	id := c.Param("id")
+	configType := c.Param("configType")
+	configStr, err := processors.FilesBases{}.ConfigById(id, configType)
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(configStr, c)
+}

@@ -36,7 +36,7 @@
           </el-icon>
           <label class="menu-item-title">{{ appLang.performer() }}</label>
         </div>
-        <div class="menu-item">
+        <div class="menu-item" @click="openImportResource">
           <el-icon>
             <Magnet />
           </el-icon>
@@ -62,6 +62,7 @@
     </div>
     <tagListDrawer ref="tagListDrawerRef" />
     <resourceFormDrawer ref="resourceFormDrawerRef" @success="createResouceSuccessHandle" />
+    <importResourceDrawer ref="importResourceDrawerRef" @success="createResouceSuccessHandle" />
   </div>
 </template>
 <script setup lang="ts">
@@ -71,6 +72,7 @@ import { useRouter } from 'vue-router'
 import tagListDrawer from '@/components/tag/tagListDrawer.vue'
 import searchInputTagByStore from '@/components/com/form/searchInputTagByStore.vue'
 import resourceFormDrawer from '@/components/resource/resourceFormDrawer.vue'
+import importResourceDrawer from '@/components/importResource/importResourceDrawer.vue'
 import { appStoreData } from '@/storeData/app.storeData'
 import type { I_resource } from '@/dataType/resource.dataType'
 import { appLang } from '@/language/app.lang';
@@ -82,6 +84,7 @@ const emits = defineEmits(['createResouceSuccess'])
 
 const tagListDrawerRef = ref<InstanceType<typeof tagListDrawer>>()
 const resourceFormDrawerRef = ref<InstanceType<typeof resourceFormDrawer>>()
+const importResourceDrawerRef = ref<InstanceType<typeof importResourceDrawer>>()
 
 const props = defineProps({
   title: {
@@ -106,6 +109,11 @@ const switchAdminStatus = () => {
 const openTagList = () => {
   tagListDrawerRef.value?.open()
 }
+
+const openImportResource = () => {
+  importResourceDrawerRef.value?.open()
+}
+
 const goToPerformer = () => {
   router.push(`/performer/${store.appStoreData.currentMainPerformerBasesId}`)
 }

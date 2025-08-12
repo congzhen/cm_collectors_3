@@ -1,7 +1,7 @@
 import type { I_filesBases } from "@/dataType/filesBases.dataType";
 import { defineStore } from "pinia";
 import type { I_tagClass, I_tag } from "@/dataType/tag.dataType";
-import { defualtConfigApp, defualtConfigNfo, defualtConfigSimple, type I_config_app, type I_config_nfo, type I_config_simple } from "@/dataType/config.dataType";
+import { defualtConfigApp, type I_config_app } from "@/dataType/config.dataType";
 import { tagServer } from "@/server/tag.server";
 import { filesBasesServer } from "@/server/filesBases.server";
 import type { I_performer } from "@/dataType/performer.dataType";
@@ -20,8 +20,8 @@ export const appStoreData = defineStore('app', {
     currentMainPerformerBasesId: "",
     currentPerformerBasesIds: [] as string[],
     currentConfigApp: {} as I_config_app,
-    currentConfigNfo: {} as I_config_nfo,
-    currentConfigSimple: {} as I_config_simple,
+    //currentConfigNfo: {} as I_config_nfo,
+    //currentConfigSimple: {} as I_config_simple,
     currentTag: [] as I_tag[],
     currentTagClass: [] as I_tagClass[],
     currentTopPreferredPerformers: [] as I_performer[],
@@ -92,6 +92,7 @@ export const appStoreData = defineStore('app', {
       } else {
         this.currentConfigApp = defualtConfigApp;
       }
+      /*
       if (info.data.filesBasesSetting.nfo_json_data != '') {
         const configNfo = JSON.parse(info.data.filesBasesSetting.nfo_json_data);
         this.currentConfigNfo = { ...defualtConfigApp, ...configNfo };
@@ -104,7 +105,7 @@ export const appStoreData = defineStore('app', {
       } else {
         this.currentConfigSimple = defualtConfigSimple;
       }
-
+      */
       console.log(this.currentConfigApp);
 
       this.initTagData(filesBasesId)

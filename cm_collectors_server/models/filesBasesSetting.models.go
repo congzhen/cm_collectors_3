@@ -3,14 +3,21 @@ package models
 import "gorm.io/gorm"
 
 type FilesBasesSetting struct {
-	FilesBasesID   string `json:"filesBases_id" gorm:"column:filesBases_id;primaryKey;type:char(20);"`
-	ConfigJsonData string `json:"config_json_data" gorm:"type:text;"`
-	NfoJsonData    string `json:"nfo_json_data" gorm:"type:text;"`
-	SimpleJsonData string `json:"simple_json_data" gorm:"type:text;"`
+	FilesBasesID     string `json:"filesBases_id" gorm:"column:filesBases_id;primaryKey;type:char(20);"`
+	ConfigJsonData   string `json:"config_json_data" gorm:"type:text;"`
+	NfoJsonData      string `json:"-" gorm:"type:text;"`
+	SimpleJsonData   string `json:"-" gorm:"type:text;"`
+	ScanDiskJsonData string `json:"-" gorm:"type:text;"`
 }
 
 func (FilesBasesSetting) TableName() string {
 	return "filesBasesSetting"
+}
+
+func (FilesBasesSetting) InfoByFilesBasesID(db *gorm.DB, filesBasesID string) (*FilesBasesSetting, error) {
+	var info FilesBasesSetting
+	err := db.Model(&info).Where("filesBases_id = ?", filesBasesID).First(&info).Error
+	return &info, err
 }
 
 func (FilesBasesSetting) Update(db *gorm.DB, filesBasesID string, filesBasesSetting *FilesBasesSetting, fields []string) error {

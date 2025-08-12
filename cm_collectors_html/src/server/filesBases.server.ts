@@ -1,5 +1,5 @@
 import request from "@/assets/request";
-import type { I_config_app } from "@/dataType/config.dataType";
+import type { E_config_type, I_config_app } from "@/dataType/config.dataType";
 import type { I_filesBases, I_filesBases_base, I_filesBases_sort } from "@/dataType/filesBases.dataType";
 const routerGroupUri = '';
 export const filesBasesServer = {
@@ -40,6 +40,12 @@ export const filesBasesServer = {
       data: {
         sortData: sortObj,
       },
+    });
+  },
+  getConfigById: async (id: string, configType: E_config_type) => {
+    return await request<string>({
+      url: `${routerGroupUri}/filesBases/config/${id}/${configType}`,
+      method: 'get',
     });
   }
 }
