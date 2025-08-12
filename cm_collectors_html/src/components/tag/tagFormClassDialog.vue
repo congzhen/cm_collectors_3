@@ -8,7 +8,7 @@
 </template>
 <script lang="ts" setup>
 import { reactive, ref } from 'vue'
-import dialogForm from '../com/dialog/dialog.form.vue'
+import dialogForm from '../com/dialog/dialog-form.vue'
 import { ElMessage, type FormRules } from 'element-plus'
 import type { I_tagClass } from '@/dataType/tag.dataType';
 import { tagServer } from '@/server/tag.server';

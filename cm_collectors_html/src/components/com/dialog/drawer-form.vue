@@ -11,7 +11,7 @@
 <script setup lang="ts">
 import { ref, type PropType, reactive } from 'vue'
 import type { FormInstance, FormRules } from 'element-plus'
-import drawerCommon from './drawer.common.vue'
+import drawerCommon from './drawer-common.vue'
 import { debounceNow } from '@/assets/debounce'
 
 const drawerCommonRef = ref<InstanceType<typeof drawerCommon>>()

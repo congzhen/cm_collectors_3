@@ -13,7 +13,7 @@
 </template>
 <script setup lang="ts">
 import { ref } from 'vue';
-import drawerCommon from '@/components/com/dialog/drawer.common.vue';
+import drawerCommon from '@/components/com/dialog/drawer-common.vue';
 import tagList from './tagList.vue';
 import tagFormClassDialog from './tagFormClassDialog.vue'
 import { appStoreData } from '@/storeData/app.storeData';

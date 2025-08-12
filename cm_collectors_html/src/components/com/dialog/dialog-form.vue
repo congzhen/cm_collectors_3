@@ -1,28 +1,15 @@
 <template>
-  <dialogCommon
-    ref="dialogCommonRef"
-    :width="props.width"
-    :title="props.title"
-    :btnSubmitTitle="props.btnSubmitTitle"
-    :footer="props.footer"
-    @submit="submitHandle(ruleFormTagRef)"
-    @closed="close"
-  >
-    <el-form
-      ref="ruleFormTagRef"
-      :model="props.modelValue"
-      :rules="props.rules"
-      :label-width="props.labelWidth"
-      :label-position="props.labelPosition"
-      status-icon
-    >
+  <dialogCommon ref="dialogCommonRef" :width="props.width" :title="props.title" :btnSubmitTitle="props.btnSubmitTitle"
+    :footer="props.footer" @submit="submitHandle(ruleFormTagRef)" @closed="close">
+    <el-form ref="ruleFormTagRef" :model="props.modelValue" :rules="props.rules" :label-width="props.labelWidth"
+      :label-position="props.labelPosition" status-icon>
       <slot></slot>
     </el-form>
   </dialogCommon>
 </template>
 <script lang="ts" setup>
 import { reactive, ref } from 'vue'
-import dialogCommon from './dialog.common.vue'
+import dialogCommon from './dialog-common.vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import { debounceNow } from '@/assets/debounce'
 const dialogCommonRef = ref<InstanceType<typeof dialogCommon>>()

@@ -9,24 +9,45 @@
         <searchInputTagByStore />
       </div>
       <div class="setting">
-        <el-icon title="添加" @click="oepnResourceForm">
-          <Plus />
-        </el-icon>
-        <el-icon v-if="!store.appStoreData.adminResourceStatus" @click="switchAdminStatus">
-          <TurnOff />
-        </el-icon>
-        <el-icon v-else color="#409EFF" @click="switchAdminStatus">
-          <Open />
-        </el-icon>
-        <el-icon title="标签" @click="openTagList">
-          <PriceTag />
-        </el-icon>
-        <el-icon :title="appLang.performer()" @click="goToPerformer">
-          <User />
-        </el-icon>
-        <el-icon title="设置" @click="goToSetting">
-          <Setting />
-        </el-icon>
+        <div class="menu-item" @click="oepnResourceForm">
+          <el-icon>
+            <Plus />
+          </el-icon>
+          <label class="menu-item-title">添加</label>
+        </div>
+        <div class="menu-item" @click="switchAdminStatus">
+          <el-icon v-if="!store.appStoreData.adminResourceStatus">
+            <TurnOff />
+          </el-icon>
+          <el-icon v-else color="#409EFF">
+            <Open />
+          </el-icon>
+          <label class="menu-item-title">管理</label>
+        </div>
+        <div class="menu-item" @click="openTagList">
+          <el-icon>
+            <PriceTag />
+          </el-icon>
+          <label class="menu-item-title">标签</label>
+        </div>
+        <div class="menu-item" @click="goToPerformer">
+          <el-icon>
+            <User />
+          </el-icon>
+          <label class="menu-item-title">{{ appLang.performer() }}</label>
+        </div>
+        <div class="menu-item">
+          <el-icon>
+            <Magnet />
+          </el-icon>
+          <label class="menu-item-title">导入</label>
+        </div>
+        <div class="menu-item" @click="goToSetting">
+          <el-icon>
+            <Setting />
+          </el-icon>
+          <label class="menu-item-title">设置</label>
+        </div>
       </div>
     </div>
     <div class="right" v-else>
@@ -127,7 +148,7 @@ const createResouceSuccessHandle = (data: I_resource) => {
 
     .search {
       margin: 0 1em;
-      width: 75%;
+      width: 70%;
     }
 
 
@@ -135,6 +156,37 @@ const createResouceSuccessHandle = (data: I_resource) => {
       flex-shrink: 0;
       font-size: 2em;
       cursor: pointer;
+      display: flex;
+      justify-content: flex-end;
+
+      .menu-item {
+        margin-left: 0.2em;
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        user-select: none;
+
+        &:hover {
+          color: var(--el-color-primary);
+
+          .menu-item-title {
+            display: block;
+            width: auto;
+            opacity: 1;
+          }
+        }
+
+        .menu-item-title {
+          font-size: 14px;
+          line-height: 28px;
+          cursor: pointer;
+          width: 0;
+          opacity: 0;
+          transition: width 0.3s ease, opacity 0.1s ease;
+          white-space: nowrap;
+          overflow: hidden;
+        }
+      }
 
       .icon-text-label {
         display: flex;
@@ -149,13 +201,7 @@ const createResouceSuccessHandle = (data: I_resource) => {
         }
       }
 
-      .el-icon {
-        margin-left: 0.2em;
 
-        &:hover {
-          color: var(--el-color-primary);
-        }
-      }
     }
   }
 }

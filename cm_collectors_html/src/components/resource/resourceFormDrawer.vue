@@ -114,7 +114,7 @@
 <script lang="ts" setup>
 import { reactive, ref, computed } from 'vue'
 import { E_performerCareerType } from '@/dataType/app.dataType';
-import drawerForm from '../com/dialog/drawer.form.vue'
+import drawerForm from '../com/dialog/drawer-form.vue'
 import setImage from '../com/form/setImage.vue';
 import datePicker from '../com/form/datePicker.vue'
 import selectCountry from '../com/form/selectCountry.vue'

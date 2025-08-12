@@ -12,7 +12,7 @@
 <script setup lang="ts">
 import { debounceNow } from '@/assets/debounce';
 import { LoadingService } from '@/assets/loading';
-import dialogTable from '@/components/com/dialog/dialog.table.vue';
+import dialogTable from '@/components/com/dialog/dialog-table.vue';
 import type { I_performer } from '@/dataType/performer.dataType';
 import { performerServer } from '@/server/performer.server';
 import { ElMessage } from 'element-plus';

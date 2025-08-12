@@ -1,11 +1,6 @@
 <template>
-  <el-drawer
-    v-model="drawerVisible"
-    :direction="direction"
-    :size="props.width"
-    :close-on-click-modal="false"
-    :append-to-body="true"
-  >
+  <el-drawer v-model="drawerVisible" :direction="direction" :size="props.width" :close-on-click-modal="false"
+    :append-to-body="true">
     <template v-if="props.title != ''" #header>
       <label style="font-size: 1.5em">{{ props.title }}</label>
     </template>

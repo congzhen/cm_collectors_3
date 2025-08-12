@@ -51,7 +51,7 @@
 </template>
 <script lang="ts" setup>
 import { reactive, ref } from 'vue'
-import drawerForm from '../com/dialog/drawer.form.vue'
+import drawerForm from '../com/dialog/drawer-form.vue'
 import selectCountry from '../com/form/selectCountry.vue'
 import selectCup from '@/components/com/form/selectCup.vue'
 import inputCupBWH from '@/components/com/form/inputCupBWH.vue'

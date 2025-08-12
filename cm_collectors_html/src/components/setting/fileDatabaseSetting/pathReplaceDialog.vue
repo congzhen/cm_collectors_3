@@ -45,7 +45,7 @@
   </dialogCommon>
 </template>
 <script lang="ts" setup>
-import dialogCommon from '@/components/com/dialog/dialog.common.vue';
+import dialogCommon from '@/components/com/dialog/dialog-common.vue';
 import { ref } from 'vue';
 import { filesBasesStoreData } from '@/storeData/filesBases.storeData';
 import { debounceNow } from '@/assets/debounce';

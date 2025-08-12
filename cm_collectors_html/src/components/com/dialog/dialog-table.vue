@@ -21,7 +21,7 @@
 </template>
 <script setup lang="ts">
 import { ref } from 'vue';
-import dialogCommon from './dialog.common.vue'
+import dialogCommon from './dialog-common.vue'
 
 const dialogCommonRef = ref<InstanceType<typeof dialogCommon>>()
 

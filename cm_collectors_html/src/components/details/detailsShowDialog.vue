@@ -17,7 +17,7 @@
   </dialogCommon>
 </template>
 <script lang="ts" setup>
-import dialogCommon from '../com/dialog/dialog.common.vue';
+import dialogCommon from '../com/dialog/dialog-common.vue';
 import { computed, ref, type PropType } from 'vue'
 import type { I_resource } from '@/dataType/resource.dataType'
 import { getResourceCoverPoster } from '@/common/photo';

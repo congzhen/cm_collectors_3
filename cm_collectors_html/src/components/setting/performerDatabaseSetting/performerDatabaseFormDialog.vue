@@ -8,7 +8,7 @@
 </template>
 <script lang="ts" setup>
 import { LoadingService } from '@/assets/loading';
-import dialogForm from '@/components/com/dialog/dialog.form.vue'
+import dialogForm from '@/components/com/dialog/dialog-form.vue'
 import { performerBasesServer } from '@/server/performerBases.server';
 import { ElMessage, type FormRules } from 'element-plus';
 import { reactive, ref } from 'vue';
