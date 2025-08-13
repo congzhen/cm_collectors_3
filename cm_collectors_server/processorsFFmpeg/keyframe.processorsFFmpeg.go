@@ -41,13 +41,20 @@ func (t KeyFrame) ExtractKeyframePoster(videoPath string, frameCount int) ([]byt
 //
 //	videoPath: 视频文件的路径
 //	frameCount: 需要提取的关键帧数量
+//	level: 质量级别，决定提取帧的数量（实际提取帧数为frameCount*level）
 //
 // 返回值:
 //
 //	[]string: base64编码的关键帧图像数据切片，每个元素是一帧图像的base64编码字符串
 //	error: 错误信息，如果提取成功则为nil
-func (t KeyFrame) ExtractKeyframesAsBase64(videoPath string, frameCount int) ([]string, error) {
-	images, err := t.ExtractKeyframes(videoPath, frameCount)
+func (t KeyFrame) ExtractKeyframesAsBase64(videoPath string, frameCount int, level int) ([]string, error) {
+	var images [][]byte
+	var err error
+	if level > 1 {
+		images, err = t.ExtractKeyframes_Level(videoPath, frameCount, level)
+	} else {
+		images, err = t.ExtractKeyframes(videoPath, frameCount)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -61,6 +68,84 @@ func (t KeyFrame) ExtractKeyframesAsBase64(videoPath string, frameCount int) ([]
 	}
 
 	return base64Frames, nil
+}
+
+// ExtractHighQualityKeyframes 提取高质量关键帧
+// 通过提取比需求更多的帧，然后根据质量评估选择最佳的帧来提高关键帧质量
+// 参数:
+//
+//	videoPath: 视频文件的路径
+//	frameCount: 需要提取的关键帧数量
+//	level: 质量级别，决定提取帧的数量（实际提取帧数为frameCount*level）
+//
+// 返回值:
+//
+//	[][]byte: 提取的高质量关键帧图像数据切片
+//	error: 错误信息，如果提取成功则为nil
+func (t KeyFrame) ExtractKeyframes_Level(videoPath string, frameCount int, level int) ([][]byte, error) {
+	if level < 1 {
+		level = 1
+	}
+	images, err := t.ExtractKeyframes(videoPath, frameCount*level)
+	if err != nil {
+		return nil, err
+	}
+	// 如果需要多帧，从中选择指定数量的帧
+	// 先评估所有帧的质量
+	type frameScore struct {
+		index int
+		score float64
+		data  []byte
+		err   error
+	}
+
+	// 创建通道用于接收评估结果
+	scoreChan := make(chan frameScore, len(images))
+
+	// 启动协程并行评估所有帧
+	for i, imgData := range images {
+		go func(index int, data []byte) {
+			score, err := t.evaluateFrame(data)
+			if err != nil {
+				// 如果评估失败，给一个较低的分数
+				score = 0.1
+			}
+			scoreChan <- frameScore{
+				index: index,
+				score: score,
+				data:  data,
+				err:   err,
+			}
+		}(i, imgData)
+	}
+
+	// 收集所有评估结果
+	var scoredFrames []frameScore
+	for i := 0; i < len(images); i++ {
+		scoredFrames = append(scoredFrames, <-scoreChan)
+	}
+
+	// 按分数排序（降序）
+	for i := 0; i < len(scoredFrames)-1; i++ {
+		for j := i + 1; j < len(scoredFrames); j++ {
+			if scoredFrames[i].score < scoredFrames[j].score {
+				scoredFrames[i], scoredFrames[j] = scoredFrames[j], scoredFrames[i]
+			}
+		}
+	}
+
+	// 选择前frameCount个帧
+	var selectedImages [][]byte
+	for i := 0; i < frameCount && i < len(scoredFrames); i++ {
+		selectedImages = append(selectedImages, scoredFrames[i].data)
+	}
+
+	// 如果选择的帧数不够，用原始帧补充
+	for len(selectedImages) < frameCount && len(images) > len(selectedImages) {
+		selectedImages = append(selectedImages, images[len(selectedImages)])
+	}
+
+	return selectedImages, nil
 }
 
 // ExtractKeyframes 从视频中提取指定数量的关键帧
