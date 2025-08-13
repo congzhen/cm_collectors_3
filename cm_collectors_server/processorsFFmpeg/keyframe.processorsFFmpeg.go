@@ -347,33 +347,160 @@ func (t KeyFrame) evaluateFrame(frameData []byte) (float64, error) {
 	whiteRatio := float64(whitePixels) / float64(totalSampled)
 
 	// 评估分数：
-	// 1. 惩罚过多的黑/白像素
-	// 2. 奖励适度的颜色变化
-	// 3. 惩罚过于单调的图像
 	blackWhitePenalty := blackRatio + whiteRatio
-	if blackWhitePenalty > 0.6 { // 如果黑/白像素超过60%
+
+	// 更严格的过滤条件
+	if blackWhitePenalty > 0.8 { // 如果黑/白像素超过80%
 		return -1, nil // 直接排除
 	}
 
+	// 对淡入淡出效果进行特殊处理
+	if blackRatio > 0.5 || whiteRatio > 0.5 {
+		// 不直接排除，但给予很低的分数
+		blackWhitePenalty = math.Max(blackWhitePenalty, 0.7)
+	}
+
 	// 颜色丰富度得分 (0-1)
-	colorScore := 1.0 - math.Min(1.0, blackWhitePenalty*2)
+	colorScore := 1.0 - math.Min(1.0, blackWhitePenalty*1.8) // 调整系数以更敏感
 
 	// 颜色变化得分 (0-1)
-	varianceScore := math.Min(1.0, colorVariance/10000.0)
+	varianceScore := math.Min(1.0, colorVariance/8000.0) // 调整分母使变化更敏感
 
 	// 计算图像清晰度得分（模糊检测）
 	sharpnessScore := t.calculateImageSharpness(img, sampleRate)
 
-	// 综合得分 (加入清晰度权重)
-	// 现在考虑颜色、方差和清晰度三个因素
-	score := (colorScore*0.3 + varianceScore*0.2 + sharpnessScore*0.5)
+	// 增加对比度评估
+	contrastScore := t.calculateContrast(img, sampleRate)
+
+	// 增加边缘密度评估
+	edgeDensityScore := t.calculateEdgeDensity(img, sampleRate)
+
+	// 综合得分 (加入清晰度、对比度和边缘密度权重)
+	// 现在考虑颜色、方差、清晰度、对比度和边缘密度五个因素
+	score := (colorScore*0.15 + varianceScore*0.1 + sharpnessScore*0.4 + contrastScore*0.2 + edgeDensityScore*0.15)
 
 	// 对于非常模糊的图像，直接排除
-	if sharpnessScore < 0.1 {
+	if sharpnessScore < 0.05 {
+		return -1, nil
+	}
+
+	// 对于颜色单调且不够清晰的图像，也排除
+	if colorScore < 0.2 && sharpnessScore < 0.2 {
 		return -1, nil
 	}
 
 	return score, nil
+}
+
+// calculateContrast 计算图像对比度得分
+func (t KeyFrame) calculateContrast(img image.Image, sampleRate int) float64 {
+	bounds := img.Bounds()
+
+	// 计算直方图
+	var histogram [256]int
+	totalPixels := 0
+
+	for y := bounds.Min.Y; y < bounds.Max.Y; y += sampleRate {
+		for x := bounds.Min.X; x < bounds.Max.X; x += sampleRate {
+			r, g, b, _ := img.At(x, y).RGBA()
+			// 转换为8位灰度值
+			r8, g8, b8 := uint8(r>>8), uint8(g>>8), uint8(b>>8)
+			gray := uint8(0.299*float64(r8) + 0.587*float64(g8) + 0.114*float64(b8))
+
+			histogram[gray]++
+			totalPixels++
+		}
+	}
+
+	// 计算累积直方图
+	var cumHist [256]int
+	cumHist[0] = histogram[0]
+	for i := 1; i < 256; i++ {
+		cumHist[i] = cumHist[i-1] + histogram[i]
+	}
+
+	// 找到5%和95%的分位点
+	lowThresh := int(0.05 * float64(totalPixels))
+	highThresh := int(0.95 * float64(totalPixels))
+
+	var lowVal, highVal int
+	for i := 0; i < 256; i++ {
+		if cumHist[i] >= lowThresh && lowVal == 0 {
+			lowVal = i
+		}
+		if cumHist[i] >= highThresh {
+			highVal = i
+		}
+	}
+
+	// 计算对比度
+	contrast := float64(highVal-lowVal) / 255.0
+	return math.Max(0.0, math.Min(1.0, contrast))
+}
+
+// calculateEdgeDensity 计算图像边缘密度得分
+func (t KeyFrame) calculateEdgeDensity(img image.Image, sampleRate int) float64 {
+	bounds := img.Bounds()
+	width := bounds.Dx()
+	height := bounds.Dy()
+
+	if width < 3 || height < 3 {
+		return 0.5
+	}
+
+	// 使用Sobel算子计算边缘
+	var edgePixels, totalPixels int
+
+	// Sobel核:
+	// Gx = [[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]]
+	// Gy = [[-1, -2, -1], [0, 0, 0], [1, 2, 1]]
+	for y := bounds.Min.Y + sampleRate; y < bounds.Max.Y-sampleRate; y += sampleRate {
+		for x := bounds.Min.X + sampleRate; x < bounds.Max.X-sampleRate; x += sampleRate {
+			// 计算x方向梯度
+			gx := (2 * t.getGrayValue(img, x+sampleRate, y)) +
+				t.getGrayValue(img, x+sampleRate, y-sampleRate) +
+				t.getGrayValue(img, x+sampleRate, y+sampleRate) -
+				(2 * t.getGrayValue(img, x-sampleRate, y)) -
+				t.getGrayValue(img, x-sampleRate, y-sampleRate) -
+				t.getGrayValue(img, x-sampleRate, y+sampleRate)
+
+			// 计算y方向梯度
+			gy := (2 * t.getGrayValue(img, x, y+sampleRate)) +
+				t.getGrayValue(img, x+sampleRate, y+sampleRate) +
+				t.getGrayValue(img, x-sampleRate, y+sampleRate) -
+				(2 * t.getGrayValue(img, x, y-sampleRate)) -
+				t.getGrayValue(img, x+sampleRate, y-sampleRate) -
+				t.getGrayValue(img, x-sampleRate, y-sampleRate)
+
+			// 计算梯度幅值
+			gradient := math.Sqrt(float64(gx*gx + gy*gy))
+
+			// 如果梯度大于阈值，则认为是边缘
+			if gradient > 30.0 { // 阈值可根据需要调整
+				edgePixels++
+			}
+
+			totalPixels++
+		}
+	}
+
+	if totalPixels == 0 {
+		return 0.5
+	}
+
+	// 边缘密度得分
+	edgeDensity := float64(edgePixels) / float64(totalPixels)
+
+	// 将边缘密度映射到0-1范围
+	// 假设理想的边缘密度在0.05-0.3之间
+	if edgeDensity < 0.05 {
+		return edgeDensity * 20.0 // 低于0.05时线性增加
+	} else if edgeDensity > 0.3 {
+		return math.Max(0.0, 1.0-(edgeDensity-0.3)*2.0) // 高于0.3时递减
+	}
+
+	// 0.05-0.3之间时，得分接近1
+	return 1.0
 }
 
 // calculateImageSharpness 计算图像清晰度得分，用于检测模糊
