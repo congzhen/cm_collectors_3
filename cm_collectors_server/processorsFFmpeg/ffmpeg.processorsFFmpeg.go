@@ -66,7 +66,6 @@ func (f FFmpeg) isToolAvailable(toolName string) (string, error) {
 			}
 		*/
 		localToolPath := filepath.Join("./", "ffmpeg", toolName+".exe")
-		fmt.Println("----------------------------------", localToolPath)
 		if _, err := os.Stat(localToolPath); err == nil {
 			// 本地工具存在
 			toolPath = localToolPath

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"fmt"
+	"image"
 	"image/color"
 	"image/jpeg"
 	"math"
@@ -82,8 +83,6 @@ func (t KeyFrame) ExtractKeyframes(videoPath string, frameCount int) ([][]byte, 
 	// 限制帧数在合理范围内
 	if frameCount <= 0 {
 		frameCount = 1
-	} else if frameCount > 20 {
-		frameCount = 20 // 限制最大帧数为20
 	}
 
 	// 构造FFmpeg命令，提取指定数量的关键帧到内存
@@ -277,8 +276,127 @@ func (t KeyFrame) evaluateFrame(frameData []byte) (float64, error) {
 	// 颜色变化得分 (0-1)
 	varianceScore := math.Min(1.0, colorVariance/10000.0)
 
-	// 综合得分
-	score := (colorScore*0.6 + varianceScore*0.4)
+	// 计算图像清晰度得分（模糊检测）
+	sharpnessScore := t.calculateImageSharpness(img, sampleRate)
+
+	// 综合得分 (加入清晰度权重)
+	// 现在考虑颜色、方差和清晰度三个因素
+	score := (colorScore*0.3 + varianceScore*0.2 + sharpnessScore*0.5)
+
+	// 对于非常模糊的图像，直接排除
+	if sharpnessScore < 0.1 {
+		return -1, nil
+	}
 
 	return score, nil
+}
+
+// calculateImageSharpness 计算图像清晰度得分，用于检测模糊
+func (t KeyFrame) calculateImageSharpness(img image.Image, sampleRate int) float64 {
+	bounds := img.Bounds()
+	width := bounds.Dx()
+	height := bounds.Dy()
+
+	if width < 3 || height < 3 {
+		return 0.5 // 太小的图像无法准确计算清晰度
+	}
+
+	// 转换为灰度图像并计算梯度
+	var sobelV, sobelH float64
+	count := 0
+
+	// 使用Sobel算子计算图像梯度
+	// Sobel核:
+	// Gx = [[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]]
+	// Gy = [[-1, -2, -1], [0, 0, 0], [1, 2, 1]]
+	for y := bounds.Min.Y + sampleRate; y < bounds.Max.Y-sampleRate; y += sampleRate {
+		for x := bounds.Min.X + sampleRate; x < bounds.Max.X-sampleRate; x += sampleRate {
+			// 计算x方向梯度
+			gx := (2 * t.getGrayValue(img, x+sampleRate, y)) +
+				t.getGrayValue(img, x+sampleRate, y-sampleRate) +
+				t.getGrayValue(img, x+sampleRate, y+sampleRate) -
+				(2 * t.getGrayValue(img, x-sampleRate, y)) -
+				t.getGrayValue(img, x-sampleRate, y-sampleRate) -
+				t.getGrayValue(img, x-sampleRate, y+sampleRate)
+
+			// 计算y方向梯度
+			gy := (2 * t.getGrayValue(img, x, y+sampleRate)) +
+				t.getGrayValue(img, x+sampleRate, y+sampleRate) +
+				t.getGrayValue(img, x-sampleRate, y+sampleRate) -
+				(2 * t.getGrayValue(img, x, y-sampleRate)) -
+				t.getGrayValue(img, x+sampleRate, y-sampleRate) -
+				t.getGrayValue(img, x-sampleRate, y-sampleRate)
+
+			// 累积梯度幅值
+			sobelV += math.Abs(float64(gx))
+			sobelH += math.Abs(float64(gy))
+			count++
+		}
+	}
+
+	if count == 0 {
+		return 0.5
+	}
+
+	// 计算平均梯度幅值
+	avgGradient := (sobelV + sobelH) / float64(count*255) // 归一化到0-1范围
+
+	// 使用拉普拉斯算子作为补充检测
+	laplacianScore := t.calculateLaplacianVariance(img, sampleRate)
+
+	// 综合两个指标
+	combinedScore := 0.7*avgGradient + 0.3*laplacianScore
+
+	// 保证得分在0-1之间
+	return math.Max(0.0, math.Min(1.0, combinedScore))
+}
+
+// calculateLaplacianVariance 计算拉普拉斯方差作为模糊检测的补充方法
+func (t KeyFrame) calculateLaplacianVariance(img image.Image, sampleRate int) float64 {
+	bounds := img.Bounds()
+	var sum, sumSq float64
+	count := 0
+
+	// 使用拉普拉斯算子计算每个像素的二阶导数
+	// 简化的3x3拉普拉斯核 [[0,1,0],[1,-4,1],[0,1,0]]
+	for y := bounds.Min.Y + sampleRate; y < bounds.Max.Y-sampleRate; y += sampleRate {
+		for x := bounds.Min.X + sampleRate; x < bounds.Max.X-sampleRate; x += sampleRate {
+			// 获取当前像素及其邻居的灰度值
+			center := t.getGrayValue(img, x, y)
+			up := t.getGrayValue(img, x, y-sampleRate)
+			down := t.getGrayValue(img, x, y+sampleRate)
+			left := t.getGrayValue(img, x-sampleRate, y)
+			right := t.getGrayValue(img, x+sampleRate, y)
+
+			// 应用拉普拉斯算子: 4*center - up - down - left - right
+			laplacian := math.Abs(float64(4*center - up - down - left - right))
+
+			sum += laplacian
+			sumSq += laplacian * laplacian
+			count++
+		}
+	}
+
+	if count == 0 {
+		return 0.5
+	}
+
+	// 计算方差作为清晰度指标
+	mean := sum / float64(count)
+	variance := sumSq/float64(count) - mean*mean
+
+	// 将方差映射到0-1范围
+	// 这里使用不同的缩放因子以适应拉普拉斯方差的范围
+	sharpness := 1.0 - math.Exp(-variance/5000.0)
+	return math.Max(0.0, math.Min(1.0, sharpness))
+}
+
+// getGrayValue 获取指定坐标的灰度值
+func (t KeyFrame) getGrayValue(img image.Image, x, y int) uint8 {
+	r, g, b, _ := img.At(x, y).RGBA()
+	// 转换为8位值
+	r8, g8, b8 := uint8(r>>8), uint8(g>>8), uint8(b>>8)
+	// 使用标准的RGB转灰度公式
+	gray := uint8(0.299*float64(r8) + 0.587*float64(g8) + 0.114*float64(b8))
+	return gray
 }

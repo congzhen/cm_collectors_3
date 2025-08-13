@@ -56,6 +56,7 @@ let workStatus = true;
 const init = (_pathList: string[], _config: I_config_scanDisk) => {
   workStatus = true;
   waiting.value = true;
+  dialogCommonRef.value?.disabledSubmit(false);
   pathList.value = [];
   _pathList.forEach(path => {
     pathList.value.push({

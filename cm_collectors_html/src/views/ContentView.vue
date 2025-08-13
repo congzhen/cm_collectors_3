@@ -43,6 +43,13 @@ watch(
   { deep: true }
 )
 
+watch(
+  () => store.appStoreData.currentConfigApp.pageLimit,
+  () => {
+    init();
+  },
+)
+
 const init = async () => {
   isInitializing.value = true;
   dataList.value = [];

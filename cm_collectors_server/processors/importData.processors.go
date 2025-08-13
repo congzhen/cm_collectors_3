@@ -91,7 +91,7 @@ func (t ImportData) ScanDiskImportData(filesBasesId, filePath string, config dat
 	// 如果未找到相似图片，则尝试自动创建海报
 	if coverPosterPath == "" && config.AutoCreatePoster {
 		// 自动创建海报
-		coverPosterBytes, err = processorsffmpeg.KeyFrame{}.ExtractKeyframePoster(filePath, 10)
+		coverPosterBytes, err = processorsffmpeg.KeyFrame{}.ExtractKeyframePoster(filePath, 30)
 		if err != nil {
 			core.LogErr(err)
 		}

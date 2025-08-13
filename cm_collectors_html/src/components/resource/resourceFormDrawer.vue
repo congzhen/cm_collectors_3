@@ -107,9 +107,15 @@
         </div>
       </div>
     </div>
+    <template #footerBtn>
+      <div v-if="formData.mode == E_resourceDramaSeriesType.Movies">
+        <el-button @click="videoKeyframePosterHandle">获取视频预览图</el-button>
+      </div>
+    </template>
   </drawerForm>
   <serverFileManagementDialog ref="serverFileManagementDialogRef" @selectedFiles="selectedFilesHandle">
   </serverFileManagementDialog>
+  <videoKeyframePosterDialog ref="videoKeyframePosterDialogRef" />
 </template>
 <script lang="ts" setup>
 import { reactive, ref, computed } from 'vue'
@@ -126,6 +132,7 @@ import { ElMessage, type FormRules } from 'element-plus'
 import { E_resourceDramaSeriesType } from '@/dataType/app.dataType'
 import type { I_resource, I_resource_base, I_resourceDramaSeries_base } from '@/dataType/resource.dataType'
 import serverFileManagementDialog from '../serverFileManagement/serverFileManagementDialog.vue';
+import videoKeyframePosterDialog from './videoKeyframePosterDialog.vue';
 import { appStoreData } from '@/storeData/app.storeData'
 import type { I_sfm_FileEntry } from '@/components/serverFileManagement/com/dataType';
 import { LoadingService } from '@/assets/loading';
@@ -141,6 +148,7 @@ const emits = defineEmits(['success'])
 const drawerFormRef = ref<InstanceType<typeof drawerForm>>();
 const setImageRef = ref<InstanceType<typeof setImage>>();
 const serverFileManagementDialogRef = ref<InstanceType<typeof serverFileManagementDialog>>();
+const videoKeyframePosterDialogRef = ref<InstanceType<typeof videoKeyframePosterDialog>>();
 const resourceFormCoverPosterContainerRef = ref<HTMLElement | null>(null);
 
 let mode: 'add' | 'edit' = 'add'
@@ -280,6 +288,14 @@ const submitHandle = async () => {
   } finally {
     LoadingService.hide();
   }
+}
+
+const videoKeyframePosterHandle = () => {
+  if (dramaSeries.value.length == 0 && dramaSeries.value[0].src != '') {
+    ElMessage.error('请先设置视频次元');
+    return;
+  }
+  videoKeyframePosterDialogRef.value?.open(dramaSeries.value[0].src);
 }
 
 const open = (_mode: 'add' | 'edit', res: I_resource | null = null) => {

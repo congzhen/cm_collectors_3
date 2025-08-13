@@ -6,6 +6,9 @@
       :label-position="props.labelPosition" status-icon>
       <slot></slot>
     </el-form>
+    <template #footerBtn>
+      <slot name="footerBtn"></slot>
+    </template>
   </drawerCommon>
 </template>
 <script setup lang="ts">
