@@ -8,6 +8,9 @@
             <el-icon v-if="scope.row.status" size="14">
               <Select />
             </el-icon>
+            <el-icon v-else-if="waiting">
+              <Paperclip />
+            </el-icon>
             <el-icon v-else class="element-rotating" size="14">
               <Loading />
             </el-icon>
@@ -44,13 +47,15 @@ const emits = defineEmits(['success'])
 
 const dialogCommonRef = ref<InstanceType<typeof dialogCommon>>();
 const pathList = ref<I_pathList[]>([]);
-let config: I_config_scanDisk;
+const waiting = ref(true);
 
+let config: I_config_scanDisk;
 let workStatus = true;
 
 
 const init = (_pathList: string[], _config: I_config_scanDisk) => {
   workStatus = true;
+  waiting.value = true;
   pathList.value = [];
   _pathList.forEach(path => {
     pathList.value.push({
@@ -64,6 +69,7 @@ const init = (_pathList: string[], _config: I_config_scanDisk) => {
 
 const submitHandle = debounceNow(async () => {
   dialogCommonRef.value?.disabledSubmit(true);
+  waiting.value = false;
   for (let i = 0; i < pathList.value.length; i++) {
     if (!workStatus) {
       return;
@@ -79,6 +85,7 @@ const submitHandle = debounceNow(async () => {
 
 const closeHandle = () => {
   workStatus = false;
+  success();
 }
 
 const success = () => {

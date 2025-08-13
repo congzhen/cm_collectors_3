@@ -289,8 +289,6 @@ const open = (_mode: 'add' | 'edit', res: I_resource | null = null) => {
 const close = () => {
   drawerFormRef.value?.close();
 }
-
-// eslint-disable-next-line no-undef
 defineExpose({ open })
 </script>
 <style lang="scss" scoped>
