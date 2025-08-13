@@ -8,7 +8,7 @@ type ResDataList struct {
 type E_resourceMode string
 
 const (
-	E_resourceMode_Movies    E_resourceMode = "Movies"
+	E_resourceMode_Movies    E_resourceMode = "movies"
 	E_resourceMode_Comic     E_resourceMode = "comic"
 	E_resourceMode_Atlas     E_resourceMode = "atlas"
 	E_resourceMode_Files     E_resourceMode = "files"

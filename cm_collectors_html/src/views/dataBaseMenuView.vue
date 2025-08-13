@@ -30,7 +30,7 @@ const changeDataBaseHandle = (filesBases: I_filesBases) => {
 <style lang="scss" scoped>
 .database-menu {
   height: 31px;
-  padding-bottom: 5px;
+  padding: 5px 0;
 
   :deep(.el-menu--horizontal) {
     height: auto;

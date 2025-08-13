@@ -77,6 +77,8 @@ func AdminRouter(router *gin.Engine) {
 	routerGroup.PUT("tagClass/update", controllers.Tag{}.UpdateTagClass)
 	routerGroup.PUT("tag/update/sort", controllers.Tag{}.UpdateSort)
 
+	routerGroup.POST("importData/scanDiskImportPaths", controllers.ImportData{}.ScanDiskImportPaths)
+	routerGroup.POST("importData/scanDiskImportData", controllers.ImportData{}.ScanDiskImportData)
 }
 func SFMRouter(router *gin.Engine) {
 	routerGroup := router.Group("/api")

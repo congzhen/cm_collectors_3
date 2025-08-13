@@ -77,6 +77,46 @@ func (t ResourcesDramaSeries) ReplacePath(db *gorm.DB, filesBasesIds []string, s
 	return dataList, nil
 }
 
+// FilterNonExistingSrcPaths 筛选出在数据库中不存在的资源路径
+// 参数:
+// db: 数据库连接
+// filesBasesId: 文件库ID
+// srcPaths: 资源路径数组
+// 返回值:
+// []string: 数据库中不存在的资源路径数组
+// error: 错误信息
+func (ResourcesDramaSeries) FilterNonExistingSrcPaths(db *gorm.DB, filesBasesId string, srcPaths []string) ([]string, error) {
+	if len(srcPaths) == 0 {
+		return []string{}, nil
+	}
+
+	// 构建SQL查询语句，找出属于指定filesBasesId下的资源剧集路径
+	var existingPaths []string
+	err := db.Table(ResourcesDramaSeries{}.TableName()+" AS t").
+		Joins(fmt.Sprintf("JOIN %s AS r ON t.resources_id = r.id", Resources{}.TableName())).
+		Where("r.filesBases_id = ?", filesBasesId).
+		Where("t.src IN ?", srcPaths).
+		Pluck("t.src", &existingPaths).Error
+	if err != nil {
+		return nil, err
+	}
+	// 创建一个 map 用于快速查找已存在的路径
+	existingPathMap := make(map[string]bool)
+	for _, path := range existingPaths {
+		existingPathMap[path] = true
+	}
+
+	// 筛选出不在数据库中的路径
+	var newPaths []string
+	for _, path := range srcPaths {
+		if !existingPathMap[path] {
+			newPaths = append(newPaths, path)
+		}
+	}
+
+	return newPaths, nil
+}
+
 func (ResourcesDramaSeries) Info(db *gorm.DB, id string) (*ResourcesDramaSeries, error) {
 	var info ResourcesDramaSeries
 	err := db.Where("id = ?", id).First(&info).Error

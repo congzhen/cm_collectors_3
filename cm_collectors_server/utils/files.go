@@ -1,0 +1,133 @@
+package utils
+
+import (
+	"os"
+	"path/filepath"
+	"strings"
+)
+
+// GetFilesByExtensions 根据指定的文件扩展名筛选目录中的文件
+// 参数:
+// dirPaths: 要搜索的目录路径数组，每个路径都是完整的绝对路径
+// extensions: 文件扩展名数组，例如 [".mp4", ".avi"] 或 ["mp4", "avi"]
+// recursive: 是否递归遍历子目录，true表示递归遍历，false表示只遍历当前目录
+// 返回值:
+// []string: 匹配的文件绝对路径数组
+// error: 错误信息，如果提取成功则为nil
+func GetFilesByExtensions(dirPaths []string, extensions []string, recursive bool) ([]string, error) {
+	var result []string
+
+	if len(dirPaths) == 0 || len(extensions) == 0 {
+		return result, nil
+	}
+
+	// 标准化扩展名，确保它们以点号开头
+	normalizedExtensions := make([]string, len(extensions))
+	for i, ext := range extensions {
+		if !strings.HasPrefix(ext, ".") {
+			normalizedExtensions[i] = "." + ext
+		} else {
+			normalizedExtensions[i] = ext
+		}
+	}
+
+	// 处理每个目录
+	for _, dirPath := range dirPaths {
+		// 根据是否递归选择不同的遍历方式
+		var err error
+		if recursive {
+			// 递归遍历目录及其子目录
+			err = filepath.Walk(dirPath, func(path string, info os.FileInfo, err error) error {
+				if err != nil {
+					return err
+				}
+
+				// 跳过目录
+				if info.IsDir() {
+					return nil
+				}
+
+				// 检查文件扩展名是否匹配指定的任何扩展名
+				fileExt := strings.ToLower(filepath.Ext(path))
+				for _, ext := range normalizedExtensions {
+					if fileExt == strings.ToLower(ext) {
+						result = append(result, path)
+						break
+					}
+				}
+
+				return nil
+			})
+		} else {
+			// 只遍历当前目录，不递归子目录
+			entries, readErr := os.ReadDir(dirPath)
+			if readErr != nil {
+				err = readErr
+			} else {
+				for _, entry := range entries {
+					// 跳过目录
+					if entry.IsDir() {
+						continue
+					}
+
+					// 检查文件扩展名是否匹配指定的任何扩展名
+					fileExt := strings.ToLower(filepath.Ext(entry.Name()))
+					for _, ext := range normalizedExtensions {
+						if fileExt == strings.ToLower(ext) {
+							result = append(result, filepath.Join(dirPath, entry.Name()))
+							break
+						}
+					}
+				}
+			}
+		}
+
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return result, nil
+}
+
+// GetFileNameFromPath 从给定的文件路径中提取文件名
+// 参数:
+// path: 文件的完整路径
+// withExtension: 是否包含扩展名，true表示包含，false表示不包含
+// 返回值:
+// string: 文件名
+func GetFileNameFromPath(path string, withExtension bool) string {
+	filename := filepath.Base(path)
+	if withExtension {
+		return filename
+	}
+
+	// 移除扩展名
+	ext := filepath.Ext(filename)
+	return strings.TrimSuffix(filename, ext)
+}
+
+// GetDirPathFromFilePath 根据文件路径获取文件所在的文件夹路径
+// 参数:
+// filePath: 文件的完整路径
+// 返回值:
+// string: 文件所在的文件夹路径
+func GetDirPathFromFilePath(filePath string) string {
+	return filepath.Dir(filePath)
+}
+
+// FileExists 判断文件或目录是否存在
+// 参数:
+// path: 要检查的文件或目录路径
+// 返回值:
+// bool: 文件或目录存在返回true，否则返回false
+func FileExists(path string) bool {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true
+	}
+	if os.IsNotExist(err) {
+		return false
+	}
+	return false
+}

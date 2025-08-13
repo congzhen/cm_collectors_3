@@ -9,7 +9,7 @@
         </el-radio-group>
       </div>
       <div class="main">
-        <modeScanDisk ref="modeScanDiskRef" v-if="modeRadio === 'scanDisk'"></modeScanDisk>
+        <modeScanDisk ref="modeScanDiskRef" v-if="modeRadio === 'scanDisk'" @success="successHandle"></modeScanDisk>
       </div>
     </div>
   </drawerCommon>
@@ -19,6 +19,7 @@ import drawerCommon from '@/components/com/dialog/drawer-common.vue';
 import modeScanDisk from './modeScanDisk.vue';
 import { nextTick, ref } from 'vue';
 
+const emits = defineEmits(['success'])
 
 const drawerCommonRef = ref<InstanceType<typeof drawerCommon>>();
 const modeRadio = ref('scanDisk');
@@ -48,12 +49,22 @@ const submitHandle = () => {
   }
 }
 
+const successHandle = () => {
+  colse();
+  emits('success')
+}
+
 const open = async () => {
   drawerCommonRef.value?.open();
   nextTick(() => {
     init();
   });
 }
+
+const colse = () => {
+  drawerCommonRef.value?.close();
+}
+
 defineExpose({ open })
 </script>
 <style lang="scss" scoped>

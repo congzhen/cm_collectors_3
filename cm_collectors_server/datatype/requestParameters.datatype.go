@@ -169,3 +169,12 @@ type TagSort struct {
 	ID   string `json:"id"`
 	Sort int    `json:"sort"`
 }
+
+type ReqParam_ImportData_ScanDisk_ImportPaths struct {
+	FilesBasesId string          `json:"filesBases_id"`
+	Config       Config_ScanDisk `json:"config"`
+}
+type ReqParam_ImportData_ScanDisk_ImportData struct {
+	ReqParam_ImportData_ScanDisk_ImportPaths
+	FilePath string `json:"filePath"`
+}

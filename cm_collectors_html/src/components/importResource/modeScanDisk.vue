@@ -31,12 +31,11 @@
         <el-form-item label="封面海报后缀名">
           <selectImageSuffixName v-model="formData.coverPosterSuffixName" multiple />
         </el-form-item>
-        <el-form-item label="未找到封面海报">
-          <el-checkbox v-model="formData.autoCreatePoster" label="自动截取视频内容作封面海报" />
+        <el-form-item>
+          <el-checkbox v-model="formData.autoCreatePoster" label="(未找到封面海报) 自动截取视频内容作封面海报" />
         </el-form-item>
-        <el-form-item label="导入检测">
-          <el-checkbox v-model="formData.checkTitle" label="检测标题是否存在" />
-          <el-checkbox v-model="formData.checkPath" label="检测路径是否存在" />
+        <el-form-item>
+          <el-checkbox v-model="formData.checkPath" label="检测路径是否存在 (已存在不导入)" />
         </el-form-item>
       </el-form>
     </div>
@@ -44,12 +43,15 @@
   <serverFileManagementDialog ref="serverFileManagementDialogRef" @selectedFiles="selectedFilesHandle"
     :show="[E_sfm_FileType.Directory]">
   </serverFileManagementDialog>
+  <modeScanDiskImportDataDialog ref="modeScanDiskImportDataDialogRef" @success="successHandle">
+  </modeScanDiskImportDataDialog>
 </template>
 <script setup lang="ts">
 import { ref } from 'vue';
 import type { I_sfm_FileEntry } from '@/components/serverFileManagement/com/dataType';
 import { E_sfm_FileType } from '@/components/serverFileManagement/com/dataType';
 import serverFileManagementDialog from '@/components/serverFileManagement/serverFileManagementDialog.vue';
+import modeScanDiskImportDataDialog from './modeScanDiskImportDataDialog.vue';
 import selectVideoSuffixName from '../com/form/selectVideoSuffixName.vue';
 import selectImageSuffixName from '../com/form/selectImageSuffixName.vue';
 import { appStoreData } from '@/storeData/app.storeData';
@@ -61,7 +63,10 @@ import { importDataServer } from '@/server/importData.server';
 const store = {
   appStoreData: appStoreData(),
 }
+const emits = defineEmits(['success'])
+
 const serverFileManagementDialogRef = ref<InstanceType<typeof serverFileManagementDialog>>();
+const modeScanDiskImportDataDialogRef = ref<InstanceType<typeof modeScanDiskImportDataDialog>>();
 
 const loading = ref(false)
 
@@ -71,7 +76,6 @@ const formData = ref<I_config_scanDisk>({
   coverPosterSuffixName: [],
   coverPosterType: -1,
   autoCreatePoster: true,
-  checkTitle: true,
   checkPath: true,
 })
 
@@ -108,10 +112,12 @@ const submit = debounceNow(async () => {
   }
   try {
     loading.value = true;
-    const result = await importDataServer.scanDisk(store.appStoreData.currentFilesBases.id, formData.value);
+    const result = await importDataServer.scanDiskImportPaths(store.appStoreData.currentFilesBases.id, formData.value);
     if (!result.status) {
       ElMessage.error(result.msg);
       return;
+    } else {
+      modeScanDiskImportDataDialogRef.value?.open(result.data, formData.value);
     }
   } catch (error) {
     console.log(error);
@@ -138,6 +144,11 @@ const selectedFilesHandle = (slc: I_sfm_FileEntry[]) => {
 const deleteDiskLocationHandle = (index: number) => {
   formData.value.scanDiskPaths.splice(index, 1);
 }
+
+const successHandle = () => {
+  emits('success')
+}
+
 
 defineExpose({ init, submit })
 

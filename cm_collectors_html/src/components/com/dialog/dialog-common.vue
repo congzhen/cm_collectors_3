@@ -5,7 +5,7 @@
     <template v-if="props.footer" #footer>
       <div class="dialog-footer">
         <el-button @click="dialogVisible = false"> Close </el-button>
-        <el-button type="primary" @click="submitHandle">
+        <el-button type="primary" @click="submitHandle" :disabled="submitBtnDisabled">
           {{ btnSubmitTitle_C }}
         </el-button>
       </div>
@@ -39,6 +39,8 @@ const props = defineProps({
 // eslint-disable-next-line no-undef
 const emits = defineEmits(['closed', 'submit'])
 
+const submitBtnDisabled = ref(false)
+
 const btnSubmitTitle_C = computed(() => {
   return props.btnSubmitTitle == '' ? 'Submit' : props.btnSubmitTitle
 })
@@ -51,6 +53,10 @@ const width_C = computed(() => {
   }
   return props.width
 })
+
+const disabledSubmit = (b: boolean) => {
+  submitBtnDisabled.value = b
+}
 
 const closed = () => {
   emits('closed')
@@ -67,5 +73,5 @@ const close = () => {
   dialogVisible.value = false
 }
 // eslint-disable-next-line no-undef
-defineExpose({ open, close })
+defineExpose({ open, close, disabledSubmit })
 </script>

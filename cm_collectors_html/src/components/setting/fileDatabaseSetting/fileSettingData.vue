@@ -64,10 +64,10 @@
         <selectResourcesMode v-model="filesConfig.resourcesShowMode" />
       </el-form-item>
       <el-form-item v-if="filesConfig.resourcesShowMode == 'coverPosterBox'" label="封面海报盒子-信息宽度">
-        <el-input-number v-model="filesConfig.coverPosterBoxInfoWidth" min="20" max="9999" />
+        <el-input-number v-model="filesConfig.coverPosterBoxInfoWidth" :min="20" :max="9999" />
       </el-form-item>
       <el-form-item v-if="filesConfig.resourcesShowMode == 'coverPosterWaterfall'" label="封面海报瀑布流-列数">
-        <el-input-number v-model="filesConfig.coverPosterWaterfallColumn" min="1" max="20" />
+        <el-input-number v-model="filesConfig.coverPosterWaterfallColumn" :min="1" :max="20" />
       </el-form-item>
       <el-form-item label="详情剧集显示模式">
         <selectDetailsDramaSeriesMode v-model="filesConfig.detailsDramaSeriesMode" />

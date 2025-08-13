@@ -37,5 +37,4 @@ cm_collectors_server/err.log
 cm_collectors_server/gin.log
 
 
-
-cm_collectors_html/public/tmpVideo.mp4
+cm_collectors_server/ffmpeg/*

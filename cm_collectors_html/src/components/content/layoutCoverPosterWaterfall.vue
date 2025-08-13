@@ -30,7 +30,7 @@ import { computed, nextTick, ref, type PropType } from 'vue';
 import { getResourceCoverPoster } from '@/common/photo';
 import { playResource } from '@/common/play';
 import { appStoreData } from '@/storeData/app.storeData';
-import { debounce } from '@/assets/debounce';
+import { debounceNow } from '@/assets/debounce';
 const store = {
   appStoreData: appStoreData(),
 }
@@ -67,7 +67,7 @@ const selectResourcesHandle = (item: I_resource) => {
 }
 
 // 图片加载完成事件处理
-const onImageLoad = debounce(() => {
+const onImageLoad = debounceNow(() => {
   nextTick(() => {
     waterfallRef.value?.renderer();
   });

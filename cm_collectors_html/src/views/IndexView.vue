@@ -77,6 +77,7 @@ const deleteResouceSuccessHandle = () => {
 
   .header {
     width: 100%;
+    flex-shrink: 0;
   }
 
   .menu {
@@ -96,7 +97,7 @@ const deleteResouceSuccessHandle = () => {
 
     .content {
       flex-grow: 1;
-      overflow: auto;
+      overflow: hidden;
     }
 
     .details {

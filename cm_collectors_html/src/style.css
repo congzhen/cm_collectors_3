@@ -2,7 +2,15 @@
   margin: 0;
   padding: 0;
 }
+html {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
 body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
   color: #f2f2f2;
   transition:
     color 0.5s,
@@ -28,6 +36,9 @@ body {
 }
 
 #app {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
   font-weight: normal;
 }
 
@@ -127,4 +138,20 @@ a,
 
 .el-image {
   border-radius: 4px;
+}
+
+.element-rotating {
+  animation: rotate360 2s linear infinite;
+}
+
+@keyframes rotate360 {
+  from {
+    transform: rotate(0deg);
+    /* 初始角度 */
+  }
+
+  to {
+    transform: rotate(360deg);
+    /* 结束角度 */
+  }
 }

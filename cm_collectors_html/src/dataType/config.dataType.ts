@@ -164,7 +164,6 @@ export interface I_config_scanDisk {
   coverPosterSuffixName: string[]; // 封面海报文件后缀名
   coverPosterType: number; // 封面海报类型
   autoCreatePoster: boolean; // 自动创建封面海报
-  checkTitle: boolean;  // 检查标题
   checkPath: boolean; // 检查路径
 }
 
@@ -174,7 +173,6 @@ export const defualtConfigScanDisk: I_config_scanDisk = {
   coverPosterSuffixName: dataset.imageSuffixName,
   coverPosterType: -1,
   autoCreatePoster: true,
-  checkTitle: true,
   checkPath: true,
 }
 

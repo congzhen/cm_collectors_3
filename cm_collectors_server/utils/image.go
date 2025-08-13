@@ -7,12 +7,99 @@ import (
 	"fmt"
 	"image"
 	"image/jpeg"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"golang.org/x/image/draw"
 )
+
+// ImageToBase64 将图片文件转换为base64编码的字符串
+// 参数:
+//   - imagePath: 图片文件的路径
+//
+// 返回值:
+//   - string: base64编码的图片数据，格式为data:image/jpeg;base64,xxx
+//   - error: 错误信息，如果转换成功则为nil
+func ImageToBase64(imagePath string) (string, error) {
+	content, err := ImageToBytes(imagePath)
+	if err != nil {
+		return "", fmt.Errorf("读取文件失败: %v", err)
+	}
+	return ImageBytesToBase64(content)
+}
+
+// ImageToBytes 将指定路径的图片文件读取为字节切片
+// 参数:
+//
+//	imagePath - 图片文件的路径
+//
+// 返回值:
+//
+//	[]byte - 图片文件的字节数据
+//	error - 读取过程中发生的错误，如果文件不存在则返回文件不存在错误
+func ImageToBytes(imagePath string) ([]byte, error) {
+	// 检查文件是否存在
+	if _, err := os.Stat(imagePath); os.IsNotExist(err) {
+		return nil, fmt.Errorf("文件不存在: %s", imagePath)
+	}
+	// 读取图片文件内容
+	return os.ReadFile(imagePath)
+}
+
+// ImageBytesToBase64 将图片字节数据转换为base64编码的字符串
+// 参数:
+//   - imageBytes: 图片的字节数据
+//
+// 返回值:
+//   - string: base64编码的图片数据，格式为data:image/jpeg;base64,xxx
+//   - error: 错误信息，如果转换成功则为nil
+func ImageBytesToBase64(imageBytes []byte) (string, error) {
+	// 检查输入数据是否为空
+	if len(imageBytes) == 0 {
+		return "", errors.New("图片数据为空")
+	}
+
+	// 自动检测MIME类型
+	mimeType := http.DetectContentType(imageBytes[:min(len(imageBytes), 512)])
+
+	// 如果无法检测到MIME类型，默认使用jpeg
+	if mimeType == "" {
+		mimeType = "image/jpeg"
+	}
+
+	// 编码为 Base64 字符串
+	encoded := base64.StdEncoding.EncodeToString(imageBytes)
+
+	// 组合成完整的 Data URL 格式
+	return fmt.Sprintf("data:%s;base64,%s", mimeType, encoded), nil
+}
+
+// GetImageDimensionsFromBytes 从图片字节数据获取图片的宽度和高度
+// 参数:
+//   - imageBytes: 图片的字节数据
+//
+// 返回值:
+//   - int: 图片宽度
+//   - int: 图片高度
+//   - error: 错误信息，如果获取成功则为nil
+func GetImageDimensionsFromBytes(imageBytes []byte) (int, int, error) {
+	if len(imageBytes) == 0 {
+		return 0, 0, errors.New("图片数据为空")
+	}
+
+	// 使用bytes.Reader来读取图片数据
+	reader := bytes.NewReader(imageBytes)
+
+	// 解码图片配置信息（只解码图片尺寸，不解码全部像素数据，提高性能）
+	config, _, err := image.DecodeConfig(reader)
+	if err != nil {
+		return 0, 0, fmt.Errorf("解码图片配置失败: %v", err)
+	}
+
+	return config.Width, config.Height, nil
+}
 
 func SaveBase64AsImage(base64Str, filePath string) error {
 	// 定义支持的 MIME 类型

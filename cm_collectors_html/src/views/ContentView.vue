@@ -118,6 +118,7 @@ defineExpose({ init, init_DataList });
   .paging {
     width: 100%;
     padding-top: 5px;
+    flex-shrink: 0;
   }
 }
 </style>
