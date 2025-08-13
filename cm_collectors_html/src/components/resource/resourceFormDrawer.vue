@@ -8,13 +8,13 @@
         </div>
         <div ref="resourceFormCoverPosterContainerRef" class="resource-form-cover-poster"
           :style="{ width: '100%', height: coverPosterHeight_C }">
-          <setImage ref="setImageRef" :src="getResourceCoverPoster(formData)"
-            :cropperWidth="store.appStoreData.currentConfigApp.coverPosterData[formData.coverPosterMode].width"
-            :cropperHeight="store.appStoreData.currentConfigApp.coverPosterData[formData.coverPosterMode].height">
+          <setImage ref="setImageRef" :src="getResourceCoverPoster(formData)" :cropperWidth="cropperWidth_C"
+            :cropperHeight="cropperHeight_C">
           </setImage>
         </div>
         <div class="resource-form-mode">
           <el-radio-group v-model="formData.coverPosterMode">
+            <el-radio v-if="formData.coverPosterMode == -1" class="auto-cover-poster" :value="-1" border>自动海报</el-radio>
             <el-radio v-for="item, index in store.appStoreData.currentConfigApp.coverPosterData" :key="index"
               :value="index" border>
               {{ item.name }}
@@ -175,10 +175,33 @@ const formRules = reactive<FormRules>({
 
 const coverPosterHeight_C = computed(() => {
   const index = formData.value.coverPosterMode;
-  const coverPosterData = store.appStoreData.currentConfigApp.coverPosterData[index];
-  const ratio = coverPosterData.height / coverPosterData.width;
+  let ratio = 1;
+  if (index < 0) {
+    ratio = (formData.value.coverPosterWidth == 0) ? 1 : formData.value.coverPosterHeight / formData.value.coverPosterWidth;
+  } else {
+    const coverPosterData = store.appStoreData.currentConfigApp.coverPosterData[index];
+    ratio = coverPosterData.height / coverPosterData.width;
+  }
+
   const containerWidth = drawerFormRef.value?.$el.offsetWidth || 300;
   return `${containerWidth * ratio}px`;
+})
+
+const cropperWidth_C = computed(() => {
+  const index = formData.value.coverPosterMode;
+  if (index < 0) {
+    return (formData.value.coverPosterWidth == 0) ? 200 : formData.value.coverPosterWidth;
+  } else {
+    return store.appStoreData.currentConfigApp.coverPosterData[index].width;
+  }
+})
+const cropperHeight_C = computed(() => {
+  const index = formData.value.coverPosterMode;
+  if (index < 0) {
+    return (formData.value.coverPosterHeight == 0) ? 200 : formData.value.coverPosterHeight;
+  } else {
+    return store.appStoreData.currentConfigApp.coverPosterData[index].height;
+  }
 })
 
 const init = (_mode: 'add' | 'edit', res: I_resource | null = null) => {
@@ -328,6 +351,10 @@ defineExpose({ open })
             text-overflow: ellipsis;
             font-size: 1em;
           }
+        }
+
+        .auto-cover-poster {
+          width: 100%;
         }
       }
     }

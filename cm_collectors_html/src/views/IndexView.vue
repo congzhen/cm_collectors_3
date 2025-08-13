@@ -5,7 +5,7 @@
     <div class="main">
       <TagView ref="tagViewRef" class="tag"></TagView>
       <ContentView ref="contentViewRef" class="content" @select-resources="selectResourcesHandle"></ContentView>
-      <DetailsView ref="detailsViewRef" v-if="store.appStoreData.detailsViewStatus" class="details"
+      <DetailsView ref="detailsViewRef" v-if="store.appStoreData.detailsViewStatus && resDetails" class="details"
         :resource="resDetails" @update-resouce-success="updateResouceSuccessHandle"
         @delete-resource-success="deleteResouceSuccessHandle">
       </DetailsView>
@@ -37,6 +37,7 @@ const resDetails = ref<I_resource | undefined>(undefined);
 
 const selectFilesBaseHandle = async (filesBases: I_filesBases) => {
   loading.value = true;
+  resDetails.value = undefined;
   const result = await store.appStoreData.initCurrentFilesBases(filesBases.id)
   if (result && !result.status) {
     ElMessage.error(result.message);
@@ -48,7 +49,7 @@ const selectFilesBaseHandle = async (filesBases: I_filesBases) => {
   loading.value = false;
 };
 
-const selectResourcesHandle = (resource: I_resource, isInit: boolean) => {
+const selectResourcesHandle = (resource: I_resource | undefined, isInit: boolean) => {
   resDetails.value = resource;
   if (!isInit) {
     detailsViewRef.value?.init();
@@ -59,9 +60,11 @@ const createResouceSuccessHandle = (data: I_resource) => {
   contentViewRef.value?.init();
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const updateResouceSuccessHandle = (data: I_resource) => {
-  contentViewRef.value?.init_DataList();
+const updateResouceSuccessHandle = async (data: I_resource) => {
+  await contentViewRef.value?.init_DataList();
+  resDetails.value = data;
 }
+
 const deleteResouceSuccessHandle = () => {
   contentViewRef.value?.init_DataList(() => { }, true);
 }

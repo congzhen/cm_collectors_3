@@ -52,9 +52,11 @@ const init = async () => {
   pageSize.value = store.appStoreData.currentConfigApp.pageLimit;
 
   await init_DataList(() => {
+    let firstData = undefined;
     if (dataList.value.length > 0) {
-      emits('selectResources', dataList.value[0], true);
+      firstData = dataList.value[0];
     }
+    emits('selectResources', firstData, true);
     isInitializing.value = false;
   });
 
@@ -88,6 +90,10 @@ const getDataList = debounce(async (fn: () => void = () => { }) => {
   }
 }, 200)
 
+const showDataList = () => {
+  return dataList.value;
+}
+
 const changePageHandle = () => {
   if (!isInitializing.value) {
     getDataList();
@@ -100,7 +106,7 @@ const selectResourcesHandle = (item: I_resource) => {
 onMounted(async () => {
   await init()
 })
-defineExpose({ init, init_DataList });
+defineExpose({ init, init_DataList, showDataList });
 </script>
 <style lang="scss" scoped>
 .content-view {

@@ -56,7 +56,7 @@ const init = () => {
 }
 
 const handleUploadPhotos = (_uploadFile: UploadFile) => {
-  comCropperDialogRef.value?.open(_uploadFile.raw, '50%', props.cropperWidth, props.cropperHeight);
+  comCropperDialogRef.value?.open(_uploadFile.raw, '50%', props.cropperWidth, props.cropperHeight, props.cropperWidth, props.cropperHeight);
 }
 const cropperSubmit = (fileData: string) => {
   imageBase64.value = fileData;

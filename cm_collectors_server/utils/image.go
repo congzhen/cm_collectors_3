@@ -101,6 +101,54 @@ func GetImageDimensionsFromBytes(imageBytes []byte) (int, int, error) {
 	return config.Width, config.Height, nil
 }
 
+// ResizeImageByMaxWidth 将图像数据按指定最大宽度进行缩放，保持宽高比
+// 参数：
+//   - data: 原始图像的字节数据
+//   - maxWidth: 图像缩放后的最大宽度，若小于等于0则不进行缩放
+//
+// 返回值：
+//   - []byte: 缩放后图像的字节数据
+//   - int: 缩放后图像的宽度
+//   - int: 缩放后图像的高度
+//   - error: 如果在解码、缩放或编码过程中发生错误，则返回相应的错误信息
+func ResizeImageByMaxWidth(data []byte, maxWidth int) ([]byte, int, int, error) {
+	if maxWidth <= 0 {
+		// 如果最大宽度无效，则不进行缩放
+		img, _, err := image.DecodeConfig(bytes.NewReader(data))
+		if err != nil {
+			return nil, 0, 0, err
+		}
+		return data, img.Width, img.Height, nil
+	}
+
+	// 将字节数据解码为图像配置以获取原始尺寸
+	config, _, err := image.DecodeConfig(bytes.NewReader(data))
+	if err != nil {
+		return nil, 0, 0, err
+	}
+
+	srcWidth := config.Width
+	srcHeight := config.Height
+
+	// 如果原始宽度小于等于指定宽度，直接返回原数据和尺寸
+	if srcWidth <= maxWidth {
+		return data, srcWidth, srcHeight, nil
+	}
+
+	// 计算缩放后的尺寸
+	ratio := float64(maxWidth) / float64(srcWidth)
+	newWidth := maxWidth
+	newHeight := int(float64(srcHeight) * ratio)
+
+	// 使用现有的 ScaleImage 函数进行缩放，使用中等质量
+	scaledData, err := ScaleImage(data, maxWidth, 2)
+	if err != nil {
+		return nil, 0, 0, err
+	}
+
+	return scaledData, newWidth, newHeight, nil
+}
+
 func SaveBase64AsImage(base64Str, filePath string) error {
 	// 定义支持的 MIME 类型
 	validMimeTypes := []string{
