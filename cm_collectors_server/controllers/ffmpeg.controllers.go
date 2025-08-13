@@ -15,7 +15,7 @@ func (FFmpeg) GetVideoKeyFramePosters(c *gin.Context) {
 	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {
 		return
 	}
-	base64Slc, err := processorsffmpeg.KeyFrame{}.ExtractKeyframesAsBase64(par.VideoPath, par.FrameCount, 5)
+	base64Slc, err := processorsffmpeg.KeyFrame{}.ExtractKeyframesAsBase64(par.VideoPath, par.FrameCount, 1)
 	if err := ResError(c, err); err != nil {
 		return
 	}

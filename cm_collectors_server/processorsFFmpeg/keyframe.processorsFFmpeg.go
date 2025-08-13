@@ -24,16 +24,14 @@ type KeyFrame struct{}
 //	[]byte: 最佳关键帧图像的字节数据
 //	error: 错误信息，如果提取成功则为nil
 func (t KeyFrame) ExtractKeyframePoster(videoPath string, frameCount int) ([]byte, error) {
-	images, err := t.ExtractKeyframes(videoPath, frameCount)
+	images, err := t.ExtractHighQualityKeyframes(videoPath, frameCount, 1)
 	if err != nil {
 		return nil, err
 	}
-	// 从输出中提取最佳帧
-	bestFrameData, err := t.selectMeaningfulFrameFromData(images)
-	if err != nil {
-		return nil, fmt.Errorf("选择有意义的帧失败: %v", err)
+	if len(images) == 0 {
+		return nil, fmt.Errorf("未能从视频中提取到关键帧")
 	}
-	return bestFrameData, nil
+	return images[0], nil
 }
 
 // ExtractKeyframesAsBase64 从视频中提取指定数量的关键帧并转换为base64编码的JPEG图像
@@ -51,7 +49,7 @@ func (t KeyFrame) ExtractKeyframesAsBase64(videoPath string, frameCount int, lev
 	var images [][]byte
 	var err error
 	if level > 1 {
-		images, err = t.ExtractKeyframes_Level(videoPath, frameCount, level)
+		images, err = t.ExtractHighQualityKeyframes(videoPath, frameCount, level)
 	} else {
 		images, err = t.ExtractKeyframes(videoPath, frameCount)
 	}
@@ -82,7 +80,7 @@ func (t KeyFrame) ExtractKeyframesAsBase64(videoPath string, frameCount int, lev
 //
 //	[][]byte: 提取的高质量关键帧图像数据切片
 //	error: 错误信息，如果提取成功则为nil
-func (t KeyFrame) ExtractKeyframes_Level(videoPath string, frameCount int, level int) ([][]byte, error) {
+func (t KeyFrame) ExtractHighQualityKeyframes(videoPath string, frameCount int, level int) ([][]byte, error) {
 	if level < 1 {
 		level = 1
 	}
@@ -174,7 +172,8 @@ func (t KeyFrame) ExtractKeyframes(videoPath string, frameCount int) ([][]byte, 
 	cmd := exec.Command(
 		ffmpegPath,
 		"-i", videoPath, // 输入视频文件
-		"-vf", "select=eq(pict_type\\,I)", // 只选择关键帧
+		"-vf", "thumbnail=50", // 分析每100帧选择一个最具代表性的帧
+		//"-vf", "select=eq(pict_type\\,I)", // 只选择关键帧
 		"-vframes", fmt.Sprintf("%d", frameCount), // 提取指定数量的帧
 		"-f", "image2pipe", // 输出到管道
 		"-vcodec", "mjpeg", // JPEG编码
@@ -205,41 +204,6 @@ func (t KeyFrame) ExtractKeyframes(videoPath string, frameCount int) ([][]byte, 
 	}
 
 	return images, nil
-}
-
-// selectMeaningfulFrameFromData 从FFmpeg输出的数据中选择最有意义的帧
-func (t KeyFrame) selectMeaningfulFrameFromData(images [][]byte) ([]byte, error) {
-	if len(images) == 0 {
-		return nil, fmt.Errorf("未提取到任何关键帧")
-	}
-
-	// 如果只有一张图片，直接返回
-	if len(images) == 1 {
-		return images[0], nil
-	}
-
-	// 选择最佳图片
-	var bestImage []byte
-	bestScore := -1.0
-
-	for _, imgData := range images {
-		score, err := t.evaluateFrame(imgData)
-		if err != nil {
-			continue
-		}
-
-		if score > bestScore {
-			bestScore = score
-			bestImage = imgData
-		}
-	}
-
-	if bestImage == nil {
-		// 如果没有找到合适的帧，返回第一帧
-		return images[0], nil
-	}
-
-	return bestImage, nil
 }
 
 // splitMJPEGStream 分割MJPEG流中的各个JPEG图像
