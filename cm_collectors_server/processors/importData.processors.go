@@ -31,6 +31,7 @@ func (ImportData) ScanDiskImportPaths(filesBasesId string, config datatype.Confi
 	if err != nil {
 		return nil, err
 	}
+	filesPaths = utils.SortFilesByOrder(filesPaths, utils.FileTimeAsc)
 	db := core.DBS()
 	jsonBytes, err := json.Marshal(config)
 	if err != nil {

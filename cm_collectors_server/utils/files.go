@@ -3,7 +3,22 @@ package utils
 import (
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
+)
+
+// SortOrder 定义文件排序方式的枚举类型
+type FilesSortOrder int
+
+const (
+	// FileNameAsc 按文件名正序排序
+	FileNameAsc FilesSortOrder = iota
+	// FileNameDesc 按文件名倒序排序
+	FileNameDesc
+	// FileTimeAsc 按文件创建时间正序排序
+	FileTimeAsc
+	// FileTimeDesc 按文件创建时间倒序排序
+	FileTimeDesc
 )
 
 // GetFilesByExtensions 根据指定的文件扩展名筛选目录中的文件
@@ -88,6 +103,52 @@ func GetFilesByExtensions(dirPaths []string, extensions []string, recursive bool
 	}
 
 	return result, nil
+}
+
+// SortFilesByOrder 根据指定的排序方式对文件路径列表进行排序
+// 参数:
+// filePaths: 要排序的文件路径数组
+// sortOrder: 排序方式（FileNameAsc、FileNameDesc、FileTimeAsc、FileTimeDesc）
+// 返回值:
+// []string: 排序后的文件路径数组
+func SortFilesByOrder(filePaths []string, sortOrder FilesSortOrder) []string {
+	switch sortOrder {
+	case FileNameAsc:
+		sort.Strings(filePaths)
+	case FileNameDesc:
+		sort.Sort(sort.Reverse(sort.StringSlice(filePaths)))
+	case FileTimeAsc, FileTimeDesc:
+		// 创建包含文件路径和信息的结构体切片
+		filesWithInfo := make([]struct {
+			path string
+			info os.FileInfo
+		}, 0, len(filePaths))
+
+		// 获取所有文件的信息
+		for _, path := range filePaths {
+			if info, err := os.Stat(path); err == nil {
+				filesWithInfo = append(filesWithInfo, struct {
+					path string
+					info os.FileInfo
+				}{path: path, info: info})
+			}
+		}
+
+		// 按时间排序
+		sort.Slice(filesWithInfo, func(i, j int) bool {
+			if sortOrder == FileTimeAsc {
+				return filesWithInfo[i].info.ModTime().Before(filesWithInfo[j].info.ModTime())
+			}
+			return filesWithInfo[i].info.ModTime().After(filesWithInfo[j].info.ModTime())
+		})
+
+		// 提取排序后的路径
+		for i := range filesWithInfo {
+			filePaths[i] = filesWithInfo[i].path
+		}
+	}
+
+	return filePaths
 }
 
 // GetFileNameFromPath 从给定的文件路径中提取文件名
