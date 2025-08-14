@@ -12,7 +12,6 @@
 import comCropper from "./cropper.vue"
 import { nextTick, ref } from 'vue'
 
-// eslint-disable-next-line no-undef
 const props = defineProps({
   width: {
     type: String,
@@ -20,15 +19,15 @@ const props = defineProps({
   },
   height: {
     type: String,
-    default: '660px'
+    default: '720px'
   },
   top: {
     type: String,
-    default: '15vh'
+    default: '10vh'
   }
 });
-// eslint-disable-next-line no-undef
 const emits = defineEmits(['sumbit']);
+
 const comCropperRef = ref<InstanceType<typeof comCropper>>();
 const dialogVisible = ref(false)
 
@@ -67,7 +66,6 @@ const fullscreen = () => {
   return false;
 }
 
-// eslint-disable-next-line no-undef
 defineExpose({
   open
 })

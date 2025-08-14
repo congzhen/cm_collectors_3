@@ -1,9 +1,9 @@
 import request from "@/assets/request";
 const routerGroupUri = '';
 export const ffmpegServer = {
-  getVideoKeyFramePosters: async (videoPath: string, frameCount: number) => {
+  getVideoThumbnails: async (videoPath: string, frameCount: number) => {
     return await request<string[]>({
-      url: `${routerGroupUri}/FFmpeg/getVideoKeyFramePosters`,
+      url: `${routerGroupUri}/FFmpeg/getVideoThumbnails`,
       method: 'post',
       data: {
         videoPath,

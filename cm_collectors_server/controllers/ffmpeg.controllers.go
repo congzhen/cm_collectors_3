@@ -10,7 +10,7 @@ import (
 
 type FFmpeg struct{}
 
-func (FFmpeg) GetVideoKeyFramePosters(c *gin.Context) {
+func (FFmpeg) GetVideoThumbnails(c *gin.Context) {
 	var par datatype.ReqParam_FFmpeg_VideoKeyFramePosters
 	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {
 		return

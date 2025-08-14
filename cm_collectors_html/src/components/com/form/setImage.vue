@@ -56,8 +56,15 @@ const init = () => {
 }
 
 const handleUploadPhotos = (_uploadFile: UploadFile) => {
-  comCropperDialogRef.value?.open(_uploadFile.raw, '50%', props.cropperWidth, props.cropperHeight, props.cropperWidth, props.cropperHeight);
+  if (_uploadFile.raw) {
+    openCropper(_uploadFile.raw, '50%', props.cropperWidth, props.cropperHeight, props.cropperWidth, props.cropperHeight)
+  }
 }
+
+const openCropper = (file: File | undefined = undefined, mode = '100%', _cropWidth: number | undefined = undefined, _cropHeight: number | undefined = undefined, maxCropWidth: number | undefined, maxCropHeight: number | undefined) => {
+  comCropperDialogRef.value?.open(file, mode, _cropWidth, _cropHeight, maxCropWidth, maxCropHeight);
+}
+
 const cropperSubmit = (fileData: string) => {
   imageBase64.value = fileData;
 }
@@ -72,7 +79,7 @@ const getImageSize = () => {
   }
 }
 
-defineExpose({ init, getImageBase64, getImageSize })
+defineExpose({ init, getImageBase64, getImageSize, openCropper })
 
 
 </script>

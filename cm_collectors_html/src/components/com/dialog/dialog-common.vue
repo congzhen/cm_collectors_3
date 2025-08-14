@@ -1,5 +1,5 @@
 <template>
-  <el-dialog v-model="dialogVisible" :title="props.title" :width="width_C" :append-to-body="true"
+  <el-dialog v-model="dialogVisible" :title="props.title" :width="width_C" :append-to-body="true" :top="props.top"
     :close-on-click-modal="false" @closed="closed">
     <slot></slot>
     <template v-if="props.footer" #footer>
@@ -25,6 +25,10 @@ const props = defineProps({
   title: {
     type: String,
     default: '',
+  },
+  top: {
+    type: String,
+    default: '15vh',
   },
   footer: {
     type: Boolean,

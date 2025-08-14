@@ -109,13 +109,13 @@
     </div>
     <template #footerBtn>
       <div v-if="formData.mode == E_resourceDramaSeriesType.Movies">
-        <el-button @click="videoKeyframePosterHandle">获取视频预览图</el-button>
+        <el-button @click="videoThumbnailPosterHandle">获取视频预览图</el-button>
       </div>
     </template>
   </drawerForm>
   <serverFileManagementDialog ref="serverFileManagementDialogRef" @selectedFiles="selectedFilesHandle">
   </serverFileManagementDialog>
-  <videoKeyframePosterDialog ref="videoKeyframePosterDialogRef" />
+  <videoThumbnailPosterDialog ref="videoThumbnailPosterDialogRef" @selectImage="selectThumbnailPosterHandle" />
 </template>
 <script lang="ts" setup>
 import { reactive, ref, computed } from 'vue'
@@ -132,13 +132,14 @@ import { ElMessage, type FormRules } from 'element-plus'
 import { E_resourceDramaSeriesType } from '@/dataType/app.dataType'
 import type { I_resource, I_resource_base, I_resourceDramaSeries_base } from '@/dataType/resource.dataType'
 import serverFileManagementDialog from '../serverFileManagement/serverFileManagementDialog.vue';
-import videoKeyframePosterDialog from './videoKeyframePosterDialog.vue';
+import videoThumbnailPosterDialog from './videoThumbnailPosterDialog.vue';
 import { appStoreData } from '@/storeData/app.storeData'
 import type { I_sfm_FileEntry } from '@/components/serverFileManagement/com/dataType';
 import { LoadingService } from '@/assets/loading';
 import { resourceServer } from '@/server/resource.server';
 import { getResourceCoverPoster } from '@/common/photo';
 import { appLang } from '@/language/app.lang';
+import { base64ToFile, getImageDimensions, scaleImage } from '@/assets/image';
 const store = {
   appStoreData: appStoreData(),
 }
@@ -148,8 +149,10 @@ const emits = defineEmits(['success'])
 const drawerFormRef = ref<InstanceType<typeof drawerForm>>();
 const setImageRef = ref<InstanceType<typeof setImage>>();
 const serverFileManagementDialogRef = ref<InstanceType<typeof serverFileManagementDialog>>();
-const videoKeyframePosterDialogRef = ref<InstanceType<typeof videoKeyframePosterDialog>>();
+const videoThumbnailPosterDialogRef = ref<InstanceType<typeof videoThumbnailPosterDialog>>();
 const resourceFormCoverPosterContainerRef = ref<HTMLElement | null>(null);
+
+
 
 let mode: 'add' | 'edit' = 'add'
 
@@ -177,6 +180,11 @@ const directors = ref<string[]>([]);
 const tags = ref<Record<string, string[]>>({});
 const dramaSeries = ref<I_resourceDramaSeries_base[]>([]);
 
+const autoCoverPoster = ref({
+  width: 200,
+  height: 200
+})
+
 const formRules = reactive<FormRules>({
   title: [{ required: true, trigger: 'blur', message: '请输入标题' }],
 })
@@ -198,7 +206,7 @@ const coverPosterHeight_C = computed(() => {
 const cropperWidth_C = computed(() => {
   const index = formData.value.coverPosterMode;
   if (index < 0) {
-    return (formData.value.coverPosterWidth == 0) ? 200 : formData.value.coverPosterWidth;
+    return autoCoverPoster.value.width;
   } else {
     return store.appStoreData.currentConfigApp.coverPosterData[index].width;
   }
@@ -206,7 +214,7 @@ const cropperWidth_C = computed(() => {
 const cropperHeight_C = computed(() => {
   const index = formData.value.coverPosterMode;
   if (index < 0) {
-    return (formData.value.coverPosterHeight == 0) ? 200 : formData.value.coverPosterHeight;
+    return autoCoverPoster.value.height;
   } else {
     return store.appStoreData.currentConfigApp.coverPosterData[index].height;
   }
@@ -233,11 +241,19 @@ const init = (_mode: 'add' | 'edit', res: I_resource | null = null) => {
     performers.value = res.performers.map(item => item.id);
     directors.value = res.directors.map(item => item.id);
     dramaSeries.value = res.dramaSeries.map(item => ({ id: item.id, src: item.src }));
+    autoCoverPoster.value = {
+      width: res.coverPosterWidth,
+      height: res.coverPosterHeight
+    }
   } else {
     formData.value = { ...defaultFormData }
     performers.value = [];
     directors.value = [];
     dramaSeries.value = [];
+    autoCoverPoster.value = {
+      width: 200,
+      height: 200
+    }
   }
 }
 
@@ -290,12 +306,25 @@ const submitHandle = async () => {
   }
 }
 
-const videoKeyframePosterHandle = () => {
+const videoThumbnailPosterHandle = () => {
   if (dramaSeries.value.length == 0 && dramaSeries.value[0].src != '') {
     ElMessage.error('请先设置视频次元');
     return;
   }
-  videoKeyframePosterDialogRef.value?.open(dramaSeries.value[0].src);
+  videoThumbnailPosterDialogRef.value?.open(dramaSeries.value[0].src);
+}
+
+const selectThumbnailPosterHandle = async (imageBase64: string) => {
+  const maxWidth = formData.value.coverPosterWidth || 400;
+  const scaleImageBase64 = await scaleImage(imageBase64, maxWidth)
+  const { width, height } = await getImageDimensions(scaleImageBase64);
+  const imageFile = base64ToFile(scaleImageBase64, 'cover_poster.png');
+  console.log(width, height)
+  autoCoverPoster.value = {
+    width: width,
+    height: height
+  }
+  setImageRef.value?.openCropper(imageFile, '50%', width, height, width, height)
 }
 
 const open = (_mode: 'add' | 'edit', res: I_resource | null = null) => {
