@@ -49,22 +49,6 @@ func (f FFmpeg) isToolAvailable(toolName string) (string, error) {
 	switch runtime.GOOS {
 	case "windows":
 		// Windows系统优先检查当前程序根目录的工具文件夹
-		/*
-			exePath, err := os.Executable()
-			if err == nil {
-				// 获取程序根目录
-				rootDir := filepath.Dir(filepath.Dir(exePath))
-				// 检查工具文件夹下对应的可执行文件
-				localToolPath := filepath.Join(rootDir, "ffmpeg", toolName+".exe")
-				fmt.Println("----------------------------------", localToolPath)
-				if _, err := os.Stat(localToolPath); err == nil {
-					// 本地工具存在
-					toolPath = localToolPath
-					cmd = exec.Command(toolPath, "-version")
-					break
-				}
-			}
-		*/
 		localToolPath := filepath.Join("./", "ffmpeg", toolName+".exe")
 		if _, err := os.Stat(localToolPath); err == nil {
 			// 本地工具存在

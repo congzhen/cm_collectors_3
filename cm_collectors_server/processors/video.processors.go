@@ -1,7 +1,9 @@
 package processors
 
 import (
+	processorsffmpeg "cm_collectors_server/processorsFFmpeg"
 	"fmt"
+	"io/fs"
 	"net/http"
 	"os"
 	"regexp"
@@ -11,6 +13,21 @@ import (
 )
 
 type Video struct{}
+
+// GinWriter 实现了 Writer 接口，用于包装 gin.Context 的 Writer
+type GinWriter struct {
+	writer gin.ResponseWriter
+}
+
+func (gw *GinWriter) Write(data []byte) error {
+	_, err := gw.writer.Write(data)
+	return err
+}
+
+func (gw *GinWriter) Flush() error {
+	gw.writer.Flush()
+	return nil
+}
 
 func (v Video) VideoMP4Stream(c *gin.Context, dramaSeriesId string) error {
 	src, err := ResourcesDramaSeries{}.GetSrc(dramaSeriesId)
@@ -23,6 +40,30 @@ func (v Video) VideoMP4Stream(c *gin.Context, dramaSeriesId string) error {
 		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "File not found"})
 		return nil
 	}
+
+	// 获取视频格式信息并检查是否需要转码
+	needTranscode := false
+	formatInfo, err := processorsffmpeg.VideoInfo{}.GetVideoFormatInfo(src)
+	if err != nil {
+		// 如果无法获取格式信息，假设需要转码以确保兼容性
+		fmt.Printf("警告: 无法获取视频格式信息，将进行转码以确保兼容性: %v\n", err)
+		needTranscode = true
+	} else {
+		// 检查视频是否与Web兼容
+		needTranscode = !processorsffmpeg.VideoInfo{}.IsWebCompatible(formatInfo)
+	}
+	if needTranscode {
+		fmt.Println("---------------------------转码---------------------------")
+		// 如果需要转码，使用流式转码
+		return v.VideoMP4Stream_TranscodePlay(c, src)
+	} else {
+		fmt.Println("---------------------------直播---------------------------")
+		return v.VideoMP4Stream_Play(c, fileInfo, src)
+	}
+
+}
+
+func (v Video) VideoMP4Stream_Play(c *gin.Context, fileInfo fs.FileInfo, src string) error {
 	// 获取Range头部信息
 	rangeHeader := c.GetHeader("Range")
 	if rangeHeader != "" {
@@ -100,5 +141,19 @@ func (v Video) VideoMP4Stream(c *gin.Context, dramaSeriesId string) error {
 		c.File(src)
 	}
 
+	return nil
+}
+
+// VideoMP4Stream_TranscodePlay 实现流式转码，边转码边传输
+func (v Video) VideoMP4Stream_TranscodePlay(c *gin.Context, src string) error {
+	// 直接使用转码器处理流式传输
+	err := processorsffmpeg.Transcode{}.VideoStreamTranscode(c, src)
+	if err != nil {
+		fmt.Printf("视频转码失败: %v\n", err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": "视频转码失败: " + err.Error(),
+		})
+		return err
+	}
 	return nil
 }
