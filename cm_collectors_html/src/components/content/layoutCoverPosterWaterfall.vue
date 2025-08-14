@@ -1,7 +1,7 @@
 <template>
   <div class="layout-cover-poster-waterfall">
     <div class="main">
-      <el-scrollbar>
+      <el-scrollbar ref="scrollbarRef">
         <Waterfall ref="waterfallRef" :list="dataList_C" :gutter="10" :breakpoints="waterfallBreakpoints"
           :img-selector="'src'" class="waterfall-list">
           <template #default="{ item }">
@@ -31,6 +31,7 @@ import { getResourceCoverPoster } from '@/common/photo';
 import { playResource } from '@/common/play';
 import { appStoreData } from '@/storeData/app.storeData';
 import { debounceNow } from '@/assets/debounce';
+import type { ElScrollbar } from 'element-plus';
 const store = {
   appStoreData: appStoreData(),
 }
@@ -41,6 +42,8 @@ const props = defineProps({
   },
 })
 const emits = defineEmits(['selectResources']);
+
+const scrollbarRef = ref<InstanceType<typeof ElScrollbar>>();
 
 const waterfallRef = ref<InstanceType<typeof Waterfall>>();
 const waterfallColumn = ref(store.appStoreData.currentConfigApp.coverPosterWaterfallColumn);
@@ -72,6 +75,12 @@ const onImageLoad = debounceNow(() => {
     waterfallRef.value?.renderer();
   });
 }, 300);
+
+const change = () => {
+  scrollbarRef.value?.setScrollTop(0);
+};
+
+defineExpose({ change, });
 
 </script>
 <style lang="scss" scoped>

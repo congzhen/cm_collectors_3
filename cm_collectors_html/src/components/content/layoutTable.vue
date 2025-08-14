@@ -1,6 +1,6 @@
 <template>
   <div class="layout-table-style1">
-    <el-table :data="props.dataList" border height="100%" style="width: 100%" size="small"
+    <el-table ref="tableRef" :data="props.dataList" border height="100%" style="width: 100%" size="small"
       @row-click="selectResourcesHandle">
       <el-table-column label="-" width="32" align="center">
         <template #default="scope">
@@ -69,9 +69,10 @@
 </template>
 <script lang="ts" setup>
 import type { I_resource } from '@/dataType/resource.dataType';
-import type { PropType } from 'vue';
+import { ref, type PropType } from 'vue';
 import { getResourceCoverPoster } from '@/common/photo';
 import { playResource } from '@/common/play';
+import type { ElTable } from 'element-plus';
 const props = defineProps({
   dataList: {
     type: Array as PropType<I_resource[]>,
@@ -79,11 +80,16 @@ const props = defineProps({
   },
 })
 const emits = defineEmits(['selectResources']);
-
+const tableRef = ref<InstanceType<typeof ElTable>>();
 const selectResourcesHandle = (item: I_resource) => {
   emits('selectResources', item)
 }
 
+const change = () => {
+  tableRef.value?.setScrollTop(0);
+};
+
+defineExpose({ change });
 </script>
 <style lang="scss" scoped>
 .layout-table-style1 {

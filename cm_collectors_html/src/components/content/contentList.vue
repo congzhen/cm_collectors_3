@@ -1,16 +1,18 @@
 <template>
   <div class="content-list">
-    <layoutCoverPoster v-if="store.appStoreData.currentConfigApp.resourcesShowMode == 'coverPoster'"
-      :data-list="props.dataList" @select-resources="selectResourcesHandle">
+    <layoutCoverPoster ref="layoutCoverPosterRef"
+      v-if="store.appStoreData.currentConfigApp.resourcesShowMode == 'coverPoster'" :data-list="props.dataList"
+      @select-resources="selectResourcesHandle">
     </layoutCoverPoster>
-    <layoutCoverPosterBox v-else-if="store.appStoreData.currentConfigApp.resourcesShowMode == 'coverPosterBox'"
-      :data-list="props.dataList" @select-resources="selectResourcesHandle">
+    <layoutCoverPosterBox ref="layoutCoverPosterBoxRef"
+      v-else-if="store.appStoreData.currentConfigApp.resourcesShowMode == 'coverPosterBox'" :data-list="props.dataList"
+      @select-resources="selectResourcesHandle">
     </layoutCoverPosterBox>
-    <layoutCoverPosterWaterfall
+    <layoutCoverPosterWaterfall ref="layoutCoverPosterWaterfallRef"
       v-else-if="store.appStoreData.currentConfigApp.resourcesShowMode == 'coverPosterWaterfall'"
       :data-list="props.dataList" @select-resources="selectResourcesHandle">
     </layoutCoverPosterWaterfall>
-    <layoutTable v-else-if="store.appStoreData.currentConfigApp.resourcesShowMode == 'table'"
+    <layoutTable ref="layoutTableRef" v-else-if="store.appStoreData.currentConfigApp.resourcesShowMode == 'table'"
       :data-list="props.dataList" @select-resources="selectResourcesHandle">
     </layoutTable>
   </div>
@@ -21,7 +23,7 @@ import layoutCoverPosterBox from './layoutCoverPosterBox.vue';
 import layoutCoverPosterWaterfall from './layoutCoverPosterWaterfall.vue';
 import layoutTable from './layoutTable.vue';
 import type { I_resource } from '@/dataType/resource.dataType';
-import type { PropType } from 'vue';
+import { ref, type PropType } from 'vue';
 import { appStoreData } from '@/storeData/app.storeData';
 const store = {
   appStoreData: appStoreData(),
@@ -34,9 +36,33 @@ const props = defineProps({
 })
 const emits = defineEmits(['selectResources']);
 
+const layoutCoverPosterRef = ref<typeof layoutCoverPoster>();
+const layoutCoverPosterBoxRef = ref<typeof layoutCoverPosterBox>();
+const layoutCoverPosterWaterfallRef = ref<typeof layoutCoverPosterWaterfall>();
+const layoutTableRef = ref<typeof layoutTable>();
+
 const selectResourcesHandle = (item: I_resource) => {
   emits('selectResources', item)
 }
+
+const change = () => {
+  switch (store.appStoreData.currentConfigApp.resourcesShowMode) {
+    case 'coverPoster':
+      layoutCoverPosterRef.value?.change();
+      break;
+    case 'coverPosterBox':
+      layoutCoverPosterBoxRef.value?.change();
+      break;
+    case 'coverPosterWaterfall':
+      layoutCoverPosterWaterfallRef.value?.change();
+      break;
+    case 'table':
+      layoutTableRef.value?.change();
+      break;
+  }
+}
+
+defineExpose({ change })
 
 </script>
 <style lang="scss" scoped>

@@ -1,7 +1,7 @@
 <template>
   <div class="content-view" v-loading="loading">
     <div class="list">
-      <contentList v-if="!store.appStoreData.adminResourceStatus" :data-list="dataList"
+      <contentList ref="contentListRef" v-if="!store.appStoreData.adminResourceStatus" :data-list="dataList"
         @select-resources="selectResourcesHandle"></contentList>
       <contentListAdmin v-else :data-list="dataList" @select-resources="selectResourcesHandle"
         @update-data="init_DataList"></contentListAdmin>
@@ -27,6 +27,10 @@ const store = {
   searchStoreData: searchStoreData(),
 }
 const emits = defineEmits(['selectResources']);
+
+const contentListRef = ref<InstanceType<typeof contentList>>();
+
+
 const isInitializing = ref(false);
 const loading = ref(false);
 const dataList = ref<I_resource[]>([]);
@@ -104,6 +108,7 @@ const showDataList = () => {
 const changePageHandle = () => {
   if (!isInitializing.value) {
     getDataList();
+    contentListRef.value?.change();
   }
 }
 const selectResourcesHandle = (item: I_resource) => {
