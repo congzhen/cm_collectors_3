@@ -172,8 +172,7 @@ func (t KeyFrame) ExtractKeyframes(videoPath string, frameCount int) ([][]byte, 
 	cmd := exec.Command(
 		ffmpegPath,
 		"-i", videoPath, // 输入视频文件
-		"-vf", "thumbnail=50", // 分析每100帧选择一个最具代表性的帧
-		//"-vf", "select=eq(pict_type\\,I)", // 只选择关键帧
+		"-vf", "select=eq(pict_type\\,I)", // 只选择关键帧
 		"-vframes", fmt.Sprintf("%d", frameCount), // 提取指定数量的帧
 		"-f", "image2pipe", // 输出到管道
 		"-vcodec", "mjpeg", // JPEG编码
