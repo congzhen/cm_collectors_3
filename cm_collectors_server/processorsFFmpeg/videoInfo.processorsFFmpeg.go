@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os/exec"
-	"strings"
 )
 
 type VideoInfo struct{}
@@ -20,26 +19,39 @@ type VideoFormatInfo struct {
 
 // IsWebCompatible 检查视频是否与Web兼容
 func (v VideoInfo) IsWebCompatible(formatInfo VideoFormatInfo) bool {
+	hasVideoStream := false
+	hasAudioStream := false
+	videoCompatible := true
+	audioCompatible := true
+
 	for _, stream := range formatInfo.Streams {
-		// 对于视频流，检查编解码器是否为浏览器支持的格式 (H.264, VP8, VP9, AV1)
+		// 对于视频流，检查编解码器是否为浏览器支持的格式
 		if stream.CodecType == "video" {
-			if stream.CodecName != "h264" && stream.CodecName != "vp8" && stream.CodecName != "vp9" && stream.CodecName != "av1" {
-				return false
+			hasVideoStream = true
+			fmt.Println("######################### 视频编码：", stream.CodecName)
+			// 支持的视频编解码器包括 H.264 (所有profile), VP8, VP9, AV1, HEVC/H.265
+			// 注意: HEVC支持有限，主要在Safari和Edge中
+			if stream.CodecName != "h264" && stream.CodecName != "vp8" &&
+				stream.CodecName != "vp9" && stream.CodecName != "av1" {
+				videoCompatible = false
 			}
-			// 如果是H.264，检查profile是否被广泛支持
-			if stream.CodecName == "h264" && strings.Contains(stream.Profile, "High") {
-				// High profile可能不被所有设备支持
-				return false
-			}
+			// 移除了对H.264 High Profile的限制，因为现代浏览器都支持
 		}
-		// 对于音频流，检查编解码器是否为浏览器支持的格式 (AAC, MP3, Vorbis, Opus)
+		// 对于音频流，检查编解码器是否为浏览器支持的格式
 		if stream.CodecType == "audio" {
-			if stream.CodecName != "aac" && stream.CodecName != "mp3" && stream.CodecName != "vorbis" && stream.CodecName != "opus" {
-				return false
+			hasAudioStream = true
+			fmt.Println("######################### 音频编码：", stream.CodecName)
+			// 支持的音频编解码器包括 AAC, MP3, Vorbis, Opus, PCM等
+			if stream.CodecName != "aac" && stream.CodecName != "mp3" &&
+				stream.CodecName != "vorbis" && stream.CodecName != "opus" &&
+				stream.CodecName != "pcm_s16le" && stream.CodecName != "pcm_s24le" {
+				audioCompatible = false
 			}
 		}
 	}
-	return true
+
+	// 确保至少有一个视频流和一个音频流，并且都兼容
+	return hasVideoStream && hasAudioStream && videoCompatible && audioCompatible
 }
 
 // GetVideoFormatInfo 使用ffprobe获取视频格式信息

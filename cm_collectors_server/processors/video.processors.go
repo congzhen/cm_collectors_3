@@ -53,11 +53,11 @@ func (v Video) VideoMP4Stream(c *gin.Context, dramaSeriesId string) error {
 		needTranscode = !processorsffmpeg.VideoInfo{}.IsWebCompatible(formatInfo)
 	}
 	if needTranscode {
-		fmt.Println("---------------------------转码---------------------------")
+		fmt.Println("######################### 转码流")
 		// 如果需要转码，使用流式转码
 		return v.VideoMP4Stream_TranscodePlay(c, src)
 	} else {
-		fmt.Println("---------------------------直播---------------------------")
+		fmt.Println("######################### 原始流")
 		return v.VideoMP4Stream_Play(c, fileInfo, src)
 	}
 
