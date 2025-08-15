@@ -14,21 +14,6 @@ import (
 
 type Video struct{}
 
-// GinWriter 实现了 Writer 接口，用于包装 gin.Context 的 Writer
-type GinWriter struct {
-	writer gin.ResponseWriter
-}
-
-func (gw *GinWriter) Write(data []byte) error {
-	_, err := gw.writer.Write(data)
-	return err
-}
-
-func (gw *GinWriter) Flush() error {
-	gw.writer.Flush()
-	return nil
-}
-
 func (v Video) VideoMP4Stream(c *gin.Context, dramaSeriesId string) error {
 	src, err := ResourcesDramaSeries{}.GetSrc(dramaSeriesId)
 	if err != nil {

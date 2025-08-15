@@ -136,19 +136,25 @@
 
       <el-form-item label="视频 - 打开方式">
         <el-select v-model="filesConfig.openResModeMovies">
-          <el-option label="软件" :value="E_resourceOpenMode.Soft" />
+          <el-option label="内置" :value="E_resourceOpenMode.Soft" />
           <el-option label="系统" :value="E_resourceOpenMode.System" />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="内置播放器" v-if="filesConfig.openResModeMovies === E_resourceOpenMode.Soft">
+        <el-select v-model="filesConfig.openResModeMovies_SoftType">
+          <el-option label="窗口模式" :value="E_resourceOpenMode_SoftType.Windows" />
+          <el-option label="弹窗模式" :value="E_resourceOpenMode_SoftType.Dialog" />
         </el-select>
       </el-form-item>
       <el-form-item label="漫画 - 打开方式">
         <el-select v-model="filesConfig.openResModeComic">
-          <el-option label="软件" :value="E_resourceOpenMode.Soft" />
+          <el-option label="内置" :value="E_resourceOpenMode.Soft" />
           <el-option label="系统" :value="E_resourceOpenMode.System" />
         </el-select>
       </el-form-item>
       <el-form-item label="图集 - 打开方式">
         <el-select v-model="filesConfig.openResModeAtlas">
-          <el-option label="软件" :value="E_resourceOpenMode.Soft" />
+          <el-option label="内置" :value="E_resourceOpenMode.Soft" />
           <el-option label="系统" :value="E_resourceOpenMode.System" />
         </el-select>
       </el-form-item>
@@ -258,7 +264,7 @@
 </template>
 <script lang="ts" setup>
 import { onMounted, ref } from 'vue';
-import { E_performerCareerType, E_resourceOpenMode } from '@/dataType/app.dataType';
+import { E_performerCareerType, E_resourceOpenMode, E_resourceOpenMode_SoftType } from '@/dataType/app.dataType';
 import selectCountry from '@/components/com/form/selectCountry.vue';
 import selectDefinition from '@/components/com/form/selectDefinition.vue';
 import selectLeftDisplay from '@/components/com/form/selectLeftDisplay.vue';

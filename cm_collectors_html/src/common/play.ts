@@ -1,9 +1,10 @@
-import { E_resourceDramaSeriesType, E_resourceOpenMode } from "@/dataType/app.dataType";
+import { E_resourceDramaSeriesType, E_resourceOpenMode, E_resourceOpenMode_SoftType } from "@/dataType/app.dataType";
 import type { I_resource } from "@/dataType/resource.dataType";
 import { appDataServer } from "@/server/app.server";
 import { appStoreData } from "@/storeData/app.storeData";
 import { ElMessage, ElNotification } from "element-plus";
 import router from '@/router';
+import { eventBus } from "@/main";
 
 export const playResource = async (resource: I_resource, dramaSeriesId: string = '') => {
   const store = {
@@ -33,8 +34,11 @@ export const playResource = async (resource: I_resource, dramaSeriesId: string =
   }
 
   if (openMode == E_resourceOpenMode.Soft) {
-    console.log('软打开', resource.mode)
-    router.push(`/play/${resource.mode}/${resource.id}` + (dramaSeriesId != '' ? `/${dramaSeriesId}` : ''));
+    if (store.appStoreData.currentConfigApp.openResModeMovies_SoftType == E_resourceOpenMode_SoftType.Dialog) {
+      eventBus.emit('resource-dialog-play-start', { resourceId: resource.id, dramaSeriesId });
+    } else {
+      router.push(`/play/${resource.mode}/${resource.id}` + (dramaSeriesId != '' ? `/${dramaSeriesId}` : ''));
+    }
   } else if (openMode == E_resourceOpenMode.System) {
     const eln = ElNotification({
       message: `正在打开资源 ${resource.title} ...`,

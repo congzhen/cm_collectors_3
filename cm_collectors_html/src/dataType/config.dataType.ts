@@ -1,4 +1,4 @@
-import { E_detailsDramaSeriesMode, E_resourceOpenMode, type E_tagType } from "./app.dataType";
+import { E_detailsDramaSeriesMode, E_resourceOpenMode, E_resourceOpenMode_SoftType, type E_tagType } from "./app.dataType";
 
 import dataset from "@/assets/dataset";
 
@@ -71,6 +71,7 @@ export interface I_config_app {
   youLikeWordNumber: number; // 猜你喜欢-匹配词数量
 
   openResModeMovies: E_resourceOpenMode; // 视频 - 打开方式
+  openResModeMovies_SoftType: E_resourceOpenMode_SoftType; // 软件内置播放器类型
   openResModeComic: E_resourceOpenMode;  // 漫画 - 打开方式
   openResModeAtlas: E_resourceOpenMode; // 图集 - 打开方式
 }
@@ -141,6 +142,7 @@ export const defualtConfigApp: I_config_app = {
   performer_photo: '',
 
   openResModeMovies: E_resourceOpenMode.Soft,
+  openResModeMovies_SoftType: E_resourceOpenMode_SoftType.Windows,
   openResModeComic: E_resourceOpenMode.Soft,
   openResModeAtlas: E_resourceOpenMode.Soft,
 }

@@ -10,6 +10,7 @@
         @delete-resource-success="deleteResouceSuccessHandle">
       </DetailsView>
     </div>
+    <videoPlayDialog ref="videoPlayDialogRef"></videoPlayDialog>
   </div>
 </template>
 <script setup lang="ts">
@@ -18,12 +19,14 @@ import dataBaseMenuView from './dataBaseMenuView.vue'
 import TagView from './TagView.vue'
 import ContentView from './ContentView.vue'
 import DetailsView from './DetailsView.vue'
+import videoPlayDialog from '@/components/play/videoPlayDialog.vue'
 import type { I_resource } from '@/dataType/resource.dataType'
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import type { I_filesBases } from '@/dataType/filesBases.dataType'
 import { appStoreData } from '@/storeData/app.storeData'
 import { searchStoreData } from '@/storeData/search.storeData'
 import { ElMessage } from 'element-plus'
+import { eventBus } from '@/main'
 const store = {
   appStoreData: appStoreData(),
   searchStoreData: searchStoreData(),
@@ -31,6 +34,7 @@ const store = {
 const tagViewRef = ref<InstanceType<typeof TagView>>();
 const contentViewRef = ref<InstanceType<typeof ContentView>>();
 const detailsViewRef = ref<InstanceType<typeof DetailsView>>();
+const videoPlayDialogRef = ref<InstanceType<typeof videoPlayDialog>>();
 
 const loading = ref(false);
 const resDetails = ref<I_resource | undefined>(undefined);
@@ -68,6 +72,17 @@ const updateResouceSuccessHandle = async (data: I_resource) => {
 const deleteResouceSuccessHandle = () => {
   contentViewRef.value?.init_DataList(() => { }, true);
 }
+
+
+const resourceDialogPlayStartHandle = (event: unknown) => {
+  const typedEvent = event as { resourceId: string; dramaSeriesId: string };
+  videoPlayDialogRef.value?.open(typedEvent.resourceId, typedEvent.dramaSeriesId);
+}
+
+// 监听事件
+onMounted(() => {
+  eventBus.on('resource-dialog-play-start', resourceDialogPlayStartHandle);
+})
 
 </script>
 <style lang="scss" scoped>

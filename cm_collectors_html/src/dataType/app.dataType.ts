@@ -34,6 +34,10 @@ export enum E_resourceOpenMode {
   Soft = 'soft',
   System = 'system',
 }
+export enum E_resourceOpenMode_SoftType {
+  Windows = 'windows',
+  Dialog = 'dialog',
+}
 
 export enum E_resourceStorageLocation {
   Local = 'local',

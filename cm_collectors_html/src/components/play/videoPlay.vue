@@ -37,6 +37,7 @@ const player = ref<any>(null) // 指定更合适的类型
 const videoSrc = ref('')
 const isHls = ref(false)
 
+
 // 初始化播放器
 const initializePlayer = () => {
   if (videoPlayerRef.value) {
@@ -59,6 +60,7 @@ const initializePlayer = () => {
       track: [],
       fill: false,
       aspectRatio: props.aspectRatio,
+
     }, function () {
       //console.log('Player is ready');
     })
@@ -77,10 +79,63 @@ const initializePlayer = () => {
   }
 }
 
+
+
 //播放
 const play = () => {
   player.value?.play();
 }
+// 暂停
+const pause = () => {
+  player.value?.pause();
+}
+
+// 设置 aspectRatio
+const setAspectRatio = (aspectRatio: string) => {
+  if (player.value) {
+    player.value.aspectRatio(aspectRatio);
+  }
+};
+
+// 获取播放状态
+const isPlaying = (): boolean => {
+  if (player.value) {
+    return !player.value.paused();
+  }
+  return false;
+};
+
+// 获取当前播放时间
+const getCurrentTime = (): number => {
+  if (player.value) {
+    return player.value.currentTime();
+  }
+  return 0;
+};
+
+// 获取视频总时长
+const getDuration = (): number => {
+  if (player.value) {
+    return player.value.duration();
+  }
+  return 0;
+};
+
+// 获取播放进度 (0-1)
+const getProgress = (): number => {
+  const duration = getDuration();
+  if (duration > 0) {
+    return getCurrentTime() / duration;
+  }
+  return 0;
+};
+
+// 设置播放位置
+const setCurrentTime = (time: number) => {
+  if (player.value) {
+    player.value.currentTime(time);
+  }
+};
 
 // 设置视频源
 const setVideoSource = (src: string, type = 'mp4', fn = () => { }) => {
@@ -267,6 +322,20 @@ const getVolumeFromStorage = (): number => {
   }
 };
 
+// 获取视频尺寸
+const getVideoDimensions = (): { width: number; height: number } | null => {
+  if (player.value) {
+    // 检查视频是否已加载元数据
+    if (player.value.readyState() >= 1) { // HAVE_METADATA
+      return {
+        width: player.value.videoWidth(),
+        height: player.value.videoHeight()
+      };
+    }
+  }
+  return null;
+};
+
 
 // 组件挂载时初始化播放器
 onMounted(() => {
@@ -284,11 +353,19 @@ onBeforeUnmount(() => {
 // 导出方法供外部调用
 defineExpose({
   play,
+  pause,
+  setAspectRatio,
+  isPlaying,
+  getCurrentTime,
+  getDuration,
+  getProgress,
+  setCurrentTime,
   resetPlayer,
   setVideoSource,
   setVolume,
   getVolume,
-  addTextTrack
+  addTextTrack,
+  getVideoDimensions
 })
 </script>
 
