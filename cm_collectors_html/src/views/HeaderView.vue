@@ -10,43 +10,67 @@
       </div>
       <div class="setting">
         <div class="menu-item" @click="oepnResourceForm">
-          <el-icon>
-            <Plus />
-          </el-icon>
-          <label class="menu-item-title">添加</label>
+          <el-tooltip content="添加" placement="bottom">
+            <el-icon>
+              <Plus />
+            </el-icon>
+          </el-tooltip>
+          <!--
+           <label class="menu-item-title">添加</label>
+          -->
         </div>
         <div class="menu-item" @click="switchAdminStatus">
-          <el-icon v-if="!store.appStoreData.adminResourceStatus">
-            <TurnOff />
-          </el-icon>
-          <el-icon v-else color="#409EFF">
-            <Open />
-          </el-icon>
+          <el-tooltip :content="!store.appStoreData.adminResourceStatus ? '管理关闭' : '管理开启'" placement="bottom">
+            <el-icon v-if="!store.appStoreData.adminResourceStatus">
+              <TurnOff />
+            </el-icon>
+            <el-icon v-else color="#409EFF">
+              <Open />
+            </el-icon>
+          </el-tooltip>
+          <!--
           <label class="menu-item-title">管理</label>
+           -->
         </div>
         <div class="menu-item" @click="openTagList">
-          <el-icon>
-            <PriceTag />
-          </el-icon>
+          <el-tooltip content="标签" placement="bottom">
+            <el-icon>
+              <PriceTag />
+            </el-icon>
+          </el-tooltip>
+          <!--
           <label class="menu-item-title">标签</label>
+           -->
         </div>
         <div class="menu-item" @click="goToPerformer">
-          <el-icon>
-            <User />
-          </el-icon>
+          <el-tooltip :content="appLang.performer()" placement="bottom">
+            <el-icon>
+              <User />
+            </el-icon>
+          </el-tooltip>
+          <!--
           <label class="menu-item-title">{{ appLang.performer() }}</label>
+           -->
         </div>
         <div class="menu-item" @click="openImportResource">
-          <el-icon>
-            <Magnet />
-          </el-icon>
+          <el-tooltip content="导入" placement="bottom">
+            <el-icon>
+              <Magnet />
+            </el-icon>
+          </el-tooltip>
+          <!--
           <label class="menu-item-title">导入</label>
+           -->
         </div>
         <div class="menu-item" @click="goToSetting">
-          <el-icon>
-            <Setting />
-          </el-icon>
+          <el-tooltip content="设置" placement="bottom">
+            <el-icon>
+              <Setting />
+            </el-icon>
+          </el-tooltip>
+          <!--
           <label class="menu-item-title">设置</label>
+           -->
         </div>
       </div>
     </div>
