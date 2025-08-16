@@ -24,6 +24,7 @@ import '@videojs/http-streaming'
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { ElMessage } from 'element-plus';
 
+
 const props = defineProps({
   aspectRatio: {
     type: String,
@@ -36,6 +37,8 @@ const videoPlayerRef = ref<HTMLVideoElement | null>(null)
 const player = ref<any>(null) // 指定更合适的类型
 const videoSrc = ref('')
 const isHls = ref(false)
+// 添加旋转角度状态
+const rotation = ref(0)
 
 
 // 初始化播放器
@@ -65,6 +68,9 @@ const initializePlayer = () => {
       //console.log('Player is ready');
     })
 
+    // 添加自定义旋转按钮
+    addRotateButton();
+
     //监控音量变化
     player.value.on('volumechange', function () {
       // 获取当前音量
@@ -79,7 +85,111 @@ const initializePlayer = () => {
   }
 }
 
+// 添加旋转按钮到控制栏
+const addRotateButton = () => {
+  if (player.value) {
+    // 创建旋转按钮组件
+    const Button = videojs.getComponent('Button');
 
+    // 使用新的方式创建组件，替代 videojs.extend
+    class RotateButton extends Button {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      constructor(player: any, options: any = {}) {
+        super(player, options);
+      }
+
+      buildCSSClass() {
+        return 'vjs-rotate-button ' + super.buildCSSClass();
+      }
+
+      handleClick() {
+        rotateVideo(90);
+      }
+    }
+
+    // 注册组件
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    videojs.registerComponent('RotateButton', RotateButton as any);
+
+    // 添加到控制栏
+    player.value.ready(() => {
+      player.value.controlBar.addChild('RotateButton', {});
+    });
+  }
+};
+
+// 旋转
+const rotateVideo = (degrees: number) => {
+  rotation.value = (rotation.value + degrees) % 360;
+  if (player.value) {
+    const videoElement = player.value.el().querySelector('.vjs-tech');
+    if (videoElement) {
+      // 根据旋转角度调整视频的变换
+      applyRotationTransformation(videoElement);
+    }
+  }
+};
+
+// 设置旋转角度的
+const setRotation = (degrees: number) => {
+  rotation.value = degrees % 360;
+  if (player.value) {
+    const videoElement = player.value.el().querySelector('.vjs-tech');
+    if (videoElement) {
+      // 根据旋转角度调整视频的变换
+      applyRotationTransformation(videoElement);
+    }
+  }
+};
+
+// 应用旋转变换
+const applyRotationTransformation = (videoElement: HTMLElement) => {
+  // 获取视频的原始尺寸
+  const videoWidth = player.value.videoWidth();
+  const videoHeight = player.value.videoHeight();
+
+  if (videoWidth && videoHeight) {
+    // 计算合适的缩放因子
+    const scale = calculateScaleFactor(rotation.value, videoWidth, videoHeight, videoElement);
+
+    // 应用旋转和缩放
+    videoElement.style.transform = `rotate(${rotation.value}deg) scale(${scale})`;
+    videoElement.style.transformOrigin = 'center center';
+  } else {
+    // 如果没有视频尺寸信息，则仅应用旋转
+    videoElement.style.transform = `rotate(${rotation.value}deg)`;
+    videoElement.style.transformOrigin = 'center center';
+  }
+};
+
+// 计算旋转时的缩放因子
+const calculateScaleFactor = (rotation: number, videoWidth: number, videoHeight: number, videoElement: HTMLElement) => {
+  // 对于0度和180度旋转，不需要缩放
+  if (rotation === 0 || rotation === 180) {
+    return 1;
+  }
+  // 获取容器尺寸
+  const containerWidth = videoElement.clientWidth;
+  const containerHeight = videoElement.clientHeight;
+
+  let w = 0;
+  let h = 0;
+  if (videoWidth >= videoHeight) {
+    w = containerHeight;
+    h = containerWidth / w * containerHeight;
+  } else {
+    h = containerWidth
+    w = containerHeight / h * containerWidth;
+  }
+  return Math.min(containerWidth / w, containerHeight / h);
+};
+
+
+
+// 获取当前旋转角度
+const getRotation = (): number => {
+  return rotation.value;
+};
 
 //播放
 const play = () => {
@@ -183,6 +293,15 @@ const setVideoSource = (src: string, type = 'mp4', fn = () => { }) => {
     // 添加 loadeddata 事件监听
     player.value.on('loadeddata', function () {
       //console.log('Video data loaded successfully')
+      // 重新应用旋转效果
+      if (rotation.value !== 0) {
+        setTimeout(() => {
+          const videoElement = player.value.el().querySelector('.vjs-tech');
+          if (videoElement) {
+            applyRotationTransformation(videoElement);
+          }
+        }, 0);
+      }
     })
   }
 }
@@ -293,6 +412,9 @@ const resetPlayer = () => {
 
       // 清理字幕轨道
       removeAllTextTracks()
+
+      // 重置旋转角度
+      rotation.value = 0;
     } catch (e) {
       console.warn('Error resetting player:', e)
     }
@@ -365,7 +487,11 @@ defineExpose({
   setVolume,
   getVolume,
   addTextTrack,
-  getVideoDimensions
+  getVideoDimensions,
+  // 导出旋转相关方法
+  rotateVideo,
+  setRotation,
+  getRotation
 })
 </script>
 
@@ -379,6 +505,9 @@ defineExpose({
 /* 可选：自定义视频播放器样式 */
 .video-js {
   background-color: #000;
+  margin: 0 auto;
+  width: 100%;
+  height: 100%;
 
   video {
     /* 保证视频完整显示 */
@@ -394,6 +523,18 @@ defineExpose({
   padding-top: 9px;
 }
 
+/* 旋转按钮样式 */
+.video-js .vjs-rotate-button .vjs-icon-placeholder:before {
+  content: '\f11a';
+  /* 使用一个合适的图标 */
+  font-family: VideoJS;
+  font-weight: normal;
+  font-style: normal;
+}
+
+.video-js .vjs-rotate-button {
+  cursor: pointer;
+}
 
 /* 字幕样式设置 - 白色字体带黑色边框 */
 .video-js video::-webkit-media-text-track-display {

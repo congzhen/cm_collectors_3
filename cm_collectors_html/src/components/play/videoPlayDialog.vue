@@ -1,9 +1,30 @@
 <template>
-  <el-dialog v-model="dialogVisible" :title="title_C" width="458px" class="video-play-dialog" top="20px"
-    header-class="video-play-dialog-header" :modal="false" :modal-penetrable="true" :draggable="true" :z-index="99999"
-    :close-on-click-modal="false" append-to-body @close="closeHandle">
+  <el-dialog v-model="dialogVisible" width="458px" class="video-play-dialog" top="20px" :modal="false"
+    :show-close="false" :modal-penetrable="true" :draggable="true" :z-index="99999" :close-on-click-modal="false"
+    append-to-body @close="closeHandle">
+    <template #header="{ close }">
+      <div class="video-play-dialog-header">
+        <div class="title">
+          <el-icon size="20">
+            <VideoPlay />
+          </el-icon>
+          <h5>
+            {{ title_C }}
+          </h5>
+        </div>
+        <div class="btn">
+          <el-icon @click="toggleVideoPlayer">
+            <ArrowUp v-if="!videoPlayerVisible" />
+            <ArrowDown v-else />
+          </el-icon>
+          <el-icon @click="close">
+            <Close />
+          </el-icon>
+        </div>
+      </div>
+    </template>
     <div v-loading="loading">
-      <div class="video-play">
+      <div class="video-play" :style="{ display: videoPlayerVisible ? 'block' : 'none' }">
         <videoPlay ref="videoPlayRef" />
       </div>
     </div>
@@ -21,6 +42,8 @@ const videoPlayRef = ref<InstanceType<typeof videoPlay>>();
 const dialogVisible = ref(false);
 const loading = ref(false);
 const isPlaying = ref(false);
+
+const videoPlayerVisible = ref(true); // 控制视频播放器显示状态
 
 const resourceInfo = ref<I_resource>();
 
@@ -77,6 +100,11 @@ const setVideoSource = (dramaSeriesId: string) => {
   });
 }
 
+// 切换视频播放器显示状态
+const toggleVideoPlayer = () => {
+  videoPlayerVisible.value = !videoPlayerVisible.value;
+};
+
 const closeHandle = () => {
   videoPlayRef.value?.resetPlayer();
 }
@@ -97,25 +125,46 @@ defineExpose({ open, close })
   border: 1px solid #434344;
 
   .el-dialog__header {
-    padding-bottom: 0px !important;
+    padding-bottom: 2px !important;
+    overflow: hidden;
+  }
 
-    .el-dialog__title {
-      font-size: 12px;
+  .video-play-dialog-header {
+    display: flex;
+    gap: 10px;
+    justify-content: space-between;
+    padding-bottom: 0px;
 
-      display: inline-block;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 100%;
-      box-sizing: border-box;
+    .title {
+      flex-grow: 1;
+      display: flex;
+      gap: 5px;
+      min-width: 0; // 添加此属性以允许 flex 项目收缩
+
+      h5 {
+        flex-grow: 1;
+        font-size: 12px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
+        box-sizing: border-box;
+      }
     }
 
-    .el-dialog__headerbtn {
-      width: 32px;
-      height: 32px;
+
+    .btn {
+      flex-shrink: 0;
+      display: flex;
+      gap: 5px;
 
       .el-icon {
-        margin-top: 4px;
+        font-size: 20px;
+        cursor: pointer;
+
+        &:hover {
+          color: var(--el-color-primary);
+        }
       }
     }
   }
