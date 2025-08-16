@@ -253,23 +253,23 @@ func (Resources) setDbSearchDataOrder(db *gorm.DB, searchSort datatype.E_searchS
 	case datatype.E_searchSort_addTimeDesc:
 		db = db.Order("addTime DESC")
 	case datatype.E_searchSort_issueNumberAsc:
-		db = db.Order("issueNumber ASC")
+		db = db.Order("issueNumber ASC,addTime DESC")
 	case datatype.E_searchSort_issueNumberDesc:
-		db = db.Order("issueNumber DESC")
+		db = db.Order("issueNumber DESC,addTime DESC")
 	case datatype.E_searchSort_starAsc:
-		db = db.Order("stars ASC")
+		db = db.Order("stars ASC,addTime DESC")
 	case datatype.E_searchSort_starDesc:
-		db = db.Order("stars DESC")
+		db = db.Order("stars DESC,addTime DESC")
 	case datatype.E_searchSort_titleAsc:
-		db = db.Order("title ASC")
+		db = db.Order("title ASC,addTime DESC")
 	case datatype.E_searchSort_titleDesc:
-		db = db.Order("title DESC")
+		db = db.Order("title DESC,addTime DESC")
 	case datatype.E_searchSort_history:
-		db = db.Order("lastPlayTime DESC")
+		db = db.Order("lastPlayTime DESC,addTime DESC")
 	case datatype.E_searchSort_hot:
-		db = db.Order("hot DESC")
+		db = db.Order("hot DESC,addTime DESC")
 	default:
-		db = db.Order("addTime DESC")
+		db = db.Order("addTime DESC,addTime DESC")
 	}
 	return db
 }
