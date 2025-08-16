@@ -269,7 +269,7 @@ func (Resources) setDbSearchDataOrder(db *gorm.DB, searchSort datatype.E_searchS
 	case datatype.E_searchSort_hot:
 		db = db.Order("hot DESC,addTime DESC")
 	default:
-		db = db.Order("addTime DESC,addTime DESC")
+		db = db.Order("addTime DESC")
 	}
 	return db
 }
