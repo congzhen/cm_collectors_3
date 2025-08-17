@@ -20,6 +20,20 @@ system:
   responseMsgLanguage: en
   logFilePath: ./err.log
   logLevel: Error
+play:
+  playVideoFormats: # 视频格式列表
+    - h264
+    - vp8
+    - vp9
+    - av1
+    - hevc
+  playAudioFormats: # 音频格式列表
+    - aac
+    - opus
+    - mp3
+    - vorbis
+    - pcm_s16le
+    - pcm_s24le
 cache:
   mode: freeCache # ['redis','freeCache','local'] //非必要不使用local
   redis:

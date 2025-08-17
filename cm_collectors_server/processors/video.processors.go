@@ -1,6 +1,7 @@
 package processors
 
 import (
+	"cm_collectors_server/core"
 	processorsffmpeg "cm_collectors_server/processorsFFmpeg"
 	"fmt"
 	"io/fs"
@@ -35,7 +36,11 @@ func (v Video) VideoMP4Stream(c *gin.Context, dramaSeriesId string) error {
 		needTranscode = true
 	} else {
 		// 检查视频是否与Web兼容
-		needTranscode = !processorsffmpeg.VideoInfo{}.IsWebCompatible(formatInfo)
+		pf_videoInfo := processorsffmpeg.VideoInfo{}
+		// 设置支持的编解码器
+		pf_videoInfo.SetSupportedVideoCodecs(core.Config.Play.PlayVideoFormats)
+		pf_videoInfo.SetSupportedAudioCodecs(core.Config.Play.PlayAudioFormats)
+		needTranscode = !pf_videoInfo.IsWebCompatible(formatInfo)
 	}
 	if needTranscode {
 		fmt.Println("######################### 转码流")
