@@ -2,6 +2,7 @@ package response
 
 import (
 	"net/http"
+	"reflect"
 
 	"github.com/gin-gonic/gin"
 )
@@ -19,6 +20,17 @@ type Response struct {
 }
 
 func Result(status bool, statusCode int, msg string, data any, c *gin.Context) {
+	// 处理空数组/切片被序列化为 null 的问题
+	if data != nil {
+		v := reflect.ValueOf(data)
+		switch v.Kind() {
+		case reflect.Slice, reflect.Array:
+			if v.Len() == 0 {
+				// 使用空的 interface 切片确保序列化为 []
+				data = []interface{}{}
+			}
+		}
+	}
 	c.JSON(http.StatusOK, Response{
 		Status:     status,
 		StatusCode: statusCode,

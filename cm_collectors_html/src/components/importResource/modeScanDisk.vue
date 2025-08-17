@@ -116,6 +116,9 @@ const submit = debounceNow(async () => {
     if (!result.status) {
       ElMessage.error(result.msg);
       return;
+    } else if (result.data.length == 0) {
+      ElMessage.error('没有可导入的数据');
+      return;
     } else {
       modeScanDiskImportDataDialogRef.value?.open(result.data, formData.value);
     }
