@@ -19,7 +19,7 @@
           </el-icon>
           <el-icon @click="toggleFullScreenDisplay">
             <FullScreen v-if="!fullScreenDisplay" />
-            <Connection v-else />
+            <BottomLeft v-else />
           </el-icon>
 
           <el-icon @click="close">
