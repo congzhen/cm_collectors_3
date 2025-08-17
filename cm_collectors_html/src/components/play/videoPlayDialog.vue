@@ -1,7 +1,7 @@
 <template>
-  <el-dialog v-model="dialogVisible" width="458px" class="video-play-dialog" top="20px" :modal="false"
-    :show-close="false" :modal-penetrable="true" :draggable="true" :z-index="99999" :close-on-click-modal="false"
-    append-to-body @close="closeHandle">
+  <el-dialog v-model="dialogVisible" :width="dialogWidth_C" class="video-play-dialog" top="20px" :modal="false"
+    :show-close="false" :modal-penetrable="true" :draggable="true" :z-index="99999" :fullscreen="fullScreenDisplay"
+    :close-on-click-modal="false" append-to-body @close="closeHandle">
     <template #header="{ close }">
       <div class="video-play-dialog-header">
         <div class="title">
@@ -17,26 +17,33 @@
             <ArrowUp v-if="!videoPlayerVisible" />
             <ArrowDown v-else />
           </el-icon>
+          <el-icon @click="toggleFullScreenDisplay">
+            <FullScreen v-if="!fullScreenDisplay" />
+            <Connection v-else />
+          </el-icon>
+
           <el-icon @click="close">
             <Close />
           </el-icon>
         </div>
       </div>
     </template>
-    <div v-loading="loading">
-      <div class="video-play" :style="{ display: videoPlayerVisible ? 'block' : 'none' }">
-        <videoPlay ref="videoPlayRef" />
-      </div>
+
+    <div ref="videoPlayElementRef" v-loading="loading" class="video-play"
+      :style="{ display: videoPlayerVisible ? 'block' : 'none' }">
+      <videoPlay ref="videoPlayRef" />
     </div>
+
   </el-dialog>
 </template>
 <script lang="ts" setup>
-import { ref, computed } from 'vue';
+import { ref, computed, nextTick } from 'vue';
 import videoPlay from './videoPlay.vue';
 import { resourceServer } from '@/server/resource.server';
 import { ElMessage } from 'element-plus';
 import type { I_resource } from '@/dataType/resource.dataType';
 
+const videoPlayElementRef = ref<HTMLDivElement>();
 const videoPlayRef = ref<InstanceType<typeof videoPlay>>();
 
 const dialogVisible = ref(false);
@@ -44,11 +51,17 @@ const loading = ref(false);
 const isPlaying = ref(false);
 
 const videoPlayerVisible = ref(true); // 控制视频播放器显示状态
+const fullScreenDisplay = ref(false); // 控制全屏显示状态
+
+const videoVertical = ref(false); // 视频为竖屏否
 
 const resourceInfo = ref<I_resource>();
 
 const title_C = computed(() => {
   return resourceInfo.value?.title || '视频播放器';
+})
+const dialogWidth_C = computed(() => {
+  return videoVertical.value ? '458px' : '640px';
 })
 
 
@@ -92,7 +105,9 @@ const setVideoSource = (dramaSeriesId: string) => {
     )
     const dimensions = vp.getVideoDimensions();
     if (dimensions) {
-      vp.setAspectRatio(dimensions.width + ':' + dimensions.height);
+      videoVertical.value = dimensions.height > dimensions.width;
+      setVideoDimensions(dimensions.width, dimensions.height);
+
     }
     if (isPlaying.value) {
       vp.play();
@@ -100,12 +115,39 @@ const setVideoSource = (dramaSeriesId: string) => {
   });
 }
 
+const setVideoDimensions = (w: number, h: number) => {
+  videoPlayRef.value?.setAspectRatio(w + ':' + h)
+}
+
 // 切换视频播放器显示状态
 const toggleVideoPlayer = () => {
   videoPlayerVisible.value = !videoPlayerVisible.value;
 };
+// 切换全屏显示状态
+const toggleFullScreenDisplay = () => {
+  fullScreenDisplay.value = !fullScreenDisplay.value;
+  nextTick(() => {
+    if (fullScreenDisplay.value) {
+      const ep = videoPlayElementRef.value || undefined;
+      if (ep) {
+        // 获取html的宽高
+        const { width, height } = ep.getBoundingClientRect();
+        setVideoDimensions(width, height);
+      }
+    } else {
+      const vp = videoPlayRef.value || undefined;
+      if (vp) {
+        const dimensions = vp.getVideoDimensions();
+        if (dimensions) {
+          setVideoDimensions(dimensions.width, dimensions.height);
+        }
+      }
+    }
+  });
+};
 
 const closeHandle = () => {
+  fullScreenDisplay.value = false;
   videoPlayRef.value?.resetPlayer();
 }
 
@@ -114,6 +156,7 @@ const open = (_resourceId: string, _dramaSeriesId: string) => {
   dialogVisible.value = true
 }
 const close = () => {
+
   dialogVisible.value = false
 }
 
@@ -123,8 +166,11 @@ defineExpose({ open, close })
 .video-play-dialog {
   padding: 4px;
   border: 1px solid #434344;
+  display: flex;
+  flex-direction: column;
 
   .el-dialog__header {
+    flex-shrink: 0;
     padding-bottom: 2px !important;
     overflow: hidden;
   }
@@ -166,6 +212,17 @@ defineExpose({ open, close })
           color: var(--el-color-primary);
         }
       }
+    }
+  }
+
+  .el-dialog__body {
+    flex: 1;
+    overflow: hidden;
+
+    .video-play {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
     }
   }
 }

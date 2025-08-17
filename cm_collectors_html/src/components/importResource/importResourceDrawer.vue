@@ -1,13 +1,15 @@
 <template>
   <drawerCommon ref="drawerCommonRef" width="680px" title="资源导入" btnSubmitTitle="导入" @submit="submitHandle">
     <div class="import-resource-main">
+      <!--
       <div class="tool">
-        <el-radio-group v-model="modeRadio">
+        <el-radio-group v-model="modeRadio" @change="changeModeRadioHandle">
           <el-radio-button label="磁盘扫描" value="scanDisk" />
           <el-radio-button label="nfo导入" value="nfoImport" />
           <el-radio-button label="simple导入" value="simpleImport" />
         </el-radio-group>
       </div>
+      -->
       <div class="main">
         <modeScanDisk ref="modeScanDiskRef" v-if="modeRadio === 'scanDisk'" @success="successHandle"></modeScanDisk>
       </div>
@@ -26,17 +28,22 @@ const modeRadio = ref('scanDisk');
 const modeScanDiskRef = ref<InstanceType<typeof modeScanDisk>>();
 
 const init = () => {
-  switch (modeRadio.value) {
-    case 'scanDisk':
-      modeScanDiskRef.value?.init();
-      break;
-    case 'nfoImport':
-      break;
-    case 'simpleImport':
-      break;
-  }
+  changeModeRadioHandle();
 }
 
+const changeModeRadioHandle = () => {
+  nextTick(() => {
+    switch (modeRadio.value) {
+      case 'scanDisk':
+        modeScanDiskRef.value?.init();
+        break;
+      case 'nfoImport':
+        break;
+      case 'simpleImport':
+        break;
+    }
+  });
+}
 const submitHandle = () => {
   switch (modeRadio.value) {
     case 'scanDisk':
@@ -56,9 +63,7 @@ const successHandle = () => {
 
 const open = async () => {
   drawerCommonRef.value?.open();
-  nextTick(() => {
-    init();
-  });
+  init();
 }
 
 const colse = () => {
