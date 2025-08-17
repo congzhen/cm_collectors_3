@@ -35,7 +35,7 @@ play:
     - pcm_s16le
     - pcm_s24le
 cache:
-  mode: freeCache # ['redis','freeCache','local'] //非必要不使用local
+  mode: freeCache # ['redis','freeCache']
   redis:
     host: 127.0.0.1
     port: 6379

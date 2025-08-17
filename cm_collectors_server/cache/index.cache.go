@@ -4,7 +4,14 @@ import (
 	"cm_collectors_server/config"
 	"context"
 	"errors"
+	"fmt"
 	"time"
+)
+
+var (
+	ErrCacheMiss   = fmt.Errorf("cache: key not found")
+	ErrInvalidType = fmt.Errorf("cache: invalid value type")
+	ErrLockNotHeld = errors.New("lock not held by client")
 )
 
 type Cache interface {
@@ -28,8 +35,6 @@ func NewCache(config config.Cache) (Cache, error) {
 		return cache, nil
 	case "freeCache":
 		return NewFreeCache(config.FreeCache), nil
-	case "local":
-		return NewLocalCache(), nil
 	default:
 		return nil, errors.New("unsupported cache type")
 	}
