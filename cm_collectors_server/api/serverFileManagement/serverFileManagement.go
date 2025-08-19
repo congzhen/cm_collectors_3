@@ -110,6 +110,12 @@ func (s ServerFileManagement) IsAbs(path string) error {
 	}
 	return nil
 }
+func (s ServerFileManagement) AbsPath(path string) (string, error) {
+	if s.isWindowsDriveRoot(path) {
+		path += "/"
+	}
+	return filepath.Abs(path)
+}
 func (s ServerFileManagement) isWindowsDriveRoot(path string) bool {
 	// 匹配单个驱动器字母后跟冒号的模式
 	matched, _ := regexp.MatchString(`^[a-zA-Z]:$`, path)
@@ -134,7 +140,7 @@ func (s ServerFileManagement) GetValidatePath(_path string) (string, error) {
 	}
 
 	// 转换为绝对路径
-	absPath, err := filepath.Abs(_path)
+	absPath, err := s.AbsPath(_path)
 	if err != nil {
 		return "", err
 	}
