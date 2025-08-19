@@ -86,7 +86,6 @@ const submitHandle = debounceNow(async () => {
 
 const closeHandle = () => {
   workStatus = false;
-  success();
 }
 
 const success = () => {

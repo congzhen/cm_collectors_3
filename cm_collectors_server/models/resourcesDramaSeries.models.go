@@ -3,6 +3,7 @@ package models
 import (
 	"cm_collectors_server/datatype"
 	"fmt"
+	"path/filepath"
 	"strings"
 
 	"gorm.io/gorm"
@@ -95,7 +96,7 @@ func (ResourcesDramaSeries) FilterNonExistingSrcPaths(db *gorm.DB, filesBasesId 
 	err := db.Table(ResourcesDramaSeries{}.TableName()+" AS t").
 		Joins(fmt.Sprintf("JOIN %s AS r ON t.resources_id = r.id", Resources{}.TableName())).
 		Where("r.filesBases_id = ?", filesBasesId).
-		Where("t.src IN ?", srcPaths).
+		//Where("t.src IN ?", srcPaths).
 		Pluck("t.src", &existingPaths).Error
 	if err != nil {
 		return nil, err
@@ -103,13 +104,15 @@ func (ResourcesDramaSeries) FilterNonExistingSrcPaths(db *gorm.DB, filesBasesId 
 	// 创建一个 map 用于快速查找已存在的路径
 	existingPathMap := make(map[string]bool)
 	for _, path := range existingPaths {
-		existingPathMap[path] = true
+		normalizedPath := filepath.ToSlash(path)
+		existingPathMap[normalizedPath] = true
 	}
 
 	// 筛选出不在数据库中的路径
 	var newPaths []string
 	for _, path := range srcPaths {
-		if !existingPathMap[path] {
+		normalizedPath := filepath.ToSlash(path)
+		if !existingPathMap[normalizedPath] {
 			newPaths = append(newPaths, path)
 		}
 	}
