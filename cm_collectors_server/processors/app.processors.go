@@ -7,7 +7,7 @@ import (
 )
 
 type App struct {
-	LogoName       string                   `json:"logoName"`
+	AppConfig      datatype.App_Config      `json:"appConfig"`
 	FilesBases     *[]models.FilesBases     `json:"filesBases"`
 	PerformerBases *[]models.PerformerBases `json:"performerBases"`
 }
@@ -22,16 +22,21 @@ func (App) InitData() (*App, error) {
 		return nil, err
 	}
 	return &App{
-		LogoName:       core.Config.General.LogoName,
+		AppConfig: datatype.App_Config{
+			LogoName:     core.Config.General.LogoName,
+			IsAdminLogin: core.Config.General.IsAdminLogin,
+		},
 		FilesBases:     filesBases,
 		PerformerBases: performerBases,
 	}, nil
 }
 
-func (App) GetConfig() datatype.App_Config {
-	config := datatype.App_Config{
-		LogoName:         core.Config.General.LogoName,
-		IsAdminLogin:     core.Config.General.IsAdminLogin,
+func (App) GetConfig() datatype.App_SystemConfig {
+	config := datatype.App_SystemConfig{
+		App_Config: datatype.App_Config{
+			LogoName:     core.Config.General.LogoName,
+			IsAdminLogin: core.Config.General.IsAdminLogin,
+		},
 		AdminPassword:    "",
 		IsAutoCreateM3u8: core.Config.General.IsAutoCreateM3u8,
 		Language:         core.Config.General.Language,
@@ -41,7 +46,7 @@ func (App) GetConfig() datatype.App_Config {
 	return config
 }
 
-func (App) SetConfig(config datatype.App_Config) error {
+func (App) SetConfig(config datatype.App_SystemConfig) error {
 	core.Config.General.LogoName = config.LogoName
 	core.Config.General.IsAdminLogin = config.IsAdminLogin
 	if config.AdminPassword != "" {

@@ -24,7 +24,7 @@ func (App) GetConfig(c *gin.Context) {
 }
 
 func (App) SetConfig(c *gin.Context) {
-	var par datatype.App_Config
+	var par datatype.App_SystemConfig
 	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {
 		return
 	}

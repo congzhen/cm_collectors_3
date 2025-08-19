@@ -1,5 +1,5 @@
 import request, { type IRequest } from "@/assets/request";
-import type { I_appConfig, I_appData } from "@/dataType/app.dataType";
+import type { I_appSystemConfig, I_appData } from "@/dataType/app.dataType";
 const routerGroupUri = '';
 export const appDataServer = {
   init: async () => {
@@ -27,12 +27,12 @@ export const appDataServer = {
     });
   },
   getAppConfig: async () => {
-    return await request<I_appConfig>({
+    return await request<I_appSystemConfig>({
       url: `${routerGroupUri}/app/getConfig`,
       method: 'get',
     });
   },
-  setAppConfig: async (config: I_appConfig) => {
+  setAppConfig: async (config: I_appSystemConfig) => {
     return await request<boolean>({
       url: `${routerGroupUri}/app/setConfig`,
       method: 'put',

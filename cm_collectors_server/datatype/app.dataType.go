@@ -17,8 +17,12 @@ const (
 )
 
 type App_Config struct {
-	LogoName         string   `json:"logoName"`
-	IsAdminLogin     bool     `json:"isAdminLogin"`
+	LogoName     string `json:"logoName"`
+	IsAdminLogin bool   `json:"isAdminLogin"`
+}
+
+type App_SystemConfig struct {
+	App_Config
 	AdminPassword    string   `json:"adminPassword"`
 	IsAutoCreateM3u8 bool     `json:"isAutoCreateM3u8"`
 	Language         string   `json:"language"`

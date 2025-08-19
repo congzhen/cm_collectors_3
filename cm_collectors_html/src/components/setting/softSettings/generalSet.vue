@@ -36,11 +36,11 @@
 import selectPlayVideoFormats from '@/components/com/form/selectPlayVideoFormats.vue';
 import selectPlayAudioFormats from '@/components/com/form/selectPlayAudioFormats.vue';
 import { ref, onMounted } from 'vue'
-import type { I_appConfig } from '@/dataType/app.dataType';
+import type { I_appSystemConfig } from '@/dataType/app.dataType';
 import { appDataServer } from '@/server/app.server';
 import { ElMessage } from 'element-plus';
 import { debounceNow } from '@/assets/debounce';
-const formData = ref<I_appConfig>({
+const formData = ref<I_appSystemConfig>({
   logoName: 'CM File Collectors',
   isAdminLogin: false,
   adminPassword: '',

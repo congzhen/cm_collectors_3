@@ -75,7 +75,7 @@ export interface I_tagData {
 
 
 export interface I_appData {
-  logoName: string;
+  appConfig: I_appConfig;
   filesBases: I_filesBases[];
   performerBases: I_performerBases[];
 }
@@ -84,6 +84,10 @@ export interface I_appData {
 export interface I_appConfig {
   logoName: string;
   isAdminLogin: boolean;
+
+}
+
+export interface I_appSystemConfig extends I_appConfig {
   adminPassword: string;
   isAutoCreateM3u8: boolean;
   language: string;

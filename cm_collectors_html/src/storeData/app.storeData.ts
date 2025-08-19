@@ -10,12 +10,13 @@ import { appDataServer } from "@/server/app.server";
 
 import { filesBasesStoreData } from '@/storeData/filesBases.storeData'
 import { performerBasesStoreData } from '@/storeData/performerBases.storeData';
+import type { I_appConfig } from "@/dataType/app.dataType";
 
 
 export const appStoreData = defineStore('app', {
   state: () => ({
     adminResourceStatus: false,
-    logoName: "",
+    appConfig: {} as I_appConfig,
     currentFilesBases: {} as I_filesBases,
     currentMainPerformerBasesId: "",
     currentPerformerBasesIds: [] as string[],
@@ -28,7 +29,7 @@ export const appStoreData = defineStore('app', {
   }),
   getters: {
     getLogoName(state): string {
-      return state.logoName == '' ? 'CM File Collectors' : state.logoName;
+      return !state.appConfig || !state.appConfig.logoName || state.appConfig.logoName == '' ? 'CM File Collectors' : state.appConfig.logoName;
     },
     detailsViewStatus(state): boolean {
       return state.adminResourceStatus ? false : true;
@@ -57,7 +58,7 @@ export const appStoreData = defineStore('app', {
           message: appResult.msg
         };
       }
-      this.logoName = appResult.data.logoName;
+      this.appConfig = appResult.data.appConfig;
       filesBasesStoreData().init(appResult.data.filesBases)
       performerBasesStoreData().init(appResult.data.performerBases)
       return {
