@@ -23,6 +23,7 @@ func (ServerFileManagement) DefaultPathEntrySlc() []serverfilemanagement.ServerF
 		for c := 'C'; c <= 'Z'; c++ {
 			path := string(c) + `:\`
 			if _, err := os.Stat(path); err == nil {
+				path = filepath.ToSlash(path)
 				pathEntrySlc = append(pathEntrySlc, serverfilemanagement.ServerFileManagement_PathEntry{
 					RealPath:    path,
 					VirtualPath: path,
@@ -36,9 +37,10 @@ func (ServerFileManagement) DefaultPathEntrySlc() []serverfilemanagement.ServerF
 			return pathEntrySlc
 		}
 		for _, f := range files {
+			path := filepath.ToSlash(f.Name())
 			pathEntrySlc = append(pathEntrySlc, serverfilemanagement.ServerFileManagement_PathEntry{
-				RealPath:    f.Name(),
-				VirtualPath: f.Name(),
+				RealPath:    path,
+				VirtualPath: path,
 			})
 		}
 	}

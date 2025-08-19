@@ -38,3 +38,5 @@ cm_collectors_server/gin.log
 
 
 cm_collectors_server/ffmpeg/*
+cm_collectors_server/*.exe*
+

@@ -11,6 +11,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -70,11 +71,12 @@ func (s *ServerFileManagement) convertCleanRootToVirtualPath(cleanRoot string) s
 
 	// 遍历所有预处理后的根路径，找到匹配的 cleanRoot
 	for _, root := range s.RootPath {
+		// 确保 cleanRoot 以 root.cleanRoot 开头
 		compareRoot := filepath.ToSlash(root.cleanRoot)
 		if strings.HasPrefix(cleanRoot, compareRoot) {
 			// 移除 cleanRoot 的公共前缀，得到 VirtualPath
 			virtualPath := strings.TrimPrefix(cleanRoot, compareRoot)
-			return path.Join(root.VirtualPath, virtualPath)
+			return filepath.ToSlash(path.Join(root.VirtualPath, virtualPath))
 		}
 	}
 	return cleanRoot
@@ -99,6 +101,21 @@ func (s *ServerFileManagement) convertVirtualPathToCleanRoot(virtualPath string)
 	return virtualPath
 }
 
+func (s ServerFileManagement) IsAbs(path string) error {
+	if s.isWindowsDriveRoot(path) {
+		path += "/"
+	}
+	if !filepath.IsAbs(path) {
+		return Err_ServerFileManagement_NotAbsolutePath
+	}
+	return nil
+}
+func (s ServerFileManagement) isWindowsDriveRoot(path string) bool {
+	// 匹配单个驱动器字母后跟冒号的模式
+	matched, _ := regexp.MatchString(`^[a-zA-Z]:$`, path)
+	return matched
+}
+
 // GetValidatePath 验证绝对路径合法性
 func (s ServerFileManagement) GetValidatePath(_path string) (string, error) {
 	if len(s.RootPath) == 0 {
@@ -111,8 +128,9 @@ func (s ServerFileManagement) GetValidatePath(_path string) (string, error) {
 	}
 	_path = s.convertVirtualPathToCleanRoot(_path)
 	// 绝对路径检查
-	if !filepath.IsAbs(_path) {
-		return "", Err_ServerFileManagement_NotAbsolutePath
+	err := s.IsAbs(_path)
+	if err != nil {
+		return "", err
 	}
 
 	// 转换为绝对路径

@@ -66,6 +66,8 @@ func GetFilesByExtensions(dirPaths []string, extensions []string, recursive bool
 				fileExt := strings.ToLower(filepath.Ext(path))
 				for _, ext := range normalizedExtensions {
 					if fileExt == strings.ToLower(ext) {
+						// 将路径转换为标准路径
+						path = filepath.ToSlash(path)
 						result = append(result, path)
 						break
 					}
@@ -89,7 +91,9 @@ func GetFilesByExtensions(dirPaths []string, extensions []string, recursive bool
 					fileExt := strings.ToLower(filepath.Ext(entry.Name()))
 					for _, ext := range normalizedExtensions {
 						if fileExt == strings.ToLower(ext) {
-							result = append(result, filepath.Join(dirPath, entry.Name()))
+							// 将路径转换为标准路径
+							path := filepath.ToSlash(filepath.Join(dirPath, entry.Name()))
+							result = append(result, path)
 							break
 						}
 					}
