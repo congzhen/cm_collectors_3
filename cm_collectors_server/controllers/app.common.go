@@ -226,7 +226,7 @@ func ResError(c *gin.Context, err error) error {
 		}
 		// 记录错误日志，包括文件名和行号
 		logrus.Errorf("Error:%v; Api:%s; at %s:%d", err, c.Request.URL.String(), file, line)
-		response.FailWithCode(8, c)
+		response.FailWithMessage(err.Error(), c)
 	}
 	return err
 }

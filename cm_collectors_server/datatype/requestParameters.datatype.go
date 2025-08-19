@@ -6,6 +6,10 @@ type ParPaging struct {
 	FetchCount bool `json:"fetchCount"`
 }
 
+type ReqParam_AdminLogin struct {
+	Password string `json:"password" binding:"required"`
+}
+
 // 请求参数 - 获取资源列表
 type ReqParam_ResourcesList struct {
 	ParPaging

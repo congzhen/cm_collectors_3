@@ -29,3 +29,13 @@ type App_SystemConfig struct {
 	PlayVideoFormats []string `json:"playVideoFormats"`
 	PlayAudioFormats []string `json:"playAudioFormats"`
 }
+
+// 用户类型
+type UserType string
+
+const (
+	// 普通用户
+	ENUM_UserType_Normal UserType = "normal"
+	// 管理员用户
+	ENUM_UserType_Admin UserType = "admin"
+)

@@ -29,6 +29,9 @@ func handleNoRoute(c *gin.Context) {
 
 func publicRouter(router *gin.Engine) {
 	routerGroup := router.Group("/api")
+
+	routerGroup.POST("/login/admin", controllers.Login{}.Admin)
+
 	routerGroup.GET("/app/data", controllers.App{}.Data)
 	routerGroup.GET("/tag/data/:filesBasesId", controllers.Tag{}.TagData)
 	routerGroup.GET("/tag/list/filesBasesId/:filesBasesId", controllers.Tag{}.TagList_FilesBasesId)

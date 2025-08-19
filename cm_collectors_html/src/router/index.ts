@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import AdminLoginView from '@/views/AdminLoginView.vue'
 import IndexView from '../views/IndexView.vue'
 import PerformerView from '@/views/performerView.vue'
 import SettingView from '@/views/SettingView.vue'
@@ -10,6 +11,11 @@ import playAtlas from '@/views/play/playAtlas.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
+    {
+      path: '/adminLogin',
+      name: 'adminLogin',
+      component: AdminLoginView,
+    },
     {
       path: '/',
       name: 'index',

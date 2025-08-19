@@ -31,7 +31,6 @@ func SaveConfig() error {
 	if err != nil {
 		return fmt.Errorf("序列化配置失败: %v", err)
 	}
-	fmt.Println(string(data))
 	err = os.WriteFile(configFile, data, 0644)
 	if err != nil {
 		return fmt.Errorf("写入配置文件失败: %v", err)
