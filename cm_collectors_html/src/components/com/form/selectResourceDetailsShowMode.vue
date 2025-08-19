@@ -1,5 +1,5 @@
 <template>
-  <el-select v-model="selectVal" clearable :style="{ width: props.width }" placeholder="'详情显示模式" @change="changeHandle"
+  <el-select v-model="selectVal" clearable :style="{ width: props.width }" placeholder="详情显示模式" @change="changeHandle"
     @clear="handleClear" :multiple="props.multiple">
     <el-option v-for="item, index in dataset.resourceDetailsShowMode" :key="index"
       :label="$t(`resourceDetailsShowMode.${item}`)" :value="item"></el-option>

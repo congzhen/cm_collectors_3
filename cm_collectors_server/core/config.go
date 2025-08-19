@@ -23,3 +23,25 @@ func initConf() *config.Config {
 	log.Println("config yamlFile load Init success.")
 	return c
 }
+
+// SaveConfig 将当前配置保存到YAML文件
+func SaveConfig() error {
+	const configFile = "server_config.yaml"
+	data, err := yaml.Marshal(Config)
+	if err != nil {
+		return fmt.Errorf("序列化配置失败: %v", err)
+	}
+	fmt.Println(string(data))
+	err = os.WriteFile(configFile, data, 0644)
+	if err != nil {
+		return fmt.Errorf("写入配置文件失败: %v", err)
+	}
+
+	log.Println("配置文件保存成功")
+	return nil
+}
+
+// GetConfig 获取全局配置实例
+func GetConfig() *config.Config {
+	return Config
+}

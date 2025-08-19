@@ -1,8 +1,13 @@
 package processors
 
-import "cm_collectors_server/models"
+import (
+	"cm_collectors_server/core"
+	"cm_collectors_server/datatype"
+	"cm_collectors_server/models"
+)
 
 type App struct {
+	LogoName       string                   `json:"logoName"`
 	FilesBases     *[]models.FilesBases     `json:"filesBases"`
 	PerformerBases *[]models.PerformerBases `json:"performerBases"`
 }
@@ -17,7 +22,34 @@ func (App) InitData() (*App, error) {
 		return nil, err
 	}
 	return &App{
+		LogoName:       core.Config.General.LogoName,
 		FilesBases:     filesBases,
 		PerformerBases: performerBases,
 	}, nil
+}
+
+func (App) GetConfig() datatype.App_Config {
+	config := datatype.App_Config{
+		LogoName:         core.Config.General.LogoName,
+		IsAdminLogin:     core.Config.General.IsAdminLogin,
+		AdminPassword:    "",
+		IsAutoCreateM3u8: core.Config.General.IsAutoCreateM3u8,
+		Language:         core.Config.General.Language,
+		PlayVideoFormats: core.Config.Play.PlayVideoFormats,
+		PlayAudioFormats: core.Config.Play.PlayAudioFormats,
+	}
+	return config
+}
+
+func (App) SetConfig(config datatype.App_Config) error {
+	core.Config.General.LogoName = config.LogoName
+	core.Config.General.IsAdminLogin = config.IsAdminLogin
+	if config.AdminPassword != "" {
+		core.Config.General.AdminPassword = config.AdminPassword
+	}
+	core.Config.General.IsAutoCreateM3u8 = config.IsAutoCreateM3u8
+	core.Config.General.Language = config.Language
+	core.Config.Play.PlayVideoFormats = config.PlayVideoFormats
+	core.Config.Play.PlayAudioFormats = config.PlayAudioFormats
+	return core.SaveConfig()
 }

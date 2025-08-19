@@ -1,5 +1,5 @@
 import request, { type IRequest } from "@/assets/request";
-import type { I_appData } from "@/dataType/app.dataType";
+import type { I_appConfig, I_appData } from "@/dataType/app.dataType";
 const routerGroupUri = '';
 export const appDataServer = {
   init: async () => {
@@ -24,6 +24,19 @@ export const appDataServer = {
     return await request<boolean>({
       url: `${routerGroupUri}/play/open/resource/folder/${resourceId}`,
       method: 'get',
+    });
+  },
+  getAppConfig: async () => {
+    return await request<I_appConfig>({
+      url: `${routerGroupUri}/app/getConfig`,
+      method: 'get',
+    });
+  },
+  setAppConfig: async (config: I_appConfig) => {
+    return await request<boolean>({
+      url: `${routerGroupUri}/app/setConfig`,
+      method: 'put',
+      data: config,
     });
   },
 }

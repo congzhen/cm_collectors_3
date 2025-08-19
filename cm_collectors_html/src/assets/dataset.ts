@@ -21,4 +21,6 @@ export default {
   resourceDetailsShowMode: ['right', 'popup', 'none'],
   videoSuffixName: ['.mp4', '.avi', '.rmvb', '.wmv', '.mov', '.mkv', '.flv', '.ts', '.webm', '.iso', '.mpg', '.m4v'],
   imageSuffixName: ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg'],
+  playVideoFormats: ['h264', 'vp8', 'vp9', 'av1', 'hevc'],
+  playAudioFormats: ['aac', 'opus', 'mp3', 'vorbis', 'pcm_s16le', 'pcm_s24le'],
 }

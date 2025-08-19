@@ -58,6 +58,9 @@ func publicRouter(router *gin.Engine) {
 
 func AdminRouter(router *gin.Engine) {
 	routerGroup := router.Group("/api")
+	routerGroup.GET("/app/getConfig", controllers.App{}.GetConfig)
+	routerGroup.PUT("/app/setConfig", controllers.App{}.SetConfig)
+
 	routerGroup.POST("resource/create", controllers.Resource{}.CreateResource)
 	routerGroup.PUT("resource/update", controllers.Resource{}.UpdateResource)
 	routerGroup.DELETE("resource/delete/:resourceId", controllers.Resource{}.DeleteResource)

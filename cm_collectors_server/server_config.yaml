@@ -1,59 +1,65 @@
+general:
+    logoName: CM File Collectors
+    isAdminLogin: true
+    adminPassword:
+    isAutoCreateM3u8: true
+    language: zhCn
 sqlite3:
-  path: ./db/cm_collectors.db
-  loggerLevel: info
-mysql:
-  host: 127.0.0.1
-  port: 3306
-  db: cm_collectors
-  user: root
-  password: 123456
-  config: charset=utf8mb4&parseTime=True&loc=Local
-  maxIdleConns: 3
-  maxOpenConns: 20
-  loggerLevel: info
+    path: ./db/cm_collectors.db
+    loggerLevel: info
 system:
-  serverHost: 127.0.0.1
-  port: 8081
-  database: sqlite3
-  filePath: ./db/ # 文件存储路径
-  Env: debug
-  responseMsgLanguage: en
-  logFilePath: ./err.log
-  logLevel: Error
+    serverHost: 127.0.0.1
+    port: 8081
+    database: sqlite3
+    filePath: ./db/
+    Env: debug
+    responseMsgLanguage: en
+    logFilePath: ./err.log
+    logLevel: Error
 play:
-  playVideoFormats: # 视频格式列表
-    - h264
-    - vp8
-    - vp9
-    - av1
-    - hevc
-  playAudioFormats: # 音频格式列表
-    - aac
-    - opus
-    - mp3
-    - vorbis
-    - pcm_s16le
-    - pcm_s24le
-cache:
-  mode: freeCache # ['redis','freeCache']
-  redis:
-    host: 127.0.0.1
-    port: 6379
-    password: xxxx
-    db: 0
-    defaultExpireSec: 3600 # 秒(默认过期时间)
-    minIdleConns: 5 # 最小空闲连接
-    poolSize: 20 # 连接池大小
-    connMaxIdleTime: 240 # 秒(最大空闲时间)
-  freeCache:
-    maxMemoryMB: 100 #内存限制MB
-    defaultExpireSec: 3600 # 秒(默认过期时间)
+    playVideoFormats:
+        - h264
+        - vp8
+        - vp9
+        - av1
+        - hevc
+    playAudioFormats:
+        - aac
+        - opus
+        - mp3
+        - vorbis
+        - pcm_s16le
+        - pcm_s24le
 jwt:
-  expiresAt: 86400
-  issuer: goBase
-  audience: goBase
-  subject: somebody
-  privateKeyPath: ./cert/jwtPrivate.key
-  publicKeyPath: ./cert/jwtPublic.key
+    expiresAt: 86400
+    issuer: goBase
+    audience: goBase
+    subject: somebody
+    privateKeyPath: ./cert/jwtPrivate.key
+    publicKeyPath: ./cert/jwtPublic.key
+mysql:
+    host: 127.0.0.1
+    port: 3306
+    db: cm_collectors
+    user: root
+    password: "123456"
+    config: charset=utf8mb4&parseTime=True&loc=Local
+    maxIdleConns: 3
+    maxOpenConns: 20
+    loggerLevel: info
+cache:
+    mode: freeCache
+    redis:
+        host: 127.0.0.1
+        port: 6379
+        password: xxxx
+        db: 0
+        defaultExpireSec: 3600
+        minIdleConns: 5
+        poolSize: 20
+        connMaxIdleTime: 240
+    freeCache:
+        maxMemoryMB: 100
+        defaultExpireSec: 3600
 serverFileManagement:
-  rootPath:
+    rootPath: []

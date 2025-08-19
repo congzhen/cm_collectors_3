@@ -2,7 +2,7 @@
   <div class="header-container">
     <div class="title">
       <img src="/public/icon32.png" />
-      <label>{{ props.title }}</label>
+      <label>{{ store.appStoreData.getLogoName }}</label>
     </div>
     <div class="right" v-if="props.mode === E_headerMode.Index">
       <div class="search">
@@ -111,10 +111,6 @@ const resourceFormDrawerRef = ref<InstanceType<typeof resourceFormDrawer>>()
 const importResourceDrawerRef = ref<InstanceType<typeof importResourceDrawer>>()
 
 const props = defineProps({
-  title: {
-    type: String,
-    default: 'CM File Collectors',
-  },
   mode: {
     type: String as PropType<E_headerMode>,
     default: E_headerMode.Index,

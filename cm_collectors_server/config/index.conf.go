@@ -1,6 +1,7 @@
 package config
 
 type Config struct {
+	General              General              `yaml:"general"`
 	Sqlite3              Sqlite3              `yaml:"sqlite3"`
 	System               System               `yaml:"system"`
 	Play                 Play                 `yaml:"play"`

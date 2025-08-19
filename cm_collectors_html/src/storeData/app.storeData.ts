@@ -15,7 +15,7 @@ import { performerBasesStoreData } from '@/storeData/performerBases.storeData';
 export const appStoreData = defineStore('app', {
   state: () => ({
     adminResourceStatus: false,
-
+    logoName: "",
     currentFilesBases: {} as I_filesBases,
     currentMainPerformerBasesId: "",
     currentPerformerBasesIds: [] as string[],
@@ -27,6 +27,9 @@ export const appStoreData = defineStore('app', {
     currentTopPreferredPerformers: [] as I_performer[],
   }),
   getters: {
+    getLogoName(state): string {
+      return state.logoName == '' ? 'CM File Collectors' : state.logoName;
+    },
     detailsViewStatus(state): boolean {
       return state.adminResourceStatus ? false : true;
     },
@@ -54,6 +57,7 @@ export const appStoreData = defineStore('app', {
           message: appResult.msg
         };
       }
+      this.logoName = appResult.data.logoName;
       filesBasesStoreData().init(appResult.data.filesBases)
       performerBasesStoreData().init(appResult.data.performerBases)
       return {
