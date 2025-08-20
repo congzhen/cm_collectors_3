@@ -1,3 +1,4 @@
+import router from '@/router';
 import axios, { type AxiosRequestConfig } from 'axios'
 
 
@@ -31,7 +32,7 @@ axios.interceptors.response.use(
   error => Promise.reject(error)
 );
 
-// eslint-disable-next-line @typescript-eslint/no-empty-function
+// eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
 function showCustomAlert(str: string, callBack = () => { }, residenceTime = 3000) {
   const alertContainer = document.createElement('div');
   alertContainer.style.display = 'block';
@@ -74,7 +75,7 @@ const _request = <T>(obj: IRequest): Promise<IResponse<T>> => {
     if (res.status >= 200 && res.status < 300) {
       return res.data as IResponse<T>;
     }
-    showCustomAlert('Request Error. ' + res.statusText);
+    //showCustomAlert('Request Error. ' + res.statusText);
     console.error(res.statusText);
     return {
       status: false,
@@ -83,7 +84,11 @@ const _request = <T>(obj: IRequest): Promise<IResponse<T>> => {
       data: undefined as T
     };
   }).catch(error => {
-    showCustomAlert('Request Error. ' + error.message);
+    if (error.status == 401) {
+      router.push('/adminLogin');
+    } else {
+      //showCustomAlert('Request Error. ' + error.message);
+    }
     console.error(error.message);
     return {
       status: false,
@@ -101,7 +106,7 @@ export default async <T>(obj: IRequest, contentType: null | 'application/x-www-f
         'Content-Type': contentType
       }
     }
-    return await _request(obj);
+    return await _request<T>(obj);
   } catch (errorIResponse) {
     return errorIResponse as IResponse<T>;
   }

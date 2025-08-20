@@ -2,6 +2,7 @@ package routers
 
 import (
 	"cm_collectors_server/controllers"
+	"cm_collectors_server/middleware"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -60,7 +61,7 @@ func publicRouter(router *gin.Engine) {
 }
 
 func AdminRouter(router *gin.Engine) {
-	routerGroup := router.Group("/api")
+	routerGroup := router.Group("/api", middleware.AdminLoginApiMiddleware())
 	routerGroup.GET("/app/getConfig", controllers.App{}.GetConfig)
 	routerGroup.PUT("/app/setConfig", controllers.App{}.SetConfig)
 
