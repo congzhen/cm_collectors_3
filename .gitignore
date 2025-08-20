@@ -36,7 +36,9 @@ cm_collectors_server/db/
 cm_collectors_server/err.log
 cm_collectors_server/gin.log
 
-
+cm_collectors_server/html/*
 cm_collectors_server/ffmpeg/*
 cm_collectors_server/*.exe*
+
+/build/*
 
