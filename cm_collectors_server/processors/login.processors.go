@@ -4,6 +4,7 @@ import (
 	"cm_collectors_server/core"
 	"cm_collectors_server/datatype"
 	"cm_collectors_server/utils"
+	"errors"
 	"fmt"
 )
 
@@ -28,4 +29,19 @@ func (Login) generateLoginJWT(userId string, userType datatype.UserType) (string
 		Subject:    core.Config.Jwt.Subject,
 	}
 	return jwtToken.CreateToken(userId, userType)
+}
+
+func (Login) JWTParseToken(tokenString string) (*utils.UserTokenCustomClaims, error) {
+	if tokenString == "" {
+		return nil, errors.New("tokenString is empty")
+	}
+	jwtToken := utils.JwtUserToken{
+		PrivateKey: core.Config.Jwt.GetPrivateKey(),
+		PublicKey:  core.Config.Jwt.GetPublicKey(),
+		ExpiresAt:  core.Config.Jwt.ExpiresAt,
+		Issuer:     core.Config.Jwt.Issuer,
+		Audience:   core.Config.Jwt.Audience,
+		Subject:    core.Config.Jwt.Subject,
+	}
+	return jwtToken.ParseToken(tokenString)
 }

@@ -16,6 +16,7 @@ import type { I_appConfig } from "@/dataType/app.dataType";
 export const appStoreData = defineStore('app', {
   state: () => ({
     adminResourceStatus: false,
+    adminLoginStatus: false, // 管理员是否已登录
     appConfig: {} as I_appConfig,
     currentFilesBases: {} as I_filesBases,
     currentMainPerformerBasesId: "",
@@ -31,6 +32,15 @@ export const appStoreData = defineStore('app', {
     getLogoName(state): string {
       return !state.appConfig || !state.appConfig.logoName || state.appConfig.logoName == '' ? 'CM File Collectors' : state.appConfig.logoName;
     },
+    // 是否需要管理员登录
+    isAdminLogin(state): boolean {
+      return state.appConfig && state.appConfig.isAdminLogin;
+    },
+    // 是否需要管理员登录 且  管理员以登陆
+    isAdminLoginStatus(state): boolean {
+      return this.isAdminLogin && state.adminLoginStatus
+    },
+    // 详情页是否显示
     detailsViewStatus(state): boolean {
       return state.adminResourceStatus ? false : true;
     },

@@ -8,7 +8,7 @@
 
       <el-form ref="loginFormRef" :model="loginForm" :rules="loginRules" class="login-form"
         @submit.prevent="handleLogin">
-        <el-form-item prop="password">
+        <el-form-item>
           <el-input v-model="loginForm.password" type="password" placeholder="请输入管理员密码" show-password size="large"
             @keyup.enter="handleLogin">
             <template #prefix>
@@ -27,6 +27,10 @@
         </el-form-item>
       </el-form>
 
+      <div class="back-home">
+        <el-button link type="primary" @click="goToHome">返回首页</el-button>
+      </div>
+
       <div class="login-footer">
         <p>© {{ format(new Date, 'Y') }} CM File Collectors - 文件收集管理系统</p>
       </div>
@@ -41,7 +45,10 @@ import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { format } from '@/assets/timer'
 import { loginServer } from '@/server/login.server'
-
+import { appStoreData } from '@/storeData/app.storeData'
+const store = {
+  appStoreData: appStoreData(),
+}
 const router = useRouter()
 const loginFormRef = ref<FormInstance>()
 const loading = ref(false)
@@ -53,7 +60,6 @@ const loginForm = reactive({
 const loginRules = reactive<FormRules>({
   password: [
     { required: true, message: '请输入密码', trigger: 'blur' },
-    { min: 1, message: '请输入至少1个字符的密码', trigger: 'blur' }
   ]
 })
 
@@ -69,6 +75,7 @@ const handleLogin = async () => {
         const result = await loginServer.adminLogin(loginForm.password)
 
         if (result.status) {
+          store.appStoreData.adminLoginStatus = true;
           ElMessage.success('登录成功')
           // 登录成功后跳转到主页
           router.push('/')
@@ -83,6 +90,10 @@ const handleLogin = async () => {
       }
     }
   })
+}
+
+const goToHome = () => {
+  router.push('/')
 }
 </script>
 
@@ -138,7 +149,7 @@ const handleLogin = async () => {
 }
 
 .login-form {
-  margin-bottom: 30px;
+  margin-bottom: 50px;
 }
 
 :deep(.el-input__wrapper) {
@@ -179,6 +190,11 @@ const handleLogin = async () => {
   opacity: 0.9;
   transform: translateY(-2px);
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.back-home {
+  text-align: center;
+  margin-bottom: 5px;
 }
 
 .login-footer p {

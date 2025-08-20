@@ -2,8 +2,8 @@ package middleware
 
 import (
 	"cm_collectors_server/core"
+	"cm_collectors_server/processors"
 	"cm_collectors_server/response"
-	"cm_collectors_server/utils"
 
 	"github.com/gin-gonic/gin"
 )
@@ -14,14 +14,19 @@ func AdminLoginApiMiddleware() gin.HandlerFunc {
 			c.Next()
 			return
 		}
-		tokenString, err := c.Cookie("token")
-		var token *utils.UserTokenCustomClaims
-		if err != nil || tokenString == "" {
+		adminTokenString, err := c.Cookie("adminToken")
+		if err != nil || adminTokenString == "" {
 			response.FailPermissions(c)
 			c.Abort()
 			return
 		}
-		c.Set("token", token)
+		adminToken, err := processors.Login{}.JWTParseToken(adminTokenString)
+		if err != nil {
+			response.FailPermissions(c)
+			c.Abort()
+			return
+		}
+		c.Set("adminToken", adminToken)
 		c.Next()
 	}
 

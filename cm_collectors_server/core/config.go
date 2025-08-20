@@ -9,8 +9,9 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+const configFile = "config.yaml"
+
 func initConf() *config.Config {
-	const configFile = "server_config.yaml"
 	c := &config.Config{}
 	yamlConf, err := os.ReadFile(configFile)
 	if err != nil {
@@ -26,7 +27,6 @@ func initConf() *config.Config {
 
 // SaveConfig 将当前配置保存到YAML文件
 func SaveConfig() error {
-	const configFile = "server_config.yaml"
 	data, err := yaml.Marshal(Config)
 	if err != nil {
 		return fmt.Errorf("序列化配置失败: %v", err)

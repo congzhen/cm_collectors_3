@@ -11,8 +11,8 @@ import (
 type Login struct {
 }
 
-func (Login) setCookie(c *gin.Context, token string) {
-	c.SetCookie("token", token, 0, "/", "", false, true)
+func (Login) setCookie(c *gin.Context, cookieName, token string) {
+	c.SetCookie(cookieName, token, 0, "/", "", false, true)
 }
 func (t Login) Admin(c *gin.Context) {
 	var par datatype.ReqParam_AdminLogin
@@ -23,6 +23,6 @@ func (t Login) Admin(c *gin.Context) {
 	if err := ResError(c, err); err != nil {
 		return
 	}
-	t.setCookie(c, token)
+	t.setCookie(c, "adminToken", token)
 	response.OkWithData(true, c)
 }

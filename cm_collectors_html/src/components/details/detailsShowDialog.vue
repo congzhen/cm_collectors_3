@@ -82,6 +82,12 @@ defineExpose({ open });
     .tool {
       margin-top: 10px;
       flex-shrink: 0;
+      display: flex;
+      justify-content: center;
+
+      .tool {
+        width: 50%;
+      }
 
       :deep(.el-button) {
         width: auto;

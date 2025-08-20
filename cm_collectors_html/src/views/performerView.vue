@@ -10,10 +10,7 @@
 import HeaderView from './HeaderView.vue'
 import performerDataList from '@/components/performer/performerDataList.vue'
 import { E_headerMode } from '@/dataType/app.dataType'
-import { appStoreData } from '@/storeData/app.storeData';
-const store = {
-  appStoreData: appStoreData(),
-}
+
 const props = defineProps({
   mainPerformerBasesId: {
     type: String,

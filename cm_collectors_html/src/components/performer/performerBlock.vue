@@ -14,12 +14,12 @@
           <VideoCameraFilled />
         </el-icon>
       </div>
-      <div class="performer-block-tool-btn displayNone" v-if="props.admin" @click.stop="emits('edit')">
+      <div class="performer-block-tool-btn displayNone" v-admin @click.stop="emits('edit')">
         <el-icon>
           <Edit />
         </el-icon>
       </div>
-      <div class="performer-block-tool-btn displayNone" v-if="props.admin" @click.stop="emits('delete')">
+      <div class="performer-block-tool-btn displayNone" v-admin @click.stop="emits('delete')">
         <el-icon>
           <Delete />
         </el-icon>
@@ -46,10 +46,6 @@ const props = defineProps({
     default: false,
   },
   tool: {
-    type: Boolean,
-    default: false,
-  },
-  admin: {
     type: Boolean,
     default: false,
   },

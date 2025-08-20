@@ -9,7 +9,7 @@
         <searchInputTagByStore />
       </div>
       <div class="setting">
-        <div class="menu-item" @click="oepnResourceForm">
+        <div class="menu-item" v-admin @click="oepnResourceForm">
           <el-tooltip content="添加" placement="bottom">
             <el-icon>
               <Plus />
@@ -19,7 +19,7 @@
            <label class="menu-item-title">添加</label>
           -->
         </div>
-        <div class="menu-item" @click="switchAdminStatus">
+        <div class="menu-item" v-admin @click="switchAdminStatus">
           <el-tooltip :content="!store.appStoreData.adminResourceStatus ? '管理关闭' : '管理开启'" placement="bottom">
             <el-icon v-if="!store.appStoreData.adminResourceStatus">
               <TurnOff />
@@ -32,7 +32,7 @@
           <label class="menu-item-title">管理</label>
            -->
         </div>
-        <div class="menu-item" @click="openTagList">
+        <div class="menu-item" v-admin @click="openTagList">
           <el-tooltip content="标签" placement="bottom">
             <el-icon>
               <PriceTag />
@@ -52,7 +52,7 @@
           <label class="menu-item-title">{{ appLang.performer() }}</label>
            -->
         </div>
-        <div class="menu-item" @click="openImportResource">
+        <div class="menu-item" v-admin @click="openImportResource">
           <el-tooltip content="导入" placement="bottom">
             <el-icon>
               <Magnet />
@@ -62,7 +62,7 @@
           <label class="menu-item-title">导入</label>
            -->
         </div>
-        <div class="menu-item" @click="goToSetting">
+        <div class="menu-item" v-admin @click="goToSetting">
           <el-tooltip content="设置" placement="bottom">
             <el-icon>
               <Setting />
@@ -71,6 +71,9 @@
           <!--
           <label class="menu-item-title">设置</label>
            -->
+        </div>
+        <div class="menu-item" v-if="store.appStoreData.isAdminLogin && !store.appStoreData.isAdminLoginStatus">
+          <el-link type="primary" href="/adminLogin">登录</el-link>
         </div>
       </div>
     </div>
@@ -213,6 +216,10 @@ const createResouceSuccessHandle = (data: I_resource) => {
           transition: width 0.3s ease, opacity 0.1s ease;
           white-space: nowrap;
           overflow: hidden;
+        }
+
+        .el-link {
+          padding: 2px 5px;
         }
       }
 

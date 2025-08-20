@@ -1,7 +1,7 @@
 <template>
   <div class="performer-search">
-    <el-button icon="DocumentAdd" v-if="props.admin" @click="emits('add')">新增</el-button>
-    <el-button icon="Delete" v-if="props.admin" @click="emits('recycleBin')">回收站</el-button>
+    <el-button icon="DocumentAdd" v-admin v-if="props.admin" @click="emits('add')">新增</el-button>
+    <el-button icon="Delete" v-admin v-if="props.admin" @click="emits('recycleBin')">回收站</el-button>
     <inputSearch width="280px" placeholder="请输入姓名、别名、首字母" @change="changeSearchHandle" />
     <selectStar width="200px" @change="changeStarHandle" />
     <selectCup v-if="store.appStoreData.currentConfigApp.plugInUnit_Cup" :search-mode="true" width="200px"

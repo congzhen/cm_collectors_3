@@ -13,6 +13,9 @@ import i18n from '@/language/app.i118n'
 import App from './App.vue'
 import router from './router'
 
+// 导入自定义指令
+import directives from './directives'
+
 // 创建全局事件总线
 import mitt from 'mitt'
 export const eventBus = mitt()
@@ -24,5 +27,5 @@ app.use(router)
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
   app.component(key, component)
 }
-app.use(ElementPlus).use(i18n)
+app.use(ElementPlus).use(i18n).use(directives)
 app.mount('#app')

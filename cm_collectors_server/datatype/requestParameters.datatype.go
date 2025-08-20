@@ -7,7 +7,7 @@ type ParPaging struct {
 }
 
 type ReqParam_AdminLogin struct {
-	Password string `json:"password" binding:"required"`
+	Password string `json:"password" `
 }
 
 // 请求参数 - 获取资源列表

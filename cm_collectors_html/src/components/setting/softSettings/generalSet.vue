@@ -10,7 +10,9 @@
       </el-form-item>
       <el-form-item label="管理密码">
         <el-input type="password" v-model="formData.adminPassword" show-password />
-        <el-text class="warning-text" type="warning" size="small">留空表示不修改密码</el-text>
+        <el-text class="warning-text" type="warning" size="small">
+          留空表示不修改密码。如果对外开放访问，请务必设置强密码。忘记密码可在服务器配置文件config.yaml中查看
+        </el-text>
       </el-form-item>
       <el-form-item label="自动创建视频m3u8文件">
         <el-switch v-model="formData.isAutoCreateM3u8" />
@@ -100,5 +102,6 @@ onMounted(async () => {
 <style lang="scss" scoped>
 .warning-text {
   line-height: 1.1rem;
+  padding-top: 5px;
 }
 </style>

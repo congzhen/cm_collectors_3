@@ -1,6 +1,6 @@
 general:
     logoName: CM File Collectors
-    isAdminLogin: true
+    isAdminLogin: false
     adminPassword: "123456"
     isAutoCreateM3u8: true
     language: zhCn
