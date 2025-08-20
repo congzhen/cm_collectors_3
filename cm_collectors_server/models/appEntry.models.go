@@ -1,7 +1,10 @@
 package models
 
 import (
+	"cm_collectors_server/core"
+	"cm_collectors_server/datatype"
 	"cm_collectors_server/utils"
+	"errors"
 
 	"github.com/go-gormigrate/gormigrate/v2"
 	"gorm.io/gorm"
@@ -58,13 +61,82 @@ func RegJoinTable(db *gorm.DB) {
 func AutoDatabase(db *gorm.DB) error {
 	m := gormigrate.New(db, gormigrate.DefaultOptions, []*gormigrate.Migration{
 		{
-			ID: "20250620-001-initApp",
+			ID: "initApp",
 			Migrate: func(tx *gorm.DB) error {
 				return autoMigrate(tx)
 			},
 		},
 		{
-			ID: "20250625-002-update_performer_keywords",
+			ID: "initData",
+			Migrate: func(tx *gorm.DB) error {
+				//获取文件集
+				filesBasesDataList, err := FilesBases{}.DataList(tx)
+				if err != nil {
+					return err
+				}
+				var firstFilesBasesId string
+				createdAt := datatype.CustomTime(core.TimeNow())
+				// 文件集不存在 创建一个文件集
+				if len(*filesBasesDataList) > 0 {
+					firstFilesBasesId = (*filesBasesDataList)[0].ID
+				} else {
+					// 创建默认文件集
+					firstFilesBasesId = core.GenerateUniqueID()
+					err := FilesBases{}.Create(tx, &FilesBases{ID: firstFilesBasesId, Name: "Default", Sort: 0, CreatedAt: &createdAt, Status: true})
+					if err != nil {
+						return err
+					}
+				}
+				// 获取文件集设置
+				_, err = FilesBasesSetting{}.InfoByFilesBasesID(tx, firstFilesBasesId)
+				if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+					return err
+				}
+				// 文件集设置不存在时，创建
+				if err == gorm.ErrRecordNotFound {
+					err := FilesBasesSetting{}.CreateNull(tx, firstFilesBasesId)
+					if err != nil {
+						return err
+					}
+				}
+				// 获取演员集
+				performerBasesDataList, err := PerformerBases{}.DataList(tx)
+				if err != nil {
+					return err
+				}
+				var firstPerformerBasesId string
+				// 演员集不存在时，创建
+				if len(*performerBasesDataList) > 0 {
+					firstPerformerBasesId = (*performerBasesDataList)[0].ID
+				} else {
+					// 创建默认演员集
+					firstPerformerBasesId = core.GenerateUniqueID()
+					err := PerformerBases{}.Create(tx, &PerformerBases{ID: firstPerformerBasesId, Name: "Default", Sort: 0, CreatedAt: &createdAt, Status: true})
+					if err != nil {
+						return err
+					}
+				}
+				// 获取指定文件集关联的演员集
+				filesRelatedPerformerBasesDataList, err := FilesRelatedPerformerBases{}.ListByFilesBasesID(tx, firstFilesBasesId)
+				if err != nil {
+					return err
+				}
+				// 如果没有关联的演员集
+				if len(*filesRelatedPerformerBasesDataList) == 0 {
+					// 创建关联记录
+					filesRelatedPerformerBasesRecords := []FilesRelatedPerformerBases{
+						{ID: core.GenerateUniqueID(), FilesBasesID: firstFilesBasesId, PerformerBasesID: firstPerformerBasesId, Main: true},
+					}
+					err := FilesRelatedPerformerBases{}.Creates(tx, &filesRelatedPerformerBasesRecords)
+					if err != nil {
+						return err
+					}
+				}
+				return nil
+			},
+		},
+		{
+			ID: "update_performer_keywords",
 			Migrate: func(tx *gorm.DB) error {
 				// 查询所有 performer 记录
 				var performers []Performer
@@ -88,7 +160,7 @@ func AutoDatabase(db *gorm.DB) error {
 			},
 		},
 		{
-			ID: "20250625-003-update_resources_keywords",
+			ID: "update_resources_keywords",
 			Migrate: func(tx *gorm.DB) error {
 				// 查询所有 performer 记录
 				var resources []Resources
@@ -109,7 +181,7 @@ func AutoDatabase(db *gorm.DB) error {
 			},
 		},
 		{
-			ID: "20250701-004-update_tag_keywords",
+			ID: "update_tag_keywords",
 			Migrate: func(tx *gorm.DB) error {
 				// 查询所有 performer 记录
 				var tags []Tag
@@ -130,7 +202,7 @@ func AutoDatabase(db *gorm.DB) error {
 			},
 		},
 		{
-			ID: "20250620-005-coverPosterModeConvert",
+			ID: "coverPosterModeConvert",
 			Migrate: func(tx *gorm.DB) error {
 				// 更新 resources 表中 coverPosterMode 字段，将非数字值替换为 0
 				return tx.Exec(`

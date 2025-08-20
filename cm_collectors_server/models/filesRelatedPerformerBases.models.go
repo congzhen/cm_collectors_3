@@ -13,7 +13,7 @@ func (FilesRelatedPerformerBases) TableName() string {
 	return "filesRelatedPerformerBases"
 }
 
-func (FilesRelatedPerformerBases) LisyByFilesBasesID(db *gorm.DB, filesBasesID string) (*[]FilesRelatedPerformerBases, error) {
+func (FilesRelatedPerformerBases) ListByFilesBasesID(db *gorm.DB, filesBasesID string) (*[]FilesRelatedPerformerBases, error) {
 	var dataList []FilesRelatedPerformerBases
 	err := db.Model(&FilesRelatedPerformerBases{}).Where("filesBases_id = ?", filesBasesID).Find(&dataList).Error
 	return &dataList, err

@@ -78,7 +78,7 @@ func (FilesBases) updateFilesBasesSetting(tx *gorm.DB, filesBasesID, config stri
 
 // 同步演员集关联关系
 func (t FilesBases) syncPerformerBasesRelations(tx *gorm.DB, par *datatype.ReqParam_SetFilesBases) error {
-	existingList, err := models.FilesRelatedPerformerBases{}.LisyByFilesBasesID(tx, par.ID)
+	existingList, err := models.FilesRelatedPerformerBases{}.ListByFilesBasesID(tx, par.ID)
 	if err != nil {
 		return err
 	}
