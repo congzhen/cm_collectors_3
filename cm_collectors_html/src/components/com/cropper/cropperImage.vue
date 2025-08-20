@@ -43,7 +43,7 @@
 </template>
 <script setup lang="ts">
 import 'vue-cropper/dist/index.css'
-import { VueCropper } from "vue-cropper";
+import { VueCropper } from "./vue-cropper-wrapper.ts";
 import { ref, reactive } from 'vue'
 import type { UploadFile } from 'element-plus'
 // eslint-disable-next-line no-undef
@@ -136,15 +136,16 @@ const readAsDataURL = (file: File): Promise<string> => {
 }
 
 const cl_changeScale = (num: number) => {
-  cropperRef.value.changeScale(num);
+  cropperRef.value?.changeScale(num);
 }
 const cl_rotateLeft = () => {
-  cropperRef.value.rotateLeft();
+  cropperRef.value?.rotateLeft();
 }
 const cl_rotateRight = () => {
-  cropperRef.value.rotateRight();
+  cropperRef.value?.rotateRight();
 }
 const auto_crop_match_img_size = () => {
+  if (!cropperRef.value) return;
   const { scale, cropW, cropH, trueWidth, trueHeight } = cropperRef.value;
   if (!scale || !cropW || !cropH || !trueWidth || !trueHeight) {
     throw new Error('Missing required properties in cropperRef');
@@ -171,6 +172,7 @@ const auto_crop_match_img_size = () => {
 }
 const cl_autoLeftSize = () => {
   try {
+    if (!cropperRef.value) return;
     auto_crop_match_img_size();
     const imgAxis = cropperRef.value.getImgAxis();
     cropperRef.value.cropOffsertX = imgAxis.x1;
@@ -183,6 +185,7 @@ const cl_autoLeftSize = () => {
 
 const cl_autoRightSize = () => {
   try {
+    if (!cropperRef.value) return;
     auto_crop_match_img_size();
     const imgAxis = cropperRef.value.getImgAxis();
     const cropAxis = cropperRef.value.getCropAxis();
@@ -195,11 +198,11 @@ const cl_autoRightSize = () => {
 }
 const cl_upload = () => {
   if (returnType.value == 'data') {
-    cropperRef.value.getCropData((data: string) => {
+    cropperRef.value?.getCropData((data: string) => {
       emits('sumbit', data)
     });
   } else if (returnType.value == 'blob') {
-    cropperRef.value.getCropBlob((data: string) => {
+    cropperRef.value?.getCropBlob((data: string) => {
       emits('sumbit', data)
     });
   }

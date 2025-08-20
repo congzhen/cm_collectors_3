@@ -9,7 +9,7 @@
   </el-dialog>
 </template>
 <script setup lang="ts">
-import comCropper from "./cropper.vue"
+import comCropper from "./cropperImage.vue"
 import { nextTick, ref } from 'vue'
 
 const props = defineProps({
