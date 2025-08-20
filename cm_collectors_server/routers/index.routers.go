@@ -90,7 +90,7 @@ func AdminRouter(router *gin.Engine) {
 	routerGroup.POST("importData/scanDiskImportData", controllers.ImportData{}.ScanDiskImportData)
 }
 func SFMRouter(router *gin.Engine) {
-	routerGroup := router.Group("/api")
+	routerGroup := router.Group("/api", middleware.AdminLoginApiMiddleware())
 	routerGroup.POST("sfm/pathDir", controllers.ServerFileManagement{}.PathDir)
 	routerGroup.POST("sfm/searchFiles", controllers.ServerFileManagement{}.SearchFiles)
 	routerGroup.POST("sfm/createFile", controllers.ServerFileManagement{}.CreateFile)
