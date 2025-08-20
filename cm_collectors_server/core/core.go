@@ -10,6 +10,7 @@ var (
 
 func Init() {
 	Config = initConf()
+	initJwtCert(Config.Jwt.PrivateKeyPath, Config.Jwt.PublicKeyPath)
 	initCache(Config.Cache)
 	logInit(Config.System.LogFilePath, Config.System.LogLevel)
 	initGorm()
