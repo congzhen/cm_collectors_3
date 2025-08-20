@@ -3,6 +3,8 @@ package routers
 import (
 	"cm_collectors_server/controllers"
 	"cm_collectors_server/middleware"
+	"embed"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -11,9 +13,23 @@ import (
 /*
 *初始化路由
  */
-func InitRouter(router *gin.Engine) *gin.Engine {
+func InitRouter(router *gin.Engine, htmlFS *embed.FS) *gin.Engine {
 	//设置信任ip
 	router.SetTrustedProxies([]string{"127.0.0.1", "0.0.0.0"})
+
+	embeddedFolderCreateStaticRoutes := EmbeddedFolderCreateStaticRoutes{
+		Router:     router,
+		Efs:        *htmlFS,
+		FolderName: "html",
+	}
+	if err := embeddedFolderCreateStaticRoutes.Register(); err != nil {
+		log.Fatalf("注册静态文件失败: %v", err)
+	}
+	router.GET("/", func(c *gin.Context) {
+		data, _ := htmlFS.ReadFile("html/index.html")
+		c.Data(http.StatusOK, "text/html; charset=utf-8", data)
+	})
+
 	router.Static("/api/performerFace", "./db/performerFace")
 	router.Static("/api/resCoverPoster", "./db/resCoverPoster")
 	SFMRouter(router)

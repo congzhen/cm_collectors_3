@@ -5,6 +5,7 @@ import (
 	"cm_collectors_server/models"
 	"cm_collectors_server/routers"
 	"context"
+	"embed"
 	"fmt"
 	"io"
 	"log"
@@ -16,6 +17,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 )
+
+//go:embed html
+var htmlFS embed.FS
 
 func main() {
 	//初始化核心
@@ -40,7 +44,7 @@ func main() {
 	router := gin.Default()
 
 	//初始化路由
-	router = routers.InitRouter(router)
+	router = routers.InitRouter(router, &htmlFS)
 
 	serverAddr := fmt.Sprintf("%s:%d", core.Config.System.ServerHost, core.Config.System.Port)
 
