@@ -4,16 +4,14 @@ import (
 	"cm_collectors_server/core"
 	"cm_collectors_server/models"
 	"cm_collectors_server/routers"
+	"cm_collectors_server/tray" // 新增导入
 	"context"
 	"embed"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
-	"os/exec"
 	"os/signal"
-	"runtime"
-	"strings"
 	"syscall"
 	"time"
 
@@ -54,44 +52,20 @@ func main() {
 
 // onTrayReady 系统托盘准备就绪时的回调函数
 func onTrayReady() {
-	// 设置托盘图标
-	systray.SetIcon(icon)
-	systray.SetTitle("CM Collectors")
-	systray.SetTooltip("CM Collectors Server")
-
-	// 添加菜单项
-	openWebUI := systray.AddMenuItem("打开网页界面", "在浏览器中打开管理界面")
-	systray.AddSeparator()
-	quit := systray.AddMenuItem("退出", "停止服务器并退出程序")
-
 	// 启动服务器
 	serverAddr := startServerInBackground()
 
-	// 启动协程处理菜单事件
-	go func() {
-		for {
-			select {
-			case <-openWebUI.ClickedCh:
-				// 将0.0.0.0转换为localhost并添加端口
-				displayAddr := strings.Replace(serverAddr, "0.0.0.0", "localhost", 1)
-				openBrowser(fmt.Sprintf("http://%s", displayAddr))
-			case <-quit.ClickedCh:
-				fmt.Println("正在退出...")
-				// 优雅关闭服务器
-				shutdownServer()
-				// 退出托盘
-				systray.Quit()
-				// 退出程序
-				os.Exit(0)
-				return
-			}
-		}
-	}()
+	// 创建托盘菜单
+	menu := tray.CreateTrayMenu(icon, serverAddr)
+
+	// 处理菜单事件
+	menu.HandleEvents(shutdownServer)
 }
 
 // onTrayExit 系统托盘退出时的回调函数
 func onTrayExit() {
 	fmt.Println("系统托盘退出")
+	os.Exit(0)
 }
 
 // startServerInBackground 在后台启动服务器
@@ -129,11 +103,6 @@ func serverInit(trayMode bool) {
 	// gin.DisableConsoleColor()
 	// 设置运行模式 release | debug
 	gin.SetMode(core.Config.System.Env)
-	// 日志记录到文件。
-	//logFile, _ := os.OpenFile("gin.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
-
-	// 将日志写入文件和控制台
-	//gin.DefaultWriter = io.MultiWriter(logFile, os.Stdout)
 
 	router := gin.Default()
 
@@ -173,26 +142,6 @@ func runServer(serverAddr string, router *gin.Engine, trayMode bool) {
 	if !trayMode {
 		// 优雅重启
 		gracefulShutdown(server)
-	}
-}
-
-// openBrowser 在默认浏览器中打开网页
-func openBrowser(url string) {
-	var err error
-
-	switch runtime.GOOS {
-	case "linux":
-		err = exec.Command("xdg-open", url).Start()
-	case "windows":
-		err = exec.Command("rundll32", "url.dll,FileProtocolHandler", url).Start()
-	case "darwin":
-		err = exec.Command("open", url).Start()
-	default:
-		err = fmt.Errorf("unsupported platform")
-	}
-
-	if err != nil {
-		fmt.Printf("无法打开浏览器: %v\n", err)
 	}
 }
 
