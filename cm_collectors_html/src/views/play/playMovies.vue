@@ -69,7 +69,9 @@ import { ElMessage } from 'element-plus';
 import { ref, onMounted, nextTick } from "vue";
 import { getResourceCoverPoster } from '@/common/photo';
 import { appStoreData } from '@/storeData/app.storeData';
-import { appLang } from '@/language/app.lang'
+import { AppLang } from '@/language/app.lang'
+const appLang = AppLang()
+
 const store = {
   appStoreData: appStoreData(),
 }

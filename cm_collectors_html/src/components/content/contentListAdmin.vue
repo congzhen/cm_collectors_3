@@ -53,12 +53,14 @@
 <script lang="ts" setup>
 import type { I_resource } from '@/dataType/resource.dataType';
 import resourceFormDrawer from '@/components/resource/resourceFormDrawer.vue'
-import { appLang } from '@/language/app.lang';
 import { getResourceCoverPoster } from '@/common/photo';
 import { playResource, playOpenResourceFolder } from '@/common/play'
 import { resourceDelete, resourceBatchDelete } from '@/common/resource'
 import { ref, type PropType } from 'vue';
 import type { ElTable } from 'element-plus';
+import { AppLang } from '@/language/app.lang'
+const appLang = AppLang()
+
 const props = defineProps({
   dataList: {
     type: Array as PropType<I_resource[]>,

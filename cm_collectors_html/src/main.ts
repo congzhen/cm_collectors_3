@@ -8,10 +8,10 @@ import 'element-plus/dist/index.css'
 import 'element-plus/theme-chalk/dark/css-vars.css'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 
-import i18n from '@/language/app.i118n'
-
 import App from './App.vue'
 import router from './router'
+
+import { registerLang } from '@/language/app.lang.main'
 
 // 导入自定义指令
 import directives from './directives'
@@ -21,11 +21,11 @@ import mitt from 'mitt'
 export const eventBus = mitt()
 
 const app = createApp(App)
-
+registerLang(app)
 app.use(createPinia())
 app.use(router)
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
   app.component(key, component)
 }
-app.use(ElementPlus).use(i18n).use(directives)
+app.use(ElementPlus).use(directives)
 app.mount('#app')

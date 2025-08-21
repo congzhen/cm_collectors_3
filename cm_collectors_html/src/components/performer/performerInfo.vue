@@ -45,7 +45,9 @@ import type { I_performer } from '@/dataType/performer.dataType';
 import { type PropType } from 'vue';
 import { appStoreData } from '@/storeData/app.storeData';
 import { getPerformerPhoto } from '@/common/photo';
-import { appLang } from '@/language/app.lang';
+import { AppLang } from '@/language/app.lang'
+const appLang = AppLang()
+
 const store = {
   appStoreData: appStoreData(),
 }

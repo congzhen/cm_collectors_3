@@ -44,7 +44,9 @@ import { appStoreData } from '@/storeData/app.storeData'
 import { searchStoreData } from '@/storeData/search.storeData'
 import { ref, onMounted, watch, computed, type CSSProperties } from 'vue'
 import { E_searchLogic } from '@/dataType/search.dataType'
-import { appLang } from '@/language/app.lang'
+import { AppLang } from '@/language/app.lang'
+const appLang = AppLang()
+
 const store = {
   appStoreData: appStoreData(),
   searchStoreData: searchStoreData(),
@@ -124,6 +126,7 @@ const getTagDataList = (type: E_tagType): I_tagData[] => {
       const resultCountryArr: I_tagData[] = [
         { id: allId, name: allName, status: store.searchStoreData.checkSelected(type, allId) }
       ];
+
       store.appStoreData.currentFilesBasesAppConfig.country.forEach(item => {
         resultCountryArr.push({
           id: item,

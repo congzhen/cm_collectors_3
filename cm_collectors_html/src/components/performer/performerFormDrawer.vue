@@ -63,7 +63,9 @@ import { appStoreData } from '@/storeData/app.storeData'
 import { LoadingService } from '@/assets/loading'
 import { performerServer } from '@/server/performer.server'
 import { getPerformerPhoto } from '@/common/photo';
-import { appLang } from '@/language/app.lang';
+import { AppLang } from '@/language/app.lang'
+const appLang = AppLang()
+
 const store = {
   appStoreData: appStoreData(),
 }

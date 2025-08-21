@@ -48,7 +48,10 @@ import { appStoreData } from '@/storeData/app.storeData';
 import { searchStoreData } from '@/storeData/search.storeData';
 import { cacheData } from '@/cache/index.cache';
 import { E_searchLogic } from '@/dataType/search.dataType';
-import { appLang } from '@/language/app.lang'
+import { AppLang } from '@/language/app.lang'
+const appLang = AppLang()
+
+
 const store = {
   appStoreData: appStoreData(),
   searchStoreData: searchStoreData(),

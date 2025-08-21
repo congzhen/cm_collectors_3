@@ -9,7 +9,9 @@
 </template>
 <script setup lang="ts">
 import dataset from '@/assets/dataset';
-import { appLang } from '@/language/app.lang'
+import { AppLang } from '@/language/app.lang'
+const appLang = AppLang()
+
 
 const selectVal = defineModel<string | string[]>({ type: [String, Array], default: "" as string | string[] });
 const props = defineProps({

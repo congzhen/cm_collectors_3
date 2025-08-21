@@ -102,7 +102,9 @@ import resourceFormDrawer from '@/components/resource/resourceFormDrawer.vue'
 import importResourceDrawer from '@/components/importResource/importResourceDrawer.vue'
 import { appStoreData } from '@/storeData/app.storeData'
 import type { I_resource } from '@/dataType/resource.dataType'
-import { appLang } from '@/language/app.lang';
+import { AppLang } from '@/language/app.lang'
+const appLang = AppLang()
+
 const router = useRouter()
 const store = {
   appStoreData: appStoreData(),

@@ -288,7 +288,9 @@ import { filesBasesStoreData } from '@/storeData/filesBases.storeData';
 import { performerBasesStoreData } from '@/storeData/performerBases.storeData';
 import { debounceNow } from '@/assets/debounce';
 import { getRandomColor } from '@/assets/tool';
-import { appLang } from '@/language/app.lang';
+import { AppLang } from '@/language/app.lang'
+const appLang = AppLang()
+
 const store = {
   filesBasesStoreData: filesBasesStoreData(),
   performerBasesStoreData: performerBasesStoreData(),

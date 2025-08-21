@@ -62,11 +62,12 @@
 <script lang="ts" setup>
 import type { I_resource, I_resourceDramaSeries } from '@/dataType/resource.dataType';
 import { ref, watch, type PropType } from 'vue';
-import { appLang } from '@/language/app.lang'
 import { appStoreData } from '@/storeData/app.storeData';
 import { playResource } from '@/common/play';
 import resourceDramaSeriesList from '@/components/resource/resourceDramaSeriesList.vue'
 import performerPopoverBlock from '@/components/performer/performerPopoverBlock.vue'
+import { AppLang } from '@/language/app.lang'
+const appLang = AppLang()
 
 const store = {
   appStoreData: appStoreData(),

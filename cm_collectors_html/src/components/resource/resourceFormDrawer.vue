@@ -138,7 +138,9 @@ import type { I_sfm_FileEntry } from '@/components/serverFileManagement/com/data
 import { LoadingService } from '@/assets/loading';
 import { resourceServer } from '@/server/resource.server';
 import { getResourceCoverPoster } from '@/common/photo';
-import { appLang } from '@/language/app.lang';
+import { AppLang } from '@/language/app.lang'
+const appLang = AppLang()
+
 import { base64ToFile, getImageDimensions, scaleImage } from '@/assets/image';
 const store = {
   appStoreData: appStoreData(),

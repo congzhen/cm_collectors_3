@@ -5,12 +5,14 @@
   </div>
 </template>
 <script setup lang="ts">
-import type { I_resource, I_resourceDisplayTag } from '@/dataType/resource.dataType';
+import type { I_resource } from '@/dataType/resource.dataType';
 import { computed, type PropType } from 'vue';
 import { appStoreData } from '@/storeData/app.storeData';
 import contentTag from './contentTag.vue';
 import { formatDate } from '@/assets/timer'
-import { appLang } from '@/language/app.lang'
+import { AppLang } from '@/language/app.lang'
+const appLang = AppLang()
+
 
 interface I_contentTagDisplay {
   name: string;
@@ -39,6 +41,7 @@ const topTagList_C = computed(() => {
 
   for (let i = 0; i < tagAttribute.length; i++) {
     const resAttrKey = tagAttribute[i];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const attrData = (props.resource as Record<string, any>)[resAttrKey]
     if (attrData && attrData != '') {
       // 使用 % 运算循环取值
