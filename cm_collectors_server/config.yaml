@@ -8,8 +8,8 @@ sqlite3:
     path: ./db/cm_collectors.db
     loggerLevel: info
 system:
-    serverHost: 127.0.0.1
-    port: 8081
+    serverHost: 0.0.0.0
+    port: 12345
     database: sqlite3
     filePath: ./db/
     Env: debug

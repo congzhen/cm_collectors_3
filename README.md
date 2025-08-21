@@ -37,8 +37,9 @@ go run -C cm_collectors_server main.go
 yarn --cwd ./cm_collectors_html build-server
 
 # 构建Windows可执行文件
-set GOOS=windows&& set GOARCH=amd64&& go build -C ./cm_collectors_server -o ../build/start.exe . && copy .\cm_collectors_server\config.yaml .\build\ && robocopy .\cm_collectors_server\ffmpeg .\build\ffmpeg /E
+set GOOS=windows&& set GOARCH=amd64&& go build -C ./cm_collectors_server -o ../build/CMCollectors3.exe . && copy .\cm_collectors_server\config.yaml .\build\ && robocopy .\cm_collectors_server\ffmpeg .\build\ffmpeg /E
 
 # 构建Linux可执行文件
-set GOOS=linux&& set GOARCH=amd64&& go build -C ./cm_collectors_server -o ../build/start . && cp .\cm_collectors_server\config.yaml .\build\
+# Linux构建时不包含ffmpeg,请自行安装ffmpeg
+set GOOS=linux&& set GOARCH=amd64&& go build -C ./cm_collectors_server -o ../build/CMCollectors3 . && cp .\cm_collectors_server\config.yaml .\build\
 ```
