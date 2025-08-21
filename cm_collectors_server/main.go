@@ -4,14 +4,17 @@ import (
 	"cm_collectors_server/core"
 	"cm_collectors_server/models"
 	"cm_collectors_server/routers"
-	"cm_collectors_server/tray" // 新增导入
+	"cm_collectors_server/tray"
 	"context"
 	"embed"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"os"
+	"os/exec"
 	"os/signal"
+	"runtime"
 	"syscall"
 	"time"
 
@@ -111,11 +114,113 @@ func serverInit(trayMode bool) {
 
 	serverAddr := fmt.Sprintf("%s:%d", core.Config.System.ServerHost, core.Config.System.Port)
 
+	// 检查端口是否被占用，如果被占用则尝试释放
+	if isPortInUse(core.Config.System.Port) {
+		fmt.Printf("端口 %d 已被占用，尝试释放...\n", core.Config.System.Port)
+		if killProcessUsingPort(core.Config.System.Port) {
+			fmt.Printf("已尝试释放端口 %d，等待进程结束...\n", core.Config.System.Port)
+			time.Sleep(2 * time.Second) // 等待进程完全结束
+		} else {
+			fmt.Printf("无法释放端口 %d\n", core.Config.System.Port)
+		}
+	}
+
 	//运行http服务(方法1)
 	//router.Run(serverAddr)
 
 	//运行http服务(方法2)
 	runServer(serverAddr, router, trayMode)
+}
+
+// isPortInUse 检查端口是否被占用
+func isPortInUse(port int) bool {
+	conn, err := net.DialTimeout("tcp", fmt.Sprintf(":%d", port), 3*time.Second)
+	if err != nil {
+		return false
+	}
+	defer conn.Close()
+	return true
+}
+
+// killProcessUsingPort 查找并终止使用指定端口的进程
+func killProcessUsingPort(port int) bool {
+	switch runtime.GOOS {
+	case "windows":
+		return killProcessOnWindows(port)
+	case "linux", "darwin":
+		return killProcessOnUnix(port)
+	default:
+		fmt.Printf("不支持的操作系统: %s\n", runtime.GOOS)
+		return false
+	}
+}
+
+// killProcessOnWindows 在Windows上查找并终止使用指定端口的进程
+func killProcessOnWindows(port int) bool {
+	// 使用netstat查找占用端口的进程
+	cmd := exec.Command("netstat", "-ano", "-p", "tcp")
+	output, err := cmd.Output()
+	if err != nil {
+		fmt.Printf("执行netstat命令失败: %v\n", err)
+		return false
+	}
+
+	// 解析输出查找占用端口的进程ID
+	lines := string(output)
+	var pid string
+	for _, line := range splitLines(lines) {
+		if len(line) > 0 && contains(line, fmt.Sprintf(":%d", port)) && contains(line, "LISTENING") {
+			fields := splitFields(line)
+			if len(fields) > 0 {
+				pid = fields[len(fields)-1]
+				break
+			}
+		}
+	}
+
+	if pid != "" {
+		// 终止进程
+		fmt.Printf("尝试终止占用端口 %d 的进程 (PID: %s)\n", port, pid)
+		killCmd := exec.Command("taskkill", "/PID", pid, "/F")
+		if err := killCmd.Run(); err != nil {
+			fmt.Printf("终止进程失败: %v\n", err)
+			return false
+		}
+		fmt.Printf("成功终止进程 PID: %s\n", pid)
+		return true
+	}
+
+	fmt.Printf("未找到占用端口 %d 的进程\n", port)
+	return false
+}
+
+// killProcessOnUnix 在Unix-like系统上查找并终止使用指定端口的进程
+func killProcessOnUnix(port int) bool {
+	// 使用lsof查找占用端口的进程
+	cmd := exec.Command("lsof", "-i", fmt.Sprintf(":%d", port), "-t")
+	output, err := cmd.Output()
+	if err != nil {
+		fmt.Printf("执行lsof命令失败: %v\n", err)
+		return false
+	}
+
+	pid := string(output)
+	pid = trimWhitespace(pid)
+
+	if pid != "" {
+		// 终止进程
+		fmt.Printf("尝试终止占用端口 %d 的进程 (PID: %s)\n", port, pid)
+		killCmd := exec.Command("kill", "-9", pid)
+		if err := killCmd.Run(); err != nil {
+			fmt.Printf("终止进程失败: %v\n", err)
+			return false
+		}
+		fmt.Printf("成功终止进程 PID: %s\n", pid)
+		return true
+	}
+
+	fmt.Printf("未找到占用端口 %d 的进程\n", port)
+	return false
 }
 
 // runServer 启动HTTP服务器并监听指定地址。
@@ -185,4 +290,73 @@ func gracefulShutdown(server *http.Server) {
 	}
 
 	fmt.Println("Server exiting")
+}
+
+// 辅助函数
+func splitLines(s string) []string {
+	lines := []string{}
+	current := ""
+	for _, char := range s {
+		if char == '\n' {
+			lines = append(lines, current)
+			current = ""
+		} else if char != '\r' {
+			current += string(char)
+		}
+	}
+	if current != "" {
+		lines = append(lines, current)
+	}
+	return lines
+}
+
+func splitFields(s string) []string {
+	fields := []string{}
+	current := ""
+	for _, char := range s {
+		if char == ' ' || char == '\t' {
+			if current != "" {
+				fields = append(fields, current)
+				current = ""
+			}
+		} else {
+			current += string(char)
+		}
+	}
+	if current != "" {
+		fields = append(fields, current)
+	}
+	return fields
+}
+
+func contains(s, substr string) bool {
+	return len(s) >= len(substr) &&
+		(s == substr ||
+			(len(s) > len(substr) &&
+				(s[:len(substr)] == substr ||
+					s[len(s)-len(substr):] == substr ||
+					index(s, substr) >= 0)))
+}
+
+func index(s, substr string) int {
+	for i := 0; i <= len(s)-len(substr); i++ {
+		if s[i:i+len(substr)] == substr {
+			return i
+		}
+	}
+	return -1
+}
+
+func trimWhitespace(s string) string {
+	start := 0
+	for start < len(s) && (s[start] == ' ' || s[start] == '\t' || s[start] == '\n' || s[start] == '\r') {
+		start++
+	}
+
+	end := len(s)
+	for end > start && (s[end-1] == ' ' || s[end-1] == '\t' || s[end-1] == '\n' || s[end-1] == '\r') {
+		end--
+	}
+
+	return s[start:end]
 }
