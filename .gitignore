@@ -42,3 +42,8 @@ cm_collectors_server/*.exe*
 
 /build/*
 
+
+cm_collectors_wails/build/bin
+cm_collectors_wails/node_modules
+cm_collectors_wails/frontend/dist
+

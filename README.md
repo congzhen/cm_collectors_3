@@ -42,4 +42,8 @@ set GOOS=windows&& set GOARCH=amd64&& go build -C ./cm_collectors_server -o ../b
 # 构建Linux可执行文件
 # Linux构建时不包含ffmpeg,请自行安装ffmpeg
 set GOOS=linux&& set GOARCH=amd64&& go build -C ./cm_collectors_server -o ../build/CMCollectors3 . && cp .\cm_collectors_server\config.yaml .\build\
+
+
+# 构建wails
+cd cm_collectors_wails && wails build -o ../../../build/cm_collectors_wails.exe && cd ..
 ```
