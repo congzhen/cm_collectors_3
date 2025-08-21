@@ -20,16 +20,17 @@ CM Collectors 是一个多媒体文件管理系统，主要用于收集、管理
 
 ### 开发环境运行
 
-#### 同时运行前后端服务
+### 同时运行前后端服务
 
-````sh
+```sh
 # 启动前端开发服务器
 yarn --cwd ./cm_collectors_html dev
 
 # 在另一个终端中启动后端服务
 go run -C cm_collectors_server main.go
+```
 
-### build
+### build 构建
 
 ```sh
 # 构建前端静态文件到后端html目录
@@ -40,4 +41,4 @@ set GOOS=windows&& set GOARCH=amd64&& go build -C ./cm_collectors_server -o ../b
 
 # 构建Linux可执行文件
 set GOOS=linux&& set GOARCH=amd64&& go build -C ./cm_collectors_server -o ../build/start . && cp .\cm_collectors_server\config.yaml .\build\
-````
+```
