@@ -6,14 +6,26 @@
     Quit,
     WindowIsMaximised,
   } from "../wailsjs/runtime";
+  import { GetURL } from "../wailsjs/go/main/App";
 
   let isMaximised = false;
   let title = "CM File Collectors";
   let showDragOverlay = false;
+  let iframeSrc = "http://127.0.0.1:12345";
 
   onMount(async () => {
     // 组件挂载后检查窗口状态
     isMaximised = await WindowIsMaximised();
+
+    // 获取从Go传递的URL参数
+    try {
+      const url = await GetURL();
+      if (url) {
+        iframeSrc = url;
+      }
+    } catch (e) {
+      console.error("Failed to get URL from backend:", e);
+    }
 
     // 监听鼠标按下事件，当在标题栏按下时显示覆盖层
     document.addEventListener("mousedown", handleMouseDown);
@@ -39,7 +51,7 @@
 <main>
   <div class="container">
     <div class="titlebar">
-      <div class="titlebar-title"></div>
+      <div class="titlebar-title">{title}</div>
       <div class="titlebar-controls">
         <button class="titlebar-button" on:click={WindowMinimise}>─</button>
         <button class="titlebar-button" on:click={toggleMaximize}>
@@ -50,7 +62,7 @@
     </div>
 
     <div class="content">
-      <iframe id="webview" src="http://127.0.0.1:12345"></iframe>
+      <iframe id="webview" src={iframeSrc}></iframe>
       {#if showDragOverlay}
         <div
           class="drag-overlay"
