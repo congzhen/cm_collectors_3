@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/getlantern/systray"
@@ -52,31 +53,7 @@ func (tm *TrayMenu) HandleEvents(shutdownFunc func()) {
 				displayAddr := strings.Replace(ServerAddr, "0.0.0.0", "localhost", 1)
 				OpenBrowser(fmt.Sprintf("http://%s", displayAddr))
 			case <-tm.OpenApp.ClickedCh:
-				// 获取当前可执行文件的路径
-				execPath, err := os.Executable()
-				if err != nil {
-					fmt.Printf("无法获取可执行文件路径: %v\n", err)
-					break
-				}
-
-				// 构建wails应用的路径（与当前程序在同一目录）
-				dir := filepath.Dir(execPath)
-				wailsApp := filepath.Join(dir, "cm_collectors_wails.exe")
-
-				// 将0.0.0.0转换为127.0.0.1
-				appServerAddr := strings.Replace(ServerAddr, "0.0.0.0", "127.0.0.1", 1)
-				// 确保URL有http://前缀
-				if !strings.HasPrefix(appServerAddr, "http://") && !strings.HasPrefix(appServerAddr, "https://") {
-					appServerAddr = "http://" + appServerAddr
-				}
-
-				// 启动wails应用并传递服务器地址参数
-				cmd := exec.Command(wailsApp, fmt.Sprintf("-url=%s", appServerAddr))
-				if err := cmd.Start(); err != nil {
-					fmt.Printf("无法启动应用程序: %v\n", err)
-				} else {
-					fmt.Println("应用程序已启动-url=", appServerAddr)
-				}
+				tm.OpenAppClicked()
 			case <-tm.Quit.ClickedCh:
 				fmt.Println("正在退出...")
 				// 调用关闭函数
@@ -89,6 +66,40 @@ func (tm *TrayMenu) HandleEvents(shutdownFunc func()) {
 			}
 		}
 	}()
+}
+
+// OpenAppClicked 处理打开应用程序的逻辑
+func (tm *TrayMenu) OpenAppClicked() {
+	// 获取当前可执行文件的路径
+	execPath, err := os.Executable()
+	if err != nil {
+		fmt.Printf("无法获取可执行文件路径: %v\n", err)
+		return
+	}
+
+	// 构建wails应用的路径（与当前程序在同一目录）
+	dir := filepath.Dir(execPath)
+	var wailsApp string
+	if runtime.GOOS == "windows" {
+		wailsApp = filepath.Join(dir, "cm_collectors_wails.exe")
+	} else {
+		wailsApp = filepath.Join(dir, "cm_collectors_wails")
+	}
+
+	// 将0.0.0.0转换为127.0.0.1
+	appServerAddr := strings.Replace(ServerAddr, "0.0.0.0", "127.0.0.1", 1)
+	// 确保URL有http://前缀
+	if !strings.HasPrefix(appServerAddr, "http://") && !strings.HasPrefix(appServerAddr, "https://") {
+		appServerAddr = "http://" + appServerAddr
+	}
+
+	// 启动wails应用并传递服务器地址参数
+	cmd := exec.Command(wailsApp, fmt.Sprintf("-url=%s", appServerAddr))
+	if err := cmd.Start(); err != nil {
+		fmt.Printf("无法启动应用程序: %v\n", err)
+	} else {
+		fmt.Println("应用程序已启动，服务器地址:", appServerAddr)
+	}
 }
 
 // UpdateServerAddr 更新服务器地址

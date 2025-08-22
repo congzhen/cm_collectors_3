@@ -39,6 +39,9 @@ cd cm_collectors_server && go run -tags tray main.go main_tray.go -t
 # 构建前端静态文件到后端html目录
 yarn --cwd ./cm_collectors_html build-server
 
+# 构建Windows可执行文件（带系统托盘，无控制台窗口）
+cd cm_collectors_server && set GOOS=windows&& set GOARCH=amd64&& go build -ldflags -H=windowsgui -tags tray -o ../build/CMCollectors3.exe . && copy config.yaml ..\build\ && robocopy .\ffmpeg ..\build\ffmpeg /E && cd ..
+
 # 构建Windows可执行文件（带系统托盘）
 cd cm_collectors_server && set GOOS=windows&& set GOARCH=amd64&& go build -tags tray -o ../build/CMCollectors3.exe . && copy config.yaml ..\build\ && robocopy .\ffmpeg ..\build\ffmpeg /E && cd ..
 

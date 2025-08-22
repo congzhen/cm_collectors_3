@@ -5,7 +5,9 @@ package main
 
 import (
 	"fmt"
+	"net"
 	"os"
+	"time"
 
 	"cm_collectors_server/tray"
 
@@ -27,6 +29,49 @@ func onTrayReady() {
 
 	// 处理菜单事件
 	menu.HandleEvents(shutdownServer)
+
+	// 检查是否有自动启动应用程序的参数
+	args := os.Args[1:]
+	autoOpenApp := false
+	for _, arg := range args {
+		if arg == "--open-app" || arg == "-o" {
+			autoOpenApp = true
+			break
+		}
+	}
+
+	// 如果需要自动打开应用程序，则在服务器启动后执行
+	if autoOpenApp {
+		go func() {
+			// 等待服务器准备好接受连接
+			waitForServerReady(serverAddr)
+			// 自动触发打开应用程序事件
+			menu.OpenAppClicked()
+		}()
+	}
+}
+
+// waitForServerReady 等待服务器准备好接受连接
+func waitForServerReady(serverAddr string) {
+	// 最多等待30秒
+	timeout := time.After(30 * time.Second)
+	ticker := time.NewTicker(500 * time.Millisecond)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-timeout:
+			fmt.Println("等待服务器启动超时")
+			return
+		case <-ticker.C:
+			conn, err := net.DialTimeout("tcp", serverAddr, 1*time.Second)
+			if err == nil {
+				conn.Close()
+				fmt.Println("服务器已准备就绪")
+				return
+			}
+		}
+	}
 }
 
 // onTrayExit 系统托盘退出时的回调函数
