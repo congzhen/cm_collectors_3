@@ -1,7 +1,7 @@
 <template>
   <div class="layout-cover-poster-style1">
     <el-scrollbar ref="scrollbarRef">
-      <ul class="list-ul">
+      <ul class="list-ul" :class="{ 'mobile-layout': isMobile() }">
         <li v-for="(item, key) in props.dataList" :key="key">
           <contentStyle1 :resource="item" @click="selectResourcesHandle(item)"></contentStyle1>
         </li>
@@ -14,6 +14,8 @@ import contentStyle1 from '@/components/content/contentStyle1.vue';
 import type { I_resource } from '@/dataType/resource.dataType';
 import type { ElScrollbar } from 'element-plus';
 import { ref, type PropType } from 'vue';
+import { isMobile } from '@/assets/mobile';
+
 const props = defineProps({
   dataList: {
     type: Array as PropType<I_resource[]>,
@@ -45,6 +47,22 @@ defineExpose({ change });
     flex-wrap: wrap;
     gap: 0.4em;
     padding-bottom: 1em;
+
+    &.mobile-layout {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.8em;
+      padding-bottom: 0.8em;
+    }
   }
+}
+
+.mobile-layout li {
+  aspect-ratio: 158 / 214;
+}
+
+.mobile-layout li :deep(.content-style1) {
+  width: 100% !important;
+  height: 100% !important;
 }
 </style>

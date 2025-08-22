@@ -23,9 +23,12 @@ import { computed, type PropType } from 'vue';
 import { appStoreData } from '@/storeData/app.storeData';
 import { playResource } from '@/common/play';
 import { getResourceCoverPoster } from '@/common/photo';
+import { isMobile } from '@/assets/mobile';
+
 const store = {
   appStoreData: appStoreData(),
 }
+
 const props = defineProps({
   resource: {
     type: Object as PropType<I_resource>,
@@ -48,8 +51,6 @@ const coverPosterSize_C = computed(() => {
     height,
   }
 })
-
-
 
 </script>
 <style lang="scss" scoped>
@@ -118,6 +119,19 @@ const coverPosterSize_C = computed(() => {
     overflow: hidden;
     /* 添加省略号 */
     text-overflow: ellipsis;
+  }
+}
+
+@media (max-width: 768px) {
+  .content-style1 {
+    width: v-bind('isMobile() ? "100%" : coverPosterSize_C.width + "px"');
+    height: v-bind('isMobile() ? "auto" : coverPosterSize_C.height + "px"');
+  }
+
+  .content-style1:where(.mobile-layout *) {
+    width: 100%;
+    height: auto;
+    aspect-ratio: v-bind('coverPosterSize_C.width') / v-bind('coverPosterSize_C.height');
   }
 }
 </style>
