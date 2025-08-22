@@ -4,6 +4,7 @@ import (
 	"cm_collectors_server/core"
 	processorsffmpeg "cm_collectors_server/processorsFFmpeg"
 	"fmt"
+	"io"
 	"io/fs"
 	"net/http"
 	"os"
@@ -56,9 +57,18 @@ func (v Video) VideoMP4Stream(c *gin.Context, dramaSeriesId string) error {
 func (v Video) VideoMP4Stream_Play(c *gin.Context, fileInfo fs.FileInfo, src string) error {
 	// 获取Range头部信息
 	rangeHeader := c.GetHeader("Range")
+
+	// 为投屏设备优化的响应头
+	c.Header("Cache-Control", "no-cache, no-store, must-revalidate, max-age=0")
+	c.Header("Pragma", "no-cache")
+	c.Header("Expires", "0")
+	c.Header("Connection", "keep-alive")
+	c.Header("Accept-Ranges", "bytes")
+	c.Header("Access-Control-Allow-Origin", "*")
+
 	if rangeHeader != "" {
 		// 解析Range头部
-		re := regexp.MustCompile(`=(\d+)-(\d+)?`)
+		re := regexp.MustCompile(`bytes=(\d+)-(\d*)`)
 		matches := re.FindStringSubmatch(rangeHeader)
 
 		if len(matches) < 2 {
@@ -73,7 +83,7 @@ func (v Video) VideoMP4Stream_Play(c *gin.Context, fileInfo fs.FileInfo, src str
 			return nil
 		}
 
-		// 解析结束位置，如果未指定则默认为起始位置+1MB
+		// 解析结束位置
 		var end int64
 		if matches[2] != "" {
 			end, err = strconv.ParseInt(matches[2], 10, 64)
@@ -82,7 +92,11 @@ func (v Video) VideoMP4Stream_Play(c *gin.Context, fileInfo fs.FileInfo, src str
 				return nil
 			}
 		} else {
-			end = start + 1024*1024*1 // 1MB
+			// 对于投屏设备，增加默认读取块大小以减少请求次数
+			end = start + 2*1024*1024 // 2MB块大小
+			if end > fileInfo.Size()-1 {
+				end = fileInfo.Size() - 1
+			}
 		}
 
 		// 确保结束位置不超过文件大小
@@ -94,7 +108,9 @@ func (v Video) VideoMP4Stream_Play(c *gin.Context, fileInfo fs.FileInfo, src str
 		c.Header("Content-Type", "video/mp4")
 		c.Header("Content-Range", fmt.Sprintf("bytes %d-%d/%d", start, end, fileInfo.Size()))
 		c.Header("Content-Length", strconv.FormatInt(end-start+1, 10))
-		c.Header("Accept-Ranges", "bytes")
+
+		// 针对投屏设备的优化
+		c.Header("Content-Disposition", "inline")
 
 		// 设置状态码为206 Partial Content
 		c.Status(http.StatusPartialContent)
@@ -105,30 +121,78 @@ func (v Video) VideoMP4Stream_Play(c *gin.Context, fileInfo fs.FileInfo, src str
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Failed to open file"})
 			return nil
 		}
-		defer file.Close()
+		defer func() {
+			// 确保文件被正确关闭
+			if cerr := file.Close(); cerr != nil {
+				fmt.Printf("Warning: failed to close file: %v\n", cerr)
+			}
+		}()
 
 		// 设置读取范围
-		_, err = file.Seek(start, 0)
+		_, err = file.Seek(start, io.SeekStart)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Failed to seek file"})
 			return nil
 		}
 
-		// 创建缓冲区并读取数据
-		buffer := make([]byte, end-start+1)
-		_, err = file.Read(buffer)
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Failed to read file"})
-			return nil
-		}
+		// 使用适合投屏设备的缓冲区大小
+		buffer := make([]byte, 64*1024) // 64KB缓冲区
+		bytesToRead := end - start + 1
+		bytesRead := int64(0)
 
-		// 写入响应
-		c.Data(http.StatusPartialContent, "video/mp4", buffer)
+		// 分块读取并传输数据
+		for bytesRead < bytesToRead {
+			// 检查客户端是否断开连接
+			select {
+			case <-c.Request.Context().Done():
+				// 客户端断开连接，这是正常情况
+				return nil
+			default:
+			}
+
+			// 计算本次读取的字节数
+			chunkSize := int64(len(buffer))
+			if bytesRead+chunkSize > bytesToRead {
+				chunkSize = bytesToRead - bytesRead
+			}
+
+			// 读取数据
+			n, err := file.Read(buffer[:chunkSize])
+			if err != nil && err != io.EOF {
+				// 发生读取错误
+				fmt.Printf("Error reading file: %v\n", err)
+				return nil
+			}
+
+			if n > 0 {
+				// 写入响应
+				_, writeErr := c.Writer.Write(buffer[:n])
+				if writeErr != nil {
+					// 客户端断开连接是正常情况
+					return nil
+				}
+
+				// 确保数据被发送
+				if flusher, ok := c.Writer.(http.Flusher); ok {
+					flusher.Flush()
+				}
+				bytesRead += int64(n)
+			}
+
+			if err == io.EOF {
+				break
+			}
+		}
 	} else {
 		// 没有Range头部，返回整个文件
 		c.Header("Content-Type", "video/mp4")
 		c.Header("Accept-Ranges", "bytes")
-		c.File(src)
+		c.Header("Connection", "keep-alive")
+		c.Header("Content-Length", strconv.FormatInt(fileInfo.Size(), 10))
+
+		// 使用http.ServeFile处理整个文件传输
+		http.ServeFile(c.Writer, c.Request, src)
+		return nil
 	}
 
 	return nil

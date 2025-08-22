@@ -42,13 +42,13 @@ func (t Transcode) VideoStreamTranscode(c *gin.Context, src string) error {
 		"-c:v", "libx264",
 		"-profile:v", "baseline",
 		"-level", "3.0",
-		"-preset", "superfast",
+		"-preset", "fast", // 改为fast以提高稳定性
 		"-tune", "zerolatency",
 		"-c:a", "aac",
 		"-ar", "44100",
 		"-b:a", "128k",
 		"-f", "mp4",
-		"-movflags", "+frag_keyframe+empty_moov+default_base_moof",
+		"-movflags", "+frag_keyframe+empty_moov+default_base_moof+faststart",
 		"pipe:1",
 	}
 
@@ -105,7 +105,7 @@ func (t Transcode) VideoStreamTranscode(c *gin.Context, src string) error {
 	clientDisconnected := c.Request.Context().Done()
 
 	// 实时传输数据
-	buffer := make([]byte, 64*1024) // 64KB缓冲区以提高性能
+	buffer := make([]byte, 32*1024) //32KB以提高响应性
 	for {
 		select {
 		case <-clientDisconnected:
