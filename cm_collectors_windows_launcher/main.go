@@ -19,7 +19,7 @@ func main() {
 	// 构建wails应用的路径（与当前程序在同一目录）
 	dir := filepath.Dir(execPath)
 
-	var appPath = path.Join(dir, "CMCollectors3.exe")
+	var appPath = path.Join(dir, "cm_collectors_server.exe")
 
 	cmd := exec.Command(appPath, "-t", "-o")
 	if err := cmd.Start(); err != nil {

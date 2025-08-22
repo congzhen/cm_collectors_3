@@ -40,16 +40,16 @@ cd cm_collectors_server && go run -tags tray main.go main_tray.go -t
 yarn --cwd ./cm_collectors_html build-server
 
 # 构建Windows可执行文件（带系统托盘，无控制台窗口）
-cd cm_collectors_server && set GOOS=windows&& set GOARCH=amd64&& go build -ldflags -H=windowsgui -tags tray -o ../build/CMCollectors3.exe . && copy config.yaml ..\build\ && robocopy .\ffmpeg ..\build\ffmpeg /E && cd ..
+cd cm_collectors_server && set GOOS=windows&& set GOARCH=amd64&& go build -ldflags -H=windowsgui -tags tray -o ../build/cm_collectors_server.exe . && copy config.yaml ..\build\ && robocopy .\ffmpeg ..\build\ffmpeg /E && cd ..
 
 # 构建Windows可执行文件（带系统托盘）
-cd cm_collectors_server && set GOOS=windows&& set GOARCH=amd64&& go build -tags tray -o ../build/CMCollectors3.exe . && copy config.yaml ..\build\ && robocopy .\ffmpeg ..\build\ffmpeg /E && cd ..
+cd cm_collectors_server && set GOOS=windows&& set GOARCH=amd64&& go build -tags tray -o ../build/cm_collectors_server.exe . && copy config.yaml ..\build\ && robocopy .\ffmpeg ..\build\ffmpeg /E && cd ..
 
 # 构建Windows可执行文件（不带系统托盘）
-cd cm_collectors_server && set GOOS=windows&& set GOARCH=amd64&& go build -o ../build/CMCollectors3.exe . && copy config.yaml ..\build\ && robocopy .\ffmpeg ..\build\ffmpeg /E && cd ..
+cd cm_collectors_server && set GOOS=windows&& set GOARCH=amd64&& go build -o ../build/cm_collectors_server.exe . && copy config.yaml ..\build\ && robocopy .\ffmpeg ..\build\ffmpeg /E && cd ..
 
 # 构建Linux可执行文件（不带系统托盘）
-cd cm_collectors_server && set GOOS=linux&& set GOARCH=amd64&& go build -o ../build/CMCollectors3 . && copy config.yaml ..\build\ && cd ..
+cd cm_collectors_server && set GOOS=linux&& set GOARCH=amd64&& go build -o ../build/cm_collectors_server . && copy config.yaml ..\build\ && cd ..
 
 # 构建wails
 cd cm_collectors_wails && wails build -o ../../../build/cm_collectors_wails.exe && cd ..
