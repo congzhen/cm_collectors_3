@@ -24,10 +24,13 @@ CM Collectors 是一个多媒体文件管理系统，主要用于收集、管理
 
 ```sh
 # 启动前端开发服务器
-yarn --cwd ./cm_collectors_html dev
+cd cm_collectors_html && yarn dev
 
 # 在另一个终端中启动后端服务
-go run -C cm_collectors_server main.go
+cd cm_collectors_server && go run .
+
+# 启动带系统托盘的Windows版
+cd cm_collectors_server && go run -tags tray main.go main_tray.go -t
 ```
 
 ### build 构建
@@ -36,13 +39,14 @@ go run -C cm_collectors_server main.go
 # 构建前端静态文件到后端html目录
 yarn --cwd ./cm_collectors_html build-server
 
-# 构建Windows可执行文件
-set GOOS=windows&& set GOARCH=amd64&& go build -C ./cm_collectors_server -o ../build/CMCollectors3.exe . && copy .\cm_collectors_server\config.yaml .\build\ && robocopy .\cm_collectors_server\ffmpeg .\build\ffmpeg /E
+# 构建Windows可执行文件（带系统托盘）
+cd cm_collectors_server && set GOOS=windows&& set GOARCH=amd64&& go build -tags tray -o ../build/CMCollectors3.exe . && copy config.yaml ..\build\ && robocopy .\ffmpeg ..\build\ffmpeg /E && cd ..
 
-# 构建Linux可执行文件
-# Linux构建时不包含ffmpeg,请自行安装ffmpeg
-set GOOS=linux&& set GOARCH=amd64&& go build -C ./cm_collectors_server -o ../build/CMCollectors3 . && cp .\cm_collectors_server\config.yaml .\build\
+# 构建Windows可执行文件（不带系统托盘）
+cd cm_collectors_server && set GOOS=windows&& set GOARCH=amd64&& go build -o ../build/CMCollectors3.exe . && copy config.yaml ..\build\ && robocopy .\ffmpeg ..\build\ffmpeg /E && cd ..
 
+# 构建Linux可执行文件（不带系统托盘）
+cd cm_collectors_server && set GOOS=linux&& set GOARCH=amd64&& go build -o ../build/CMCollectors3 . && copy config.yaml ..\build\ && cd ..
 
 # 构建wails
 cd cm_collectors_wails && wails build -o ../../../build/cm_collectors_wails.exe && cd ..
