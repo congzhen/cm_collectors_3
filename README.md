@@ -53,4 +53,7 @@ cd cm_collectors_server && set GOOS=linux&& set GOARCH=amd64&& go build -o ../bu
 
 # 构建wails
 cd cm_collectors_wails && wails build -o ../../../build/cm_collectors_wails.exe && cd ..
+
+# 构建windows启动器
+cd cm_collectors_windows_launcher && go build -o ../build/CM_launcher.exe . && cd ..
 ```
