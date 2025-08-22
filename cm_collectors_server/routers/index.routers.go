@@ -6,6 +6,7 @@ import (
 	"embed"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -40,7 +41,12 @@ func InitRouter(router *gin.Engine, htmlFS *embed.FS) *gin.Engine {
 }
 
 func handleNoRoute(c *gin.Context) {
-	// 返回404错误
+	// 对于非API路由，返回index.html让Vue Router处理前端路由
+	if !strings.HasPrefix(c.Request.URL.Path, "/api/") {
+		c.Redirect(http.StatusFound, "/")
+		return
+	}
+	// API路由返回404错误
 	c.JSON(http.StatusNotFound, gin.H{"error": "404 Not Found"})
 }
 
