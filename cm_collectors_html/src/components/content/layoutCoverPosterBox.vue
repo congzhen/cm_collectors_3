@@ -44,6 +44,26 @@ defineExpose({ change });
     flex-wrap: wrap;
     gap: 20px;
     padding-bottom: 1em;
+
+    // 移动端适配
+    @media (max-width: 768px) {
+      gap: 20px;
+
+      :deep(.content-style2) {
+        width: 100%;
+        max-width: 100%;
+
+        .content-cover {
+          width: 140px !important;
+          height: auto !important;
+          align-self: flex-start;
+        }
+
+        .content-info {
+          width: calc(100% - 152px) !important;
+        }
+      }
+    }
   }
 }
 </style>

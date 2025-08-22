@@ -5,6 +5,7 @@ import { appStoreData } from "@/storeData/app.storeData";
 import { ElMessage, ElNotification } from "element-plus";
 import router from '@/router';
 import { eventBus } from "@/main";
+import { isMobile } from "@/assets/mobile";
 
 export const playResource = async (resource: I_resource, dramaSeriesId: string = '') => {
   const store = {
@@ -31,6 +32,10 @@ export const playResource = async (resource: I_resource, dramaSeriesId: string =
     default:
       ElMessage.error('未知的资源类型');
       return;
+  }
+  if (isMobile()) {
+    router.push(`/play/${resource.mode}Mobile/${resource.id}` + (dramaSeriesId != '' ? `/${dramaSeriesId}` : ''));
+    return
   }
 
   if (openMode == E_resourceOpenMode.Soft) {

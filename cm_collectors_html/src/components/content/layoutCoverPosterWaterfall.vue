@@ -17,7 +17,7 @@
         </Waterfall>
       </el-scrollbar>
     </div>
-    <div class="tool">
+    <div class="tool" v-if="!isMobile()">
       <el-slider v-model="waterfallColumn" :min="1" :max="20" style="width: 200px;" />
     </div>
   </div>
@@ -32,6 +32,7 @@ import { playResource } from '@/common/play';
 import { appStoreData } from '@/storeData/app.storeData';
 import { debounceNow } from '@/assets/debounce';
 import type { ElScrollbar } from 'element-plus';
+import { isMobile } from '@/assets/mobile';
 const store = {
   appStoreData: appStoreData(),
 }
@@ -60,10 +61,19 @@ const dataList_C = computed(() => {
 
 // 计算动态 breakpoints
 const waterfallBreakpoints = computed(() => {
-  // 可以根据当前列数设置不同的断点
-  return {
-    9999: { rowPerView: waterfallColumn.value },
+  if (isMobile()) {
+    return {
+      1200: { rowPerView: 4 },
+      800: { rowPerView: 3 },
+      500: { rowPerView: 2 }
+    }
+  } else {
+    // 可以根据当前列数设置不同的断点
+    return {
+      9999: { rowPerView: waterfallColumn.value },
+    }
   }
+
 });
 const selectResourcesHandle = (item: I_resource) => {
   emits('selectResources', item)

@@ -1,7 +1,7 @@
 <template>
   <div class="app-container" v-if="initStatus">
     <router-view v-slot="{ Component }">
-      <keep-alive exclude="playMovies,playComic,playAtlas">
+      <keep-alive exclude="playMovies,playMoviesMobile,playComic,playComicMobile,playAtlas,playAtlasMobile">
         <component :is="Component" :key="$route.fullPath" />
       </keep-alive>
     </router-view>
