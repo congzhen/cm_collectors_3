@@ -1,14 +1,36 @@
 package processorsffmpeg
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"syscall"
 )
 
 type FFmpeg struct{}
+
+// 创建一个通用的命令执行函数，自动处理Windows平台的窗口隐藏
+func createCommand(name string, arg ...string) *exec.Cmd {
+	cmd := exec.Command(name, arg...)
+	// 在Windows上隐藏控制台窗口
+	if runtime.GOOS == "windows" {
+		cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
+	}
+	return cmd
+}
+
+// 创建一个通用的带上下文的命令执行函数，自动处理Windows平台的窗口隐藏
+func createCommandContext(ctx context.Context, name string, arg ...string) *exec.Cmd {
+	cmd := exec.CommandContext(ctx, name, arg...)
+	// 在Windows上隐藏控制台窗口
+	if runtime.GOOS == "windows" {
+		cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
+	}
+	return cmd
+}
 
 // IsFFmpegAvailable 检查系统中FFmpeg是否可用
 //
@@ -53,7 +75,7 @@ func (f FFmpeg) isToolAvailable(toolName string) (string, error) {
 		if _, err := os.Stat(localToolPath); err == nil {
 			// 本地工具存在
 			toolPath = localToolPath
-			cmd = exec.Command(toolPath, "-version")
+			cmd = createCommand(toolPath, "-version")
 			break
 		}
 
@@ -66,7 +88,7 @@ func (f FFmpeg) isToolAvailable(toolName string) (string, error) {
 				return "", fmt.Errorf("在Windows系统中未找到%s: %v", toolName, err)
 			}
 		}
-		cmd = exec.Command(toolPath, "-version")
+		cmd = createCommand(toolPath, "-version")
 	default:
 		// Unix-like系统 (Linux, macOS等)
 		var err error
@@ -74,7 +96,7 @@ func (f FFmpeg) isToolAvailable(toolName string) (string, error) {
 		if err != nil {
 			return "", fmt.Errorf("在Unix-like系统中未找到%s: %v", toolName, err)
 		}
-		cmd = exec.Command(toolPath, "-version")
+		cmd = createCommand(toolPath, "-version")
 	}
 
 	// 尝试运行命令

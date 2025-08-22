@@ -8,7 +8,6 @@ import (
 	"image/color"
 	"image/jpeg"
 	"math"
-	"os/exec"
 )
 
 type KeyFrame struct{}
@@ -169,7 +168,7 @@ func (t KeyFrame) ExtractKeyframes(videoPath string, frameCount int) ([][]byte, 
 	}
 
 	// 构造FFmpeg命令，提取指定数量的关键帧到内存
-	cmd := exec.Command(
+	cmd := createCommand(
 		ffmpegPath,
 		"-i", videoPath, // 输入视频文件
 		"-vf", "select=eq(pict_type\\,I)", // 只选择关键帧

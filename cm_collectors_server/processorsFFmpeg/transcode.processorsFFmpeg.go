@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os/exec"
 	"strconv"
 	"strings"
 	"sync"
@@ -57,7 +56,7 @@ func (t Transcode) VideoStreamTranscode(c *gin.Context, src string) error {
 		args = append([]string{"-ss", strconv.FormatInt(start, 10)}, args...)
 	}
 
-	cmd := exec.CommandContext(ctx, ffmpegPath, args...)
+	cmd := createCommandContext(ctx, ffmpegPath, args...)
 
 	// 设置stderr用于错误处理
 	stderr, err := cmd.StderrPipe()

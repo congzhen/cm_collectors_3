@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/base64"
 	"fmt"
-	"os/exec"
 )
 
 type Thumbnail struct{}
@@ -165,7 +164,7 @@ func (t Thumbnail) ExtractThumbnail(videoPath string, frameCount, thumbnailFilte
 	}
 
 	// 构造FFmpeg命令，提取指定数量的关键帧到内存
-	cmd := exec.Command(
+	cmd := createCommand(
 		ffmpegPath,
 		"-i", videoPath, // 输入视频文件
 		"-vf", fmt.Sprintf("thumbnail=%d", thumbnailFilter), // 分析每100帧选择一个最具代表性的帧

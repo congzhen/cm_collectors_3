@@ -3,7 +3,6 @@ package processorsffmpeg
 import (
 	"encoding/json"
 	"fmt"
-	"os/exec"
 	"slices"
 )
 
@@ -86,7 +85,7 @@ func (v VideoInfo) GetVideoFormatInfo(src string) (VideoFormatInfo, error) {
 	}
 
 	// 使用ffprobe获取视频信息
-	cmd := exec.Command(ffprobePath, "-v", "quiet", "-print_format", "json", "-show_streams", src)
+	cmd := createCommand(ffprobePath, "-v", "quiet", "-print_format", "json", "-show_streams", src)
 	output, err := cmd.Output()
 	if err != nil {
 		return formatInfo, fmt.Errorf("无法获取视频信息: %v", err)
