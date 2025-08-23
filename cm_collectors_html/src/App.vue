@@ -55,8 +55,8 @@ onMounted(async () => {
 </script>
 <style lang="scss" scoped>
 .app-container {
-  width: calc(100vw - 10px);
-  height: calc(100vh - 10px);
+  width: calc(100% - 10px);
+  height: calc(100% - 10px);
   padding: 5px;
   overflow: hidden;
   background-color: #1f1f1f;

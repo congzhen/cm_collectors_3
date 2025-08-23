@@ -10,7 +10,7 @@
         </select>
       </div>
     </div>
-    <div class="content-list">
+    <div class="content-list-wrapper">
       <contentList ref="contentListRef" :data-list="dataList" @select-resources="selectResourcesHandle">
       </contentList>
     </div>
@@ -132,17 +132,18 @@ onMounted(async () => {
 
 <style lang="scss" scoped>
 .mobile-view {
-  width: 100%;
-  height: 100%;
+  width: calc(100% - 10px);
+  height: calc(100% - 10px);
   display: flex;
   flex-direction: column;
   background-color: #1f1f1f;
   color: #f3f3f3;
   padding: 5px;
-  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .header {
+  flex-shrink: 0;
   text-align: center;
   padding: 5px 0;
   border-bottom: 1px solid #444;
@@ -152,16 +153,36 @@ onMounted(async () => {
     select {
       background-color: #333;
       color: #f3f3f3;
-      border: 1px solid #444;
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-size: 0.9em;
+      border: 1px solid #555;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 1em;
       width: 100%;
+      appearance: none;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f3f3f3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      background-size: 16px;
+      padding-right: 40px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:focus {
+        outline: none;
+        border-color: #409eff;
+        box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
+      }
+
+      option {
+        background-color: #333;
+        color: #f3f3f3;
+        padding: 8px;
+      }
     }
   }
 }
 
-.content-list {
+.content-list-wrapper {
   flex: 1;
   overflow-y: auto;
 
@@ -172,29 +193,47 @@ onMounted(async () => {
 }
 
 .pagination {
+  flex-shrink: 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 5px 0;
+  min-height: 28px; // 确保分页区域始终有一定高度
 
   button {
     background-color: #333;
     color: #f3f3f3;
-    border: none;
-    padding: 6px 12px;
+    border: 1px solid #555;
+    padding: 4px 12px;
     border-radius: 4px;
     cursor: pointer;
     font-size: 0.9em;
+    min-width: 60px; // 确保按钮有最小宽度
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
 
     &:disabled {
       opacity: 0.5;
       cursor: not-allowed;
     }
+
+    &:not(:disabled):hover {
+      background-color: #444;
+      border-color: #666;
+    }
+
+    &:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.5);
+    }
   }
 
   span {
-    margin: 0 5px;
+    margin: 0 10px;
     font-size: 0.9em;
+    white-space: nowrap;
   }
 }
 </style>

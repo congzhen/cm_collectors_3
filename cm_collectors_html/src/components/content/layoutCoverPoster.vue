@@ -1,7 +1,7 @@
 <template>
   <div class="layout-cover-poster-style1">
     <el-scrollbar ref="scrollbarRef">
-      <ul class="list-ul" :class="{ 'mobile-layout': isMobile() }">
+      <ul class="list-ul" :class="{ 'mobile-layout': isMobileDevice }">
         <li v-for="(item, key) in props.dataList" :key="key">
           <contentStyle1 :resource="item" @click="selectResourcesHandle(item)"></contentStyle1>
         </li>
@@ -13,7 +13,7 @@
 import contentStyle1 from '@/components/content/contentStyle1.vue';
 import type { I_resource } from '@/dataType/resource.dataType';
 import type { ElScrollbar } from 'element-plus';
-import { ref, type PropType } from 'vue';
+import { ref, type PropType, onMounted } from 'vue';
 import { isMobile } from '@/assets/mobile';
 
 const props = defineProps({
@@ -25,6 +25,8 @@ const props = defineProps({
 const emits = defineEmits(['selectResources']);
 
 const scrollbarRef = ref<InstanceType<typeof ElScrollbar>>();
+const isMobileDevice = ref(false);
+
 const selectResourcesHandle = (item: I_resource) => {
   emits('selectResources', item)
 }
@@ -32,6 +34,10 @@ const selectResourcesHandle = (item: I_resource) => {
 const change = () => {
   scrollbarRef.value?.setScrollTop(0);
 };
+
+onMounted(() => {
+  isMobileDevice.value = isMobile();
+});
 
 defineExpose({ change });
 </script>
