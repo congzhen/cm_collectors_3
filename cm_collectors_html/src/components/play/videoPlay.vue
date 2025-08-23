@@ -1,6 +1,8 @@
 <template>
   <div class="video-player-container">
-    <video ref="videoPlayerRef" class="video-js vjs-theme-city" controls preload="auto" width="100%">
+    <video ref="videoPlayerRef" class="video-js vjs-theme-city" controls preload="auto" width="100%" playsinline
+      webkit-playsinline x5-playsinline x5-video-player-type="h5" x5-video-player-fullscreen="true"
+      x5-video-orientation="portraint">
       <source :src="videoSrc" :type="isHls ? 'application/x-mpegURL' : 'video/mp4'">
     </video>
   </div>
@@ -23,7 +25,7 @@ import '@videojs/http-streaming'
 
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { ElMessage } from 'element-plus';
-
+import { isMobile } from '@/assets/mobile';
 
 const props = defineProps({
   aspectRatio: {
@@ -43,8 +45,29 @@ const rotation = ref(0)
 
 // 初始化播放器
 const initializePlayer = () => {
+  const isMobileDevice = isMobile()
   if (videoPlayerRef.value) {
-    player.value = videojs(videoPlayerRef.value, {
+
+    // 针对移动端优化的配置
+    const mobileOptions = {
+      preload: 'metadata',
+      playsinline: true,
+      controls: true,
+      autoplay: false,
+      muted: false,
+      techOrder: ['html5'],
+      html5: {
+        hls: {
+          overrideNative: !isMobileDevice
+        },
+        nativeVideoTracks: isMobileDevice,
+        nativeAudioTracks: isMobileDevice,
+        nativeTextTracks: isMobileDevice
+      }
+    }
+
+    // 桌面端配置
+    const desktopOptions = {
       autoplay: false,
       controls: true,
       responsive: true,
@@ -58,7 +81,12 @@ const initializePlayer = () => {
         nativeVideoTracks: false,
         nativeAudioTracks: false,
         nativeTextTracks: false
-      },
+      }
+    }
+    const options = isMobileDevice ? mobileOptions : desktopOptions
+
+    player.value = videojs(videoPlayerRef.value, {
+      ...options,
       sources: [],
       track: [],
       fill: false,
@@ -68,20 +96,25 @@ const initializePlayer = () => {
       //console.log('Player is ready');
     })
 
-    // 添加自定义旋转按钮
-    addRotateButton();
+    // (仅在桌面端)
+    if (!isMobileDevice) {
+      // 添加自定义旋转按钮
+      addRotateButton();
 
-    //监控音量变化
-    player.value.on('volumechange', function () {
-      // 获取当前音量
-      const currentVolume = player.value.volume();
-      // 获取当前静音状态
-      const isMuted = player.value.muted();
-      // 保存音量到本地存储
-      if (!isMuted) {
-        saveVolumeToStorage(currentVolume);
-      }
-    });
+      //监控音量变化
+      player.value.on('volumechange', function () {
+        // 获取当前音量
+        const currentVolume = player.value.volume();
+        // 获取当前静音状态
+        const isMuted = player.value.muted();
+        // 保存音量到本地存储
+        if (!isMuted) {
+          saveVolumeToStorage(currentVolume);
+        }
+      });
+    }
+
+
   }
 }
 
