@@ -254,7 +254,8 @@ const setVideoSource = (src: string, type = 'mp4', fn = () => { }) => {
 
   if (player.value) {
     // 先重置播放器
-    resetPlayer();
+    //resetPlayer();
+    player.value.reset();
 
     // 从本地存储读取并设置音量
     const savedVolume = getVolumeFromStorage();
