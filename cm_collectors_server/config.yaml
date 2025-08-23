@@ -30,6 +30,7 @@ play:
         - vorbis
         - pcm_s16le
         - pcm_s24le
+        - ac3
 jwt:
     expiresAt: 86400
     issuer: goBase
