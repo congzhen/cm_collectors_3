@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"math"
 	"os"
 	"os/exec"
@@ -18,45 +17,51 @@ type M3U8 struct {
 
 // PlayVideoM3u8 流式传输HLS视频片段
 // PlayVideoM3u8 流式传输HLS视频片段
-func (v M3U8) PlayVideoM3u8(videoSrc string, start, duration float32) (*exec.Cmd, io.ReadCloser, error) {
+func (v M3U8) PlayVideoM3u8(videoSrc string, start, duration float64) (*exec.Cmd, error) {
 	// 使用FFmpeg生成视频片段
 	ffmpegPath, err := FFmpeg{}.IsFFmpegAvailable()
 	if err != nil {
-		return nil, nil, fmt.Errorf("FFmpeg不可用: %v", err)
+		return nil, fmt.Errorf("FFmpeg不可用: %v", err)
 	}
 
 	// 检查文件是否存在
 	if _, err := os.Stat(videoSrc); os.IsNotExist(err) {
-		return nil, nil, fmt.Errorf("视频文件不存在: %s", videoSrc)
+		return nil, fmt.Errorf("视频文件不存在: %s", videoSrc)
 	}
 
 	// 构建FFmpeg命令参数
-	// 使用mpegts格式直接输出到管道
-	cmd := createCommand(
+	cmd := exec.Command(
 		ffmpegPath,
-		"-ss", fmt.Sprintf("%.3f", start),
+		"-ss", fmt.Sprintf("%.6f", start),
 		"-i", videoSrc,
-		"-t", fmt.Sprintf("%.3f", duration),
-		"-c", "copy", // 复制所有流，不做重新编码
-		"-f", "mpegts", // 使用mpegts格式
-		"-mpegts_flags", "+initial_discontinuity",
-		"-bsf:v", "h264_mp4toannexb",
+		"-t", fmt.Sprintf("%.6f", duration),
+		"-c:v", "libx264", // MPEG-2视频编码，TVBox支持良好
+		"-c:a", "aac", // MP2音频编码，TVBox兼容性好
+		"-f", "mpegts",
+		"-preset", "ultrafast", // 编码速度优化
+		"-crf", "23", // 视频质量控制
+		"-b:a", "128k", // 音频比特率
+		"-b:v", "2000k", // 视频比特率
+		"-b:a", "128k", // 音频比特率
+		"-threads", "0", // 使用所有可用线程
 		"pipe:1",
 	)
+	/*
+		cmd := exec.Command(
+			ffmpegPath,
+			"-ss", fmt.Sprintf("%.3f", start),
+			"-i", dramaSeries.Src,
+			"-t", fmt.Sprintf("%.3f", duration),
+			"-c:v", "mpeg2video", // MPEG-2视频编码，TVBox支持良好
+			"-c:a", "mp2", // MP2音频编码，TVBox兼容性好
+			"-f", "mpegts",
+			"-b:v", "2000k", // 视频比特率
+			"-b:a", "128k", // 音频比特率
+			"pipe:1",
+		)
+	*/
 
-	// 获取stdout pipe
-	stdout, err := cmd.StdoutPipe()
-	if err != nil {
-		return nil, nil, fmt.Errorf("无法创建stdout管道: %v", err)
-	}
-
-	// 启动命令
-	err = cmd.Start()
-	if err != nil {
-		return nil, nil, fmt.Errorf("无法启动FFmpeg: %v", err)
-	}
-
-	return cmd, stdout, nil
+	return cmd, nil
 }
 
 // createM3u8File 创建m3u8文件并返回内容

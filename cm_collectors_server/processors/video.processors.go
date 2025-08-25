@@ -293,10 +293,10 @@ func (v Video) GetVideoM3u8(dramaSeriesId string) ([]byte, error) {
 		return nil, fmt.Errorf("检查文件状态时出错: %v", err)
 	}
 }
-func (v Video) PlayVideoM3u8(dramaSeriesId string, start, duration float32) (*exec.Cmd, io.ReadCloser, error) {
+func (v Video) PlayVideoM3u8(dramaSeriesId string, start, duration float64) (*exec.Cmd, error) {
 	dramaSeries, err := ResourcesDramaSeries{}.Info(dramaSeriesId)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	return processorsffmpeg.M3U8{}.PlayVideoM3u8(dramaSeries.Src, start, duration)
 }
