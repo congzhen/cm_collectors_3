@@ -42,6 +42,7 @@ import videoPlay from './videoPlay.vue';
 import { resourceServer } from '@/server/resource.server';
 import { ElMessage } from 'element-plus';
 import type { I_resource } from '@/dataType/resource.dataType';
+import { getPlayVideoURL } from '@/common/play'
 
 const videoPlayElementRef = ref<HTMLDivElement>();
 const videoPlayRef = ref<InstanceType<typeof videoPlay>>();
@@ -96,7 +97,7 @@ const getResourceInfo = async (resourceId: string): Promise<I_resource | undefin
 const setVideoSource = (dramaSeriesId: string) => {
   const vp = videoPlayRef.value;
   if (!vp) return;
-  vp.setVideoSource('/api/video/mp4/' + dramaSeriesId, 'mp4', () => {
+  vp.setVideoSource(getPlayVideoURL(dramaSeriesId, 'mp4'), 'mp4', () => {
     vp.addTextTrack(
       `/api/video/subtitle/${dramaSeriesId}`,
       '默认字幕',

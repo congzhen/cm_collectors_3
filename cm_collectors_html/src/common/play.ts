@@ -69,3 +69,7 @@ export const playOpenResourceFolder = async (resourceId: string) => {
     return;
   }
 }
+
+export const getPlayVideoURL = (dramaSeriesId: string, type = 'mp4') => {
+  return `/api/video/${type}/${dramaSeriesId}/v.${type}`;
+}
