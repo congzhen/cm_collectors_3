@@ -20,6 +20,17 @@
       <h3 class="section-title">联系方式:</h3>
       <div class="content-section">
         <p class="contact-info">Email: czpk673@gmail.com</p>
+
+        <div class="telegram-section">
+          <div class="qr-code-container">
+            <img src="/tg.png" alt="Telegram" width="200" height="200" />
+          </div>
+          <div class="telegram-info">
+            <div class="telegram-label">TG讨论群</div>
+            <div class="telegram-link">https://t.me/+rFdWuJ8si_IzNTc1</div>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
@@ -68,6 +79,51 @@
     background-color: rgba(64, 158, 255, 0.1);
     border-radius: 4px;
     display: inline-block;
+  }
+
+  .telegram-section {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 20px;
+    background-color: rgba(64, 158, 255, 0.1);
+    border-radius: 8px;
+    margin-top: 15px;
+  }
+
+  .qr-code-container {
+    flex-shrink: 0;
+    border: 2px solid #409eff;
+    border-radius: 8px;
+    padding: 5px;
+    background-color: white;
+  }
+
+  .telegram-info {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .telegram-label {
+    font-size: 16px;
+    font-weight: bold;
+    color: #409eff;
+  }
+
+  .telegram-link {
+    font-size: 14px;
+    color: #f2f2f2;
+    word-break: break-all;
+    background-color: rgba(0, 0, 0, 0.2);
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+
+    &:hover {
+      background-color: rgba(64, 158, 255, 0.3);
+    }
   }
 }
 </style>

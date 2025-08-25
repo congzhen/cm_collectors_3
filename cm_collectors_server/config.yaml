@@ -1,7 +1,7 @@
 general:
     logoName: CM File Collectors
     isAdminLogin: false
-    adminPassword: "123456"
+    adminPassword: ""
     isAutoCreateM3u8: true
     language: zhCn
 sqlite3:

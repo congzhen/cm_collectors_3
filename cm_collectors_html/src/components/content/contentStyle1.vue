@@ -93,6 +93,7 @@ const coverPosterSize_C = computed(() => {
     color: #f3f3f3;
     opacity: 0.75;
     display: none;
+
   }
 
   .title-bg {

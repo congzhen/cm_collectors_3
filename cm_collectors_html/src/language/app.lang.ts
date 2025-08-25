@@ -17,7 +17,7 @@ export function AppLang() {
       if (stars == '0') {
         return t(`notStar`)
       }
-      return t(`stars`)
+      return stars + t(`stars`)
     },
 
     year: (y: string): string => {

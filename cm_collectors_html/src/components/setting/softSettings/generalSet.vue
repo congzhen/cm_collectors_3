@@ -14,9 +14,11 @@
           留空表示不修改密码。如果对外开放访问，请务必设置强密码。忘记密码可在服务器配置文件config.yaml中查看
         </el-text>
       </el-form-item>
+      <!--
       <el-form-item label="自动创建视频m3u8文件">
         <el-switch v-model="formData.isAutoCreateM3u8" />
       </el-form-item>
+      -->
       <el-form-item label="语言">
         <el-select v-model="formData.language">
           <el-option label="简体中文" value="zhCn" />
