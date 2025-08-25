@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"net/http"
 	"os"
+	"os/exec"
 	"regexp"
 	"strconv"
 
@@ -58,13 +59,17 @@ func (v Video) VideoMP4Stream_Play(c *gin.Context, fileInfo fs.FileInfo, src str
 	// 获取Range头部信息
 	rangeHeader := c.GetHeader("Range")
 
-	// 为投屏设备优化的响应头
+	// 为TVBox和投屏设备优化的响应头
 	c.Header("Cache-Control", "no-cache, no-store, must-revalidate, max-age=0")
 	c.Header("Pragma", "no-cache")
 	c.Header("Expires", "0")
 	c.Header("Connection", "keep-alive")
 	c.Header("Accept-Ranges", "bytes")
 	c.Header("Access-Control-Allow-Origin", "*")
+	c.Header("Content-Type", "video/mp4")
+
+	// 缓冲区倍率
+	var bufferRatio int64 = 2
 
 	if rangeHeader != "" {
 		// 解析Range头部
@@ -92,10 +97,27 @@ func (v Video) VideoMP4Stream_Play(c *gin.Context, fileInfo fs.FileInfo, src str
 				return nil
 			}
 		} else {
-			// 对于投屏设备，增加默认读取块大小以减少请求次数
-			end = start + 2*1024*1024 // 2MB块大小
-			if end > fileInfo.Size()-1 {
-				end = fileInfo.Size() - 1
+			// 对于TVBox和4K高码率视频，使用更大的默认块大小以减少请求次数
+			// 根据文件大小动态调整块大小
+			var chunkSize int64
+			fileSize := fileInfo.Size()
+			switch {
+			case fileSize > 10*1024*1024*1024: // 大于10GB (超大4K文件)
+				chunkSize = 16 * 1024 * 1024 // 16MB
+			case fileSize > 4*1024*1024*1024: // 大于4GB
+				chunkSize = 8 * 1024 * 1024 // 8MB
+			case fileSize > 1*1024*1024*1024: // 大于1GB
+				chunkSize = 4 * 1024 * 1024 // 4MB
+			default:
+				chunkSize = 2 * 1024 * 1024 // 2MB
+			}
+
+			// 增加倍率
+			chunkSize = chunkSize * bufferRatio
+
+			end = start + chunkSize
+			if end > fileSize-1 {
+				end = fileSize - 1
 			}
 		}
 
@@ -109,8 +131,11 @@ func (v Video) VideoMP4Stream_Play(c *gin.Context, fileInfo fs.FileInfo, src str
 		c.Header("Content-Range", fmt.Sprintf("bytes %d-%d/%d", start, end, fileInfo.Size()))
 		c.Header("Content-Length", strconv.FormatInt(end-start+1, 10))
 
-		// 针对投屏设备的优化
+		// 针对TVBox和投屏设备的优化
 		c.Header("Content-Disposition", "inline")
+
+		// 添加额外的性能优化头
+		c.Header("Transfer-Encoding", "chunked")
 
 		// 设置状态码为206 Partial Content
 		c.Status(http.StatusPartialContent)
@@ -135,8 +160,23 @@ func (v Video) VideoMP4Stream_Play(c *gin.Context, fileInfo fs.FileInfo, src str
 			return nil
 		}
 
-		// 使用适合投屏设备的缓冲区大小
-		buffer := make([]byte, 64*1024) // 64KB缓冲区
+		// 根据TVBox的特性使用优化的缓冲区大小
+		// 对于4K高码率视频使用更大的缓冲区以减少系统调用次数
+		bufferSize := 256 * 1024 // 256KB缓冲区 (从64KB增加)
+		fileSize := fileInfo.Size()
+		switch {
+		case fileSize > 10*1024*1024*1024: // 超大文件 (10GB+)
+			bufferSize = 1024 * 1024 // 1MB缓冲区
+		case fileSize > 4*1024*1024*1024: // 大文件 (4GB+)
+			bufferSize = 512 * 1024 // 512KB缓冲区
+		case fileSize > 1*1024*1024*1024: // 中等文件 (1GB+)
+			bufferSize = 384 * 1024 // 384KB缓冲区
+		}
+
+		// 增加倍率
+		bufferSize = bufferSize * int(bufferRatio)
+
+		buffer := make([]byte, bufferSize)
 		bytesToRead := end - start + 1
 		bytesRead := int64(0)
 
@@ -174,7 +214,13 @@ func (v Video) VideoMP4Stream_Play(c *gin.Context, fileInfo fs.FileInfo, src str
 
 				// 确保数据被发送
 				if flusher, ok := c.Writer.(http.Flusher); ok {
-					flusher.Flush()
+					// 对于4K视频，减少flush频率以提高性能
+					// 只有当缓冲区接近满时才flush
+					if bytesRead+int64(n) >= bytesToRead ||
+						(bufferSize > 256*1024 && bytesRead+int64(n)%int64(bufferSize*2) == 0) ||
+						bufferSize <= 256*1024 {
+						flusher.Flush()
+					}
 				}
 				bytesRead += int64(n)
 			}
@@ -183,12 +229,19 @@ func (v Video) VideoMP4Stream_Play(c *gin.Context, fileInfo fs.FileInfo, src str
 				break
 			}
 		}
+
+		// 最后确保所有数据都被发送
+		if flusher, ok := c.Writer.(http.Flusher); ok {
+			flusher.Flush()
+		}
 	} else {
 		// 没有Range头部，返回整个文件
 		c.Header("Content-Type", "video/mp4")
 		c.Header("Accept-Ranges", "bytes")
 		c.Header("Connection", "keep-alive")
 		c.Header("Content-Length", strconv.FormatInt(fileInfo.Size(), 10))
+		// 添加性能优化头
+		c.Header("Transfer-Encoding", "chunked")
 
 		// 使用http.ServeFile处理整个文件传输
 		http.ServeFile(c.Writer, c.Request, src)
@@ -210,4 +263,40 @@ func (v Video) VideoMP4Stream_TranscodePlay(c *gin.Context, src string) error {
 		return err
 	}
 	return nil
+}
+
+func (v Video) GetVideoM3u8(dramaSeriesId string) ([]byte, error) {
+	dramaSeries, err := ResourcesDramaSeries{}.Info(dramaSeriesId)
+	if err != nil {
+		return nil, err
+	}
+
+	m3u8FileSrc := dramaSeries.Src + ".m3u8"
+
+	// 检查文件是否存在
+	if _, err := os.Stat(m3u8FileSrc); err == nil {
+		// 文件存在，读取文件内容
+		content, err := os.ReadFile(m3u8FileSrc)
+		if err != nil {
+			return nil, fmt.Errorf("读取m3u8文件失败: %v", err)
+		}
+		return content, nil
+	} else if os.IsNotExist(err) {
+		// 文件不存在，创建m3u8文件
+		content, err := processorsffmpeg.M3U8{}.CreateM3u8File(dramaSeriesId, dramaSeries.Src, m3u8FileSrc)
+		if err != nil {
+			return nil, fmt.Errorf("创建m3u8文件失败: %v", err)
+		}
+		return content, nil
+	} else {
+		// 其他错误
+		return nil, fmt.Errorf("检查文件状态时出错: %v", err)
+	}
+}
+func (v Video) PlayVideoM3u8(dramaSeriesId string, start, duration float32) (*exec.Cmd, io.ReadCloser, error) {
+	dramaSeries, err := ResourcesDramaSeries{}.Info(dramaSeriesId)
+	if err != nil {
+		return nil, nil, err
+	}
+	return processorsffmpeg.M3U8{}.PlayVideoM3u8(dramaSeries.Src, start, duration)
 }

@@ -18,6 +18,11 @@ type Resources struct{}
 func (Resources) DataList(par *datatype.ReqParam_ResourcesList) (*[]models.Resources, int64, error) {
 	return models.Resources{}.DataList(core.DBS(), par)
 }
+
+func (Resources) DataListAll() (*[]models.Resources, error) {
+	return models.Resources{}.DataListAll(core.DBS())
+}
+
 func (Resources) Info(id string) (*models.Resources, error) {
 	info, err := models.Resources{}.Info(core.DBS(), id)
 	if err == nil && info.ID == "" || err == gorm.ErrRecordNotFound {

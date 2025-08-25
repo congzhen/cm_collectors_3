@@ -75,11 +75,17 @@ func publicRouter(router *gin.Engine) {
 	routerGroup.GET("play/open/resource/:resourceId", controllers.Play{}.PlayOpenResource)
 	routerGroup.GET("play/open/resource/folder/:resourceId", controllers.Play{}.PlayOpenResourceFolder)
 
-	routerGroup.GET("/video/mp4/:dramaSeriesId", controllers.Play{}.PlayVideoMP4)
+	routerGroup.GET("/video/mp4/:dramaSeriesId/v.mp4", controllers.Play{}.PlayVideoMP4)
+	routerGroup.GET("/video/m3u8/:dramaSeriesId/v.m3u8", controllers.Play{}.VideoM3u8)
+	routerGroup.GET("hls_video/:dramaSeriesId/:start/:duration", controllers.Play{}.PlayVideoHLS)
 	routerGroup.GET("/video/subtitle/:dramaSeriesId", controllers.Play{}.VideoSubtitle)
 
 	routerGroup.GET("files/list/image/:dramaSeriesId", controllers.FilesCL{}.FilesList_Image)
 	routerGroup.GET("files/image/:dramaSeriesId/:fileNameBase64", controllers.FilesCL{}.Files_Image) //Query("thumbWidth")缩率图宽度,Query("thumbLevel") 缩率图质量
+
+	// 添加TVBox相关路由
+	routerGroup.GET("/tvbox/home", controllers.TVBox{}.Home)
+	routerGroup.GET("/tvbox/sites/videos", controllers.TVBox{}.Videos)
 }
 
 func AdminRouter(router *gin.Engine) {
