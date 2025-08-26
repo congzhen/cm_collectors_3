@@ -7,7 +7,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
-	"syscall"
 )
 
 type FFmpeg struct{}
@@ -17,7 +16,7 @@ func createCommand(name string, arg ...string) *exec.Cmd {
 	cmd := exec.Command(name, arg...)
 	// 在Windows上隐藏控制台窗口
 	if runtime.GOOS == "windows" {
-		cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
+		setSysProcAttr(cmd)
 	}
 	return cmd
 }
@@ -27,7 +26,7 @@ func createCommandContext(ctx context.Context, name string, arg ...string) *exec
 	cmd := exec.CommandContext(ctx, name, arg...)
 	// 在Windows上隐藏控制台窗口
 	if runtime.GOOS == "windows" {
-		cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
+		setSysProcAttr(cmd)
 	}
 	return cmd
 }
