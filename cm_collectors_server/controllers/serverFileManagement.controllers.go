@@ -37,7 +37,7 @@ func (ServerFileManagement) DefaultPathEntrySlc() []serverfilemanagement.ServerF
 			return pathEntrySlc
 		}
 		for _, f := range files {
-			path := filepath.ToSlash(f.Name())
+			path := filepath.ToSlash("/" + f.Name())
 			pathEntrySlc = append(pathEntrySlc, serverfilemanagement.ServerFileManagement_PathEntry{
 				RealPath:    path,
 				VirtualPath: path,
