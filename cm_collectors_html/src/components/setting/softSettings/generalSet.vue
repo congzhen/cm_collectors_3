@@ -11,7 +11,7 @@
       <el-form-item label="管理密码">
         <el-input type="password" v-model="formData.adminPassword" show-password />
         <el-text class="warning-text" type="warning" size="small">
-          留空表示不修改密码。如果对外开放访问，请务必设置强密码。忘记密码可在服务器配置文件config.yaml中查看
+          留空表示不修改密码。如果对外开放访问，请务必设置强密码。忘记密码可在服务器配置文件config.yaml中查看或修改
         </el-text>
       </el-form-item>
       <!--
@@ -19,6 +19,14 @@
         <el-switch v-model="formData.isAutoCreateM3u8" />
       </el-form-item>
       -->
+      <el-form-item label="TV Box 地址">
+        <div>
+          <p>[域名]或[IP:端口号]/api/tvbox/home</p>
+          <el-text class="warning-text" type="warning" size="small">
+            例如: http://192.168.1.51:12345/api/tvbox/home
+          </el-text>
+        </div>
+      </el-form-item>
       <el-form-item label="语言">
         <el-select v-model="formData.language">
           <el-option label="简体中文" value="zhCn" />
