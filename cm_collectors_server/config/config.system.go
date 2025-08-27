@@ -11,6 +11,7 @@ type System struct {
 	ResponseMsgLanguage string `yaml:"responseMsgLanguage"`
 	LogFilePath         string `yaml:"logFilePath"`
 	LogLevel            string `yaml:"logLevel"`
+	UpdateSoftConfig    string `yaml:"updateSoftConfig"`
 }
 
 /*获取服务器地址*/

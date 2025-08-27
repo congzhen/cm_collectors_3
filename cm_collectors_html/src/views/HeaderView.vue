@@ -62,6 +62,16 @@
           <label class="menu-item-title">导入</label>
            -->
         </div>
+        <div class="menu-item" v-admin @click="openCheckUpdateSoft">
+          <el-tooltip content="检测更新" placement="bottom">
+            <el-icon>
+              <ChromeFilled />
+            </el-icon>
+          </el-tooltip>
+          <!--
+          <label class="menu-item-title">设置</label>
+           -->
+        </div>
         <div class="menu-item" v-admin @click="goToSetting">
           <el-tooltip content="设置" placement="bottom">
             <el-icon>
@@ -90,6 +100,7 @@
     <tagListDrawer ref="tagListDrawerRef" />
     <resourceFormDrawer ref="resourceFormDrawerRef" @success="createResouceSuccessHandle" />
     <importResourceDrawer ref="importResourceDrawerRef" @success="createResouceSuccessHandle" />
+    <updateSoftDialog ref="updateSoftDialogRef"></updateSoftDialog>
   </div>
 </template>
 <script setup lang="ts">
@@ -100,6 +111,7 @@ import tagListDrawer from '@/components/tag/tagListDrawer.vue'
 import searchInputTagByStore from '@/components/com/form/searchInputTagByStore.vue'
 import resourceFormDrawer from '@/components/resource/resourceFormDrawer.vue'
 import importResourceDrawer from '@/components/importResource/importResourceDrawer.vue'
+import updateSoftDialog from '@/components/setting/updateSoft/updateSoftDialog.vue'
 import { appStoreData } from '@/storeData/app.storeData'
 import type { I_resource } from '@/dataType/resource.dataType'
 import { AppLang } from '@/language/app.lang'
@@ -114,6 +126,7 @@ const emits = defineEmits(['createResouceSuccess'])
 const tagListDrawerRef = ref<InstanceType<typeof tagListDrawer>>()
 const resourceFormDrawerRef = ref<InstanceType<typeof resourceFormDrawer>>()
 const importResourceDrawerRef = ref<InstanceType<typeof importResourceDrawer>>()
+const updateSoftDialogRef = ref<InstanceType<typeof updateSoftDialog>>()
 
 const props = defineProps({
   mode: {
@@ -137,6 +150,10 @@ const openTagList = () => {
 
 const openImportResource = () => {
   importResourceDrawerRef.value?.open()
+}
+
+const openCheckUpdateSoft = () => {
+  updateSoftDialogRef.value?.open()
 }
 
 const goToPerformer = () => {

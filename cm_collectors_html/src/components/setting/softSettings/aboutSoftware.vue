@@ -20,7 +20,7 @@
       <h3 class="section-title">联系方式:</h3>
       <div class="content-section">
         <p class="contact-info">Email: czpk673@gmail.com</p>
-
+        <!--
         <div class="telegram-section">
           <div class="qr-code-container">
             <img src="/tg.png" alt="Telegram" width="200" height="200" />
@@ -30,7 +30,7 @@
             <div class="telegram-link">https://t.me/+rFdWuJ8si_IzNTc1</div>
           </div>
         </div>
-
+      -->
       </div>
     </div>
   </div>

@@ -3,7 +3,6 @@ import AdminLoginView from '@/views/AdminLoginView.vue'
 import IndexView from '../views/IndexView.vue'
 import PerformerView from '@/views/performerView.vue'
 import SettingView from '@/views/SettingView.vue'
-
 import playMovies from '@/views/play/playMovies.vue'
 import playMoviesMobile from '@/views/play/playMoviesMobile.vue'
 import playComic from '@/views/play/playComic.vue'

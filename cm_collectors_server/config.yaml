@@ -16,6 +16,7 @@ system:
     responseMsgLanguage: en
     logFilePath: ./err.log
     logLevel: Error
+    updateSoftConfig: https://objectstorageapi.ap-southeast-1.clawcloudrun.com/vj5i0ntw-cm-collectors-3/updateConfig/updateSoftConfig.json
 play:
     playVideoFormats:
         - h264

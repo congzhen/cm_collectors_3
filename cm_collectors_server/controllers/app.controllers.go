@@ -1,9 +1,12 @@
 package controllers
 
 import (
+	"cm_collectors_server/core"
 	"cm_collectors_server/datatype"
 	"cm_collectors_server/processors"
 	"cm_collectors_server/response"
+	"io"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -33,4 +36,25 @@ func (App) SetConfig(c *gin.Context) {
 		return
 	}
 	response.OkWithData(true, c)
+}
+
+func (App) GetUpdateSoftConfig(c *gin.Context) {
+	updateURL := core.Config.System.UpdateSoftConfig
+	// 发起HTTP GET请求
+	resp, err := http.Get(updateURL)
+	if err != nil {
+		response.FailWithMessage("请求更新配置失败: "+err.Error(), c)
+		return
+	}
+	defer resp.Body.Close()
+
+	// 读取响应体
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		response.FailWithMessage("读取更新配置失败: "+err.Error(), c)
+		return
+	}
+
+	// 直接返回JSON数据
+	response.OkWithData(string(body), c)
 }
