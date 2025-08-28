@@ -33,9 +33,9 @@ play:
         - pcm_s24le
 jwt:
     expiresAt: 86400
-    issuer: goBase
-    audience: goBase
-    subject: somebody
+    issuer: cmCollectors
+    audience: cmCollectors
+    subject: cmCollectors
     privateKeyPath: ./cert/jwtPrivate.key
     publicKeyPath: ./cert/jwtPublic.key
 mysql:
