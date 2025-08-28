@@ -1,11 +1,6 @@
 {
-  "version": "3.0.1",
-  "changelog": [
-    "新增了用户界面优化，提升操作体验",
-    "修复了视频播放的已知问题，提高稳定性",
-    "提升了系统性能和响应速度",
-    "新改善了移动端适配，支持更多设备"
-  ],
-  "windowsDownloadUrl": "https://baidu.com",
-  "linuxDownloadUrl": "https://baidu.com"
+  "version": "3.0.0",
+  "changelog": ["v3.0.0发布"],
+  "windowsDownloadUrl": "https://objectstorageapi.ap-southeast-1.clawcloudrun.com/vj5i0ntw-cm-collectors-3/download/v3.0.0/windows/cm_collectors_server.exe",
+  "linuxDownloadUrl": "https://objectstorageapi.ap-southeast-1.clawcloudrun.com/vj5i0ntw-cm-collectors-3/download/v3.0.0/linux/cm_collectors_server"
 }
