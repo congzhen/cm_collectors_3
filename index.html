@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CM Collectors</title>
+    <style>
+        :root {
+            --primary-color: #409eff;
+            --success-color: #67c23a;
+            --warning-color: #e6a23c;
+            --danger-color: #f56c6c;
+            --info-color: #909399;
+            --background-color: #f8f9fa;
+            --card-background: #ffffff;
+            --text-primary: #303133;
+            --text-regular: #606266;
+            --text-secondary: #909399;
+            --border-color: #dcdfe6;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --header-gradient-start: #2c3e50;
+            --header-gradient-end: #4ca1af;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 50px 20px;
+            background: linear-gradient(135deg, var(--header-gradient-start) 0%, var(--header-gradient-end) 100%);
+            color: white;
+            border-radius: var(--border-radius);
+            margin-bottom: 30px;
+            box-shadow: var(--box-shadow);
+        }
+
+        header h1 {
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        header .subtitle {
+            font-size: 1.3rem;
+            opacity: 0.9;
+            margin-bottom: 25px;
+        }
+
+        .version-info {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin: 25px 0;
+        }
+
+        .tag {
+            background-color: var(--success-color);
+            color: white;
+            padding: 6px 18px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .download-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .windows-btn {
+            background: linear-gradient(135deg, #00adef 0%, #0078d7 100%);
+            color: white;
+        }
+
+        .linux-btn {
+            background: linear-gradient(135deg, #f8b400 0%, #ff8c00 100%);
+            color: white;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+        }
+
+        .download-btn i {
+            font-size: 1.4rem;
+        }
+
+        .section {
+            background-color: var(--card-background);
+            border-radius: var(--border-radius);
+            padding: 35px;
+            margin-bottom: 30px;
+            box-shadow: var(--box-shadow);
+            border: 1px solid var(--border-color);
+        }
+
+        .section-title {
+            font-size: 2rem;
+            margin-bottom: 25px;
+            color: var(--primary-color);
+            position: relative;
+            padding-bottom: 12px;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 60px;
+            height: 3px;
+            background: var(--primary-color);
+            border-radius: 3px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 25px;
+            margin-top: 25px;
+        }
+
+        .feature-card {
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 25px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+            border-color: var(--primary-color);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .feature-card h3 {
+            margin-bottom: 15px;
+            color: var(--text-primary);
+            font-size: 1.4rem;
+        }
+
+        .new-features,
+        .upgrade-guide {
+            margin-top: 25px;
+        }
+
+        .feature-list,
+        .upgrade-steps {
+            padding-left: 25px;
+        }
+
+        .feature-list li,
+        .upgrade-steps li {
+            margin-bottom: 12px;
+            line-height: 1.7;
+        }
+
+        .steps {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .step {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+        }
+
+        .step:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .step-number {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #3082ce 100%);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-weight: bold;
+            font-size: 1.2rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-secondary);
+            font-size: 1rem;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            margin-top: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            header {
+                padding: 30px 15px;
+            }
+
+            header h1 {
+                font-size: 2.2rem;
+            }
+
+            .section {
+                padding: 25px 20px;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .download-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .download-btn {
+                width: 80%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>CM Collectors</h1>
+            <p class="subtitle">本地视频图片漫画管理</p>
+            <div class="version-info">
+                <span class="tag">V3.0</span>
+                <span>2025-09-01发布</span>
+            </div>
+
+            <div class="download-buttons">
+                <a href="https://objectstorageapi.ap-southeast-1.clawcloudrun.com/vj5i0ntw-cm-collectors-3/download/last/cm_collectors_3_windows.zip"
+                    class="download-btn windows-btn">
+                    <i>🪟</i>
+                    <span>下载 Windows 版本</span>
+                </a>
+                <a href="https://objectstorageapi.ap-southeast-1.clawcloudrun.com/vj5i0ntw-cm-collectors-3/download/last/cm_collectors_3_linux.zip"
+                    class="download-btn linux-btn">
+                    <i>🐧</i>
+                    <span>下载 Linux 版本</span>
+                </a>
+            </div>
+        </header>
+
+        <section class="section">
+            <h2 class="section-title">核心功能</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🏷️</div>
+                    <h3>标签系统</h3>
+                    <p>自定义标签分类，灵活的筛选方式，支持多标签组合查找，快速定位您的资源。</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔍</div>
+                    <h3>高级筛选</h3>
+                    <p>多种筛选模式（与、或、非、单选、多选）</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📂</div>
+                    <h3>资源库管理</h3>
+                    <p>支持多个资源库，每个库可独立设置，实现个性化资源管理。</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">👥</div>
+                    <h3>演员库系统</h3>
+                    <p>演员信息集中管理，支持跨资源库链接，避免重复录入。</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">V3版本新特性</h2>
+            <div class="new-features">
+                <h3>架构更新</h3>
+                <ul class="feature-list">
+                    <li>V3 版本现以 Web 服务器形式运行</li>
+                    <li>支持部署在本地电脑、VPS、NAS 或 Docker 环境中</li>
+                    <li>windows版提供了启动器CM_launcher.exe，托盘图标，封装的webview浏览器</li>
+                </ul>
+                <h3>大屏观看</h3>
+                <ul class="feature-list">
+                    <li>TVBox APP 电视端接口支持</li>
+                </ul>
+                <h3>增强的标签系统</h3>
+                <ul class="feature-list">
+                    <li>支持自定义封面图属性标签显示</li>
+                </ul>
+                <h3 style="margin-top: 20px;">资源库与演员库</h3>
+                <ul class="feature-list">
+                    <li>支持多个资源库和演员库</li>
+                    <li>资源库间演员库交叉链接</li>
+                    <li>每个资源库独立设置</li>
+                    <li>个性化显示配置</li>
+                </ul>
+
+                <h3 style="margin-top: 20px;">界面与性能优化</h3>
+                <ul class="feature-list">
+                    <li>全新的UI设计</li>
+                    <li>更快的搜索和筛选速度</li>
+                    <li>优化的资源管理体验</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">V2至V3升级指南</h2>
+            <div class="upgrade-guide">
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div>
+                            <h3>备份数据</h3>
+                            <p>在升级前请备份V2版本的数据库文件，升级后的数据将不可还原。</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div>
+                            <h3>拷贝数据库文件夹</h3>
+                            <p>将 V2 版本的 db 文件夹整体复制到 V3 版本的根目录中。</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div>
+                            <h3>重命名数据库文件</h3>
+                            <p>进入 db 文件夹，将原有的 cm_xxxxx.db 文件重命名为 cm_collectors.db。</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div>
+                            <h3>启动程序</h3>
+                            <p>运行 CM_launcher.exe。首次启动时因需执行数据迁移，耗时可能较久，请耐心等待。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+    </div>
+
+    <footer>
+        <p>© <span id="current-year">2025</span> CM Collectors.</p>
+    </footer>
+</body>
+<script>
+    // 实时更新年份
+    document.getElementById('current-year').textContent = new Date().getFullYear();
+</script>
+
+</html>
