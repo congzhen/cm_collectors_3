@@ -377,6 +377,7 @@ defineExpose({
   width: 100%;
   height: 5px;
   margin: 6px 0;
+  cursor: pointer;
 }
 
 /* 进度条背景轨道 */
