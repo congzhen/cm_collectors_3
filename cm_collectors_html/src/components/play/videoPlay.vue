@@ -5,8 +5,8 @@
       x5-video-orientation="portraint">
       <source :src="videoSrc" :type="isHls ? 'application/x-mpegURL' : 'video/mp4'">
     </video>
-    <videoPlayControls ref="videoControlsRef" @play="handlePlay" @pause="handlePause" @seek="handleSeek"
-      @volume-change="handleVolumeChange" @mute-toggle="handleMuteToggle"
+    <videoPlayControls v-if="useVideoPlayControls && !isMobile()" ref="videoControlsRef" @play="handlePlay"
+      @pause="handlePause" @seek="handleSeek" @volume-change="handleVolumeChange" @mute-toggle="handleMuteToggle"
       @playback-rate-change="handlePlaybackRateChange" @rotate="handleRotate" @fullscreen="handleFullscreen"
       @picture-in-picture="handlePictureInPicture" />
   </div>
@@ -32,6 +32,10 @@ import { ElMessage } from 'element-plus';
 import { isMobile } from '@/assets/mobile';
 
 const props = defineProps({
+  useVideoPlayControls: {
+    type: Boolean,
+    default: true,
+  },
   aspectRatio: {
     type: String,
     default: '16:9',
@@ -57,7 +61,7 @@ const initializePlayer = () => {
     const mobileOptions = {
       preload: 'metadata',
       playsinline: true,
-      controls: false, // 默认禁用控制条
+      controls: true, // 控制条
       autoplay: false,
       muted: false,
       techOrder: ['html5'],
@@ -74,7 +78,7 @@ const initializePlayer = () => {
     // 桌面端配置
     const desktopOptions = {
       autoplay: false,
-      controls: false, // 默认禁用控制条
+      controls: !props.useVideoPlayControls, // 默认禁用控制条
       responsive: true,
       fluid: true,
       playbackRates: [0.5, 1, 1.5, 2],

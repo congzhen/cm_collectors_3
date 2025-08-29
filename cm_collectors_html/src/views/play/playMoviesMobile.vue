@@ -92,6 +92,7 @@ import { AppLang } from '@/language/app.lang';
 import { appStoreData } from "@/storeData/app.storeData";
 import resourceDramaSeriesList from '@/components/resource/resourceDramaSeriesList.vue'
 import MobileHeader from '../MobileHeaderView.vue'
+import { getPlayVideoURL } from "@/common/play";
 
 const appLang = AppLang();
 const router = useRouter();
@@ -157,7 +158,7 @@ const setVideoSource = (dramaSeriesId: string) => {
   selectedDramaSeriesId.value = dramaSeriesId;
   const vp = videoPlayRef.value;
   if (!vp) return;
-  vp.setVideoSource('/api/video/mp4/' + dramaSeriesId, 'mp4', () => {
+  vp.setVideoSource(getPlayVideoURL(dramaSeriesId, 'mp4'), 'mp4', () => {
     vp.addTextTrack(
       `/api/video/subtitle/${dramaSeriesId}`,
       '默认字幕',
