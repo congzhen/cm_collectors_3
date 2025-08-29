@@ -30,7 +30,7 @@ import { computed, nextTick, ref, type PropType } from 'vue';
 import { getResourceCoverPoster } from '@/common/photo';
 import { playResource } from '@/common/play';
 import { appStoreData } from '@/storeData/app.storeData';
-import { debounceNow } from '@/assets/debounce';
+import { debounce } from '@/assets/debounce';
 import type { ElScrollbar } from 'element-plus';
 import { isMobile } from '@/assets/mobile';
 const store = {
@@ -80,11 +80,11 @@ const selectResourcesHandle = (item: I_resource) => {
 }
 
 // 图片加载完成事件处理
-const onImageLoad = debounceNow(() => {
+const onImageLoad = debounce(() => {
   nextTick(() => {
     waterfallRef.value?.renderer();
   });
-}, 300);
+}, 100);
 
 const change = () => {
   scrollbarRef.value?.setScrollTop(0);
