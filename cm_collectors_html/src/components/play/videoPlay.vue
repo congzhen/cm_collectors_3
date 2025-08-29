@@ -1,17 +1,21 @@
 <template>
   <div class="video-player-container">
-    <video ref="videoPlayerRef" class="video-js vjs-theme-city" controls preload="auto" width="100%" playsinline
+    <video ref="videoPlayerRef" class="video-js vjs-theme-city" preload="auto" width="100%" playsinline
       webkit-playsinline x5-playsinline x5-video-player-type="h5" x5-video-player-fullscreen="true"
       x5-video-orientation="portraint">
       <source :src="videoSrc" :type="isHls ? 'application/x-mpegURL' : 'video/mp4'">
     </video>
+    <videoPlayControls ref="videoControlsRef" @play="handlePlay" @pause="handlePause" @seek="handleSeek"
+      @volume-change="handleVolumeChange" @mute-toggle="handleMuteToggle"
+      @playback-rate-change="handlePlaybackRateChange" @rotate="handleRotate" @fullscreen="handleFullscreen"
+      @picture-in-picture="handlePictureInPicture" />
   </div>
 </template>
 
 <script lang="ts" setup>
 import videojs from 'video.js'
 import 'video.js/dist/video-js.css'
-
+import videoPlayControls from './videoPlayControls.vue';
 // City
 import '@videojs/themes/dist/city/index.css';
 // Fantasy
@@ -35,13 +39,14 @@ const props = defineProps({
 })
 
 const videoPlayerRef = ref<HTMLVideoElement | null>(null)
+const videoControlsRef = ref<InstanceType<typeof videoPlayControls> | null>(null)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const player = ref<any>(null) // 指定更合适的类型
 const videoSrc = ref('')
 const isHls = ref(false)
 // 添加旋转角度状态
 const rotation = ref(0)
-
+const isFullscreen = ref(false)
 
 // 初始化播放器
 const initializePlayer = () => {
@@ -52,7 +57,7 @@ const initializePlayer = () => {
     const mobileOptions = {
       preload: 'metadata',
       playsinline: true,
-      controls: true,
+      controls: false, // 默认禁用控制条
       autoplay: false,
       muted: false,
       techOrder: ['html5'],
@@ -69,7 +74,7 @@ const initializePlayer = () => {
     // 桌面端配置
     const desktopOptions = {
       autoplay: false,
-      controls: true,
+      controls: false, // 默认禁用控制条
       responsive: true,
       fluid: true,
       playbackRates: [0.5, 1, 1.5, 2],
@@ -96,27 +101,159 @@ const initializePlayer = () => {
       //console.log('Player is ready');
     })
 
+    // 添加事件监听器同步播放器状态到控制组件
+    setupPlayerEventListeners();
+
     // (仅在桌面端)
     if (!isMobileDevice) {
       // 添加自定义旋转按钮
       addRotateButton();
-
       //监控音量变化
       player.value.on('volumechange', function () {
         // 获取当前音量
         const currentVolume = player.value.volume();
         // 获取当前静音状态
         const isMuted = player.value.muted();
+        // 更新控制组件状态
+        if (videoControlsRef.value) {
+          videoControlsRef.value.volume = currentVolume;
+          videoControlsRef.value.isMuted = isMuted;
+        }
         // 保存音量到本地存储
         if (!isMuted) {
           saveVolumeToStorage(currentVolume);
         }
       });
     }
-
-
   }
 }
+
+// 设置播放器事件监听器
+const setupPlayerEventListeners = () => {
+  if (!player.value || !videoControlsRef.value) return;
+
+  // 监听播放事件
+  player.value.on('play', function () {
+    if (videoControlsRef.value) {
+      videoControlsRef.value.isPlaying = true;
+    }
+  });
+
+  // 监听暂停事件
+  player.value.on('pause', function () {
+    if (videoControlsRef.value) {
+      videoControlsRef.value.isPlaying = false;
+    }
+  });
+
+  // 监听时间更新事件
+  player.value.on('timeupdate', function () {
+    const currentTime = player.value.currentTime();
+    const duration = player.value.duration();
+
+    if (videoControlsRef.value) {
+      videoControlsRef.value.currentTime = currentTime;
+      videoControlsRef.value.duration = duration;
+    }
+  });
+
+  // 监听加载元数据事件
+  player.value.on('loadedmetadata', function () {
+    if (videoControlsRef.value) {
+      videoControlsRef.value.duration = player.value.duration();
+    }
+  });
+
+  // 监听全屏变化事件
+  player.value.on('fullscreenchange', function () {
+    isFullscreen.value = player.value.isFullscreen();
+    // 根据全屏状态切换控制条
+    if (isFullscreen.value) {
+      // 全屏时启用内置控制条
+      player.value.controls(true);
+    } else {
+      // 非全屏时禁用内置控制条
+      player.value.controls(false);
+    }
+  });
+};
+
+// 处理播放事件
+const handlePlay = () => {
+  if (player.value) {
+    if (player.value.paused()) {
+      player.value.play();
+    } else {
+      player.value.pause();
+    }
+  }
+};
+
+// 处理暂停事件
+const handlePause = () => {
+  if (player.value && !player.value.paused()) {
+    player.value.pause();
+  }
+};
+
+// 处理进度条拖动事件
+const handleSeek = (time: number) => {
+  if (player.value) {
+    player.value.currentTime(time);
+  }
+};
+
+// 处理音量变化事件
+const handleVolumeChange = (volume: number) => {
+  if (player.value) {
+    player.value.volume(volume);
+    player.value.muted(volume === 0);
+  }
+};
+
+// 处理静音切换事件
+const handleMuteToggle = (isMuted: boolean) => {
+  if (player.value) {
+    player.value.muted(isMuted);
+  }
+};
+
+// 处理播放速度变化事件
+const handlePlaybackRateChange = (rate: number) => {
+  if (player.value) {
+    player.value.playbackRate(rate);
+  }
+};
+
+// 处理旋转事件
+const handleRotate = (degrees: number) => {
+  rotateVideo(degrees);
+};
+
+// 处理全屏事件
+const handleFullscreen = () => {
+  if (player.value) {
+    if (player.value.isFullscreen()) {
+      player.value.exitFullscreen();
+    } else {
+      player.value.requestFullscreen();
+    }
+  }
+};
+
+// 处理画中画事件
+const handlePictureInPicture = () => {
+  if (player.value) {
+    const videoElement = player.value.el().querySelector('video');
+    if (videoElement) {
+      if (document.pictureInPictureElement) {
+        document.exitPictureInPicture();
+      } else {
+        videoElement.requestPictureInPicture();
+      }
+    }
+  }
+};
 
 // 添加旋转按钮到控制栏
 const addRotateButton = () => {
@@ -217,8 +354,6 @@ const calculateScaleFactor = (rotation: number, videoWidth: number, videoHeight:
   return Math.min(containerWidth / w, containerHeight / h);
 };
 
-
-
 // 获取当前旋转角度
 const getRotation = (): number => {
   return rotation.value;
@@ -309,6 +444,10 @@ const setVideoSource = (src: string, type = 'mp4', fn = () => { }) => {
         duration: player.value.duration()
       })
         */
+      // 同步时长到控制组件
+      if (videoControlsRef.value) {
+        videoControlsRef.value.duration = player.value.duration();
+      }
       fn();
     })
 
@@ -491,7 +630,6 @@ const getVideoDimensions = (): { width: number; height: number } | null => {
   }
   return null;
 };
-
 
 // 组件挂载时初始化播放器
 onMounted(() => {
