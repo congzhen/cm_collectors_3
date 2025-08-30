@@ -133,7 +133,8 @@ const toggleFullScreenDisplay = () => {
       if (ep) {
         // 获取html的宽高
         const { width, height } = ep.getBoundingClientRect();
-        setVideoDimensions(width, height);
+        const controllerHeight = videoPlayRef.value?.getControllerHeight() || 0;
+        setVideoDimensions(width, height - controllerHeight);
       }
     } else {
       const vp = videoPlayRef.value || undefined;

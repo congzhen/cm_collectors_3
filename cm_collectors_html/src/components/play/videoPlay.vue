@@ -1,5 +1,6 @@
 <template>
-  <div class="video-player-container" :class="{ 'fullscreen-mode': isFullscreenMode }">
+  <div ref="videoPlayContainerElementRef" class="video-player-container"
+    :class="{ 'fullscreen-mode': isFullscreenMode }">
     <video ref="videoPlayerRef" class="video-js vjs-theme-city" preload="auto" width="100%" playsinline
       webkit-playsinline x5-playsinline x5-video-player-type="h5" x5-video-player-fullscreen="true"
       x5-video-orientation="portraint">
@@ -27,7 +28,7 @@ import '@videojs/themes/dist/city/index.css';
 
 import '@videojs/http-streaming'
 
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { ElMessage } from 'element-plus';
 import { isMobile } from '@/assets/mobile';
 
@@ -42,16 +43,20 @@ const props = defineProps({
   },
 })
 
+const videoPlayControlsHeight = 63;
+
+const videoPlayContainerElementRef = ref<HTMLDivElement | null>(null)
 const videoPlayerRef = ref<HTMLVideoElement | null>(null)
 const videoControlsRef = ref<InstanceType<typeof videoPlayControls> | null>(null)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const player = ref<any>(null) // 指定更合适的类型
 const videoSrc = ref('')
 const isHls = ref(false)
+//
+const initVideoAspectRatio = ref(props.aspectRatio)
 // 添加旋转角度状态
 const rotation = ref(0)
 const isFullscreen = ref(false)
-
 const isFullscreenMode = ref(false)
 
 // 初始化播放器
@@ -239,7 +244,8 @@ const handleRotate = (degrees: number) => {
 // 最大化函数
 const toggleFullscreenMode = () => {
   isFullscreenMode.value = !isFullscreenMode.value
-
+  console.log(props.aspectRatio);
+  console.log(player.value?.aspectRatio());
   if (isFullscreenMode.value) {
     // 进入最大化模式
     document.body.style.overflow = 'hidden'
@@ -248,6 +254,20 @@ const toggleFullscreenMode = () => {
     // 退出最大化模式
     document.body.style.overflow = ''
   }
+
+  nextTick(() => {
+    if (isFullscreenMode.value) {
+      const ep = videoPlayContainerElementRef.value || undefined;
+      if (ep) {
+        // 获取html的宽高
+        const { width, height } = ep.getBoundingClientRect();
+        setAspectRatio(width + ':' + (height - getControllerHeight()))
+      }
+    } else {
+      setAspectRatio(initVideoAspectRatio.value)
+    }
+  })
+
 }
 
 // 处理全屏事件
@@ -395,6 +415,14 @@ const setAspectRatio = (aspectRatio: string) => {
   }
 };
 
+// 获取 aspectRatio
+const getAspectRatio = (): string | null => {
+  if (player.value) {
+    return player.value.aspectRatio();
+  }
+  return null;
+};
+
 // 获取播放状态
 const isPlaying = (): boolean => {
   if (player.value) {
@@ -486,6 +514,12 @@ const setVideoSource = (src: string, type = 'mp4', fn = () => { }) => {
     // 添加 loadeddata 事件监听
     player.value.on('loadeddata', function () {
       //console.log('Video data loaded successfully')
+
+      const _aspectRatio = getAspectRatio()
+      if (_aspectRatio) {
+        initVideoAspectRatio.value = _aspectRatio
+      }
+
       // 重新应用旋转效果
       if (rotation.value !== 0) {
         setTimeout(() => {
@@ -651,6 +685,11 @@ const getVideoDimensions = (): { width: number; height: number } | null => {
   return null;
 };
 
+// 获取控制器高度
+const getControllerHeight = (): number => {
+  return videoPlayControlsHeight
+}
+
 // 组件挂载时初始化播放器
 onMounted(() => {
   initializePlayer()
@@ -684,7 +723,8 @@ defineExpose({
   rotateVideo,
   setRotation,
   getRotation,
-  toggleFullscreenMode
+  toggleFullscreenMode,
+  getControllerHeight,
 })
 </script>
 
@@ -715,7 +755,7 @@ defineExpose({
   /* 减去控制条的大致高度 */
 }
 
-.video-player-container.fullscreen-mode videoPlayControls {
+.video-player-container.fullscreen-mode .video-controller {
   /* 保持控制条原有尺寸 */
   flex-shrink: 0;
 }
