@@ -1,5 +1,5 @@
 <template>
-  <div class="video-player-container">
+  <div class="video-player-container" :class="{ 'fullscreen-mode': isFullscreenMode }">
     <video ref="videoPlayerRef" class="video-js vjs-theme-city" preload="auto" width="100%" playsinline
       webkit-playsinline x5-playsinline x5-video-player-type="h5" x5-video-player-fullscreen="true"
       x5-video-orientation="portraint">
@@ -8,7 +8,7 @@
     <videoPlayControls v-if="useVideoPlayControls && !isMobile()" ref="videoControlsRef" @play="handlePlay"
       @pause="handlePause" @seek="handleSeek" @volume-change="handleVolumeChange" @mute-toggle="handleMuteToggle"
       @playback-rate-change="handlePlaybackRateChange" @rotate="handleRotate" @fullscreen="handleFullscreen"
-      @picture-in-picture="handlePictureInPicture" />
+      @picture-in-picture="handlePictureInPicture" @maximize="toggleFullscreenMode" />
   </div>
 </template>
 
@@ -51,6 +51,8 @@ const isHls = ref(false)
 // 添加旋转角度状态
 const rotation = ref(0)
 const isFullscreen = ref(false)
+
+const isFullscreenMode = ref(false)
 
 // 初始化播放器
 const initializePlayer = () => {
@@ -233,6 +235,20 @@ const handlePlaybackRateChange = (rate: number) => {
 const handleRotate = (degrees: number) => {
   rotateVideo(degrees);
 };
+
+// 最大化函数
+const toggleFullscreenMode = () => {
+  isFullscreenMode.value = !isFullscreenMode.value
+
+  if (isFullscreenMode.value) {
+    // 进入最大化模式
+    document.body.style.overflow = 'hidden'
+    // 可以在这里添加其他需要的样式调整
+  } else {
+    // 退出最大化模式
+    document.body.style.overflow = ''
+  }
+}
 
 // 处理全屏事件
 const handleFullscreen = () => {
@@ -667,7 +683,8 @@ defineExpose({
   // 导出旋转相关方法
   rotateVideo,
   setRotation,
-  getRotation
+  getRotation,
+  toggleFullscreenMode
 })
 </script>
 
@@ -676,6 +693,31 @@ defineExpose({
   width: 100%;
   margin: 0 auto;
   overflow: hidden;
+}
+
+/* 添加最大化模式样式 */
+.video-player-container.fullscreen-mode {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+  background-color: #000;
+  display: flex;
+  flex-direction: column;
+}
+
+.video-player-container.fullscreen-mode .video-js {
+  flex: 1;
+  width: 100%;
+  height: calc(100% - 44px);
+  /* 减去控制条的大致高度 */
+}
+
+.video-player-container.fullscreen-mode videoPlayControls {
+  /* 保持控制条原有尺寸 */
+  flex-shrink: 0;
 }
 
 /* 可选：自定义视频播放器样式 */

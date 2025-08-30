@@ -1,4 +1,3 @@
-// ... existing code ...
 <template>
   <div class="video-controller">
     <!-- 播放进度条 -->
@@ -86,6 +85,16 @@
           </svg>
         </button>
 
+        <!-- 最大化/恢复按钮 -->
+        <button class="control-button" @click="toggleMaximize" :title="isMaximized ? '恢复' : '最大化'">
+          <svg v-if="!isMaximized" class="icon" viewBox="0 0 24 24" width="24" height="24">
+            <path fill="currentColor" d="M4 4h16v16H4V4m2 2v12h12V6H6zm4 4h4v2h2v4h-4v-2h-2v-4z" />
+          </svg>
+          <svg v-else class="icon" viewBox="0 0 24 24" width="24" height="24">
+            <path fill="currentColor" d="M4 4h16v16H4V4m2 2v12h12V6H6zm4 4v2h2v2h2v-2h2v-2h-2v-2h-2v2h-2z" />
+          </svg>
+        </button>
+
         <!-- 全屏按钮 -->
         <button class="control-button" @click="toggleFullscreen" :title="isFullscreen ? '退出全屏' : '全屏'">
           <svg v-if="!isFullscreen" class="icon" viewBox="0 0 24 24" width="24" height="24">
@@ -101,7 +110,6 @@
     </div>
   </div>
 </template>
-// ... existing code ...
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
@@ -116,6 +124,7 @@ const playbackRate = defineModel<number>('playbackRate', { default: 1 })
 const rotation = defineModel<number>('rotation', { default: 0 })
 const isFullscreen = ref(false)
 const isPictureInPicture = ref(false)
+const isMaximized = ref(false)
 const showSpeedMenu = ref(false)
 
 // 播放速度选项
@@ -188,6 +197,12 @@ const togglePictureInPicture = () => {
   emit('picture-in-picture')
 }
 
+// 最大化控制
+const toggleMaximize = () => {
+  isMaximized.value = !isMaximized.value
+  emit('maximize', isMaximized.value)
+}
+
 // 全屏控制
 const toggleFullscreen = () => {
   isFullscreen.value = !isFullscreen.value
@@ -221,6 +236,7 @@ const emit = defineEmits<{
   (e: 'rotate', degrees: number): void
   (e: 'fullscreen'): void
   (e: 'picture-in-picture'): void
+  (e: 'maximize', isMaximized: boolean): void
 }>()
 
 // 暴露方法给父组件
@@ -240,12 +256,12 @@ defineExpose({
   playbackRate,
   rotation,
   isFullscreen,
-  isPictureInPicture
+  isPictureInPicture,
+  isMaximized
 })
 </script>
 
 
-// ... existing code ...
 <style scoped>
 .video-controller {
   display: flex;
@@ -558,4 +574,3 @@ defineExpose({
   }
 }
 </style>
-// ... existing code ...
