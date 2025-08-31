@@ -22,6 +22,14 @@ func (Play) PlayOpenResource(c *gin.Context) {
 	}
 	response.OkWithData(true, c)
 }
+func (Play) PlayOpenDramaSeries(c *gin.Context) {
+	dramaSeriesId := c.Param("dramaSeriesId")
+	err := processors.Play{}.PlayOpenDramaSeries(dramaSeriesId)
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(true, c)
+}
 
 func (Play) PlayOpenResourceFolder(c *gin.Context) {
 	resourceId := c.Param("resourceId")

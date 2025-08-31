@@ -62,6 +62,24 @@ export const playResource = async (resource: I_resource, dramaSeriesId: string =
   return;
 }
 
+export const openInPlayerDramaSeries = async (dramaSeriesId: string): Promise<boolean> => {
+  if (dramaSeriesId == '') return false;
+  const eln = ElNotification({
+    message: `正在打开频 ...`,
+    type: 'success',
+  })
+  const result = await appDataServer.playOpenDramaSeries(dramaSeriesId);
+  eln.close();
+  if (!result || !result.status) {
+    ElNotification({
+      message: `打开视频失败`,
+      type: 'error',
+    })
+    return false;
+  }
+  return true;
+}
+
 export const playOpenResourceFolder = async (resourceId: string) => {
   const result = await appDataServer.playOpenResourceFolder(resourceId);
   if (!result || !result.status) {

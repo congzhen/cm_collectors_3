@@ -38,6 +38,14 @@ func (p Play) PlayOpenResource(resourceId, dramaSeriesId string) error {
 	return open.Run(playSrc)
 }
 
+func (p Play) PlayOpenDramaSeries(dramaSeriesId string) error {
+	info, err := ResourcesDramaSeries{}.Info(dramaSeriesId)
+	if err != nil {
+		return err
+	}
+	return open.Run(info.Src)
+}
+
 // PlayOpenResourceFolder 打开资源所在文件夹
 func (p Play) PlayOpenResourceFolder(resourceId string) error {
 	resourceInfo, err := Resources{}.Info(resourceId)

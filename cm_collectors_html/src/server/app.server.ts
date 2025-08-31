@@ -20,6 +20,13 @@ export const appDataServer = {
     }
     return await request<boolean>(obj);
   },
+  playOpenDramaSeries: async (dramaSeriesId: string) => {
+    const obj: IRequest = {
+      url: `${routerGroupUri}/play/open/dramaSeries/${dramaSeriesId}`,
+      method: 'get',
+    }
+    return await request<boolean>(obj);
+  },
   playOpenResourceFolder: async (resourceId: string) => {
     return await request<boolean>({
       url: `${routerGroupUri}/play/open/resource/folder/${resourceId}`,

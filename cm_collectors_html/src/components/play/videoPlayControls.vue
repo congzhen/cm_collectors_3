@@ -77,6 +77,17 @@
           </svg>
         </button>
 
+        <!-- 用本地播放器打开视频按钮 -->
+        <button class="control-button" @click="openInPlayer" title="本地播放器打开">
+          <svg class="icon" viewBox="0 0 24 24" width="24" height="24">
+            <path fill="currentColor"
+              d="M19 4H5c-1.11 0-2 .9-2 2v12c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.89-2-2-2zm0 14H5V6h14v12z" />
+            <path fill="currentColor" d="M8 9.5v5l4-2.5-4-2.5z" />
+            <path fill="currentColor"
+              d="M16.5 12c0-.28-.22-.5-.5-.5s-.5.22-.5.5.22.5.5.5.5-.22.5-.5zm1.5 0c0 .55-.45 1-1 1s-1-.45-1-1 .45-1 1-1 1 .45 1 1zm-1 3.5c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z" />
+          </svg>
+        </button>
+
         <!-- 画中画按钮 -->
         <button class="control-button" @click="togglePictureInPicture" :title="isPictureInPicture ? '退出画中画' : '画中画'">
           <svg class="icon" viewBox="0 0 24 24" width="24" height="24">
@@ -191,6 +202,11 @@ const rotateVideo = () => {
   emit('rotate', 90)
 }
 
+// 用本地播放器打开视频
+const openInPlayer = () => {
+  emit('open-in-player')
+}
+
 // 画中画控制
 const togglePictureInPicture = () => {
   isPictureInPicture.value = !isPictureInPicture.value
@@ -237,6 +253,7 @@ const emit = defineEmits<{
   (e: 'fullscreen'): void
   (e: 'picture-in-picture'): void
   (e: 'maximize', isMaximized: boolean): void
+  (e: 'open-in-player'): void
 }>()
 
 // 暴露方法给父组件

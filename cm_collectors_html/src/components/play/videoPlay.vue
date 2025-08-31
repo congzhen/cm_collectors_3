@@ -9,7 +9,8 @@
     <videoPlayControls v-if="useVideoPlayControls && !isMobile()" ref="videoControlsRef" @play="handlePlay"
       @pause="handlePause" @seek="handleSeek" @volume-change="handleVolumeChange" @mute-toggle="handleMuteToggle"
       @playback-rate-change="handlePlaybackRateChange" @rotate="handleRotate" @fullscreen="handleFullscreen"
-      @picture-in-picture="handlePictureInPicture" @maximize="toggleFullscreenMode" />
+      @picture-in-picture="handlePictureInPicture" @maximize="toggleFullscreenMode"
+      @open-in-player="handleOpenInPlayer" />
   </div>
 </template>
 
@@ -31,6 +32,7 @@ import '@videojs/http-streaming'
 import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { ElMessage } from 'element-plus';
 import { isMobile } from '@/assets/mobile';
+import { openInPlayerDramaSeries } from '@/common/play';
 
 const props = defineProps({
   useVideoPlayControls: {
@@ -50,7 +52,8 @@ const videoPlayerRef = ref<HTMLVideoElement | null>(null)
 const videoControlsRef = ref<InstanceType<typeof videoPlayControls> | null>(null)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const player = ref<any>(null) // 指定更合适的类型
-const videoSrc = ref('')
+const videoId = ref('');
+const videoSrc = ref('');
 const isHls = ref(false)
 //
 const initVideoAspectRatio = ref(props.aspectRatio)
@@ -463,8 +466,16 @@ const setCurrentTime = (time: number) => {
   }
 };
 
+// 从视频路径中提取ID
+const extractVideoIdFromPath = (path: string): string => {
+  // 匹配 /api/video/mp4/{id}/v.mp4 格式
+  const match = path.match(/\/api\/video\/(?:mp4|m3u8)\/([^\/]+)\/v\.(?:mp4|m3u8)/);
+  return match ? match[1] : '';
+};
+
 // 设置视频源
 const setVideoSource = (src: string, type = 'mp4', fn = () => { }) => {
+  videoId.value = extractVideoIdFromPath(src)
   videoSrc.value = src
   isHls.value = type === 'm3u8' || type === 'hls'
 
@@ -688,6 +699,15 @@ const getVideoDimensions = (): { width: number; height: number } | null => {
 // 获取控制器高度
 const getControllerHeight = (): number => {
   return videoPlayControlsHeight
+}
+
+
+// 本地视频播放器打开视频
+const handleOpenInPlayer = async () => {
+  const b = await openInPlayerDramaSeries(videoId.value)
+  if (b) {
+    pause()
+  }
 }
 
 // 组件挂载时初始化播放器
