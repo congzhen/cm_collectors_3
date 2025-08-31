@@ -76,7 +76,8 @@ watch(dataListWrapper, () => {
 }, { deep: true })
 
 
-watch(currentPlayIndex, () => {
+watch(currentPlayIndex, (newVal) => {
+  if (newVal < 0) return;
   scrollToCurrentItem();
   setVideoSource(currentPlayDramaSeriesId_C.value);
 })
@@ -112,9 +113,8 @@ const waterfallBreakpoints_C = computed(() => {
 });
 
 const init = () => {
-  if (dataListWrapper.value.length > 0) {
-    currentPlayIndex.value = 0;
-  }
+  currentPlayIndex.value = 0;
+  setVideoSource(currentPlayDramaSeriesId_C.value);
 }
 
 const selectResourcesHandle = (item: I_resource) => {
@@ -132,9 +132,7 @@ const onImageLoad = debounce(() => {
   });
 }, 100);
 
-
 const setVideoSource = (dramaSeriesId: string) => {
-  console.log('dramaSeriesId', dramaSeriesId);
   const vp = videoPlayRef.value;
   if (!vp || dramaSeriesId == '') return;
   const isPlaying = vp.isPlaying() || false;
@@ -150,6 +148,8 @@ const setVideoSource = (dramaSeriesId: string) => {
     }
   });
 }
+
+
 
 const setVideoPlaySize = () => {
   const width = shortVideoPlayContainerRef.value?.clientWidth;
@@ -194,8 +194,6 @@ const scrollToCurrentItem = () => {
     // 获取容器和目标元素的位置信息
     const containerRect = container.getBoundingClientRect();
     const targetRect = targetElement.getBoundingClientRect();
-    console.log('containerRect', containerRect);
-    console.log('targetRect', targetRect);
     // 计算目标元素相对于容器的位置
     const containerScrollTop = container.scrollTop;
     const relativeTop = targetRect.top - containerRect.top;
@@ -238,8 +236,11 @@ onBeforeUnmount(() => {
 })
 
 const change = () => {
-  currentPlayIndex.value = -1;
-  scrollbarRef.value?.setScrollTop(0);
+  init();
+  nextTick(() => {
+    scrollbarRef.value?.setScrollTop(0);
+  });
+
 };
 
 
