@@ -15,6 +15,7 @@ export default {
     coverPoster: '封面海报',
     coverPosterBox: '封面海报盒子',
     coverPosterWaterfall: '封面海报瀑布流',
+    shortVideo: '短视频',
     table: '表格'
   },
   resourceDetailsShowMode: {
