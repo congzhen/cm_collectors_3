@@ -11,6 +11,7 @@
       </DetailsView>
     </div>
     <videoPlayDialog ref="videoPlayDialogRef"></videoPlayDialog>
+    <resourceFormDrawer ref="resourceFormDrawerRef" @success="updateResouceSuccessHandle"></resourceFormDrawer>
   </div>
 </template>
 <script setup lang="ts">
@@ -20,6 +21,7 @@ import TagView from './TagView.vue'
 import ContentView from './ContentView.vue'
 import DetailsView from './DetailsView.vue'
 import videoPlayDialog from '@/components/play/videoPlayDialog.vue'
+import resourceFormDrawer from '@/components/resource/resourceFormDrawer.vue'
 import type { I_resource } from '@/dataType/resource.dataType'
 import { ref, onMounted } from 'vue'
 import type { I_filesBases } from '@/dataType/filesBases.dataType'
@@ -35,6 +37,7 @@ const tagViewRef = ref<InstanceType<typeof TagView>>();
 const contentViewRef = ref<InstanceType<typeof ContentView>>();
 const detailsViewRef = ref<InstanceType<typeof DetailsView>>();
 const videoPlayDialogRef = ref<InstanceType<typeof videoPlayDialog>>();
+const resourceFormDrawerRef = ref<InstanceType<typeof resourceFormDrawer>>();
 
 const loading = ref(false);
 const resDetails = ref<I_resource | undefined>(undefined);
@@ -79,9 +82,19 @@ const resourceDialogPlayStartHandle = (event: unknown) => {
   videoPlayDialogRef.value?.open(typedEvent.resourceId, typedEvent.dramaSeriesId);
 }
 
+const editResourceHandle = (event: unknown) => {
+  const typedEvent = event as { resource: I_resource; };
+  resourceFormDrawerRef.value?.open('edit', typedEvent.resource)
+}
+const deleteResouceSuccessOnHandle = () => {
+  deleteResouceSuccessHandle()
+}
+
 // 监听事件
 onMounted(() => {
   eventBus.on('resource-dialog-play-start', resourceDialogPlayStartHandle);
+  eventBus.on('edit-resource', editResourceHandle);
+  eventBus.on('delete-resource-success', deleteResouceSuccessOnHandle);
 })
 
 </script>

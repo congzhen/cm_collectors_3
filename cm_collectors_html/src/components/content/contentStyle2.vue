@@ -1,29 +1,31 @@
 <template>
-  <div class="content-style2">
-    <div class="content-cover"
-      :style="{ width: coverPosterSize_C.width + 'px', height: coverPosterSize_C.height + 'px' }">
-      <el-image :src="getResourceCoverPoster(props.resource)" fit="contain" />
-      <div class="play-icon" @click.stop="playResource(props.resource)">
-        <el-icon>
-          <VideoPlay />
-        </el-icon>
+  <contentRightClickMenu :resource="props.resource">
+    <div class="content-style2">
+      <div class="content-cover"
+        :style="{ width: coverPosterSize_C.width + 'px', height: coverPosterSize_C.height + 'px' }">
+        <el-image :src="getResourceCoverPoster(props.resource)" fit="contain" />
+        <div class="play-icon" @click.stop="playResource(props.resource)">
+          <el-icon>
+            <VideoPlay />
+          </el-icon>
+        </div>
+      </div>
+      <div class="content-info" :style="{ width: store.appStoreData.currentConfigApp.coverPosterBoxInfoWidth + 'px' }">
+        <h4 class="title">{{ props.resource.title }}</h4>
+        <contentTagDisplay :resource="props.resource"></contentTagDisplay>
+        <div class="tag-list">
+          <el-tag effect="plain" size="small" v-for="item, key in props.resource.performers" :key="key">
+            {{ item.name }}
+          </el-tag>
+        </div>
+        <div class="tag-list">
+          <el-tag type="info" effect="plain" size="small" v-for="item, key in props.resource.tags" :key="key">
+            {{ item.name }}
+          </el-tag>
+        </div>
       </div>
     </div>
-    <div class="content-info" :style="{ width: store.appStoreData.currentConfigApp.coverPosterBoxInfoWidth + 'px' }">
-      <h4 class="title">{{ props.resource.title }}</h4>
-      <contentTagDisplay :resource="props.resource"></contentTagDisplay>
-      <div class="tag-list">
-        <el-tag effect="plain" size="small" v-for="item, key in props.resource.performers" :key="key">
-          {{ item.name }}
-        </el-tag>
-      </div>
-      <div class="tag-list">
-        <el-tag type="info" effect="plain" size="small" v-for="item, key in props.resource.tags" :key="key">
-          {{ item.name }}
-        </el-tag>
-      </div>
-    </div>
-  </div>
+  </contentRightClickMenu>
 </template>
 <script setup lang="ts">
 import type { I_resource } from '@/dataType/resource.dataType';
@@ -33,6 +35,7 @@ import { appStoreData } from '@/storeData/app.storeData';
 import { coverPosterSize } from '@/common/photo';
 import contentTagDisplay from './contentTagDisplay.vue'
 import { playResource } from '@/common/play';
+import contentRightClickMenu from './contentRightClickMenu.vue';
 const store = {
   appStoreData: appStoreData(),
 }

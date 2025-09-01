@@ -4,15 +4,17 @@
       <el-scrollbar ref="scrollbarRef">
         <Waterfall ref="waterfallRef" :list="dataList_C" :gutter="10" :breakpoints="waterfallBreakpoints"
           :img-selector="'src'" class="waterfall-list">
-          <template #default="{ item }">
-            <div class="waterfall-item" @click="selectResourcesHandle(item)">
-              <el-image :src="item.src" :title="item.title" @load="onImageLoad" />
-              <div class="play-icon" @click.stop="playResource(item)">
-                <el-icon>
-                  <VideoPlay />
-                </el-icon>
+          <template #default="{ item, index }">
+            <contentRightClickMenu :resource="props.dataList[index]">
+              <div class="waterfall-item" @click="selectResourcesHandle(item)">
+                <el-image :src="item.src" :title="item.title" @load="onImageLoad" />
+                <div class="play-icon" @click.stop="playResource(item)">
+                  <el-icon>
+                    <VideoPlay />
+                  </el-icon>
+                </div>
               </div>
-            </div>
+            </contentRightClickMenu>
           </template>
         </Waterfall>
       </el-scrollbar>
@@ -33,6 +35,7 @@ import { appStoreData } from '@/storeData/app.storeData';
 import { debounce } from '@/assets/debounce';
 import type { ElScrollbar } from 'element-plus';
 import { isMobile } from '@/assets/mobile';
+import contentRightClickMenu from './contentRightClickMenu.vue';
 const store = {
   appStoreData: appStoreData(),
 }

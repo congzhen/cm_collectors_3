@@ -6,16 +6,20 @@
           <Waterfall ref="waterfallRef" :list="dataList_C" :gutter="10" :breakpoints="waterfallBreakpoints_C"
             :img-selector="'src'" class="waterfall-list">
             <template #default="{ item, index }">
-              <div class="waterfall-item"
-                :class="{ active: index === currentPlayIndex, ['waterfall-item-' + index]: true }"
-                @click.stop="clickResourceHandle(index)">
-                <el-image :src="item.src" :title="item.title" @load="onImageLoad" />
-                <div class="play-icon" @click.stop="selectResourcesHandle(item)">
-                  <el-icon>
-                    <Setting />
-                  </el-icon>
+              <contentRightClickMenu :resource="props.dataList[index]">
+                <div class="waterfall-item"
+                  :class="{ active: index === currentPlayIndex, ['waterfall-item-' + index]: true }"
+                  @click.stop="clickResourceHandle(index)">
+
+                  <el-image :src="item.src" :title="item.title" @load="onImageLoad" />
+
+                  <div class="play-icon" @click.stop="selectResourcesHandle(item)">
+                    <el-icon>
+                      <Setting />
+                    </el-icon>
+                  </div>
                 </div>
-              </div>
+              </contentRightClickMenu>
             </template>
           </Waterfall>
         </el-scrollbar>
@@ -52,7 +56,7 @@ import type { ElScrollbar } from 'element-plus';
 import { debounce } from '@/assets/debounce';
 import videoPlay from '@/components/play/videoPlay.vue';
 import { getPlayVideoURL } from '@/common/play';
-
+import contentRightClickMenu from './contentRightClickMenu.vue';
 const props = defineProps({
   dataList: {
     type: Array as PropType<I_resource[]>,

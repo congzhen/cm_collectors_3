@@ -7,16 +7,15 @@
       <el-button icon="Edit" v-admin @click="editResourceHandle" :style="{ width: buttonWidth }" />
       <el-button icon="Delete" v-admin @click="resourceDeleteHandle" :style="{ width: buttonWidth }" />
     </el-button-group>
-    <resourceFormDrawer ref="resourceFormDrawerRef" @success="updateResourceSuccessHandle"></resourceFormDrawer>
   </div>
 </template>
 <script lang="ts" setup>
 import type { I_resource } from '@/dataType/resource.dataType'
-import { ref, type PropType, computed } from 'vue'
-import resourceFormDrawer from '@/components/resource/resourceFormDrawer.vue';
+import { type PropType, computed } from 'vue'
 import { resourceDelete } from '@/common/resource';
 import { playResource, playOpenResourceFolder } from '@/common/play'
 import { appStoreData } from '@/storeData/app.storeData'
+import { eventBus } from '@/main';
 
 const props = defineProps({
   resource: {
@@ -31,7 +30,6 @@ const props = defineProps({
 const emits = defineEmits(['paly', 'updateResouceSuccess', 'deleteResourceSuccess'])
 
 const store = appStoreData()
-const resourceFormDrawerRef = ref<InstanceType<typeof resourceFormDrawer>>()
 
 // 计算可见按钮数量
 const visibleButtonCount = computed(() => {
@@ -61,12 +59,8 @@ const playResourceHandle = () => {
   emits('paly')
 }
 const editResourceHandle = () => {
-  resourceFormDrawerRef.value?.open('edit', props.resource)
+  eventBus.emit('edit-resource', { resource: props.resource });
 }
-const updateResourceSuccessHandle = (data: I_resource) => {
-  emits('updateResouceSuccess', data)
-}
-
 const resourceDeleteHandle = () => {
   if (!props.resource) return
   resourceDelete(props.resource, () => {

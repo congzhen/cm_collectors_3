@@ -1,20 +1,25 @@
 <template>
-  <div class="content-style1"
-    :style="{ width: coverPosterSize_C.width + 'px', height: coverPosterSize_C.height + 'px' }">
-    <div class="top-bar">
-      <contentTagDisplay :resource="props.resource"></contentTagDisplay>
+  <contentRightClickMenu :resource="props.resource">
+    <div class="content-style1"
+      :style="{ width: coverPosterSize_C.width + 'px', height: coverPosterSize_C.height + 'px' }">
+      <div class="top-bar">
+        <contentTagDisplay :resource="props.resource"></contentTagDisplay>
+      </div>
+
+      <div class="content-cover">
+        <el-image :src="getResourceCoverPoster(props.resource)" fit="cover" />
+      </div>
+
+
+      <div class="play-icon" @click.stop="playResource(props.resource)">
+        <el-icon>
+          <VideoPlay />
+        </el-icon>
+      </div>
+      <div class="title-bg"></div>
+      <div class="title">{{ props.resource.title }}</div>
     </div>
-    <div class="content-cover">
-      <el-image :src="getResourceCoverPoster(props.resource)" fit="cover" />
-    </div>
-    <div class="play-icon" @click.stop="playResource(props.resource)">
-      <el-icon>
-        <VideoPlay />
-      </el-icon>
-    </div>
-    <div class="title-bg"></div>
-    <div class="title">{{ props.resource.title }}</div>
-  </div>
+  </contentRightClickMenu>
 </template>
 <script setup lang="ts">
 import type { I_resource } from '@/dataType/resource.dataType';
@@ -24,7 +29,7 @@ import { appStoreData } from '@/storeData/app.storeData';
 import { playResource } from '@/common/play';
 import { getResourceCoverPoster } from '@/common/photo';
 import { isMobile } from '@/assets/mobile';
-
+import contentRightClickMenu from './contentRightClickMenu.vue';
 const store = {
   appStoreData: appStoreData(),
 }
