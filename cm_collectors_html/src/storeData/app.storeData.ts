@@ -40,6 +40,13 @@ export const appStoreData = defineStore('app', {
     isAdminLoginStatus(state): boolean {
       return this.isAdminLogin && state.adminLoginStatus
     },
+    // 是否显示管理员功能
+    displayAdminFn(): boolean {
+      if (!this.isAdminLogin || this.isAdminLoginStatus) {
+        return true;
+      }
+      return false;
+    },
     // 详情页是否显示
     detailsViewStatus(state): boolean {
       return state.adminResourceStatus ? false : true;

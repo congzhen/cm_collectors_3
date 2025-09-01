@@ -18,7 +18,7 @@ interface AdminHTMLElement extends HTMLElement {
 const admin: Directive<HTMLElement, boolean | undefined> = {
   mounted(el) {
     const store = appStoreData()
-    if (!store.isAdminLogin || store.isAdminLoginStatus) {
+    if (store.displayAdminFn) {
       // 显示元素
       el.style.display = ''
     } else {
