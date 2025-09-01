@@ -41,6 +41,11 @@ import { getFileImageByDramaSeriesId } from '@/common/photo'
 import { Waterfall } from 'vue-waterfall-plugin-next'
 import 'vue-waterfall-plugin-next/dist/style.css'
 import { debounce } from '@/assets/debounce';
+import { appStoreData } from '@/storeData/app.storeData';
+const store = {
+  appStoreData: appStoreData(),
+}
+const localStorage_WaterfallColumn_key = 'play-atlas-waterfall-column-' + store.appStoreData.currentFilesBases.id;
 const props = defineProps({
   resourceId: {
     type: String,
@@ -60,14 +65,15 @@ const loading = ref(false);
 const resourceInfo = ref<I_resource>();
 const atlasImageList = ref<string[]>([]);
 const selectedDramaSeriesId = ref<string>('');
-const waterfallColumn = ref(6);
+const waterfallColumn = ref(parseInt(localStorage.getItem(localStorage_WaterfallColumn_key) || '6', 10));
 
 const isFirstLoadCompleted = ref(false); // 是否首次加载完成
 const loadedImageCount = ref(0); // 已加载的图片数量
 const displayedCount = ref(60);//控制当前显示的图片数量
 const incrementCount = 20; // 每次加载的图片数量
 
-watch(waterfallColumn, () => {
+watch(waterfallColumn, (newVal) => {
+  localStorage.setItem(localStorage_WaterfallColumn_key, newVal.toString());
   // 列数改变时，重新检查是否需要加载更多
   nextTick(() => {
     setTimeout(() => {

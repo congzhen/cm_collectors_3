@@ -69,6 +69,9 @@ enum EsetContentScrollbarMode {
 const store = {
   appStoreData: appStoreData(),
 }
+
+const localStorage_showImageWidth_key = 'play-comic-show-image-width-' + store.appStoreData.currentFilesBases.id;
+
 const props = defineProps({
   resourceId: {
     type: String,
@@ -88,8 +91,14 @@ const resourceInfo = ref<I_resource>();
 const comicImageList = ref<string[]>([]);
 const selectedDramaSeriesId = ref<string>('');
 const nowPage = ref(0);
-const showImageWidth = ref(50);
+const showImageWidth = ref(parseInt(localStorage.getItem(localStorage_showImageWidth_key) || '50', 10));
 const loading = ref(false);
+
+// 监听waterfallColumn变化，保存到本地存储
+watch(showImageWidth, (newVal) => {
+  localStorage.setItem(localStorage_showImageWidth_key, newVal.toString());
+})
+
 
 const init = async () => {
   nowPage.value = 0;

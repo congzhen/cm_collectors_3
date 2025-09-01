@@ -28,7 +28,7 @@
 import { Waterfall } from 'vue-waterfall-plugin-next'
 import 'vue-waterfall-plugin-next/dist/style.css'
 import type { I_resource } from '@/dataType/resource.dataType';
-import { computed, nextTick, ref, type PropType } from 'vue';
+import { computed, nextTick, ref, watch, type PropType } from 'vue';
 import { getResourceCoverPoster } from '@/common/photo';
 import { playResource } from '@/common/play';
 import { appStoreData } from '@/storeData/app.storeData';
@@ -39,6 +39,8 @@ import contentRightClickMenu from './contentRightClickMenu.vue';
 const store = {
   appStoreData: appStoreData(),
 }
+const localStorage_WaterfallColumn_key = 'layout-cover-poster-waterfall-column-' + store.appStoreData.currentFilesBases.id;
+
 const props = defineProps({
   dataList: {
     type: Array as PropType<I_resource[]>,
@@ -50,7 +52,12 @@ const emits = defineEmits(['selectResources']);
 const scrollbarRef = ref<InstanceType<typeof ElScrollbar>>();
 
 const waterfallRef = ref<InstanceType<typeof Waterfall>>();
-const waterfallColumn = ref(store.appStoreData.currentConfigApp.coverPosterWaterfallColumn);
+const waterfallColumn = ref(parseInt(localStorage.getItem(localStorage_WaterfallColumn_key) || '8', 10));
+
+// 监听waterfallColumn变化，保存到本地存储
+watch(waterfallColumn, (newVal) => {
+  localStorage.setItem(localStorage_WaterfallColumn_key, newVal.toString());
+})
 
 const dataList_C = computed(() => {
   return props.dataList.map((item: I_resource) => {

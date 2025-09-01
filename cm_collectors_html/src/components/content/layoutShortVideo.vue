@@ -57,6 +57,13 @@ import { debounce } from '@/assets/debounce';
 import videoPlay from '@/components/play/videoPlay.vue';
 import { getPlayVideoURL } from '@/common/play';
 import contentRightClickMenu from './contentRightClickMenu.vue';
+import { appStoreData } from '@/storeData/app.storeData';
+const store = {
+  appStoreData: appStoreData(),
+}
+
+const localStorage_WaterfallColumn_key = 'layout-short-video-waterfall-column-' + store.appStoreData.currentFilesBases.id;
+
 const props = defineProps({
   dataList: {
     type: Array as PropType<I_resource[]>,
@@ -67,7 +74,10 @@ const emits = defineEmits(['selectResources']);
 
 const scrollbarRef = ref<InstanceType<typeof ElScrollbar>>();
 const waterfallRef = ref<InstanceType<typeof Waterfall>>();
-const waterfallColumn = ref(3);
+
+// 从本地存储获取保存的值，如果没有则使用默认值3
+const waterfallColumn = ref(parseInt(localStorage.getItem(localStorage_WaterfallColumn_key) || '3', 10));
+
 
 const shortVideoPlayContainerRef = ref<HTMLDivElement>();
 const videoPlayRef = ref<InstanceType<typeof videoPlay>>();
@@ -84,6 +94,11 @@ watch(currentPlayIndex, (newVal) => {
   if (newVal < 0) return;
   scrollToCurrentItem();
   setVideoSource(currentPlayDramaSeriesId_C.value);
+})
+
+// 监听waterfallColumn变化，保存到本地存储
+watch(waterfallColumn, (newVal) => {
+  localStorage.setItem(localStorage_WaterfallColumn_key, newVal.toString());
 })
 
 const dataList_C = computed(() => {
