@@ -76,7 +76,7 @@
       <el-table ref="fileTableRef" :data="fileEntryDataList_C" v-loading="loading" height="100%">
         <el-table-column type="selection" width="55" />
         <el-table-column prop="name" :label="sfmLang('name')" min-width="260" show-overflow-tooltip
-          v-if="props.column.includes(E_sfm_Column.Name)">
+          v-if="props.column.includes(E_sfm_Column.Name)" sortable :sort-method="sortByName">
           <template #default="scope">
             <div class="file-name-block" @click="clFileHandle(scope.row)">
               <el-icon v-if="scope.row.is_dir">
@@ -97,8 +97,8 @@
             {{ sizeFormat(scope.row.size) }}
           </template>
         </el-table-column>
-        <el-table-column prop="modified_at" :label="sfmLang('modifiedAt')" width="180"
-          v-if="props.column.includes(E_sfm_Column.ModifiedAt)">
+        <el-table-column prop="modified_at" :label="sfmLang('modifiedAt')" width="180" sortable
+          :sort-method="sortByModifiedAt" v-if="props.column.includes(E_sfm_Column.ModifiedAt)">
           <template #default="scope">
             {{ dateFormat(scope.row.modified_at, 'Y-m-d H:i:s') }}
           </template>
@@ -645,6 +645,21 @@ const unCompressFile = async (fileEntry: I_sfm_FileEntry) => {
   }
   loading_close();
 }
+
+
+
+//排序方法
+const sortByName = (a: I_sfm_FileEntry, b: I_sfm_FileEntry) => {
+  // 文件夹优先，然后按名称排序
+  if (a.is_dir && !b.is_dir) return -1;
+  if (!a.is_dir && b.is_dir) return 1;
+  return a.name.localeCompare(b.name);
+};
+//排序方法
+const sortByModifiedAt = (a: I_sfm_FileEntry, b: I_sfm_FileEntry) => {
+  // 按修改时间排序
+  return new Date(a.modified_at).getTime() - new Date(b.modified_at).getTime();
+};
 
 // 没有选择文件
 const noSelectFilesMessageAlert = () => {
