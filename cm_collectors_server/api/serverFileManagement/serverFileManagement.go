@@ -12,6 +12,7 @@ import (
 	"path"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"sort"
 	"strconv"
 	"strings"
@@ -195,11 +196,28 @@ func (s ServerFileManagement) PathDir(_path string) ([]ServerFileManagement_File
 		if fileInfo.Name() == "." || fileInfo.Name() == ".." {
 			continue
 		}
+		// 确保Junction点被正确识别为目录
+		isDir := fileInfo.IsDir()
+		fileType := "file"
+
+		// 在Windows上额外检查Junction点
+		if runtime.GOOS == "windows" && !isDir {
+			// 对于可能的Junction点，再次确认
+			fullPath := filepath.Join(validPath, fileInfo.Name())
+			if isWindowsDirectoryJunction(fullPath, fileInfo) {
+				isDir = true
+			}
+		}
+
+		if isDir {
+			fileType = "directory"
+		}
+
 		modifiedAt := fileInfo.ModTime()
 		entry := ServerFileManagement_FileEntry{
 			Name:        fileInfo.Name(),
-			IsDir:       fileInfo.IsDir(),
-			Type:        s.getType(fileInfo),
+			IsDir:       isDir,
+			Type:        fileType,
 			Permissions: s.getPermissions(fileInfo),
 			Size:        s.getFileSize(fileInfo),
 			ModifiedAt:  &modifiedAt,
