@@ -13,7 +13,7 @@
 
                   <el-image :src="item.src" :title="item.title" @load="onImageLoad" />
 
-                  <div class="play-icon" @click.stop="selectResourcesHandle(item)">
+                  <div v-if="!isMobile()" class="play-icon" @click.stop="selectResourcesHandle(item)">
                     <el-icon>
                       <Setting />
                     </el-icon>
@@ -28,12 +28,12 @@
         <el-slider v-model="waterfallColumn" :min="2" :max="8" style="width: 200px;" />
       </div>
     </div>
-    <div class="shortVideoPlay">
+    <div class="shortVideoPlay" :class="{ 'mobile-layout': isMobile() }">
       <div ref="shortVideoPlayContainerRef" class="shortVideoPlayContainer">
         <videoPlay ref="videoPlayRef" />
       </div>
       <div class="tool">
-        <el-button-group>
+        <el-button-group :size="isMobile() ? 'small' : 'default'">
           <el-button icon="ArrowLeft" :disabled="currentPlayIndex == 0" @click="prevHandle()">上一个</el-button>
           <el-button @click="nextHandle()" :disabled="currentPlayIndex >= (dataListWrapper.length - 1)">
             下一个
@@ -58,6 +58,7 @@ import videoPlay from '@/components/play/videoPlay.vue';
 import { getPlayVideoURL } from '@/common/play';
 import contentRightClickMenu from './contentRightClickMenu.vue';
 import { appStoreData } from '@/storeData/app.storeData';
+
 const store = {
   appStoreData: appStoreData(),
 }
@@ -334,6 +335,10 @@ defineExpose({ change, });
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
+
+    &.mobile-layout {
+      width: 70%;
+    }
 
     .shortVideoPlayContainer {
       flex: 1;
