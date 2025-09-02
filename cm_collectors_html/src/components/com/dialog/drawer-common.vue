@@ -13,7 +13,7 @@
           <slot name="footerBtn"></slot>
         </div>
         <div v-if="props.btnSubmit">
-          <el-button @click="drawerVisible = false"> Close </el-button>
+          <el-button @click="drawerVisible = false"> {{ appLang.btn('close') }} </el-button>
           <el-button type="primary" @click="emits('submit')">
             {{ btnSubmitTitle_C }}
           </el-button>
@@ -24,8 +24,9 @@
 </template>
 <script setup lang="ts">
 import { ref, computed, type PropType } from 'vue'
+import { AppLang } from '@/language/app.lang'
 type directionType = 'rtl' | 'ltr' | 'ttb' | 'btt'
-
+const appLang = AppLang()
 const drawerVisible = ref(false)
 
 // eslint-disable-next-line no-undef
@@ -57,7 +58,7 @@ const props = defineProps({
 })
 
 const btnSubmitTitle_C = computed(() => {
-  return props.btnSubmitTitle == '' ? 'Submit' : props.btnSubmitTitle
+  return props.btnSubmitTitle == '' ? appLang.btn('submit') : props.btnSubmitTitle
 })
 
 const emits = defineEmits(['closed', 'submit'])

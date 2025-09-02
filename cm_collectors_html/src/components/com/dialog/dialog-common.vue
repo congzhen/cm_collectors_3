@@ -4,7 +4,7 @@
     <slot></slot>
     <template v-if="props.footer" #footer>
       <div class="dialog-footer">
-        <el-button @click="dialogVisible = false"> Close </el-button>
+        <el-button @click="dialogVisible = false"> {{ appLang.btn('close') }} </el-button>
         <el-button type="primary" @click="submitHandle" :disabled="submitBtnDisabled">
           {{ btnSubmitTitle_C }}
         </el-button>
@@ -14,7 +14,8 @@
 </template>
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-
+import { AppLang } from '@/language/app.lang'
+const appLang = AppLang()
 const dialogVisible = ref(false)
 
 const props = defineProps({
@@ -46,7 +47,7 @@ const emits = defineEmits(['closed', 'submit'])
 const submitBtnDisabled = ref(false)
 
 const btnSubmitTitle_C = computed(() => {
-  return props.btnSubmitTitle == '' ? 'Submit' : props.btnSubmitTitle
+  return props.btnSubmitTitle == '' ? appLang.btn('submit') : props.btnSubmitTitle
 })
 
 const width_C = computed(() => {

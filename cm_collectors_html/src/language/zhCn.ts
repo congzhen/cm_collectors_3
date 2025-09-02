@@ -1,4 +1,10 @@
 export default {
+  btn: {
+    submit: '提交',
+    cancel: '取消',
+    delete: '删除',
+    close: '关闭',
+  },
   leftColumnMode: {
     fixed: '固定',
     float: '浮动'

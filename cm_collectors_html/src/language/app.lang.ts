@@ -4,6 +4,9 @@ import { t } from "./app.lang.main";
 export function AppLang() {
   const storeAppStoreData = appStoreData()
   const translations = {
+    btn: (type: 'submit' | 'cancel' | 'delete' | 'close') => {
+      return t(`btn.${type}`)
+    },
     sort: (sort: string): string => t(`sort.${sort}`),
     country: (country: string | undefined | null): string => {
       if (country === '' || country === undefined || country === null) {
