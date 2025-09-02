@@ -57,6 +57,17 @@ func (Resource) UpdateResource(c *gin.Context) {
 	}
 	response.OkWithData(info, c)
 }
+func (Resource) UpdateResourceTag(c *gin.Context) {
+	var par datatype.ReqParam_ResourceTag
+	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {
+		return
+	}
+	info, err := processors.Resources{}.UpdateResourceTag(par.ResourceID, par.Tags)
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(info, c)
+}
 
 func (Resource) DeleteResource(c *gin.Context) {
 	resourceId := c.Param("resourceId")

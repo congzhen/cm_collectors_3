@@ -12,6 +12,7 @@
     </div>
     <videoPlayDialog ref="videoPlayDialogRef"></videoPlayDialog>
     <resourceFormDrawer ref="resourceFormDrawerRef" @success="updateResouceSuccessHandle"></resourceFormDrawer>
+    <ResourceSetTagDialog ref="resourceSetTagDialogRef" @success="updateResouceSuccessHandle"></ResourceSetTagDialog>
   </div>
 </template>
 <script setup lang="ts">
@@ -29,6 +30,7 @@ import { appStoreData } from '@/storeData/app.storeData'
 import { searchStoreData } from '@/storeData/search.storeData'
 import { ElMessage } from 'element-plus'
 import { eventBus } from '@/main'
+import ResourceSetTagDialog from '@/components/resource/resourceSetTagDialog.vue'
 const store = {
   appStoreData: appStoreData(),
   searchStoreData: searchStoreData(),
@@ -38,6 +40,7 @@ const contentViewRef = ref<InstanceType<typeof ContentView>>();
 const detailsViewRef = ref<InstanceType<typeof DetailsView>>();
 const videoPlayDialogRef = ref<InstanceType<typeof videoPlayDialog>>();
 const resourceFormDrawerRef = ref<InstanceType<typeof resourceFormDrawer>>();
+const resourceSetTagDialogRef = ref<InstanceType<typeof ResourceSetTagDialog>>();
 
 const loading = ref(false);
 const resDetails = ref<I_resource | undefined>(undefined);
@@ -86,6 +89,10 @@ const editResourceHandle = (event: unknown) => {
   const typedEvent = event as { resource: I_resource; };
   resourceFormDrawerRef.value?.open('edit', typedEvent.resource)
 }
+const editResourceTagHandle = (event: unknown) => {
+  const typedEvent = event as { resource: I_resource; };
+  resourceSetTagDialogRef.value?.open(typedEvent.resource)
+}
 const deleteResouceSuccessOnHandle = () => {
   deleteResouceSuccessHandle()
 }
@@ -94,6 +101,7 @@ const deleteResouceSuccessOnHandle = () => {
 onMounted(() => {
   eventBus.on('resource-dialog-play-start', resourceDialogPlayStartHandle);
   eventBus.on('edit-resource', editResourceHandle);
+  eventBus.on('edit-resource-tag', editResourceTagHandle);
   eventBus.on('delete-resource-success', deleteResouceSuccessOnHandle);
 })
 

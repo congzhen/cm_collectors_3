@@ -56,6 +56,13 @@ const contentMenuItems_C = computed(() => {
         }
       },
       {
+        label: '打标签',
+        icon: 'Edit',
+        handler: () => {
+          eventBus.emit('edit-resource-tag', { resource: props.resource });
+        }
+      },
+      {
         label: '删除',
         icon: 'Delete',
         handler: () => {

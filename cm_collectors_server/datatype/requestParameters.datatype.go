@@ -55,6 +55,11 @@ type ReqParam_ResourceDramaSeries_ReplacePath struct {
 	ReplacePath string `json:"replacePath"`
 }
 
+type ReqParam_ResourceTag struct {
+	ResourceID string   `json:"resourceId"`
+	Tags       []string `json:"tags"`
+}
+
 // 请求参数 - 创建filesBases
 type ReqParam_CreateFilesBases struct {
 	Name                     string   `json:"name" binding:"required"`

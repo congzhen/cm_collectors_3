@@ -66,6 +66,15 @@ func (t Resources) UpdateResource(par *datatype.ReqParam_Resource) (*models.Reso
 	return t.Info(id)
 }
 
+func (t Resources) UpdateResourceTag(resourceID string, tags []string) (*models.Resources, error) {
+	dbs := core.DBS()
+	err := ResourcesTags{}.SetResourcesTag(dbs, resourceID, tags)
+	if err != nil {
+		return nil, err
+	}
+	return t.Info(resourceID)
+}
+
 func (t Resources) DeleteResource(resourceId string) error {
 	info, err := t.Info(resourceId)
 	if err != nil {

@@ -50,6 +50,16 @@ export const resourceServer = {
       },
     });
   },
+  updateTag: async (resourceId: string, tags: string[]) => {
+    return await request<I_resource>({
+      url: `${routerGroupUri}/resource/update/tag`,
+      method: 'put',
+      data: {
+        resourceId,
+        tags
+      },
+    });
+  },
   delete: async (id: string) => {
     return await request<boolean>({
       url: `${routerGroupUri}/resource/delete/${id}`,
