@@ -126,6 +126,8 @@ func (t ImportData) ScanDiskImportData(filesBasesId, filePath string, config dat
 		resourceTitle = dirName
 	case datatype.ResourceNamingModeDirFileName:
 		resourceTitle = dirName + fileName
+	case datatype.ResourceNamingModeFullPathName:
+		resourceTitle = filePath
 	}
 
 	resourceDataParam := datatype.ReqParam_Resource{

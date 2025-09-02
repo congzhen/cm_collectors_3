@@ -3,9 +3,10 @@ package datatype
 type ResourceNamingMode string
 
 const (
-	ResourceNamingModeFileName    ResourceNamingMode = "fileName"
-	ResourceNamingModeDirName     ResourceNamingMode = "dirName"
-	ResourceNamingModeDirFileName ResourceNamingMode = "dirFileName"
+	ResourceNamingModeFileName     ResourceNamingMode = "fileName"
+	ResourceNamingModeDirName      ResourceNamingMode = "dirName"
+	ResourceNamingModeDirFileName  ResourceNamingMode = "dirFileName"
+	ResourceNamingModeFullPathName ResourceNamingMode = "fullPathName"
 )
 
 type CoverPosterMatchName string

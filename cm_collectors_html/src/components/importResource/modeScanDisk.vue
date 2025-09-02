@@ -33,6 +33,7 @@
             <el-radio-button label="文件名" value="fileName" />
             <el-radio-button label="目录名" value="dirName" />
             <el-radio-button label="目录名+文件名" value="dirFileName" />
+            <el-radio-button label="全路径名" value="fullPathName" />
           </el-radio-group>
         </el-form-item>
         <el-form-item label="封面海报匹配名">

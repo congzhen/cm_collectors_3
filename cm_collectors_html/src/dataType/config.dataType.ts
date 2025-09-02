@@ -163,7 +163,7 @@ export interface I_routeConversion {
 export interface I_config_scanDisk {
   scanDiskPaths: string[]; // 扫描磁盘路径
   videoSuffixName: string[]; // 视频文件后缀名
-  resourceNamingMode: 'fileName' | 'dirName' | 'dirFileName'; // 资源命名模式
+  resourceNamingMode: 'fileName' | 'dirName' | 'dirFileName' | 'fullPathName'; // 资源命名模式
   coverPosterMatchName: string[]; // 封面海报匹配名称
   coverPosterFuzzyMatch: boolean; // 封面海报模糊匹配
   coverPosterUseRandomImageIfNoMatch: boolean; // 无匹配时使用目录下随机图片
