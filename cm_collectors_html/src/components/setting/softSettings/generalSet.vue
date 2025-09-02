@@ -38,6 +38,12 @@
       <el-form-item label="web可播放音频格式">
         <selectPlayAudioFormats v-model="formData.playAudioFormats" multiple />
       </el-form-item>
+      <el-form-item label="指定挂载磁盘">
+        <img src="/config_serverFileManagement.png" />
+        <el-text class="warning-text" type="warning" size="small">
+          指定挂载磁盘，请根据图片所示，修改根目录下的config.yaml文件。请严格按照格式要求进行修改，否则可能导致打开文件管理器时出现问题。
+        </el-text>
+      </el-form-item>
       <el-form-item>
         <el-button type="primary" @click="saveHandle">保存</el-button>
       </el-form-item>
