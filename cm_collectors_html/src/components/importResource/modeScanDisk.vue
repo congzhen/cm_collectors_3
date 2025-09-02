@@ -28,6 +28,20 @@
               :label="item.name" :value="index" />
           </el-select>
         </el-form-item>
+        <el-form-item label="资源命名方式">
+          <el-radio-group v-model="formData.resourceNamingMode" size="small">
+            <el-radio-button label="文件名" value="fileName" />
+            <el-radio-button label="目录名" value="dirName" />
+            <el-radio-button label="目录名+文件名" value="dirFileName" />
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="封面海报匹配名">
+          <el-select v-model="formData.coverPosterMatchName" multiple>
+            <el-option v-for="item, key in dataset.coverPosterMatchName" :key="key" :label="item" :value="item" />
+          </el-select>
+          <el-switch v-model="formData.coverPosterFuzzyMatch" active-text="模糊匹配" inactive-text="严格匹配" />
+          <el-checkbox v-model="formData.coverPosterUseRandomImageIfNoMatch" label="匹配的封面失败时，使用目录下随机图片" />
+        </el-form-item>
         <el-form-item label="封面海报后缀名">
           <selectImageSuffixName v-model="formData.coverPosterSuffixName" multiple />
         </el-form-item>
@@ -60,6 +74,7 @@ import { filesBasesServer } from '@/server/filesBases.server';
 import { ElMessage } from 'element-plus';
 import { debounceNow } from '@/assets/debounce';
 import { importDataServer } from '@/server/importData.server';
+import dataset from '@/assets/dataset';
 const store = {
   appStoreData: appStoreData(),
 }
@@ -73,6 +88,10 @@ const loading = ref(false)
 const formData = ref<I_config_scanDisk>({
   scanDiskPaths: [],
   videoSuffixName: [],
+  resourceNamingMode: 'fileName',
+  coverPosterMatchName: dataset.coverPosterMatchName,
+  coverPosterFuzzyMatch: true,
+  coverPosterUseRandomImageIfNoMatch: false,
   coverPosterSuffixName: [],
   coverPosterType: -1,
   autoCreatePoster: true,

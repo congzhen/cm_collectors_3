@@ -77,12 +77,13 @@ func (t ImportData) ScanDiskImportData(filesBasesId, filePath string, config dat
 	}
 	fileDir := utils.GetDirPathFromFilePath(filePath)
 	fileName := utils.GetFileNameFromPath(filePath, false)
-	//查找在文件夹中，是否有相似文件名的图片
+	// 查找符合后缀名的图片文件
 	imagePaths, err := utils.GetFilesByExtensions([]string{fileDir}, config.CoverPosterSuffixName, false)
 	if err != nil {
 		return err
 	}
-	coverPosterPath := t.findSimilarImage(imagePaths, fileName)
+	// 匹配图片文件
+	coverPosterPath := t.findCoverPoster(imagePaths, fileName, config.CoverPosterMatchName, config.CoverPosterFuzzyMatch, config.CoverPosterUseRandomImageIfNoMatch)
 	var coverPosterBytes []byte
 	var coverPosterBase64 string
 	var coverPosterWidth int
@@ -117,10 +118,20 @@ func (t ImportData) ScanDiskImportData(filesBasesId, filePath string, config dat
 	// 转换为Base64
 	coverPosterBase64, _ = utils.ImageBytesToBase64(coverPosterBytes)
 
+	// 资源标题
+	resourceTitle := fileName
+	dirName := utils.GetDirNameFromFilePath(filePath)
+	switch config.ResourceNamingMode {
+	case datatype.ResourceNamingModeDirName:
+		resourceTitle = dirName
+	case datatype.ResourceNamingModeDirFileName:
+		resourceTitle = dirName + fileName
+	}
+
 	resourceDataParam := datatype.ReqParam_Resource{
 		Resource: datatype.ReqParam_ResourceBase{
 			FilesBasesID:      filesBasesId,
-			Title:             fileName,
+			Title:             resourceTitle,
 			Mode:              datatype.E_resourceMode_Movies,
 			CoverPosterMode:   -1,
 			CoverPosterWidth:  coverPosterWidth,
@@ -136,24 +147,65 @@ func (t ImportData) ScanDiskImportData(filesBasesId, filePath string, config dat
 	return err
 }
 
-// findSimilarImage 在图片路径列表中查找与目标文件名相似的图片
+// findCoverPoster 在给定的图片路径中查找匹配的封面海报
 //
-// 该函数通过比较文件名来查找相似的图片文件，支持完全匹配和包含关系匹配
+// 该函数根据提供的匹配规则在图片路径中查找与目标文件名匹配的封面海报。
+// 可以使用预定义的匹配名称或直接使用目标文件名进行匹配，支持模糊匹配和严格匹配两种模式。
 //
 // 参数:
-//   - imagePaths: 图片文件路径列表
-//   - targetFileName: 目标文件名（不包含扩展名）
+//   - imagePaths: 图片文件路径数组，用于在其中查找匹配的封面海报
+//   - targetFileName: 目标文件名，当coverPosterMatchName为空时使用此名称进行匹配
+//   - coverPosterMatchName: 预定义的封面海报匹配名称数组，用于指定匹配规则
+//   - fuzzyMatch: 是否启用模糊匹配模式，true表示启用模糊匹配，false表示严格匹配
+//   - coverPosterUseRandomImageIfNoMatch: 是否使用随机图片作为封面海报，true表示使用随机图片，false表示使用默认图片
 //
 // 返回值:
-//   - string: 找到的相似图片路径，如果未找到则返回空字符串
-func (ImportData) findSimilarImage(imagePaths []string, targetFileName string) string {
-	// 查找与targetFileName相近的图片文件名
-	for _, imagePath := range imagePaths {
-		imageName := utils.GetFileNameFromPath(imagePath, false)
-		// 如果文件名完全匹配 或包含关系
-		if imageName == targetFileName || strings.Contains(imageName, targetFileName) {
-			return imagePath
+//   - string: 匹配到的图片文件路径，未找到匹配项时返回空字符串
+func (ImportData) findCoverPoster(imagePaths []string, targetFileName string, coverPosterMatchName []datatype.CoverPosterMatchName, fuzzyMatch bool, coverPosterUseRandomImageIfNoMatch bool) string {
+	// 如果 coverPosterMatchName 为空，则使用 targetFileName 进行匹配
+	if len(coverPosterMatchName) == 0 {
+		// 查找与targetFileName相近的图片文件名
+		for _, imagePath := range imagePaths {
+			imageName := utils.GetFileNameFromPath(imagePath, false)
+			if fuzzyMatch {
+				// 模糊匹配：文件名完全匹配或者包含关系
+				if imageName == targetFileName || strings.Contains(imageName, targetFileName) || strings.Contains(targetFileName, imageName) {
+					return imagePath
+				}
+			} else {
+				// 严格匹配：文件名完全匹配
+				if imageName == targetFileName {
+					return imagePath
+				}
+			}
 		}
+	} else {
+		// 使用 coverPosterMatchName 的值做匹配
+		for _, _matchName := range coverPosterMatchName {
+			for _, imagePath := range imagePaths {
+				imageName := utils.GetFileNameFromPath(imagePath, false)
+				matchName := string(_matchName)
+				if _matchName == datatype.CoverPosterMatchName_fileName {
+					matchName = targetFileName
+				}
+				if fuzzyMatch {
+					// 模糊匹配：文件名完全匹配或者包含关系
+					if imageName == matchName || strings.Contains(imageName, matchName) || strings.Contains(matchName, imageName) {
+						return imagePath
+					}
+				} else {
+					// 严格匹配：文件名完全匹配
+					if imageName == matchName {
+						return imagePath
+					}
+				}
+			}
+		}
+	}
+	if coverPosterUseRandomImageIfNoMatch && len(imagePaths) > 0 {
+		// 随机取数组中的一个元素
+		randIndex := utils.Rand_Intn(len(imagePaths))
+		return imagePaths[randIndex]
 	}
 	return ""
 }

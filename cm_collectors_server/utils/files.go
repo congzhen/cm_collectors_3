@@ -196,3 +196,13 @@ func FileExists(path string) bool {
 	}
 	return false
 }
+
+// GetDirNameFromFilePath 根据文件路径获取文件所在的文件夹名称
+// 参数:
+// filePath: 文件的完整路径
+// 返回值:
+// string: 文件所在的文件夹名称
+func GetDirNameFromFilePath(filePath string) string {
+	dirPath := filepath.Dir(filePath)
+	return filepath.Base(dirPath)
+}
