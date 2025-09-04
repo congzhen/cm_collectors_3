@@ -11,4 +11,6 @@ var (
 
 	Err_performer_Save_Photo_Failed   = NewErrorData(3002, "保存演员照片失败")
 	Err_performer_Delete_Photo_Failed = NewErrorData(3003, "删除演员照片失败")
+
+	Err_Current_Server_Has_Been_Set_To_Disallow_This_Peration = NewErrorData(9000, "当前服务器已禁止此操作")
 )

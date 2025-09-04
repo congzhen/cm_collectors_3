@@ -27,6 +27,9 @@
           </el-text>
         </div>
       </el-form-item>
+      <el-form-item label="允许服务器打开文件或文件夹">
+        <el-switch v-model="formData.allowServerOpenFile" />
+      </el-form-item>
       <el-form-item label="语言">
         <el-select v-model="formData.language">
           <el-option label="简体中文" value="zhCn" />
@@ -64,6 +67,7 @@ const formData = ref<I_appSystemConfig>({
   adminPassword: '',
   isAutoCreateM3u8: false,
   language: 'zhCn',
+  allowServerOpenFile: false,
   playVideoFormats: ['h264', 'vp8', 'vp9', 'av1', 'hevc'],
   playAudioFormats: ['aac', 'opus', 'mp3', 'vorbis', 'pcm_s16le', 'pcm_s24le'],
 })

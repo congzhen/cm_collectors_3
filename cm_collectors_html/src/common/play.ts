@@ -69,13 +69,17 @@ export const openInPlayerDramaSeries = async (dramaSeriesId: string): Promise<bo
     type: 'success',
   })
   const result = await appDataServer.playOpenDramaSeries(dramaSeriesId);
-  eln.close();
   if (!result || !result.status) {
+    eln.close();
     ElNotification({
-      message: `打开视频失败`,
+      message: `打开失败: ${result.msg}`,
       type: 'error',
     })
     return false;
+  } else {
+    setTimeout(() => {
+      eln.close();
+    }, 1500);
   }
   return true;
 }

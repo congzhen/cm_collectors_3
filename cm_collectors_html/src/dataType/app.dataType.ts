@@ -91,6 +91,7 @@ export interface I_appSystemConfig extends I_appConfig {
   adminPassword: string;
   isAutoCreateM3u8: boolean;
   language: string;
+  allowServerOpenFile: boolean;
   playVideoFormats: string[];
   playAudioFormats: string[];
 }

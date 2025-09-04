@@ -4,6 +4,7 @@ general:
     adminPassword: ""
     isAutoCreateM3u8: true
     language: zhCn
+    allowServerOpenFile: true
 sqlite3:
     path: ./db/cm_collectors.db
     loggerLevel: info
