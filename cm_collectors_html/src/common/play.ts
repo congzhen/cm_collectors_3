@@ -33,7 +33,7 @@ export const playResource = async (resource: I_resource, dramaSeriesId: string =
       ElMessage.error('未知的资源类型');
       return;
   }
-  appDataServer.playUpdate(resource.id, dramaSeriesId);
+  playUpdate(resource.id, dramaSeriesId)
   if (isMobile()) {
     router.push(`/play/${resource.mode}Mobile/${resource.id}` + (dramaSeriesId != '' ? `/${dramaSeriesId}` : ''));
     return
@@ -61,6 +61,10 @@ export const playResource = async (resource: I_resource, dramaSeriesId: string =
     }
   }
   return;
+}
+
+export const playUpdate = (resourceId: string, dramaSeriesId: string) => {
+  return appDataServer.playUpdate(resourceId, dramaSeriesId);
 }
 
 export const openInPlayerDramaSeries = async (dramaSeriesId: string): Promise<boolean> => {

@@ -92,7 +92,7 @@ import { AppLang } from '@/language/app.lang';
 import { appStoreData } from "@/storeData/app.storeData";
 import resourceDramaSeriesList from '@/components/resource/resourceDramaSeriesList.vue'
 import MobileHeader from '../MobileHeaderView.vue'
-import { getPlayVideoURL } from "@/common/play";
+import { getPlayVideoURL, playUpdate } from "@/common/play";
 
 const appLang = AppLang();
 const router = useRouter();
@@ -178,6 +178,7 @@ const noPlayList = () => {
 
 const playResourceDramaSeriesHandle = (ds: I_resourceDramaSeries) => {
   setVideoSource(ds.id);
+  playUpdate(ds.resources_id, ds.id)
 };
 
 // 处理菜单操作

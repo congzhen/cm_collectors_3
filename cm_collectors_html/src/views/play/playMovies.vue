@@ -70,7 +70,7 @@ import { ref, onMounted, nextTick } from "vue";
 import { getResourceCoverPoster } from '@/common/photo';
 import { appStoreData } from '@/storeData/app.storeData';
 import { AppLang } from '@/language/app.lang'
-import { getPlayVideoURL } from '@/common/play';
+import { getPlayVideoURL, playUpdate } from '@/common/play';
 const appLang = AppLang()
 
 const store = {
@@ -148,6 +148,7 @@ const noPlayList = () => {
 
 const playResourceDramaSeriesHandle = (ds: I_resourceDramaSeries) => {
   setVideoSource(ds.id)
+  playUpdate(ds.resources_id, ds.id)
 }
 
 onMounted(async () => {
