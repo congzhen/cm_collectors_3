@@ -23,5 +23,5 @@ export default {
   imageSuffixName: ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg'],
   playVideoFormats: ['h264', 'vp8', 'vp9', 'av1', 'hevc'],
   playAudioFormats: ['aac', 'ac3', 'opus', 'mp3', 'vorbis', 'pcm_s16le', 'pcm_s24le'],
-  coverPosterMatchName: ['cover', 'poster', 'thumb', 'thumbnail', 'fileName'],
+  coverPosterMatchName: ['cover', 'poster', 'thumb', 'thumbnail', 'fanart', 'fileName'],
 }

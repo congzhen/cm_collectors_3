@@ -16,6 +16,7 @@ const (
 	CoverPosterMatchName_poster    CoverPosterMatchName = "poster"
 	CoverPosterMatchName_thumb     CoverPosterMatchName = "thumb"
 	CoverPosterMatchName_thumbnail CoverPosterMatchName = "thumbnail"
+	CoverPosterMatchName_fanart    CoverPosterMatchName = "fanart"
 	CoverPosterMatchName_fileName  CoverPosterMatchName = "fileName"
 )
 
