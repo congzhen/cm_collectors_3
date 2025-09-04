@@ -33,6 +33,18 @@ export const appDataServer = {
       method: 'get',
     });
   },
+  playUpdate: async (resourceId: string, dramaSeriesId: string) => {
+    const obj: IRequest = {
+      url: `${routerGroupUri}/play/update/${resourceId}`,
+      method: 'get',
+    }
+    if (dramaSeriesId != '') {
+      obj.params = {
+        dramaSeriesId
+      }
+    }
+    return await request<boolean>(obj);
+  },
   getAppConfig: async () => {
     return await request<I_appSystemConfig>({
       url: `${routerGroupUri}/app/getConfig`,

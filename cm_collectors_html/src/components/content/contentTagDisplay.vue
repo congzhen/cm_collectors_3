@@ -63,6 +63,9 @@ const topTagList_C = computed(() => {
         case 'stars':
           name = appLang.stars(attrData);
           break;
+        case 'hot':
+          name = appLang.attributeTags('hot') + ' ' + props.resource.hot;
+          break;
         default:
           name = '';
       }

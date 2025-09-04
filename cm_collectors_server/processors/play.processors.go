@@ -4,6 +4,7 @@ import (
 	"cm_collectors_server/core"
 	"cm_collectors_server/errorMessage"
 	"cm_collectors_server/models"
+	"errors"
 	"os"
 	"path/filepath"
 
@@ -16,6 +17,30 @@ type Play struct{}
 func (Play) AllowServerOpenFile() error {
 	if !core.Config.General.AllowServerOpenFile {
 		return errorMessage.Err_Current_Server_Has_Been_Set_To_Disallow_This_Peration
+	}
+	return nil
+}
+
+func (p Play) PlayUpdate(resourceId, dramaSeriesId string) error {
+	resourceInfo, err := Resources{}.Info(resourceId)
+	if err != nil {
+		return err
+	}
+	var dramaSeries = models.ResourcesDramaSeries{}
+	if dramaSeriesId != "" {
+		for _, v := range *&resourceInfo.ResourcesDramaSeries {
+			if v.ID == dramaSeriesId {
+				dramaSeries = v
+			}
+		}
+	} else if len(resourceInfo.ResourcesDramaSeries) > 0 {
+		dramaSeries = (resourceInfo.ResourcesDramaSeries)[0]
+	} else {
+		return errors.New("没有找到播放剧集")
+	}
+	err = Resources{}.UpdateResourcePlay(resourceInfo, dramaSeries.Src)
+	if err != nil {
+		return err
 	}
 	return nil
 }
@@ -38,11 +63,6 @@ func (p Play) PlayOpenResource(resourceId, dramaSeriesId string) error {
 
 	// 检查播放源路径是否存在
 	err = p.checkPlaySourceExists(playSrc)
-	if err != nil {
-		return err
-	}
-
-	err = Resources{}.UpdateResourcePlay(resourceInfo, playSrc)
 	if err != nil {
 		return err
 	}

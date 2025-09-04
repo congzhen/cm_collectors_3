@@ -89,6 +89,7 @@
           <el-option :label="appLang.attributeTags('year')" value="issuingDate" />
           <el-option :label="appLang.attributeTags('country')" value="country" />
           <el-option :label="appLang.attributeTags('starRating')" value="stars" />
+          <el-option :label="appLang.attributeTags('hot')" value="hot" />
         </el-select>
       </el-form-item>
       <el-form-item label="封面上显示标签(自定义)">

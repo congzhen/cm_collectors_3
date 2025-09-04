@@ -49,6 +49,7 @@ export default {
     starRating: '评分',
     performer: '演员',
     diyTag: '自定义标签',
+    hot: 'Hot',
   },
   year: '年',
   before_2000: '2000前',

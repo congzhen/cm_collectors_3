@@ -13,6 +13,16 @@ import (
 
 type Play struct{}
 
+func (Play) PlayUpdate(c *gin.Context) {
+	resourceId := c.Param("resourceId")
+	dramaSeriesId := c.Query("dramaSeriesId")
+	err := processors.Play{}.PlayUpdate(resourceId, dramaSeriesId)
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(true, c)
+}
+
 func (Play) PlayOpenResource(c *gin.Context) {
 	resourceId := c.Param("resourceId")
 	dramaSeriesId := c.Query("dramaSeriesId")
