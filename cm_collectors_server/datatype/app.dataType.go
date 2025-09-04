@@ -23,12 +23,12 @@ type App_Config struct {
 
 type App_SystemConfig struct {
 	App_Config
-	AdminPassword       string   `json:"adminPassword"`
-	IsAutoCreateM3u8    bool     `json:"isAutoCreateM3u8"`
-	Language            string   `json:"language"`
-	AllowServerOpenFile bool     `json:"allowServerOpenFile"`
-	PlayVideoFormats    []string `json:"playVideoFormats"`
-	PlayAudioFormats    []string `json:"playAudioFormats"`
+	AdminPassword          string   `json:"adminPassword"`
+	IsAutoCreateM3u8       bool     `json:"isAutoCreateM3u8"`
+	Language               string   `json:"language"`
+	NotAllowServerOpenFile bool     `json:"notAllowServerOpenFile"`
+	PlayVideoFormats       []string `json:"playVideoFormats"`
+	PlayAudioFormats       []string `json:"playAudioFormats"`
 }
 
 // 用户类型

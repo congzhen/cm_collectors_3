@@ -15,7 +15,7 @@ type Play struct{}
 
 // AllowServerOpenFile 检测是否允许服务器打开文件
 func (Play) AllowServerOpenFile() error {
-	if !core.Config.General.AllowServerOpenFile {
+	if core.Config.General.NotAllowServerOpenFile {
 		return errorMessage.Err_Current_Server_Has_Been_Set_To_Disallow_This_Peration
 	}
 	return nil
@@ -47,12 +47,10 @@ func (p Play) PlayUpdate(resourceId, dramaSeriesId string) error {
 
 // PlayOpenResource 打开指定资源进行播放
 func (p Play) PlayOpenResource(resourceId, dramaSeriesId string) error {
-	/*
-		err := p.AllowServerOpenFile()
-		if err != nil {
-			return err
-		}
-	*/
+	err := p.AllowServerOpenFile()
+	if err != nil {
+		return err
+	}
 	resourceInfo, err := Resources{}.Info(resourceId)
 	if err != nil {
 		return err
@@ -87,12 +85,10 @@ func (p Play) PlayOpenDramaSeries(dramaSeriesId string) error {
 
 // PlayOpenResourceFolder 打开资源所在文件夹
 func (p Play) PlayOpenResourceFolder(resourceId string) error {
-	/*
-		err := p.AllowServerOpenFile()
-		if err != nil {
-			return err
-		}
-	*/
+	err := p.AllowServerOpenFile()
+	if err != nil {
+		return err
+	}
 	resourceInfo, err := Resources{}.Info(resourceId)
 	if err != nil {
 		return err

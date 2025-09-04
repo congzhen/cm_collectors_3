@@ -37,12 +37,12 @@ func (App) GetConfig() datatype.App_SystemConfig {
 			LogoName:     core.Config.General.LogoName,
 			IsAdminLogin: core.Config.General.IsAdminLogin,
 		},
-		AdminPassword:       "",
-		IsAutoCreateM3u8:    core.Config.General.IsAutoCreateM3u8,
-		Language:            core.Config.General.Language,
-		AllowServerOpenFile: core.Config.General.AllowServerOpenFile,
-		PlayVideoFormats:    core.Config.Play.PlayVideoFormats,
-		PlayAudioFormats:    core.Config.Play.PlayAudioFormats,
+		AdminPassword:          "",
+		IsAutoCreateM3u8:       core.Config.General.IsAutoCreateM3u8,
+		Language:               core.Config.General.Language,
+		NotAllowServerOpenFile: core.Config.General.NotAllowServerOpenFile,
+		PlayVideoFormats:       core.Config.Play.PlayVideoFormats,
+		PlayAudioFormats:       core.Config.Play.PlayAudioFormats,
 	}
 	return config
 }
@@ -55,7 +55,7 @@ func (App) SetConfig(config datatype.App_SystemConfig) error {
 	}
 	core.Config.General.IsAutoCreateM3u8 = config.IsAutoCreateM3u8
 	core.Config.General.Language = config.Language
-	core.Config.General.AllowServerOpenFile = config.AllowServerOpenFile
+	core.Config.General.NotAllowServerOpenFile = config.NotAllowServerOpenFile
 	core.Config.Play.PlayVideoFormats = config.PlayVideoFormats
 	core.Config.Play.PlayAudioFormats = config.PlayAudioFormats
 	return core.SaveConfig()

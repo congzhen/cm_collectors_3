@@ -15,12 +15,12 @@ const configFile = "config.yaml"
 func getDefaultConfig() *config.Config {
 	return &config.Config{
 		General: config.General{
-			LogoName:            "CM File Collectors",
-			IsAdminLogin:        false,
-			AdminPassword:       "",
-			IsAutoCreateM3u8:    true,
-			Language:            "zhCn",
-			AllowServerOpenFile: true,
+			LogoName:               "CM File Collectors",
+			IsAdminLogin:           false,
+			AdminPassword:          "",
+			IsAutoCreateM3u8:       true,
+			Language:               "zhCn",
+			NotAllowServerOpenFile: false,
 		},
 		Sqlite3: config.Sqlite3{
 			Path:        "./db/cm_collectors.db",
