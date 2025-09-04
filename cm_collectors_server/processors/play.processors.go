@@ -47,10 +47,12 @@ func (p Play) PlayUpdate(resourceId, dramaSeriesId string) error {
 
 // PlayOpenResource 打开指定资源进行播放
 func (p Play) PlayOpenResource(resourceId, dramaSeriesId string) error {
-	err := p.AllowServerOpenFile()
-	if err != nil {
-		return err
-	}
+	/*
+		err := p.AllowServerOpenFile()
+		if err != nil {
+			return err
+		}
+	*/
 	resourceInfo, err := Resources{}.Info(resourceId)
 	if err != nil {
 		return err
@@ -85,10 +87,12 @@ func (p Play) PlayOpenDramaSeries(dramaSeriesId string) error {
 
 // PlayOpenResourceFolder 打开资源所在文件夹
 func (p Play) PlayOpenResourceFolder(resourceId string) error {
-	err := p.AllowServerOpenFile()
-	if err != nil {
-		return err
-	}
+	/*
+		err := p.AllowServerOpenFile()
+		if err != nil {
+			return err
+		}
+	*/
 	resourceInfo, err := Resources{}.Info(resourceId)
 	if err != nil {
 		return err
