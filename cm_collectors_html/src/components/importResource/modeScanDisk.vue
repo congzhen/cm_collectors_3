@@ -19,7 +19,8 @@
       <el-alert title="导入配置" type="success" :closable="false" />
       <el-form ref="ruleFormRef" :model="formData" label-width="200px" status-icon>
         <el-form-item label="监控文件后缀名">
-          <selectVideoSuffixName v-model="formData.videoSuffixName" multiple />
+          <selectVideoSuffixName v-model="formData.videoSuffixName" multiple filterable allow-create
+            default-first-option />
         </el-form-item>
         <el-form-item label="封面海报类型">
           <el-select v-model="formData.coverPosterType">
@@ -37,14 +38,15 @@
           </el-radio-group>
         </el-form-item>
         <el-form-item label="封面海报匹配名">
-          <el-select v-model="formData.coverPosterMatchName" multiple>
+          <el-select v-model="formData.coverPosterMatchName" multiple filterable allow-create default-first-option>
             <el-option v-for="item, key in dataset.coverPosterMatchName" :key="key" :label="item" :value="item" />
           </el-select>
           <el-switch v-model="formData.coverPosterFuzzyMatch" active-text="模糊匹配" inactive-text="严格匹配" />
           <el-checkbox v-model="formData.coverPosterUseRandomImageIfNoMatch" label="匹配的封面失败时，使用目录下随机图片" />
         </el-form-item>
         <el-form-item label="封面海报后缀名">
-          <selectImageSuffixName v-model="formData.coverPosterSuffixName" multiple />
+          <selectImageSuffixName v-model="formData.coverPosterSuffixName" multiple filterable allow-create
+            default-first-option />
         </el-form-item>
         <el-form-item>
           <el-checkbox v-model="formData.autoCreatePoster" label="(未找到封面海报) 自动截取视频内容作封面海报" />

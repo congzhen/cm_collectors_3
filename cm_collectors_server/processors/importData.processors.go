@@ -163,7 +163,7 @@ func (t ImportData) ScanDiskImportData(filesBasesId, filePath string, config dat
 //
 // 返回值:
 //   - string: 匹配到的图片文件路径，未找到匹配项时返回空字符串
-func (ImportData) findCoverPoster(imagePaths []string, targetFileName string, coverPosterMatchName []datatype.CoverPosterMatchName, fuzzyMatch bool, coverPosterUseRandomImageIfNoMatch bool) string {
+func (ImportData) findCoverPoster(imagePaths []string, targetFileName string, coverPosterMatchName []string, fuzzyMatch bool, coverPosterUseRandomImageIfNoMatch bool) string {
 	// 如果 coverPosterMatchName 为空，则使用 targetFileName 进行匹配
 	if len(coverPosterMatchName) == 0 {
 		// 查找与targetFileName相近的图片文件名
