@@ -264,3 +264,76 @@ func ScaleImage(data []byte, maxWidth int, level int) ([]byte, error) {
 
 	return buf.Bytes(), nil
 }
+
+// ResizeAndCropImage 将图像数据按指定的宽度和高度进行裁剪和缩放
+// 如果源图像尺寸小于目标尺寸，将会放大；如果大于目标尺寸，将会缩小
+// 当源图像的宽高比与目标尺寸不匹配时，会以中心为基准裁剪多余部分，确保最终图像完全符合指定尺寸
+// 参数：
+//   - data: 原始图像的字节数据
+//   - targetWidth: 目标图像宽度
+//   - targetHeight: 目标图像高度
+//
+// 返回值：
+//   - []byte: 调整尺寸后图像的字节数据
+//   - error: 如果在解码、裁剪或编码过程中发生错误，则返回相应的错误信息
+func ResizeAndCropImage(data []byte, targetWidth, targetHeight int) ([]byte, error) {
+	if targetWidth <= 0 || targetHeight <= 0 {
+		return nil, errors.New("目标宽度和高度必须大于0")
+	}
+
+	// 将字节数据解码为图像
+	img, _, err := image.Decode(bytes.NewReader(data))
+	if err != nil {
+		return nil, err
+	}
+
+	// 获取原始图像的边界
+	bounds := img.Bounds()
+	srcWidth := bounds.Dx()
+	srcHeight := bounds.Dy()
+
+	// 计算目标比例
+	targetRatio := float64(targetWidth) / float64(targetHeight)
+	srcRatio := float64(srcWidth) / float64(srcHeight)
+
+	// 计算裁剪后的尺寸
+	var cropWidth, cropHeight int
+	var cropX, cropY int
+
+	if srcRatio > targetRatio {
+		// 源图片更宽，需要裁剪宽度
+		cropHeight = srcHeight
+		cropWidth = int(float64(srcHeight) * targetRatio)
+		cropX = (srcWidth - cropWidth) / 2
+		cropY = 0
+	} else {
+		// 源图片更高，需要裁剪高度
+		cropWidth = srcWidth
+		cropHeight = int(float64(srcWidth) / targetRatio)
+		cropX = 0
+		cropY = (srcHeight - cropHeight) / 2
+	}
+
+	// 创建裁剪后的图像
+	cropRect := image.Rect(0, 0, cropWidth, cropHeight)
+	cropImg := image.NewRGBA(cropRect)
+	draw.Draw(cropImg, cropRect, img, image.Point{cropX, cropY}, draw.Src)
+
+	// 创建缩放后的图像
+	dst := image.NewRGBA(image.Rect(0, 0, targetWidth, targetHeight))
+
+	// 使用中等质量进行缩放
+	scaler := draw.ApproxBiLinear
+	scaler.Scale(dst, dst.Bounds(), cropImg, cropImg.Bounds(), draw.Over, nil)
+
+	// 创建缓冲区用于存储编码后的图像
+	buf := new(bytes.Buffer)
+
+	// 编码为JPEG格式
+	err = jpeg.Encode(buf, dst, &jpeg.Options{Quality: 90})
+	if err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
+}

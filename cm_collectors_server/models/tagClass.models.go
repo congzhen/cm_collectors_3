@@ -21,6 +21,12 @@ func (TagClass) TableName() string {
 	return "tagClass"
 }
 
+func (TagClass) InfoByID(db *gorm.DB, id string) (*TagClass, error) {
+	var tagClass TagClass
+	err := db.Where("id = ? ", id).First(&tagClass).Error
+	return &tagClass, err
+}
+
 func (t TagClass) DataListByFilesBasesId(db *gorm.DB, filesBasesID string) (*[]TagClass, error) {
 	var dataList []TagClass
 	err := db.Where("filesBases_id = ?", filesBasesID).Order("sort").Find(&dataList).Error

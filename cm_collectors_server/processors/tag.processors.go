@@ -3,6 +3,7 @@ package processors
 import (
 	"cm_collectors_server/core"
 	"cm_collectors_server/datatype"
+	"cm_collectors_server/errorMessage"
 	"cm_collectors_server/models"
 	"cm_collectors_server/utils"
 
@@ -36,6 +37,47 @@ func (t Tag) TagData(filesBasesID string) (*TagData, error) {
 }
 func (t Tag) TagListByTagClassId(tagClassId string) (*[]models.Tag, error) {
 	return t.TagListByTagClassIds([]string{tagClassId})
+}
+
+func (t Tag) InfoByID(id string) (*models.Tag, error) {
+	info, err := models.Tag{}.InfoByID(core.DBS(), id)
+	if err != nil && err == gorm.ErrRecordNotFound {
+		err = errorMessage.Err_Tag_Not_Found
+	}
+	return info, err
+}
+
+func (t Tag) InfoByName(filesBasesID, name string) (*models.Tag, error) {
+	info, err := models.Tag{}.InfoByName(core.DBS(), filesBasesID, name)
+	if err != nil && err == gorm.ErrRecordNotFound {
+		err = errorMessage.Err_Tag_Not_Found
+	}
+	return info, err
+}
+
+// TagInfoByNameNotFoundCreate 根据名称查找标签，如果未找到则创建新标签
+// filesBasesID: 文件基础ID，用于在特定范围内查找标签
+// name: 标签名称
+// 返回值: 标签信息指针和错误信息
+// 如果根据名称未找到标签，则创建一个新标签并返回新创建的标签信息
+func (t Tag) TagInfoByNameNotFoundCreate(filesBasesID, name string) (*models.Tag, error) {
+	info, err := t.InfoByName(filesBasesID, name)
+	if err != nil && err == errorMessage.Err_Tag_Not_Found {
+		tagClass, err := TagClass{}.GetFirstTagClassByFilesBasesIDNotFoundCreate(filesBasesID)
+		if err != nil {
+			return nil, err
+		}
+		par := datatype.ReqParam_Tag{
+			TagClassID: tagClass.ID,
+			Name:       name,
+		}
+		tagId, err := t.Create(&par)
+		if err != nil {
+			return nil, err
+		}
+		return t.InfoByID(tagId)
+	}
+	return info, err
 }
 
 func (t Tag) TagDataUpdateSort(par *datatype.ReqParam_UpdateTagDataSort) error {
@@ -73,14 +115,15 @@ func (Tag) GetTotalByTagClassID(tagClassID string) (int64, error) {
 	return models.Tag{}.GetTotalByTagClassID(core.DBS(), tagClassID)
 }
 
-func (t Tag) Create(par *datatype.ReqParam_Tag) error {
+func (t Tag) Create(par *datatype.ReqParam_Tag) (string, error) {
 	tagTotal, err := t.GetTotalByTagClassID(par.TagClassID)
 	if err != nil {
-		return err
+		return "", err
 	}
 	timeNow := datatype.CustomTime(core.TimeNow())
+	id := core.GenerateUniqueID()
 	tagModels := models.Tag{
-		ID:         core.GenerateUniqueID(),
+		ID:         id,
 		TagClassID: par.TagClassID,
 		Name:       par.Name,
 		KeyWords:   utils.PinyinInitials(par.Name),
@@ -88,7 +131,7 @@ func (t Tag) Create(par *datatype.ReqParam_Tag) error {
 		CreatedAt:  &timeNow,
 		Status:     true,
 	}
-	return tagModels.Create(core.DBS(), &tagModels)
+	return id, tagModels.Create(core.DBS(), &tagModels)
 }
 
 func (Tag) Update(tag *datatype.ReqParam_Tag) error {

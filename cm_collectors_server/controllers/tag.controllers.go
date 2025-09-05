@@ -47,7 +47,7 @@ func (Tag) CreateTag(c *gin.Context) {
 	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {
 		return
 	}
-	err := processors.Tag{}.Create(&par)
+	_, err := processors.Tag{}.Create(&par)
 	if err := ResError(c, err); err != nil {
 		return
 	}
@@ -70,7 +70,7 @@ func (Tag) CreateTagClass(c *gin.Context) {
 	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {
 		return
 	}
-	err := processors.TagClass{}.Create(&par)
+	_, err := processors.TagClass{}.Create(&par)
 	if err := ResError(c, err); err != nil {
 		return
 	}

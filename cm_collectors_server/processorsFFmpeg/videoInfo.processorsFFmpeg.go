@@ -17,13 +17,45 @@ type VideoInfo struct {
 	supportedAudioCodecs []string
 }
 
+// VideoDefinition 清晰度类型定义
+type VideoDefinition string
+
+const (
+	Definition8K                 VideoDefinition = "8K"
+	Definition4K                 VideoDefinition = "4K"
+	Definition2K                 VideoDefinition = "2K"
+	Definition1080P              VideoDefinition = "1080P"
+	Definition720P               VideoDefinition = "720P"
+	DefinitionHighDefinition     VideoDefinition = "HighDefinition"
+	DefinitionStandardDefinition VideoDefinition = "StandardDefinition"
+	DefinitionEmpty              VideoDefinition = ""
+)
+
 // VideoFormatInfo 保存视频格式信息的结构体
 type VideoFormatInfo struct {
 	Streams []struct {
 		CodecType string `json:"codec_type"`
 		CodecName string `json:"codec_name"`
 		Profile   string `json:"profile"`
+		Width     int    `json:"width,omitempty"`
+		Height    int    `json:"height,omitempty"`
+		Duration  string `json:"duration,omitempty"`
+		BitRate   string `json:"bit_rate,omitempty"`
 	} `json:"streams"`
+	Format struct {
+		Duration string `json:"duration,omitempty"`
+		Size     string `json:"size,omitempty"`
+		BitRate  string `json:"bit_rate,omitempty"`
+	} `json:"format"`
+}
+
+// VideoBasicInfo 保存视频基本信息的结构体
+type VideoBasicInfo struct {
+	Width    int    `json:"width"`
+	Height   int    `json:"height"`
+	Duration string `json:"duration"`
+	BitRate  string `json:"bit_rate"`
+	Size     string `json:"size"`
 }
 
 func (v *VideoInfo) SetSupportedVideoCodecs(codecs []string) {
@@ -98,4 +130,75 @@ func (v VideoInfo) GetVideoFormatInfo(src string) (VideoFormatInfo, error) {
 	}
 
 	return formatInfo, nil
+}
+
+// GetVideoBasicInfo 获取视频基本信息（宽度、高度等）
+func (v VideoInfo) GetVideoBasicInfo(src string) (VideoBasicInfo, error) {
+	var basicInfo VideoBasicInfo
+
+	// 获取视频格式信息
+	formatInfo, err := v.GetVideoFormatInfo(src)
+	if err != nil {
+		return basicInfo, fmt.Errorf("无法获取视频格式信息: %v", err)
+	}
+
+	// 查找视频流以获取宽度和高度
+	for _, stream := range formatInfo.Streams {
+		if stream.CodecType == "video" {
+			basicInfo.Width = stream.Width
+			basicInfo.Height = stream.Height
+			basicInfo.Duration = stream.Duration
+			basicInfo.BitRate = stream.BitRate
+			break
+		}
+	}
+
+	// 如果视频流中没有时长信息，则从format中获取
+	if basicInfo.Duration == "" {
+		basicInfo.Duration = formatInfo.Format.Duration
+	}
+
+	// 获取文件大小和总比特率
+	basicInfo.Size = formatInfo.Format.Size
+	basicInfo.BitRate = formatInfo.Format.BitRate
+
+	return basicInfo, nil
+}
+
+// GetVideoDefinition 根据视频的宽度和高度确定视频清晰度
+func (v VideoInfo) GetVideoDefinition(width, height int) VideoDefinition {
+	// 获取最小值作为主要尺寸，以更好地反映视频的清晰度
+	// 这样可以确保竖版视频（如手机拍摄）也能正确识别
+	minDimension := width
+	if height < minDimension {
+		minDimension = height
+	}
+
+	// 根据最小尺寸判断清晰度
+	// 标准基于常见的视频分辨率:
+	// 8K: >= 4320 (例如 7680×4320)
+	// 4K: >= 2160 (例如 3840×2160, 4096×2160)
+	// 2K: >= 1440 (例如 2560×1440)
+	// 1080P: >= 1080 (例如 1920×1080)
+	// 720P: >= 720 (例如 1280×720)
+	// HighDefinition: >= 480 (例如 854×480)
+	// StandardDefinition: < 480 (例如 640×480, 480×360等)
+	switch {
+	case minDimension >= 4320:
+		return Definition8K
+	case minDimension >= 2160:
+		return Definition4K
+	case minDimension >= 1440:
+		return Definition2K
+	case minDimension >= 1080:
+		return Definition1080P
+	case minDimension >= 720:
+		return Definition720P
+	case minDimension >= 480:
+		return DefinitionHighDefinition
+	case minDimension > 0:
+		return DefinitionStandardDefinition
+	default:
+		return DefinitionEmpty
+	}
 }

@@ -24,4 +24,18 @@ export default {
   playVideoFormats: ['h264', 'vp8', 'vp9', 'av1', 'hevc'],
   playAudioFormats: ['aac', 'ac3', 'opus', 'mp3', 'vorbis', 'pcm_s16le', 'pcm_s24le'],
   coverPosterMatchName: ['cover', 'poster', 'thumb', 'thumbnail', 'fanart', 'fileName'],
+  nfo: {
+    nfoStatus: true,
+    roots: ['movie', 'root'],
+    titles: ['title', 'originaltitle', 'sorttitle'],
+    issueNumbers: ['num'],
+    issuingDates: ['releasedate', 'premiered', 'year'],
+    abstracts: ['outline', 'plot', 'originalplot'],
+    tags: ['tag', 'genre'],
+    tagAutoCreate: true,
+    performerNames: ['actor.name', 'actor.title'],
+    performerMatchAliasName: true,
+    performerAutoCreate: true,
+    performerThumbs: ['actor.thumb', 'actor.poster'],
+  }
 }

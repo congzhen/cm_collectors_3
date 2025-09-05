@@ -15,12 +15,14 @@
         <el-button type="primary" plain @click="addDiskLocationHandle">添加文件夹位置</el-button>
       </div>
     </div>
-    <div class="block">
-      <el-alert title="导入配置" type="success" :closable="false" />
-      <el-form ref="ruleFormRef" :model="formData" label-width="200px" status-icon>
+    <el-form ref="ruleFormRef" :model="formData" label-width="160px" status-icon>
+      <div class="block">
+        <el-alert title="导入配置" type="success" :closable="false" />
+
         <el-form-item label="监控文件后缀名">
           <selectVideoSuffixName v-model="formData.videoSuffixName" multiple filterable allow-create
             default-first-option />
+          <div><el-checkbox v-model="formData.autoGetVideoDefinition" label="自动获取视频清晰度" /></div>
         </el-form-item>
         <el-form-item label="封面海报类型">
           <el-select v-model="formData.coverPosterType">
@@ -54,8 +56,61 @@
         <el-form-item>
           <el-checkbox v-model="formData.checkPath" label="检测路径是否存在 (已存在不导入)" />
         </el-form-item>
-      </el-form>
-    </div>
+      </div>
+      <div class="block">
+        <el-alert title="nfo配置" type="success" :closable="false" />
+        <el-form-item>
+          <div>
+            <div><el-checkbox v-model="formData.nfo.nfoStatus" label="导入nfo文件" /></div>
+            <div><el-text type="warning">次级节点标签请使用 . 链接</el-text></div>
+          </div>
+
+        </el-form-item>
+        <el-form-item label="根节点">
+          <el-select v-model="formData.nfo.roots" multiple filterable allow-create default-first-option>
+            <el-option v-for="item, index in dataset.nfo.roots" :key="index" :label="item" :value="item" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="标题">
+          <el-select v-model="formData.nfo.titles" multiple filterable allow-create default-first-option>
+            <el-option v-for="item, index in dataset.nfo.titles" :key="index" :label="item" :value="item" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="版号番号">
+          <el-select v-model="formData.nfo.issueNumbers" multiple filterable allow-create default-first-option>
+            <el-option v-for="item, index in dataset.nfo.issueNumbers" :key="index" :label="item" :value="item" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="发行日期">
+          <el-select v-model="formData.nfo.issuingDates" multiple filterable allow-create default-first-option>
+            <el-option v-for="item, index in dataset.nfo.issuingDates" :key="index" :label="item" :value="item" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="摘要简介">
+          <el-select v-model="formData.nfo.abstracts" multiple filterable allow-create default-first-option>
+            <el-option v-for="item, index in dataset.nfo.abstracts" :key="index" :label="item" :value="item" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="标签">
+          <el-select v-model="formData.nfo.tags" multiple filterable allow-create default-first-option>
+            <el-option v-for="item, index in dataset.nfo.tags" :key="index" :label="item" :value="item" />
+          </el-select>
+          <el-checkbox v-model="formData.nfo.tagAutoCreate" label="自动添加标签" />
+        </el-form-item>
+        <el-form-item label="演员姓名">
+          <el-select v-model="formData.nfo.performerNames" multiple filterable allow-create default-first-option>
+            <el-option v-for="item, index in dataset.nfo.performerNames" :key="index" :label="item" :value="item" />
+          </el-select>
+          <el-checkbox v-model="formData.nfo.performerMatchAliasName" label="同时匹配别名" />
+          <el-checkbox v-model="formData.nfo.performerAutoCreate" label="自动添加演员" />
+        </el-form-item>
+        <el-form-item label="演员头像">
+          <el-select v-model="formData.nfo.performerThumbs" multiple filterable allow-create default-first-option>
+            <el-option v-for="item, index in dataset.nfo.performerThumbs" :key="index" :label="item" :value="item" />
+          </el-select>
+        </el-form-item>
+      </div>
+    </el-form>
   </div>
   <serverFileManagementDialog ref="serverFileManagementDialogRef" @selectedFiles="selectedFilesHandle"
     :show="[E_sfm_FileType.Directory]">
@@ -87,19 +142,7 @@ const serverFileManagementDialogRef = ref<InstanceType<typeof serverFileManageme
 const modeScanDiskImportDataDialogRef = ref<InstanceType<typeof modeScanDiskImportDataDialog>>();
 
 const loading = ref(false)
-
-const formData = ref<I_config_scanDisk>({
-  scanDiskPaths: [],
-  videoSuffixName: [],
-  resourceNamingMode: 'fileName',
-  coverPosterMatchName: dataset.coverPosterMatchName,
-  coverPosterFuzzyMatch: true,
-  coverPosterUseRandomImageIfNoMatch: false,
-  coverPosterSuffixName: [],
-  coverPosterType: -1,
-  autoCreatePoster: true,
-  checkPath: true,
-})
+const formData = ref<I_config_scanDisk>({ ...defualtConfigScanDisk })
 
 const init = async () => {
   await getConfig();
@@ -118,7 +161,7 @@ const getConfig = async () => {
       const config = JSON.parse(configStr);
       formData.value = { ...defualtConfigScanDisk, ...config };
     } else {
-      formData.value = defualtConfigScanDisk;
+      formData.value = { ...defualtConfigScanDisk };
     }
   } catch (error) {
     console.log(error);
@@ -133,8 +176,19 @@ const submit = debounceNow(async () => {
     return;
   }
   try {
+    const configData = formData.value;
+    if (configData.coverPosterType == -1) {
+      configData.coverPosterWidth = 0;
+      configData.coverPosterHeight = 0;
+    } else {
+      const coverPosterData = store.appStoreData.currentConfigApp.coverPosterData[configData.coverPosterType];
+      if (coverPosterData) {
+        configData.coverPosterWidth = coverPosterData.width;
+        configData.coverPosterHeight = coverPosterData.height;
+      }
+    }
     loading.value = true;
-    const result = await importDataServer.scanDiskImportPaths(store.appStoreData.currentFilesBases.id, formData.value);
+    const result = await importDataServer.scanDiskImportPaths(store.appStoreData.currentFilesBases.id, configData);
     if (!result.status) {
       ElMessage.error(result.msg);
       return;
@@ -142,7 +196,7 @@ const submit = debounceNow(async () => {
       ElMessage.error('没有可导入的数据');
       return;
     } else {
-      modeScanDiskImportDataDialogRef.value?.open(result.data, formData.value);
+      modeScanDiskImportDataDialogRef.value?.open(result.data, configData);
     }
   } catch (error) {
     console.log(error);
@@ -150,6 +204,7 @@ const submit = debounceNow(async () => {
     loading.value = false;
   }
 });
+
 
 const addDiskLocationHandle = () => {
   serverFileManagementDialogRef.value?.open();
@@ -163,7 +218,6 @@ const selectedFilesHandle = (slc: I_sfm_FileEntry[]) => {
       formData.value.scanDiskPaths.push(item.path);
     }
   });
-  console.log(formData.value.scanDiskPaths);
 }
 
 const deleteDiskLocationHandle = (index: number) => {

@@ -163,27 +163,63 @@ export interface I_routeConversion {
 export interface I_config_scanDisk {
   scanDiskPaths: string[]; // 扫描磁盘路径
   videoSuffixName: string[]; // 视频文件后缀名
+  autoGetVideoDefinition: boolean; // 自动获取视频分辨率
   resourceNamingMode: 'fileName' | 'dirName' | 'dirFileName' | 'fullPathName'; // 资源命名模式
   coverPosterMatchName: string[]; // 封面海报匹配名称
   coverPosterFuzzyMatch: boolean; // 封面海报模糊匹配
   coverPosterUseRandomImageIfNoMatch: boolean; // 无匹配时使用目录下随机图片
   coverPosterSuffixName: string[]; // 封面海报文件后缀名
   coverPosterType: number; // 封面海报类型
+  coverPosterWidth: number; // 封面海报宽度
+  coverPosterHeight: number; // 封面海报高度
   autoCreatePoster: boolean; // 自动创建封面海报
   checkPath: boolean; // 检查路径
+  nfo: I_config_scanDisk_nfo;
+}
+
+export interface I_config_scanDisk_nfo {
+  nfoStatus: boolean;
+  roots: string[];
+  titles: string[];
+  issueNumbers: string[];
+  issuingDates: string[];
+  abstracts: string[];
+  tags: string[];
+  tagAutoCreate: boolean;
+  performerNames: string[];
+  performerMatchAliasName: boolean;
+  performerAutoCreate: boolean;
+  performerThumbs: string[];
 }
 
 export const defualtConfigScanDisk: I_config_scanDisk = {
   scanDiskPaths: [],
   videoSuffixName: dataset.videoSuffixName,
+  autoGetVideoDefinition: true,
   coverPosterMatchName: dataset.coverPosterMatchName,
   coverPosterFuzzyMatch: true,
   coverPosterUseRandomImageIfNoMatch: false,
   resourceNamingMode: 'fileName',
   coverPosterSuffixName: dataset.imageSuffixName,
   coverPosterType: -1,
+  coverPosterWidth: 0,
+  coverPosterHeight: 0,
   autoCreatePoster: true,
   checkPath: true,
+  nfo: {
+    nfoStatus: dataset.nfo.nfoStatus,
+    roots: dataset.nfo.roots,
+    titles: dataset.nfo.titles,
+    issueNumbers: dataset.nfo.issueNumbers,
+    issuingDates: dataset.nfo.issuingDates,
+    abstracts: dataset.nfo.abstracts,
+    tags: dataset.nfo.tags,
+    tagAutoCreate: dataset.nfo.tagAutoCreate,
+    performerNames: dataset.nfo.performerNames,
+    performerMatchAliasName: dataset.nfo.performerMatchAliasName,
+    performerAutoCreate: dataset.nfo.performerAutoCreate,
+    performerThumbs: dataset.nfo.performerThumbs,
+  }
 }
 
 

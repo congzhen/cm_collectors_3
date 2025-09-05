@@ -2,6 +2,7 @@ package models
 
 import (
 	"cm_collectors_server/datatype"
+	"fmt"
 
 	"gorm.io/gorm"
 )
@@ -25,6 +26,20 @@ func (t Tag) DataListByTagClassIds(db *gorm.DB, tagClassIds []string) (*[]Tag, e
 	var dataList []Tag
 	err := db.Where("tagClass_id in (?)", tagClassIds).Order("sort").Find(&dataList).Error
 	return &dataList, err
+}
+
+func (t Tag) InfoByID(db *gorm.DB, id string) (*Tag, error) {
+	var tag Tag
+	err := db.Where("id = ? ", id).First(&tag).Error
+	return &tag, err
+}
+
+func (t Tag) InfoByName(db *gorm.DB, filesBasesID, name string) (*Tag, error) {
+	var tag Tag
+	err := db.Table(fmt.Sprintf("%s as t", t.TableName())).
+		Joins(fmt.Sprintf("LEFT JOIN %s as tc ON t.tagClass_id = tc.id", TagClass{}.TableName())).
+		Where("tc.filesBases_id = ? and t.name = ?", filesBasesID, name).First(&tag).Error
+	return &tag, err
 }
 
 func (Tag) GetTotalByTagClassID(db *gorm.DB, tagClassID string) (int64, error) {

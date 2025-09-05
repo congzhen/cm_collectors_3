@@ -3,6 +3,7 @@ package processors
 import (
 	"cm_collectors_server/core"
 	"cm_collectors_server/datatype"
+	"cm_collectors_server/errorMessage"
 	"cm_collectors_server/models"
 
 	"gorm.io/gorm"
@@ -12,6 +13,14 @@ type TagClass struct{}
 
 func (TagClass) DataListByFilesBasesId(filesBasesId string) (*[]models.TagClass, error) {
 	return models.TagClass{}.DataListByFilesBasesId(core.DBS(), filesBasesId)
+}
+
+func (TagClass) InfoByID(id string) (*models.TagClass, error) {
+	info, err := models.TagClass{}.InfoByID(core.DBS(), id)
+	if err != nil && err == gorm.ErrRecordNotFound {
+		err = errorMessage.Err_TagClaSS_Not_Found
+	}
+	return info, err
 }
 
 func (TagClass) TagClassUpdateSort(db *gorm.DB, tagClassSort *[]datatype.TagSort) error {
@@ -34,14 +43,34 @@ func (TagClass) GetTotalByFilesBasesId(filesBasesId string) (int64, error) {
 	return models.TagClass{}.GetTotalByFilesBasesId(core.DBS(), filesBasesId)
 }
 
-func (t TagClass) Create(par *datatype.ReqParam_TagClass) error {
+func (t TagClass) GetFirstTagClassByFilesBasesIDNotFoundCreate(filesBasesID string) (*models.TagClass, error) {
+	tagClassList, err := t.DataListByFilesBasesId(filesBasesID)
+	if err != nil {
+		return nil, err
+	}
+	if len(*tagClassList) > 0 {
+		return &(*tagClassList)[0], nil
+	}
+	par := datatype.ReqParam_TagClass{
+		FilesBasesID: filesBasesID,
+		Name:         "Default",
+	}
+	id, err := t.Create(&par)
+	if err != nil {
+		return nil, err
+	}
+	return t.InfoByID(id)
+}
+
+func (t TagClass) Create(par *datatype.ReqParam_TagClass) (string, error) {
 	tagClassTotal, err := t.GetTotalByFilesBasesId(par.FilesBasesID)
 	if err != nil {
-		return err
+		return "", err
 	}
 	timeNow := datatype.CustomTime(core.TimeNow())
+	id := core.GenerateUniqueID()
 	tagClassModels := models.TagClass{
-		ID:           core.GenerateUniqueID(),
+		ID:           id,
 		FilesBasesID: par.FilesBasesID,
 		Name:         par.Name,
 		LeftShow:     true,
@@ -49,7 +78,7 @@ func (t TagClass) Create(par *datatype.ReqParam_TagClass) error {
 		CreatedAt:    &timeNow,
 		Status:       true,
 	}
-	return tagClassModels.Create(core.DBS(), &tagClassModels)
+	return id, tagClassModels.Create(core.DBS(), &tagClassModels)
 }
 
 func (TagClass) Update(tagClass *datatype.ReqParam_TagClass) error {
