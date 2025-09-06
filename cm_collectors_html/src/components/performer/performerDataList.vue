@@ -41,10 +41,7 @@ import type { I_performer, I_search_performer } from '@/dataType/performer.dataT
 import { performerServer } from '@/server/performer.server';
 import { ElMessage } from 'element-plus';
 import { messageBoxConfirm } from '../../common/messageBox';
-import { E_tagType } from '@/dataType/app.dataType';
 import { searchStoreData } from '@/storeData/search.storeData';
-import { cacheData } from '@/cache/index.cache';
-import { E_searchLogic } from '@/dataType/search.dataType';
 import { useRouter } from 'vue-router';
 const router = useRouter()
 const store = {
@@ -113,9 +110,7 @@ const clickPerformerHandle = (data: I_performer) => {
 }
 
 const searchPerformerHandle = (data: I_performer) => {
-  cacheData[data.id] = data.name;
-  store.searchStoreData.setLogic(E_tagType.Performer, E_searchLogic.Single);
-  store.searchStoreData.setQuery(E_tagType.Performer, data.id);
+  store.searchStoreData.setQueryPerformer(data.id, data.name)
   router.push(`/`)
 }
 

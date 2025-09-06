@@ -1,3 +1,4 @@
+import { cacheData } from "@/cache/index.cache";
 import { E_tagType } from "@/dataType/app.dataType";
 import { E_searchLogic, E_searchSort, type I_searchData, type I_searchGroup } from "@/dataType/search.dataType";
 import { defineStore } from "pinia";
@@ -158,6 +159,12 @@ export const searchStoreData = defineStore('search', {
           }
         }
       }
+    },
+    // 设置查询演员
+    setQueryPerformer: function (id: string, name: string) {
+      cacheData[id] = name;
+      this.setLogic(E_tagType.Performer, E_searchLogic.Single);
+      this.setQuery(E_tagType.Performer, id);
     },
     // 检查选中
     checkSelected: function (type: E_tagType, option: string, diyTagClassId: string = ''): boolean {

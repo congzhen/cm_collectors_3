@@ -29,7 +29,8 @@
         </li>
       </ul>
       <div class="performer-btn" v-if="props.performerBtn">
-        <el-button icon="Search" size="small" round> 查看【{{ props.performer.name }}】所有资源 </el-button>
+        <el-button icon="Search" size="small" round @click="showPerforemerResourceHandle"> 查看【{{ props.performer.name
+          }}】所有资源 </el-button>
       </div>
     </div>
   </div>
@@ -39,10 +40,12 @@ import type { I_performer } from '@/dataType/performer.dataType';
 import { type PropType } from 'vue';
 import { calculateAge } from '@/assets/calculate'
 import { appStoreData } from '@/storeData/app.storeData';
+import { searchStoreData } from '@/storeData/search.storeData';
 import { getPerformerPhoto } from '@/common/photo';
 import performerPhoto from './performerPhoto.vue'
 const store = {
   appStoreData: appStoreData(),
+  searchStoreData: searchStoreData(),
 }
 const props = defineProps({
   performer: {
@@ -62,6 +65,11 @@ const props = defineProps({
     default: false,
   }
 })
+
+const showPerforemerResourceHandle = () => {
+  store.searchStoreData.setQueryPerformer(props.performer.id, props.performer.name)
+}
+
 </script>
 <style lang="scss" scoped>
 .performer-details {
