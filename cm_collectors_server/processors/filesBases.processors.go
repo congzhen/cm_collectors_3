@@ -23,6 +23,21 @@ func (FilesBases) InfoDetailsById(id string) (*models.FilesBasesDetails, error) 
 	return models.FilesBases{}.InfoDetails(core.DBS(), id)
 }
 
+func (FilesBases) GetMainPerformerBasesId(filesBasesID string) (string, error) {
+	relatedPerformerBasesSlc, err := models.FilesRelatedPerformerBases{}.ListByFilesBasesID(core.DBS(), filesBasesID)
+	if err != nil {
+		return "", err
+	}
+	mainID := ""
+	for _, v := range *relatedPerformerBasesSlc {
+		if v.Main {
+			mainID = v.PerformerBasesID
+			break
+		}
+	}
+	return mainID, nil
+}
+
 func (FilesBases) ConfigById(id, configType string) (string, error) {
 	filesBasesSettingInfo, err := models.FilesBasesSetting{}.InfoByFilesBasesID(core.DBS(), id)
 	if err != nil {

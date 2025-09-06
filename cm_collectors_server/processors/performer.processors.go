@@ -9,6 +9,8 @@ import (
 	"fmt"
 	"os"
 	"path"
+
+	"gorm.io/gorm"
 )
 
 type Performer struct{}
@@ -23,6 +25,36 @@ func (Performer) DataList(performerBasesId string, fetchCount bool, page, limit 
 
 func (Performer) ListTopPreferredPerformers(preferredIds []string, mainPerformerBasesId string, shieldNoPerformerPhoto bool, limit int) (*[]models.Performer, error) {
 	return models.Performer{}.ListTopPreferredPerformers(core.DBS(), preferredIds, mainPerformerBasesId, shieldNoPerformerPhoto, limit)
+}
+
+func (Performer) InfoByName(performerBasesID, name string, searchAliasName bool) (*models.Performer, error) {
+	info, err := models.Performer{}.InfoByName(core.DBS(), performerBasesID, name, searchAliasName)
+	if err != nil && err == gorm.ErrRecordNotFound {
+		err = errorMessage.Err_performer_Not_Found
+	}
+	return info, err
+}
+
+func (t Performer) PerformerInfoByNameNotFoundCreate(filesBasesId, name, photoBase64 string) (*models.Performer, error) {
+	mainPerformerBasesId, err := FilesBases{}.GetMainPerformerBasesId(filesBasesId)
+	if err != nil {
+		return nil, err
+	}
+	info, err := t.InfoByName(mainPerformerBasesId, name, true)
+	if err != nil && err == errorMessage.Err_performer_Not_Found {
+		par := datatype.ReqParam_PerformerData{
+			Performer: datatype.ReqParam_Performer{
+				PerformerBasesID: mainPerformerBasesId,
+				Name:             name,
+				CareerPerformer:  true,
+			},
+		}
+		if photoBase64 != "" {
+			par.PhotoBase64 = photoBase64
+		}
+		return t.Create(&par)
+	}
+	return info, err
 }
 
 func (Performer) RecycleBin(performerBasesId string) (*[]models.Performer, error) {

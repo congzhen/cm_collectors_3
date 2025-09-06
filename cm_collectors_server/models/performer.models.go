@@ -59,6 +59,18 @@ func (Performer) BasicList(db *gorm.DB, performerBasesIds []string, careerPerfor
 	return &list, err
 }
 
+func (Performer) InfoByName(db *gorm.DB, performerBasesID, name string, searchAliasName bool) (*Performer, error) {
+	var performer Performer
+	if searchAliasName {
+		db = db.Where("performerBases_id = ? and (name = ? or aliasName like ?)", performerBasesID, name, "%"+name+"%")
+	} else {
+		db = db.Where("performerBases_id = ? and name = ?", performerBasesID, name)
+	}
+
+	err := db.First(&performer).Error
+	return &performer, err
+}
+
 func (Performer) DataList(db *gorm.DB, performerBasesId string, fetchCount bool, page, limit int, search, star, cup string) (*[]Performer, int64, error) {
 	var dataList []Performer
 	var total int64
