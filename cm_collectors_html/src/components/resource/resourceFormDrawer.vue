@@ -24,13 +24,17 @@
         <div>
           <el-alert title="资源" type="info" :closable="false" />
           <ul class="resource-form-drama-series">
-            <li v-for="item, index in dramaSeries" :key="index">
-              <label class="drama-series-index">{{ (index + 1) }}.</label>
-              <el-input v-model="item.src" size="small" />
-              <el-button-group class="drama-series-tool" size="small">
-                <el-button icon="Delete" @click="dramaSeriesDeleteHandle(index)"></el-button>
-              </el-button-group>
-            </li>
+            <draggable class="fileDatabase-list-draggable" :list="dramaSeries" item-key="id">
+              <template #item="{ element, index }">
+                <li>
+                  <label class="drama-series-index">{{ (index + 1) }}.</label>
+                  <el-input v-model="element.src" size="small" />
+                  <el-button-group class="drama-series-tool" size="small">
+                    <el-button icon="Delete" @click="dramaSeriesDeleteHandle(index)"></el-button>
+                  </el-button-group>
+                </li>
+              </template>
+            </draggable>
           </ul>
           <div class="resource-form-browse">
             <el-button icon="MostlyCloudy" type="primary" plain @click="selectServerFilesHandle">选择资源</el-button>
@@ -138,6 +142,7 @@ import type { I_sfm_FileEntry } from '@/components/serverFileManagement/com/data
 import { LoadingService } from '@/assets/loading';
 import { resourceServer } from '@/server/resource.server';
 import { getResourceCoverPoster } from '@/common/photo';
+import draggable from 'vuedraggable';
 import { AppLang } from '@/language/app.lang'
 const appLang = AppLang()
 
