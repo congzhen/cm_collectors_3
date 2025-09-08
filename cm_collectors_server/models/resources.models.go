@@ -66,10 +66,16 @@ func (t Resources) Info(db *gorm.DB, id string) (*Resources, error) {
 	return &info, err
 }
 
-func (t Resources) DataListAll(db *gorm.DB) (*[]Resources, error) {
+func (t Resources) DataListAll(db *gorm.DB, page, limit int) (*[]Resources, error) {
+	offset := (page - 1) * limit
 	var dataList []Resources
-	err := t.Preload(db).Model(&Resources{}).Order("addTime desc").Find(&dataList)
+	err := t.Preload(db).Model(&Resources{}).Order("addTime desc").Limit(limit).Offset(offset).Find(&dataList)
 	return &dataList, err.Error
+}
+func (t Resources) DataListByIds(db *gorm.DB, ids []string) (*[]Resources, error) {
+	var dataList []Resources
+	err := t.Preload(db).Model(&Resources{}).Where("id in (?)", ids).Order("addTime desc").Find(&dataList).Error
+	return &dataList, err
 }
 
 func (t Resources) DataList(db *gorm.DB, par *datatype.ReqParam_ResourcesList) (*[]Resources, int64, error) {

@@ -4,6 +4,7 @@ import (
 	"cm_collectors_server/processors"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -12,6 +13,9 @@ type TVBox struct{}
 
 // Home TVBox主页配置接口
 func (TVBox) Home(c *gin.Context) {
+	// 获取推荐内容
+	recommendVideos := processors.TVBox{}.RecommendVideos(c.Request.Host, 30) // 获取30个推荐视频
+
 	home := map[string]interface{}{
 		"sites": []map[string]interface{}{
 			{
@@ -32,9 +36,10 @@ func (TVBox) Home(c *gin.Context) {
 				"url":  "",
 			},
 		},
-		"flags": []string{},
-		"ijk":   []interface{}{},
-		"ads":   []string{},
+		"flags":     []string{},
+		"ijk":       []interface{}{},
+		"ads":       []string{},
+		"recommend": recommendVideos,
 	}
 
 	c.JSON(http.StatusOK, home)
@@ -45,7 +50,8 @@ func (t TVBox) Videos(c *gin.Context) {
 
 	id := c.Query("ids")
 	if id != "" {
-		videos, err := processors.TVBox{}.VideoDetail(c.Request.Host, id)
+		ids := strings.Split(id, ",")
+		videos, err := processors.TVBox{}.VideoDetail(c.Request.Host, ids)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err})
 			return

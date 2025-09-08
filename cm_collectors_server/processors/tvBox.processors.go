@@ -34,46 +34,102 @@ func (t TVBox) Videos(host, typeId, searchText string, page, limit int) (map[str
 	return videos, nil
 }
 
-func (t TVBox) VideoDetail(host, resourceId string) (map[string]interface{}, error) {
-	// 获取资源详情
-	resource, err := Resources{}.Info(resourceId)
+// RecommendVideos 获取推荐视频列表
+func (t TVBox) RecommendVideos(host string, limit int) []map[string]interface{} {
+	resources, err := Resources{}.DataListAll(1, limit)
+	if err != nil || resources == nil || len(*resources) == 0 {
+		return []map[string]interface{}{}
+	}
+
+	// 取前limit个资源作为推荐
+	count := limit
+	if len(*resources) < limit {
+		count = len(*resources)
+	}
+
+	recommendList := make([]map[string]interface{}, 0, count)
+	for i := 0; i < count && i < len(*resources); i++ {
+		resource := (*resources)[i]
+		performerNames := t.getPerformerNames(resource.Performers)
+		directorNames := t.getDirectorNames(resource.Directors)
+		tagNames := t.getTagNames(resource.Tags)
+		year := t.getYearString(resource.IssuingDate)
+
+		recommendList = append(recommendList, map[string]interface{}{
+			"vod_id":       resource.ID,
+			"vod_name":     t.truncateString(resource.Title, TVBox_TitleTrunNum),
+			"vod_pic":      fmt.Sprintf("http://%s/api/resCoverPoster/%s/%s", host, resource.FilesBasesID, resource.CoverPoster),
+			"vod_remarks":  resource.Definition,
+			"vod_year":     year,
+			"vod_area":     resource.Country,
+			"vod_actor":    performerNames,
+			"vod_director": directorNames,
+			"vod_content":  fmt.Sprintf("%s 标签：%s", resource.Abstract, tagNames),
+		})
+	}
+
+	return recommendList
+}
+
+// ... existing code ...
+
+func (t TVBox) VideoDetail(host string, resourceIds []string) (map[string]interface{}, error) {
+	list := make([]map[string]interface{}, 0)
+
+	resourceSlc, err := Resources{}.DataListByIds(resourceIds)
 	if err != nil {
+		return nil, err
+	}
+	if len(*resourceSlc) == 0 {
+		return nil, fmt.Errorf("未找到资源")
+	}
+	for _, _resource := range *resourceSlc {
+		resource := _resource
+		performerNames := t.getPerformerNames(resource.Performers)
+		// 获取导演信息
+		directorNames := t.getDirectorNames(resource.Directors)
+
+		// 获取标签信息
+		tagNames := t.getTagNames(resource.Tags)
+
+		// 构造播放链接
+		playUrls := t.buildPlayUrls(resource.ResourcesDramaSeries, host)
+
+		area := resource.Country
+		year := t.getYearString(resource.IssuingDate)
+
+		detail := map[string]interface{}{
+			"vod_id":        resource.ID,
+			"vod_name":      t.truncateString(resource.Title, TVBox_TitleTrunNum),
+			"vod_pic":       fmt.Sprintf("http://%s/api/resCoverPoster/%s/%s", host, resource.FilesBasesID, resource.CoverPoster),
+			"type_name":     "视频",
+			"vod_year":      year,
+			"vod_area":      area,
+			"vod_remarks":   fmt.Sprintf("全%d集", len(resource.ResourcesDramaSeries)),
+			"vod_actor":     performerNames,
+			"vod_director":  directorNames,
+			"vod_content":   fmt.Sprintf("%s # %s", tagNames, resource.Abstract),
+			"vod_play_from": "本地播放",
+			"vod_play_url":  playUrls,
+			"vod_tag":       "local",
+			"vod_class":     "本地视频",
+		}
+
+		list = append(list, detail)
+	}
+
+	if len(list) == 0 {
 		return nil, fmt.Errorf("未找到视频资源")
 	}
-	performerNames := t.getPerformerNames(resource.Performers)
-	// 获取导演信息
-	directorNames := t.getDirectorNames(resource.Directors)
 
-	// 获取标签信息
-	tagNames := t.getTagNames(resource.Tags)
-
-	// 构造播放链接
-	playUrls := t.buildPlayUrls(resource.ResourcesDramaSeries, host)
-
-	area := resource.Country
-	year := t.getYearString(resource.IssuingDate)
 	detail := map[string]interface{}{
-		"list": []map[string]interface{}{
-			{
-				"vod_id":        resource.ID,
-				"vod_name":      t.truncateString(resource.Title, TVBox_TitleTrunNum),
-				"vod_pic":       fmt.Sprintf("http://%s/api/resCoverPoster/%s/%s", host, resource.FilesBasesID, resource.CoverPoster),
-				"type_name":     "视频",
-				"vod_year":      year,
-				"vod_area":      area,
-				"vod_remarks":   fmt.Sprintf("全%d集", len(resource.ResourcesDramaSeries)),
-				"vod_actor":     performerNames,
-				"vod_director":  directorNames,
-				"vod_content":   fmt.Sprintf("%s # %s", tagNames, resource.Abstract),
-				"vod_play_from": "本地播放",
-				"vod_play_url":  playUrls,
-				"vod_tag":       "local",
-				"vod_class":     "本地视频",
-			},
-		},
+		"list": list,
 	}
+
 	return detail, nil
 }
+
+// ... existing code ...
 
 // getClasses 获取分类信息
 func (TVBox) getClasses() ([]map[string]interface{}, error) {
@@ -112,7 +168,7 @@ func (TVBox) getResources(typeId, searchText string, page, limit int) (*[]models
 		return resources, err
 	}
 
-	resources, err := Resources{}.DataListAll()
+	resources, err := Resources{}.DataListAll(page, limit)
 	return resources, err
 }
 

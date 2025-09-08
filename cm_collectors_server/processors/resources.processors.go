@@ -19,8 +19,12 @@ func (Resources) DataList(par *datatype.ReqParam_ResourcesList) (*[]models.Resou
 	return models.Resources{}.DataList(core.DBS(), par)
 }
 
-func (Resources) DataListAll() (*[]models.Resources, error) {
-	return models.Resources{}.DataListAll(core.DBS())
+func (Resources) DataListByIds(ids []string) (*[]models.Resources, error) {
+	return models.Resources{}.DataListByIds(core.DBS(), ids)
+}
+
+func (Resources) DataListAll(page, limit int) (*[]models.Resources, error) {
+	return models.Resources{}.DataListAll(core.DBS(), page, limit)
 }
 
 func (Resources) Info(id string) (*models.Resources, error) {
