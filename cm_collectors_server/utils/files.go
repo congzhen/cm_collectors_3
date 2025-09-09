@@ -178,7 +178,7 @@ func GetFileNameFromPath(path string, withExtension bool) string {
 // 返回值:
 // string: 文件所在的文件夹路径
 func GetDirPathFromFilePath(filePath string) string {
-	return filepath.Dir(filePath)
+	return filepath.ToSlash(filepath.Dir(filePath))
 }
 
 // FileExists 判断文件或目录是否存在
@@ -205,4 +205,34 @@ func FileExists(path string) bool {
 func GetDirNameFromFilePath(filePath string) string {
 	dirPath := filepath.Dir(filePath)
 	return filepath.Base(dirPath)
+}
+
+// IsSameDirectory 判断两个路径是否在同一个目录下
+// 参数:
+// path1: 第一个路径（文件或文件夹）
+// path2: 第二个路径（文件或文件夹）
+// 返回值:
+// bool: 在同一目录下返回true，否则返回false
+func IsSameDirectory(path1, path2 string) bool {
+	// 获取path1的目录路径
+	var dir1 string
+	if info, err := os.Stat(path1); err == nil && info.IsDir() {
+		// path1是目录
+		dir1 = filepath.Clean(path1)
+	} else {
+		// path1是文件
+		dir1 = filepath.Dir(path1)
+	}
+
+	// 获取path2的目录路径
+	var dir2 string
+	if info, err := os.Stat(path2); err == nil && info.IsDir() {
+		// path2是目录
+		dir2 = filepath.Clean(path2)
+	} else {
+		// path2是文件
+		dir2 = filepath.Dir(path2)
+	}
+
+	return filepath.Clean(dir1) == filepath.Clean(dir2)
 }

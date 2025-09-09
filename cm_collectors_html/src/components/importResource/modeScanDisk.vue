@@ -56,6 +56,9 @@
         <el-form-item>
           <el-checkbox v-model="formData.checkPath" label="检测路径是否存在 (已存在不导入)" />
         </el-form-item>
+        <el-form-item>
+          <el-checkbox v-model="formData.folderToSeries" label="将同一文件夹下的多个视频文件合并为剧集" />
+        </el-form-item>
       </div>
       <div class="block">
         <el-alert title="nfo配置" type="success" :closable="false" />

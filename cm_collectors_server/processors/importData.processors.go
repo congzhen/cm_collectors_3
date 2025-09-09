@@ -82,6 +82,17 @@ func (t ImportData) ScanDiskImportData(filesBasesId, filePath string, config dat
 	}
 	fileDir := utils.GetDirPathFromFilePath(filePath)
 	fileName := utils.GetFileNameFromPath(filePath, false)
+
+	// 如果启用了“文件夹转系列”，则先去查找是否已经有资源
+	if config.FolderToSeries {
+		resourcesDramaSeries, err := ResourcesDramaSeries{}.FindDramaSeriesSlcBySearchPath(filesBasesId, fileDir)
+		if err == nil && len(*resourcesDramaSeries) > 0 {
+			resourcesID := (*resourcesDramaSeries)[0].ResourcesID
+			// 直接写入剧集信息
+			return ResourcesDramaSeries{}.Create(core.DBS(), resourcesID, filePath, len(*resourcesDramaSeries))
+		}
+	}
+
 	// 查找符合后缀名的图片文件
 	imagePaths, err := utils.GetFilesByExtensions([]string{fileDir}, config.CoverPosterSuffixName, false)
 	if err != nil {

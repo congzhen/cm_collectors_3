@@ -174,6 +174,7 @@ export interface I_config_scanDisk {
   coverPosterHeight: number; // 封面海报高度
   autoCreatePoster: boolean; // 自动创建封面海报
   checkPath: boolean; // 检查路径
+  folderToSeries: boolean; // 将同一文件夹下的多个视频文件合并为剧集
   nfo: I_config_scanDisk_nfo;
 }
 
@@ -206,6 +207,7 @@ export const defualtConfigScanDisk: I_config_scanDisk = {
   coverPosterHeight: 0,
   autoCreatePoster: true,
   checkPath: true,
+  folderToSeries: false,
   nfo: {
     nfoStatus: dataset.nfo.nfoStatus,
     roots: dataset.nfo.roots,

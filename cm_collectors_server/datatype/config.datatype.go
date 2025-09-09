@@ -25,6 +25,7 @@ type Config_ScanDisk struct {
 	CoverPosterHeight                  int                 `json:"coverPosterHeight"`
 	AutoCreatePoster                   bool                `json:"autoCreatePoster"`
 	CheckPath                          bool                `json:"checkPath"`
+	FolderToSeries                     bool                `json:"folderToSeries"`
 	Nfo                                Config_ScanDisk_Nfo `json:"nfo"`
 }
 

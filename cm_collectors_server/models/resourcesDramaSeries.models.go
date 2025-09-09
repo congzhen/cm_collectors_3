@@ -40,7 +40,7 @@ func (t ResourcesDramaSeries) SearchPath(db *gorm.DB, filesBasesIds []string, se
 	}
 	searchPath = "%" + searchPath + "%"
 	db = db.Where("t.src like ?", searchPath)
-	err := db.Find(&dataList).Error
+	err := db.Order("r.addTime desc").Find(&dataList).Error
 	return &dataList, err
 }
 
