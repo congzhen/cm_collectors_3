@@ -107,7 +107,9 @@ func mysqlConnect(loggerLevel logger.LogLevel) *gorm.DB {
 	db_dns := Config.Mysql.Dsn()
 	db, err := gorm.Open(mysql.Open(db_dns), &gorm.Config{
 		//SkipDefaultTransaction: true, //跳过默认事务
-		Logger: logger.Default.LogMode(loggerLevel), //打印全部sql日志
+		PrepareStmt:                              true,                                //预编译语句
+		Logger:                                   logger.Default.LogMode(loggerLevel), //打印全部sql日志
+		DisableForeignKeyConstraintWhenMigrating: true,                                // 禁用外键(用于禁用默认外键设置)
 		NamingStrategy: schema.NamingStrategy{
 			SingularTable: true,  //使用单数表名
 			NoLowerCase:   false, // 关闭小写转换
