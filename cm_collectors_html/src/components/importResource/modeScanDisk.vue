@@ -59,6 +59,9 @@
         <el-form-item>
           <el-checkbox v-model="formData.folderToSeries" label="将同一文件夹下的多个视频文件合并为剧集" />
         </el-form-item>
+        <el-form-item>
+          <el-checkbox v-model="formData.folderToSeriesSort" label="合并剧集时，是否按名称重新排序" />
+        </el-form-item>
       </div>
       <div class="block">
         <el-alert title="nfo配置" type="success" :closable="false" />

@@ -26,6 +26,7 @@ type Config_ScanDisk struct {
 	AutoCreatePoster                   bool                `json:"autoCreatePoster"`
 	CheckPath                          bool                `json:"checkPath"`
 	FolderToSeries                     bool                `json:"folderToSeries"`
+	FolderToSeriesSort                 bool                `json:"folderToSeriesSort"`
 	Nfo                                Config_ScanDisk_Nfo `json:"nfo"`
 }
 

@@ -87,6 +87,36 @@ func (t ResourcesDramaSeries) SetResourcesDramaSeries(db *gorm.DB, resourceID st
 	})
 }
 
+func (ResourcesDramaSeries) SortBySrc(resourceID string) error {
+	db := core.DBS()
+	list, err := models.ResourcesDramaSeries{}.ListByResourceID(db, resourceID)
+	if err != nil {
+		return err
+	}
+	// 根据src字段进行正序排序
+	sortedList := *list
+	for i := 0; i < len(sortedList)-1; i++ {
+		for j := i + 1; j < len(sortedList); j++ {
+			if sortedList[i].Src > sortedList[j].Src {
+				sortedList[i], sortedList[j] = sortedList[j], sortedList[i]
+			}
+		}
+	}
+	for i := range sortedList {
+		sortedList[i].Sort = i
+	}
+	return models.BatchUpdate(
+		db,
+		models.ResourcesDramaSeries{}.TableName(),
+		"id", []string{"sort"}, sortedList, func(item models.ResourcesDramaSeries) map[string]interface{} {
+			return map[string]interface{}{
+				"id":   item.ID,
+				"sort": item.Sort,
+			}
+		},
+	)
+}
+
 func (ResourcesDramaSeries) Create(tx *gorm.DB, resourceID, src string, sort int) error {
 	return models.ResourcesDramaSeries{}.Creates(tx, &[]models.ResourcesDramaSeries{
 		{ID: core.GenerateUniqueID(), ResourcesID: resourceID, Src: src, Sort: sort},

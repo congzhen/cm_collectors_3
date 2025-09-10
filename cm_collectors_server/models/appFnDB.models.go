@@ -25,8 +25,8 @@ func BatchUpdate[T any](db *gorm.DB, table string, pkField string, fields []stri
 		caseClauses := make([]string, len(items))
 		for j, item := range items {
 			vals := toMap(item)
-			caseClauses[j] = fmt.Sprintf("WHEN ? THEN ?", vals[pkField], vals[field])
-			params = append(params, vals[field])
+			caseClauses[j] = "WHEN ? THEN ?"
+			params = append(params, vals[pkField], vals[field])
 		}
 		setClause := fmt.Sprintf("%s = CASE %s %s END", field, pkField, strings.Join(caseClauses, " "))
 		setClauses[i] = setClause

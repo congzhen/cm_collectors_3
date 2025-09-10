@@ -175,6 +175,7 @@ export interface I_config_scanDisk {
   autoCreatePoster: boolean; // 自动创建封面海报
   checkPath: boolean; // 检查路径
   folderToSeries: boolean; // 将同一文件夹下的多个视频文件合并为剧集
+  folderToSeriesSort: boolean; // 合并剧集时，是否按名称重新排序
   nfo: I_config_scanDisk_nfo;
 }
 
@@ -208,6 +209,7 @@ export const defualtConfigScanDisk: I_config_scanDisk = {
   autoCreatePoster: true,
   checkPath: true,
   folderToSeries: false,
+  folderToSeriesSort: false,
   nfo: {
     nfoStatus: dataset.nfo.nfoStatus,
     roots: dataset.nfo.roots,

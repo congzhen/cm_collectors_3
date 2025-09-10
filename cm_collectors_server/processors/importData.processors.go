@@ -89,7 +89,18 @@ func (t ImportData) ScanDiskImportData(filesBasesId, filePath string, config dat
 		if err == nil && len(*resourcesDramaSeries) > 0 {
 			resourcesID := (*resourcesDramaSeries)[0].ResourcesID
 			// 直接写入剧集信息
-			return ResourcesDramaSeries{}.Create(core.DBS(), resourcesID, filePath, len(*resourcesDramaSeries))
+			err := ResourcesDramaSeries{}.Create(core.DBS(), resourcesID, filePath, len(*resourcesDramaSeries))
+			if err != nil {
+				return err
+			}
+			// 是否按名称重新排序剧集
+			if config.FolderToSeriesSort {
+				err := ResourcesDramaSeries{}.SortBySrc(resourcesID)
+				if err != nil {
+					return err
+				}
+			}
+			return nil
 		}
 	}
 
