@@ -60,6 +60,13 @@ a,
   color: #f2f2f2 !important;
   margin-bottom: 0px !important;
 }
+
+/* 修复 iframe 中 dialog 宽度问题 */
+.el-dialog {
+  width: 800px;
+  max-width: 90vw;
+}
+
 .el-dialog__header {
   color: #f2f2f2 !important;
   padding-bottom: 10px !important;
