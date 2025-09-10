@@ -78,7 +78,7 @@ func getDefaultConfig() *config.Config {
 			},
 		},
 		ServerFileManagement: config.ServerFileManagement{
-			RootPath: []config.SFM_PathEntry{},
+			RootPath: []string{},
 		},
 	}
 }

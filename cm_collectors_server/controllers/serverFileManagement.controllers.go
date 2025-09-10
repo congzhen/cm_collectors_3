@@ -54,8 +54,8 @@ func (t ServerFileManagement) pathEntrySlc() []serverfilemanagement.ServerFileMa
 	}
 	pathEntrySlc := make([]serverfilemanagement.ServerFileManagement_PathEntry, rootPathLen)
 	for i, v := range core.Config.ServerFileManagement.RootPath {
-		pathEntrySlc[i].RealPath = v.RealPath
-		pathEntrySlc[i].VirtualPath = v.VirtualPath
+		pathEntrySlc[i].RealPath = v
+		pathEntrySlc[i].VirtualPath = v
 	}
 	return pathEntrySlc
 }
