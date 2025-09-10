@@ -44,7 +44,9 @@
           <div class="c-height"></div>
         </div>
         <div class="main-right">
-          <el-image :src="getResourceCoverPoster(resourceInfo)" fit="cover" />
+          <div class="cover">
+            <el-image :src="getResourceCoverPoster(resourceInfo)" fit="cover" />
+          </div>
           <div class="title">{{ resourceInfo.title }}</div>
           <resourceDramaSeriesList :drama-series="resourceInfo.dramaSeries" :selected-id="selectedDramaSeriesId"
             :show-mode="store.appStoreData.currentFilesBasesAppConfig.detailsDramaSeriesMode"
