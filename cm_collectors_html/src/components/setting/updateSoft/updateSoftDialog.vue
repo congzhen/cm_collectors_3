@@ -11,7 +11,7 @@
           <div class="version-item">
             <span class="version-label">最新版本：</span>
             <span class="version-number" :class="{ 'update-available': hasUpdate }">{{ latestVersion || '检查中...'
-              }}</span>
+            }}</span>
           </div>
         </div>
       </div>
@@ -75,7 +75,7 @@ interface UpdateInfo {
   linuxDownloadUrl?: string;
 }
 
-const currentVersion = ref('3.0.0')
+const currentVersion = ref('3.0.1')
 const latestVersion = ref('')
 const updateInfo = ref<UpdateInfo | null>(null)
 const checking = ref(false)
