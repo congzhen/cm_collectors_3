@@ -1,6 +1,10 @@
 package utils
 
 import (
+	"crypto/md5"
+	"crypto/sha256"
+	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"sort"
@@ -235,4 +239,48 @@ func IsSameDirectory(path1, path2 string) bool {
 	}
 
 	return filepath.Clean(dir1) == filepath.Clean(dir2)
+}
+
+// FileMD5 计算文件的MD5哈希值
+// 参数:
+// filePath: 文件的完整路径
+// 返回值:
+// string: 文件的MD5哈希值
+// error: 错误信息，如果计算成功则为nil
+func FileMD5(filePath string) (string, error) {
+	file, err := os.Open(filePath)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	hash := md5.New()
+	if _, err := io.Copy(hash, file); err != nil {
+		return "", err
+	}
+
+	hashInBytes := hash.Sum(nil)[:16]
+	return fmt.Sprintf("%x", hashInBytes), nil
+}
+
+// FileSHA256 计算文件的SHA256哈希值
+// 参数:
+// filePath: 文件的完整路径
+// 返回值:
+// string: 文件的SHA256哈希值
+// error: 错误信息，如果计算成功则为nil
+func FileSHA256(filePath string) (string, error) {
+	file, err := os.Open(filePath)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	hash := sha256.New()
+	if _, err := io.Copy(hash, file); err != nil {
+		return "", err
+	}
+
+	hashInBytes := hash.Sum(nil)
+	return fmt.Sprintf("%x", hashInBytes), nil
 }
