@@ -69,7 +69,7 @@ func AutoDatabase(db *gorm.DB) error {
 					return nil
 				}
 				// 更新 resources 表中 coverPosterMode 字段，将非数字值替换为 0
-				return tx.Exec(`
+				err := tx.Exec(`
 					UPDATE resources 
 					SET coverPosterMode = CASE 
 						WHEN typeof(coverPosterMode) = 'integer' THEN coverPosterMode 
@@ -77,12 +77,22 @@ func AutoDatabase(db *gorm.DB) error {
 						ELSE '0' 
 					END;
 				`).Error
+				if err != nil {
+					core.LogErr(err)
+					return err
+				}
+				return nil
 			},
 		},
 		{
 			ID: "initApp",
 			Migrate: func(tx *gorm.DB) error {
-				return autoMigrate(tx)
+				err := autoMigrate(tx)
+				if err != nil {
+					core.LogErr(err)
+					return err
+				}
+				return nil
 			},
 		},
 		{
@@ -91,6 +101,7 @@ func AutoDatabase(db *gorm.DB) error {
 				//获取文件集
 				filesBasesDataList, err := FilesBases{}.DataList(tx)
 				if err != nil {
+					core.LogErr(err)
 					return err
 				}
 				var firstFilesBasesId string
@@ -103,24 +114,28 @@ func AutoDatabase(db *gorm.DB) error {
 					firstFilesBasesId = core.GenerateUniqueID()
 					err := FilesBases{}.Create(tx, &FilesBases{ID: firstFilesBasesId, Name: "Default", Sort: 0, CreatedAt: &createdAt, Status: true})
 					if err != nil {
+						core.LogErr(err)
 						return err
 					}
 				}
 				// 获取文件集设置
 				_, err = FilesBasesSetting{}.InfoByFilesBasesID(tx, firstFilesBasesId)
 				if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+					core.LogErr(err)
 					return err
 				}
 				// 文件集设置不存在时，创建
 				if err == gorm.ErrRecordNotFound {
 					err := FilesBasesSetting{}.CreateNull(tx, firstFilesBasesId)
 					if err != nil {
+						core.LogErr(err)
 						return err
 					}
 				}
 				// 获取演员集
 				performerBasesDataList, err := PerformerBases{}.DataList(tx)
 				if err != nil {
+					core.LogErr(err)
 					return err
 				}
 				var firstPerformerBasesId string
@@ -132,12 +147,14 @@ func AutoDatabase(db *gorm.DB) error {
 					firstPerformerBasesId = core.GenerateUniqueID()
 					err := PerformerBases{}.Create(tx, &PerformerBases{ID: firstPerformerBasesId, Name: "Default", Sort: 0, CreatedAt: &createdAt, Status: true})
 					if err != nil {
+						core.LogErr(err)
 						return err
 					}
 				}
 				// 获取指定文件集关联的演员集
 				filesRelatedPerformerBasesDataList, err := FilesRelatedPerformerBases{}.ListByFilesBasesID(tx, firstFilesBasesId)
 				if err != nil {
+					core.LogErr(err)
 					return err
 				}
 				// 如果没有关联的演员集
@@ -148,6 +165,7 @@ func AutoDatabase(db *gorm.DB) error {
 					}
 					err := FilesRelatedPerformerBases{}.Creates(tx, &filesRelatedPerformerBasesRecords)
 					if err != nil {
+						core.LogErr(err)
 						return err
 					}
 				}
@@ -160,6 +178,7 @@ func AutoDatabase(db *gorm.DB) error {
 				// 查询所有 performer 记录
 				var performers []Performer
 				if err := tx.Find(&performers).Error; err != nil {
+					core.LogErr(err)
 					return err
 				}
 
@@ -171,6 +190,7 @@ func AutoDatabase(db *gorm.DB) error {
 
 					// 更新 keywords 字段
 					if err := tx.Model(&p).Update("KeyWords", keywords).Error; err != nil {
+						core.LogErr(err)
 						return err
 					}
 				}
@@ -184,6 +204,7 @@ func AutoDatabase(db *gorm.DB) error {
 				// 查询所有 performer 记录
 				var resources []Resources
 				if err := tx.Find(&resources).Error; err != nil {
+					core.LogErr(err)
 					return err
 				}
 
@@ -192,6 +213,7 @@ func AutoDatabase(db *gorm.DB) error {
 					keywords := utils.PinyinInitials(p.Title)
 					// 更新 keywords 字段
 					if err := tx.Model(&p).Update("KeyWords", keywords).Error; err != nil {
+						core.LogErr(err)
 						return err
 					}
 				}
@@ -205,6 +227,7 @@ func AutoDatabase(db *gorm.DB) error {
 				// 查询所有 performer 记录
 				var tags []Tag
 				if err := tx.Find(&tags).Error; err != nil {
+					core.LogErr(err)
 					return err
 				}
 
@@ -213,6 +236,7 @@ func AutoDatabase(db *gorm.DB) error {
 					keywords := utils.PinyinInitials(p.Name)
 					// 更新 keywords 字段
 					if err := tx.Model(&p).Update("KeyWords", keywords).Error; err != nil {
+						core.LogErr(err)
 						return err
 					}
 				}
@@ -221,5 +245,9 @@ func AutoDatabase(db *gorm.DB) error {
 			},
 		},
 	})
-	return m.Migrate()
+	errMigrate := m.Migrate()
+	if errMigrate != nil {
+		core.LogErr(errMigrate)
+	}
+	return errMigrate
 }
