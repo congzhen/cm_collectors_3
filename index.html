@@ -123,6 +123,41 @@
             font-size: 1.4rem;
         }
 
+        .contact-info {
+            display: flex;
+            margin: 30px auto 0;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .contact-item {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 50px;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .contact-label {
+            font-weight: bold;
+            font-size: 14px;
+            color: #fff;
+            background: rgba(0, 0, 0, 0.1);
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+
+        .contact-value {
+            font-size: 14px;
+            color: #fff;
+            word-break: break-all;
+        }
+
         .section {
             background-color: var(--card-background);
             border-radius: var(--border-radius);
@@ -304,8 +339,15 @@
                     <span>下载 Linux 版本</span>
                 </a>
             </div>
-            <div style="margin-top: 20px; font-size: 1rem; opacity: 0.9;">
-                <p>🔔 内测完成后，本软件将开源发布</p>
+            <div class="contact-info">
+                <div class="contact-item">
+                    <span class="contact-label">🔔 GitHub</span>
+                    <span class="contact-value">https://github.com/congzhen/cm_collectors_3</span>
+                </div>
+                <div class="contact-item">
+                    <span class="contact-label">✉️ 反馈邮箱</span>
+                    <span class="contact-value">czpk673@gmail.com</span>
+                </div>
             </div>
         </header>
 
