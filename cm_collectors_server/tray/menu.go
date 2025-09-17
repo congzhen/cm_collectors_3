@@ -1,6 +1,7 @@
 package tray
 
 import (
+	"cm_collectors_server/core"
 	"fmt"
 	"os"
 	"os/exec"
@@ -73,7 +74,7 @@ func (tm *TrayMenu) OpenAppClicked() {
 	// 获取当前可执行文件的路径
 	execPath, err := os.Executable()
 	if err != nil {
-		fmt.Printf("无法获取可执行文件路径: %v\n", err)
+		core.LogErr(fmt.Errorf("无法获取可执行文件路径", err))
 		return
 	}
 
@@ -96,7 +97,7 @@ func (tm *TrayMenu) OpenAppClicked() {
 	// 启动wails应用并传递服务器地址参数
 	cmd := exec.Command(wailsApp, fmt.Sprintf("-url=%s", appServerAddr))
 	if err := cmd.Start(); err != nil {
-		fmt.Printf("无法启动应用程序: %v\n", err)
+		core.LogErr(fmt.Errorf("无法启动应用程序:", wailsApp, fmt.Sprintf("-url=%s", appServerAddr), err))
 	} else {
 		fmt.Println("应用程序已启动，服务器地址:", appServerAddr)
 	}
