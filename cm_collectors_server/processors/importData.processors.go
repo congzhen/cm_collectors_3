@@ -428,26 +428,17 @@ func getPerformerImage(value string, nfoDir string) (string, error) {
 	var imageData []byte
 	var err error
 
-	// 判断value是否为URL链接
-	if strings.HasPrefix(value, "http://") || strings.HasPrefix(value, "https://") {
-		// 是链接，调用爬虫获取图片数据
-		imageData, err = utils.CR_GetData(value, "")
-		if err != nil {
-			return "", fmt.Errorf("获取网络图片失败: %v", err)
-		}
-	} else {
-		// 不是链接，认为是相对路径，拼接完整路径
-		fullPath := filepath.Join(nfoDir, value)
-		// 检查文件是否存在
-		if _, err := os.Stat(fullPath); os.IsNotExist(err) {
-			return "", fmt.Errorf("本地图片文件不存在: %s", fullPath)
-		}
+	// 不是链接，认为是相对路径，拼接完整路径
+	fullPath := filepath.Join(nfoDir, value)
+	// 检查文件是否存在
+	if _, err := os.Stat(fullPath); os.IsNotExist(err) {
+		return "", fmt.Errorf("本地图片文件不存在: %s", fullPath)
+	}
 
-		// 读取本地图片文件
-		imageData, err = os.ReadFile(fullPath)
-		if err != nil {
-			return "", fmt.Errorf("读取本地图片文件失败: %v", err)
-		}
+	// 读取本地图片文件
+	imageData, err = os.ReadFile(fullPath)
+	if err != nil {
+		return "", fmt.Errorf("读取本地图片文件失败: %v", err)
 	}
 
 	// 将图片数据转换为base64格式
