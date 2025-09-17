@@ -77,6 +77,15 @@
           </svg>
         </button>
 
+        <!-- 本地云播放按钮 -->
+        <button class="control-button" @click="openCloudPlayer" title="本地云播放">
+          <svg class="icon" viewBox="0 0 24 24" width="24" height="24">
+            <path fill="currentColor"
+              d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM10 15.5v-7l6 3.5-6 3.5z" />
+          </svg>
+        </button>
+
+
         <!-- 用本地播放器打开视频按钮 -->
         <button class="control-button" @click="openInPlayer" title="本地播放器打开">
           <svg class="icon" viewBox="0 0 24 24" width="24" height="24">
@@ -207,6 +216,11 @@ const openInPlayer = () => {
   emit('open-in-player')
 }
 
+// 本地云播放
+const openCloudPlayer = () => {
+  emit('open-cloud-player')
+}
+
 // 画中画控制
 const togglePictureInPicture = () => {
   isPictureInPicture.value = !isPictureInPicture.value
@@ -254,6 +268,7 @@ const emit = defineEmits<{
   (e: 'picture-in-picture'): void
   (e: 'maximize', isMaximized: boolean): void
   (e: 'open-in-player'): void
+  (e: 'open-cloud-player'): void
 }>()
 
 // 暴露方法给父组件

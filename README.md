@@ -56,4 +56,7 @@ cd cm_collectors_wails && wails build -o ../../../build/cm_collectors_wails.exe 
 
 # 构建windows启动器
 cd cm_collectors_windows_launcher && go build -ldflags -H=windowsgui -o ../build/CM_launcher.exe . && cd ..
+
+# 构建视频调用器
+cd cm_collectors_video_caller && set GOOS=windows&& set GOARCH=amd64&& go build -ldflags -H=windowsgui -tags tray -o ../build/video_caller/cm_collectors_video_caller.exe . && copy config.json ..\build\video_caller\  && copy setup_cm_video_caller.bat ..\build\video_caller\ && copy 请使用管理员身份运行setup文件 ..\build\video_caller\ && cd ..
 ```
