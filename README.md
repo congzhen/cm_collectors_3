@@ -63,6 +63,10 @@ cd cm_collectors_video_caller && set GOOS=windows&& set GOARCH=amd64&& go build 
 
 # 构建docker *构建前需要线构建Linux可执行文件
 docker build -t cm_collectors_server .
+# 保存docker镜像
+docker save cm_collectors_server -o ./build/cm_collectors_server_docker.tar
+# 加载docker镜像
+docker load -i ./build/cm_collectors_server_docker.tar
 #  运行容器
 docker run -d  --name cm_collectors_server -p 12345:12345 -v E:\tg_test\db:/app/db -v  E:\tg_test\video:/tg  -e GIN_MODE=release  cm_collectors_server
 ```
