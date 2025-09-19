@@ -59,4 +59,10 @@ cd cm_collectors_windows_launcher && go build -ldflags -H=windowsgui -o ../build
 
 # 构建视频调用器
 cd cm_collectors_video_caller && set GOOS=windows&& set GOARCH=amd64&& go build -ldflags -H=windowsgui -tags tray -o ../build/video_caller/cm_collectors_video_caller.exe . && copy config.json ..\build\video_caller\  && copy setup_cm_video_caller.bat ..\build\video_caller\ && copy 请使用管理员身份运行setup文件 ..\build\video_caller\ && cd ..
+
+
+# 构建docker *构建前需要线构建Linux可执行文件
+docker build -t cm_collectors_server .
+#  运行容器
+docker run -d  --name cm_collectors_server -p 12345:12345 -v E:\tg_test\db:/app/db -v  E:\tg_test\video:/tg  -e GIN_MODE=release  cm_collectors_server
 ```
