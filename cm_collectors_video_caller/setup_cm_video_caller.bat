@@ -1,9 +1,18 @@
 @echo off
 REM 自动注册cmcollectorsvideoplay协议
 
-
 REM 设置UTF-8代码页以避免乱码
 chcp 65001 >nul
+
+REM 检查是否以管理员权限运行
+net session >nul 2>&1
+if %errorLevel% neq 0 (
+    echo 错误: 此脚本需要以管理员权限运行。
+    pause
+    exit /b
+)
+
+
 REM 获取当前目录
 set CURRENT_DIR=%~dp0
 

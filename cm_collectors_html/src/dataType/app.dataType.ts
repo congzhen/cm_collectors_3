@@ -32,6 +32,7 @@ export enum E_resourceDramaSeriesType {
 //资源打开方式
 export enum E_resourceOpenMode {
   Soft = 'soft',
+  CloundPlay = 'cloundPlay',
   System = 'system',
 }
 export enum E_resourceOpenMode_SoftType {

@@ -58,15 +58,15 @@ cd cm_collectors_wails && wails build -o ../../../build/cm_collectors_wails.exe 
 cd cm_collectors_windows_launcher && go build -ldflags -H=windowsgui -o ../build/CM_launcher.exe . && cd ..
 
 # 构建视频调用器
-cd cm_collectors_video_caller && set GOOS=windows&& set GOARCH=amd64&& go build -ldflags -H=windowsgui -tags tray -o ../build/video_caller/cm_collectors_video_caller.exe . && copy config.json ..\build\video_caller\  && copy setup_cm_video_caller.bat ..\build\video_caller\ && copy 请使用管理员身份运行setup文件 ..\build\video_caller\ && cd ..
+cd cm_collectors_video_caller && set GOOS=windows&& set GOARCH=amd64&& go build -ldflags -H=windowsgui -tags tray -o ../build/video_caller/cm_collectors_video_caller.exe . && copy config.json ..\build\video_caller\  && copy setup_cm_video_caller.bat ..\build\video_caller\ && copy uninstall_cm_video_caller.bat ..\build\video_caller\ && cd ..
 
 
-# 构建docker *构建前需要线构建Linux可执行文件
+# 构建docker *构建前需要先构建Linux可执行文件
 docker build -t cm_collectors_server .
 # 保存docker镜像
 docker save cm_collectors_server -o ./build/cm_collectors_server_docker.tar
 # 加载docker镜像
 docker load -i ./build/cm_collectors_server_docker.tar
-#  运行容器
+#  运行容器 *将/app/db文件夹映射到本地，防止数据丢失 *挂载数据库文件到容器内
 docker run -d  --name cm_collectors_server -p 12345:12345 -v E:\tg_test\db:/app/db -v  E:\tg_test\video:/tg  -e GIN_MODE=release  cm_collectors_server
 ```

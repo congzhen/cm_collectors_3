@@ -33,6 +33,11 @@ export const playResource = async (resource: I_resource, dramaSeriesId: string =
       ElMessage.error('未知的资源类型');
       return;
   }
+
+  if (dramaSeriesId == '' && resource.dramaSeries && resource.dramaSeries.length > 0) {
+    dramaSeriesId = resource.dramaSeries[0].id;
+  }
+
   playUpdate(resource.id, dramaSeriesId)
   if (isMobile()) {
     router.push(`/play/${resource.mode}Mobile/${resource.id}` + (dramaSeriesId != '' ? `/${dramaSeriesId}` : ''));
@@ -45,6 +50,15 @@ export const playResource = async (resource: I_resource, dramaSeriesId: string =
     } else {
       router.push(`/play/${resource.mode}/${resource.id}` + (dramaSeriesId != '' ? `/${dramaSeriesId}` : ''));
     }
+  } else if (openMode == E_resourceOpenMode.CloundPlay) {
+    if (dramaSeriesId == '') {
+      ElNotification({
+        message: `无播放源`,
+        type: 'error',
+      })
+      return;
+    }
+    eventBus.emit('playClound', { resourceId: resource.id, dramaSeriesId, playSrc: getPlayVideoURL(dramaSeriesId, 'mp4') });
   } else if (openMode == E_resourceOpenMode.System) {
     const eln = ElNotification({
       message: `正在打开资源 ${resource.title} ...`,
@@ -99,4 +113,14 @@ export const playOpenResourceFolder = async (resourceId: string) => {
 
 export const getPlayVideoURL = (dramaSeriesId: string, type = 'mp4') => {
   return `/api/video/${type}/${dramaSeriesId}/v.${type}`;
+}
+
+// 云播检查
+export const playCloudCheck = () => {
+  const playCloudCheck = localStorage.getItem('playCloudCheck')
+  return playCloudCheck ? true : false;
+}
+// 设置云播检查完成
+export const setPlayCloudCheckComplete = () => {
+  localStorage.setItem('playCloudCheck', 'true');
 }

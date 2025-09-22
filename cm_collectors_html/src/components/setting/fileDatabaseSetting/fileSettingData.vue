@@ -138,6 +138,7 @@
       <el-form-item label="视频 - 打开方式">
         <el-select v-model="filesConfig.openResModeMovies">
           <el-option label="内置" :value="E_resourceOpenMode.Soft" />
+          <el-option label="云播" :value="E_resourceOpenMode.CloundPlay" />
           <el-option label="系统" :value="E_resourceOpenMode.System" />
         </el-select>
       </el-form-item>

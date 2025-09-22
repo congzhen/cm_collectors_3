@@ -4,7 +4,7 @@
     <slot></slot>
     <template v-if="props.footer" #footer>
       <div class="dialog-footer">
-        <el-button @click="dialogVisible = false"> {{ appLang.btn('close') }} </el-button>
+        <el-button @click="dialogVisible = false"> {{ btnCloseTitle_C }} </el-button>
         <el-button type="primary" @click="submitHandle" :disabled="submitBtnDisabled">
           {{ btnSubmitTitle_C }}
         </el-button>
@@ -39,6 +39,10 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  btnCloseTitle: {
+    type: String,
+    default: '',
+  },
 })
 
 // eslint-disable-next-line no-undef
@@ -48,6 +52,9 @@ const submitBtnDisabled = ref(false)
 
 const btnSubmitTitle_C = computed(() => {
   return props.btnSubmitTitle == '' ? appLang.btn('submit') : props.btnSubmitTitle
+})
+const btnCloseTitle_C = computed(() => {
+  return props.btnCloseTitle == '' ? appLang.btn('close') : props.btnCloseTitle
 })
 
 const width_C = computed(() => {

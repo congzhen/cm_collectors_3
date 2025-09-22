@@ -13,6 +13,7 @@
     <videoPlayDialog ref="videoPlayDialogRef"></videoPlayDialog>
     <resourceFormDrawer ref="resourceFormDrawerRef" @success="updateResouceSuccessHandle"></resourceFormDrawer>
     <ResourceSetTagDialog ref="resourceSetTagDialogRef" @success="updateResouceSuccessHandle"></ResourceSetTagDialog>
+    <playCloudCheckPromptDialog ref="playCloudCheckPromptDialogRef"></playCloudCheckPromptDialog>
   </div>
 </template>
 <script setup lang="ts">
@@ -31,6 +32,8 @@ import { searchStoreData } from '@/storeData/search.storeData'
 import { ElMessage } from 'element-plus'
 import { eventBus } from '@/main'
 import ResourceSetTagDialog from '@/components/resource/resourceSetTagDialog.vue'
+import playCloudCheckPromptDialog from '@/components/play/playCloudCheckPromptDialog.vue'
+import { playCloud } from '@/components/play/playCloud'
 const store = {
   appStoreData: appStoreData(),
   searchStoreData: searchStoreData(),
@@ -41,6 +44,7 @@ const detailsViewRef = ref<InstanceType<typeof DetailsView>>();
 const videoPlayDialogRef = ref<InstanceType<typeof videoPlayDialog>>();
 const resourceFormDrawerRef = ref<InstanceType<typeof resourceFormDrawer>>();
 const resourceSetTagDialogRef = ref<InstanceType<typeof ResourceSetTagDialog>>();
+const playCloudCheckPromptDialogRef = ref<InstanceType<typeof playCloudCheckPromptDialog>>();
 
 const loading = ref(false);
 const resDetails = ref<I_resource | undefined>(undefined);
@@ -97,12 +101,20 @@ const deleteResouceSuccessOnHandle = () => {
   deleteResouceSuccessHandle()
 }
 
+const playCloundHandle = (event: unknown) => {
+  const typedEvent = event as { resourceId: string; dramaSeriesId: string, playSrc: string };
+  playCloudCheckPromptDialogRef.value?.open(() => {
+    playCloud(typedEvent.playSrc);
+  })
+}
+
 // 监听事件
 onMounted(() => {
   eventBus.on('resource-dialog-play-start', resourceDialogPlayStartHandle);
   eventBus.on('edit-resource', editResourceHandle);
   eventBus.on('edit-resource-tag', editResourceTagHandle);
   eventBus.on('delete-resource-success', deleteResouceSuccessOnHandle);
+  eventBus.on('playClound', playCloundHandle);
 })
 
 </script>
