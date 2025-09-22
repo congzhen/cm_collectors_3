@@ -1,30 +1,15 @@
 {
-  "version": "3.0.1",
+  "version": "3.0.2",
   "changelog": [
     "***新特性***",
-    "新增全新的 Web 端播放控制器",
-    "播放控制器支持直接调用本地播放器播放视频",
-    "播放控制器新增最大化播放功能",
-    "新增短视频形式的资源展示模式",
-    "新增资源右键菜单功能",
-    "新增瀑布流布局、短视频布局、图集的列数以及漫画图片宽度的本地记忆功能",
-    "优化移动端播放布局与交互体验",
-    "文件管理器新增按文件名和修改时间排序功能",
-    "新增挂载指定磁盘和网络地址的使用说明",
-    "新增右键资源快捷打标签功能",
-    "新增资源导入命名模式与封面海报的命名匹配功能",
-    "新增同文件夹下视频导入为剧集功能",
-    "新增服务器打开文件与文件夹的权限设置",
-    "优化视频播放热度统计，并新增资源显示属性 hot",
-    "新增 NFO 格式文件导入资源信息功能",
-    "资源编辑页面的资源列表允许通过拖拽方式进行重新排序",
-    "***BUG修复***",
-    "修复文件管理器在 Windows 上无法正确处理 Junction 的问题",
-    "修复移动端播放视频时地址获取错误的问题",
-    "修复封面瀑布流多次加载后出现重叠的问题",
-    "修复视频播放音量状态无法保存和获取的问题",
-    "修复TVBOX资源推荐失败的问题"
+    "新增云播放功能（推荐使用 PotPlayer 播放器以获得最佳体验）",
+    "新增云播放协议脚本",
+    "新增 Docker 容器化部署",
+    "优化 NFO 文件导入性能，移除链接尝试下载功能",
+    "新增数据库迁移过程的错误日志记录"
   ],
-  "windowsDownloadUrl": "https://objectstorageapi.ap-southeast-1.clawcloudrun.com/vj5i0ntw-cm-collectors-3/download/v3.0.1/windows/cm_collectors_server.exe",
-  "linuxDownloadUrl": "https://objectstorageapi.ap-southeast-1.clawcloudrun.com/vj5i0ntw-cm-collectors-3/download/v3.0.1/linux/cm_collectors_server"
+  "windowsDownloadUrl": "https://objectstorageapi.ap-southeast-1.clawcloudrun.com/vj5i0ntw-cm-collectors-3/download/last/cm_collectors_3_windows.zip",
+  "linuxDownloadUrl": "https://objectstorageapi.ap-southeast-1.clawcloudrun.com/vj5i0ntw-cm-collectors-3/download/last/cm_collectors_3_linux.zip",
+  "dockerDownloadUrl": "https://objectstorageapi.ap-southeast-1.clawcloudrun.com/vj5i0ntw-cm-collectors-3/download/last/cm_collectors_server_docker.tar",
+  "cloudPlayScriptUrl": "https://objectstorageapi.ap-southeast-1.clawcloudrun.com/vj5i0ntw-cm-collectors-3/download/last/video_caller.zip"
 }

@@ -16,6 +16,17 @@
         </div>
       </el-timeline-item>
       -->
+      <el-timeline-item center timestamp="2025/9/23" placement="top">
+        <h4 class="version-title">版本: v 3.0.2</h4>
+        <div class="rawContent">
+          <h5 class="section-title">新特性</h5>
+          <p class="logContent">新增云播放功能（推荐使用 PotPlayer 播放器以获得最佳体验）</p>
+          <p class="logContent">新增云播放协议脚本</p>
+          <p class="logContent">新增 Docker 容器化部署</p>
+          <p class="logContent">优化 NFO 文件导入性能，移除链接尝试下载功能</p>
+          <p class="logContent">新增数据库迁移过程的错误日志记录</p>
+        </div>
+      </el-timeline-item>
       <el-timeline-item center timestamp="2025/9/10" placement="top">
         <h4 class="version-title">版本: v 3.0.1</h4>
         <div class="rawContent">
