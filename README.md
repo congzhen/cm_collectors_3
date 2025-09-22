@@ -1,10 +1,14 @@
 # CM Collectors 3
 
-CM Collectors 是一个多媒体文件管理系统，主要用于收集、管理和播放视频文件。该系统由前端和后端两个部分组成，前端基于 Vue.js 构建，后端采用 Go 语言开发。
+CM Collectors 3 是一个多媒体文件管理系统，用于收集、管理和播放视频与图片等。主要基于 Vue.js + Go 开发。
 
-# 如果有问题或意见，请发邮件联系
+## 如果有问题或意见，请发邮件联系
 
-# E-mail: czpk673@gmail.com
+E-mail: czpk673@gmail.com
+
+## 临时主页
+
+https://juhkjoglebly.ap-southeast-1.clawcloudrun.com
 
 ## 项目结构
 
