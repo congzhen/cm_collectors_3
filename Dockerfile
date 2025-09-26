@@ -1,10 +1,10 @@
 FROM alpine:3.14
 
-# 安装必要的依赖
-RUN apk add --no-cache ca-certificates
+# 更新包索引并安装必要的依赖
+RUN apk update && apk upgrade && apk add --no-cache ca-certificates
 
 # 安装ffmpeg（包含ffmpeg和ffprobe）
-RUN apk add --no-cache ffmpeg
+RUN apk update && apk upgrade && apk add --no-cache ffmpeg
 
 # 创建工作目录
 WORKDIR /app

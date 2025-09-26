@@ -134,9 +134,6 @@ func (v Video) VideoMP4Stream_Play(c *gin.Context, fileInfo fs.FileInfo, src str
 		// 针对TVBox和投屏设备的优化
 		c.Header("Content-Disposition", "inline")
 
-		// 添加额外的性能优化头
-		c.Header("Transfer-Encoding", "chunked")
-
 		// 设置状态码为206 Partial Content
 		c.Status(http.StatusPartialContent)
 
@@ -162,19 +159,16 @@ func (v Video) VideoMP4Stream_Play(c *gin.Context, fileInfo fs.FileInfo, src str
 
 		// 根据TVBox的特性使用优化的缓冲区大小
 		// 对于4K高码率视频使用更大的缓冲区以减少系统调用次数
-		bufferSize := 256 * 1024 // 256KB缓冲区 (从64KB增加)
+		bufferSize := 64 * 1024 // 64KB缓冲区，适合PotPlayer
 		fileSize := fileInfo.Size()
 		switch {
 		case fileSize > 10*1024*1024*1024: // 超大文件 (10GB+)
-			bufferSize = 1024 * 1024 // 1MB缓冲区
+			bufferSize = 256 * 1024 // 256KB缓冲区
 		case fileSize > 4*1024*1024*1024: // 大文件 (4GB+)
-			bufferSize = 512 * 1024 // 512KB缓冲区
+			bufferSize = 128 * 1024 // 128KB缓冲区
 		case fileSize > 1*1024*1024*1024: // 中等文件 (1GB+)
-			bufferSize = 384 * 1024 // 384KB缓冲区
+			bufferSize = 96 * 1024 // 96KB缓冲区
 		}
-
-		// 增加倍率
-		bufferSize = bufferSize * int(bufferRatio)
 
 		buffer := make([]byte, bufferSize)
 		bytesToRead := end - start + 1
@@ -214,13 +208,8 @@ func (v Video) VideoMP4Stream_Play(c *gin.Context, fileInfo fs.FileInfo, src str
 
 				// 确保数据被发送
 				if flusher, ok := c.Writer.(http.Flusher); ok {
-					// 对于4K视频，减少flush频率以提高性能
-					// 只有当缓冲区接近满时才flush
-					if bytesRead+int64(n) >= bytesToRead ||
-						(bufferSize > 256*1024 && bytesRead+int64(n)%int64(bufferSize*2) == 0) ||
-						bufferSize <= 256*1024 {
-						flusher.Flush()
-					}
+					// 每次读取后立即flush以确保数据及时传输给播放器
+					flusher.Flush()
 				}
 				bytesRead += int64(n)
 			}
@@ -229,19 +218,15 @@ func (v Video) VideoMP4Stream_Play(c *gin.Context, fileInfo fs.FileInfo, src str
 				break
 			}
 		}
-
-		// 最后确保所有数据都被发送
-		if flusher, ok := c.Writer.(http.Flusher); ok {
-			flusher.Flush()
-		}
 	} else {
 		// 没有Range头部，返回整个文件
 		c.Header("Content-Type", "video/mp4")
 		c.Header("Accept-Ranges", "bytes")
 		c.Header("Connection", "keep-alive")
 		c.Header("Content-Length", strconv.FormatInt(fileInfo.Size(), 10))
-		// 添加性能优化头
-		c.Header("Transfer-Encoding", "chunked")
+
+		// 设置状态码
+		c.Status(http.StatusOK)
 
 		// 使用http.ServeFile处理整个文件传输
 		http.ServeFile(c.Writer, c.Request, src)
