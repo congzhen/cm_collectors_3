@@ -79,6 +79,8 @@ func publicRouter(router *gin.Engine) {
 	routerGroup.GET("/play/update/:resourceId", controllers.Play{}.PlayUpdate)
 
 	routerGroup.GET("/video/mp4/:dramaSeriesId/v.mp4", controllers.Play{}.PlayVideoMP4)
+	routerGroup.GET("/video/mp4/:dramaSeriesId/v.srt", controllers.Play{}.VideoSubtitle)
+	routerGroup.GET("/video/mp4/:dramaSeriesId/v.ass", controllers.Play{}.VideoSubtitle)
 	routerGroup.GET("/video/m3u8/:dramaSeriesId/v.m3u8", controllers.Play{}.VideoM3u8)
 	routerGroup.GET("hls_video/:dramaSeriesId/:start/:duration", controllers.Play{}.PlayVideoHLS)
 	routerGroup.GET("/video/subtitle/:dramaSeriesId", controllers.Play{}.VideoSubtitle)
