@@ -11,13 +11,109 @@ import (
 	"os/exec"
 	"regexp"
 	"strconv"
+	"sync"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
 type Video struct{}
 
-func (v Video) VideoMP4Stream(c *gin.Context, dramaSeriesId string) error {
+// 文件句柄缓存，用于减少重复打开文件的操作
+type fileHandleCache struct {
+	handles map[string]*fileHandleEntry
+	mu      sync.RWMutex
+}
+
+type fileHandleEntry struct {
+	file     *os.File
+	lastUsed int64 // 最后使用时间戳
+	mu       sync.RWMutex
+}
+
+var (
+	handleCache = &fileHandleCache{
+		handles: make(map[string]*fileHandleEntry),
+	}
+	cacheMu sync.Mutex
+)
+
+func init() {
+	// 启动一个 goroutine 定期清理过期的文件句柄
+	go func() {
+		ticker := time.NewTicker(30 * time.Second)
+		defer ticker.Stop()
+
+		for range ticker.C {
+			Video{}.cleanupExpiredHandles()
+		}
+	}()
+}
+
+// 获取缓存的文件句柄或创建新的
+func (v Video) getFileHandle(src string) (*os.File, error) {
+	cacheMu.Lock()
+	defer cacheMu.Unlock()
+
+	// 检查是否存在缓存的文件句柄
+	if entry, exists := handleCache.handles[src]; exists {
+		entry.lastUsed = v.getCurrentTimeMillis()
+		return entry.file, nil
+	}
+
+	// 打开新文件
+	file, err := os.Open(src)
+	if err != nil {
+		return nil, err
+	}
+	// 缓存文件句柄
+	entry := &fileHandleEntry{
+		file:     file,
+		lastUsed: v.getCurrentTimeMillis(),
+	}
+	handleCache.handles[src] = entry
+
+	return file, nil
+}
+
+// 释放文件句柄引用
+func (v Video) releaseFileHandle(src string) {
+	cacheMu.Lock()
+	defer cacheMu.Unlock()
+
+	if entry, exists := handleCache.handles[src]; exists {
+		entry.lastUsed = v.getCurrentTimeMillis()
+
+		// 释放文件句柄 如果引用计数为0或者最后使用时间超过30秒
+		if entry.lastUsed < v.getCurrentTimeMillis()-10*1000 {
+			// 删除缓存
+			delete(handleCache.handles, src)
+			entry.file.Close()
+		}
+	}
+}
+
+// 清理过期的文件句柄（定期调用）
+func (v Video) cleanupExpiredHandles() {
+	cacheMu.Lock()
+	defer cacheMu.Unlock()
+
+	currentTime := v.getCurrentTimeMillis()
+	for src, entry := range handleCache.handles {
+		// 如果引用计数为0且超时，则关闭文件
+		if entry.lastUsed < currentTime-30*1000 {
+			delete(handleCache.handles, src)
+			entry.file.Close()
+		}
+	}
+}
+
+// 获取当前时间毫秒数
+func (v Video) getCurrentTimeMillis() int64 {
+	return core.TimeNow().UnixNano() / 1e6
+}
+
+func (v Video) VideoMP4Stream(c *gin.Context, dramaSeriesId string, needEncoding bool) error {
 	src, err := ResourcesDramaSeries{}.GetSrc(dramaSeriesId)
 	if err != nil {
 		return err
@@ -27,6 +123,11 @@ func (v Video) VideoMP4Stream(c *gin.Context, dramaSeriesId string) error {
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "File not found"})
 		return nil
+	}
+
+	if !needEncoding {
+		fmt.Println("######################### 原始流(不检测编码)")
+		return v.VideoMP4Stream_Play(c, fileInfo, src)
 	}
 
 	// 获取视频格式信息并检查是否需要转码
@@ -75,7 +176,6 @@ func (v Video) VideoMP4Stream_Play(c *gin.Context, fileInfo fs.FileInfo, src str
 		// 解析Range头部
 		re := regexp.MustCompile(`bytes=(\d+)-(\d*)`)
 		matches := re.FindStringSubmatch(rangeHeader)
-
 		if len(matches) < 2 {
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid range format"})
 			return nil
@@ -137,18 +237,32 @@ func (v Video) VideoMP4Stream_Play(c *gin.Context, fileInfo fs.FileInfo, src str
 		// 设置状态码为206 Partial Content
 		c.Status(http.StatusPartialContent)
 
-		// 打开文件并读取指定范围内容
-		file, err := os.Open(src)
+		// 使用文件句柄缓存优化并发读取
+		file, err := v.getFileHandle(src)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Failed to open file"})
 			return nil
 		}
+
+		// 确保在函数退出时释放文件句柄引用
 		defer func() {
-			// 确保文件被正确关闭
-			if cerr := file.Close(); cerr != nil {
-				fmt.Printf("Warning: failed to close file: %v\n", cerr)
-			}
+			v.releaseFileHandle(src)
 		}()
+
+		/*
+			// 打开文件并读取指定范围内容
+			file, err := os.Open(src)
+			if err != nil {
+				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Failed to open file"})
+				return nil
+			}
+			defer func() {
+				// 确保文件被正确关闭
+				if cerr := file.Close(); cerr != nil {
+					fmt.Printf("Warning: failed to close file: %v\n", cerr)
+				}
+			}()
+		*/
 
 		// 设置读取范围
 		_, err = file.Seek(start, io.SeekStart)
@@ -230,9 +344,7 @@ func (v Video) VideoMP4Stream_Play(c *gin.Context, fileInfo fs.FileInfo, src str
 
 		// 使用http.ServeFile处理整个文件传输
 		http.ServeFile(c.Writer, c.Request, src)
-		return nil
 	}
-
 	return nil
 }
 

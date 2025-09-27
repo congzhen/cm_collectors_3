@@ -12,6 +12,10 @@ export default defineConfig({
     vueJsx(),
     //vueDevTools(),
   ],
+  build: {
+    assetsDir: 'assets', // 静态资源目录
+    emptyOutDir: true // 清空输出目录
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))

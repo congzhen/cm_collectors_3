@@ -1,8 +1,8 @@
 module cm_collectors_server
 
-go 1.23.0
+go 1.24.0
 
-toolchain go1.23.11
+toolchain go1.24.7
 
 require (
 	github.com/coocood/freecache v1.2.4
@@ -60,6 +60,7 @@ require (
 	golang.org/x/net v0.26.0 // indirect
 	golang.org/x/sys v0.21.0 // indirect
 	golang.org/x/text v0.27.0 // indirect
+	golang.org/x/time v0.13.0 // indirect
 	google.golang.org/protobuf v1.34.1 // indirect
 	modernc.org/libc v1.22.5 // indirect
 	modernc.org/mathutil v1.5.0 // indirect

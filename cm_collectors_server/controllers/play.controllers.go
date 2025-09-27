@@ -52,7 +52,11 @@ func (Play) PlayOpenResourceFolder(c *gin.Context) {
 
 func (Play) PlayVideoMP4(c *gin.Context) {
 	dramaSeriesId := c.Param("dramaSeriesId")
-	processors.Video{}.VideoMP4Stream(c, dramaSeriesId)
+	needEncoding := true
+	if c.Query("playCloud") == "true" { // 获取参数
+		needEncoding = false
+	}
+	processors.Video{}.VideoMP4Stream(c, dramaSeriesId, needEncoding)
 }
 
 func (Play) VideoSubtitle(c *gin.Context) {

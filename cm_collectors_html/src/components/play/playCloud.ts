@@ -2,7 +2,7 @@ export const playCloud = (src: string) => {
   // 获取当前服务器地址
   const serverAddress = window.location.origin;
   // 创建云播放协议链接
-  const url = `cmcollectorsvideoplay://${serverAddress}${src}`;
+  const url = `cmcollectorsvideoplay://${serverAddress}${src}?playCloud=true`;
   console.log('尝试打开云播放协议链接:', url);
 
   try {
