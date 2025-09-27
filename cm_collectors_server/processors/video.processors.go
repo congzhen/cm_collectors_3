@@ -2,6 +2,7 @@ package processors
 
 import (
 	"cm_collectors_server/core"
+	processorscache "cm_collectors_server/processorsCache"
 	processorsffmpeg "cm_collectors_server/processorsFFmpeg"
 	"fmt"
 	"io"
@@ -11,107 +12,11 @@ import (
 	"os/exec"
 	"regexp"
 	"strconv"
-	"sync"
-	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
 type Video struct{}
-
-// 文件句柄缓存，用于减少重复打开文件的操作
-type fileHandleCache struct {
-	handles map[string]*fileHandleEntry
-	mu      sync.RWMutex
-}
-
-type fileHandleEntry struct {
-	file     *os.File
-	lastUsed int64 // 最后使用时间戳
-	mu       sync.RWMutex
-}
-
-var (
-	handleCache = &fileHandleCache{
-		handles: make(map[string]*fileHandleEntry),
-	}
-	cacheMu sync.Mutex
-)
-
-func init() {
-	// 启动一个 goroutine 定期清理过期的文件句柄
-	go func() {
-		ticker := time.NewTicker(30 * time.Second)
-		defer ticker.Stop()
-
-		for range ticker.C {
-			Video{}.cleanupExpiredHandles()
-		}
-	}()
-}
-
-// 获取缓存的文件句柄或创建新的
-func (v Video) getFileHandle(src string) (*os.File, error) {
-	cacheMu.Lock()
-	defer cacheMu.Unlock()
-
-	// 检查是否存在缓存的文件句柄
-	if entry, exists := handleCache.handles[src]; exists {
-		entry.lastUsed = v.getCurrentTimeMillis()
-		return entry.file, nil
-	}
-
-	// 打开新文件
-	file, err := os.Open(src)
-	if err != nil {
-		return nil, err
-	}
-	// 缓存文件句柄
-	entry := &fileHandleEntry{
-		file:     file,
-		lastUsed: v.getCurrentTimeMillis(),
-	}
-	handleCache.handles[src] = entry
-
-	return file, nil
-}
-
-// 释放文件句柄引用
-func (v Video) releaseFileHandle(src string) {
-	cacheMu.Lock()
-	defer cacheMu.Unlock()
-
-	if entry, exists := handleCache.handles[src]; exists {
-		entry.lastUsed = v.getCurrentTimeMillis()
-
-		// 释放文件句柄 如果引用计数为0或者最后使用时间超过30秒
-		if entry.lastUsed < v.getCurrentTimeMillis()-10*1000 {
-			// 删除缓存
-			delete(handleCache.handles, src)
-			entry.file.Close()
-		}
-	}
-}
-
-// 清理过期的文件句柄（定期调用）
-func (v Video) cleanupExpiredHandles() {
-	cacheMu.Lock()
-	defer cacheMu.Unlock()
-
-	currentTime := v.getCurrentTimeMillis()
-	for src, entry := range handleCache.handles {
-		// 如果引用计数为0且超时，则关闭文件
-		if entry.lastUsed < currentTime-30*1000 {
-			delete(handleCache.handles, src)
-			entry.file.Close()
-		}
-	}
-}
-
-// 获取当前时间毫秒数
-func (v Video) getCurrentTimeMillis() int64 {
-	return core.TimeNow().UnixNano() / 1e6
-}
 
 func (v Video) VideoMP4Stream(c *gin.Context, dramaSeriesId string, needEncoding bool) error {
 	src, err := ResourcesDramaSeries{}.GetSrc(dramaSeriesId)
@@ -132,7 +37,9 @@ func (v Video) VideoMP4Stream(c *gin.Context, dramaSeriesId string, needEncoding
 
 	// 获取视频格式信息并检查是否需要转码
 	needTranscode := false
-	formatInfo, err := processorsffmpeg.VideoInfo{}.GetVideoFormatInfo(src)
+
+	//formatInfo, err := processorsffmpeg.VideoInfo{}.GetVideoFormatInfo(src)
+	formatInfo, err := processorscache.CacheVideoInfoLastUse{}.GetVideoInfoHandle(src)
 	if err != nil {
 		// 如果无法获取格式信息，假设需要转码以确保兼容性
 		fmt.Printf("警告: 无法获取视频格式信息，将进行转码以确保兼容性: %v\n", err)
@@ -238,16 +145,11 @@ func (v Video) VideoMP4Stream_Play(c *gin.Context, fileInfo fs.FileInfo, src str
 		c.Status(http.StatusPartialContent)
 
 		// 使用文件句柄缓存优化并发读取
-		file, err := v.getFileHandle(src)
+		file, err := processorscache.CacheFileLastUse{}.GetFileHandle(src)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Failed to open file"})
 			return nil
 		}
-
-		// 确保在函数退出时释放文件句柄引用
-		defer func() {
-			v.releaseFileHandle(src)
-		}()
 
 		/*
 			// 打开文件并读取指定范围内容
