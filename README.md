@@ -6,9 +6,12 @@ CM Collectors 3 是一个多媒体文件管理系统，用于收集、管理和�
 
 E-mail: czpk673@gmail.com
 
-## 临时主页
+### 下载地址
 
-https://juhkjoglebly.ap-southeast-1.clawcloudrun.com
+- **Windows 版**: [cm_collectors_3_windows.zip](https://objectstorageapi.ap-southeast-1.clawcloudrun.com/vj5i0ntw-cm-collectors-3/download/last/cm_collectors_3_windows.zip)
+- **Linux 版**: [cm_collectors_3_linux.zip](https://objectstorageapi.ap-southeast-1.clawcloudrun.com/vj5i0ntw-cm-collectors-3/download/last/cm_collectors_3_linux.zip)
+- **Docker 镜像**: [cm_collectors_server_docker.tar](https://objectstorageapi.ap-southeast-1.clawcloudrun.com/vj5i0ntw-cm-collectors-3/download/last/cm_collectors_server_docker.tar)
+- **云播插件**: [video_caller.zip](https://objectstorageapi.ap-southeast-1.clawcloudrun.com/vj5i0ntw-cm-collectors-3/download/last/video_caller.zip)
 
 ## 项目结构
 
