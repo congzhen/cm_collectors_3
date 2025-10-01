@@ -21,6 +21,11 @@ func getDefaultConfig() *config.Config {
 			IsAutoCreateM3u8:       true,
 			Language:               "zhCn",
 			NotAllowServerOpenFile: false,
+			VideoRateLimit: config.VideoRateLimit{
+				Enabled:           false,
+				RequestsPerSecond: 5,  // 每秒5个请求
+				Burst:             10, // 桶容量为10
+			},
 		},
 		Sqlite3: config.Sqlite3{
 			Path:        "./db/cm_collectors.db",

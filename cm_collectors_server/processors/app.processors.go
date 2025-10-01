@@ -43,6 +43,7 @@ func (App) GetConfig() datatype.App_SystemConfig {
 		NotAllowServerOpenFile: core.Config.General.NotAllowServerOpenFile,
 		PlayVideoFormats:       core.Config.Play.PlayVideoFormats,
 		PlayAudioFormats:       core.Config.Play.PlayAudioFormats,
+		VideoRateLimit:         core.Config.General.VideoRateLimit,
 	}
 	return config
 }
@@ -58,5 +59,6 @@ func (App) SetConfig(config datatype.App_SystemConfig) error {
 	core.Config.General.NotAllowServerOpenFile = config.NotAllowServerOpenFile
 	core.Config.Play.PlayVideoFormats = config.PlayVideoFormats
 	core.Config.Play.PlayAudioFormats = config.PlayAudioFormats
+	core.Config.General.VideoRateLimit = config.VideoRateLimit
 	return core.SaveConfig()
 }

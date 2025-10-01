@@ -5,6 +5,10 @@ general:
     isAutoCreateM3u8: true
     language: zhCn
     notAllowServerOpenFile: false
+    videoRateLimit:
+        enabled: true
+        requestsPerSecond: 5
+        burst: 10
 sqlite3:
     path: ./db/cm_collectors.db
     loggerLevel: info

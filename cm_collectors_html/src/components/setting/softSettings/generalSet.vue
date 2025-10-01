@@ -1,6 +1,6 @@
 <template>
-  <div v-loading="loading">
-    <el-form v-model="formData" label-width="260px" style="max-width: 760px">
+  <div v-loading="loading" class="setting-data">
+    <el-form v-model="formData" label-width="260px">
       <el-form-item label="软件logo名称">
         <el-input v-model="formData.logoName" />
         <el-text class="warning-text" type="warning" size="small">重新加载后生效</el-text>
@@ -15,10 +15,10 @@
         </el-text>
       </el-form-item>
       <!--
-      <el-form-item label="自动创建视频m3u8文件">
-        <el-switch v-model="formData.isAutoCreateM3u8" />
-      </el-form-item>
-      -->
+        <el-form-item label="自动创建视频m3u8文件">
+          <el-switch v-model="formData.isAutoCreateM3u8" />
+        </el-form-item>
+        -->
       <el-form-item label="TV Box 地址">
         <div>
           <p>[域名]或[IP:端口号]/api/tvbox/home</p>
@@ -47,10 +47,28 @@
           指定挂载磁盘，请根据图片所示，修改根目录下的config.yaml文件。请严格按照格式要求进行修改，否则可能导致打开文件管理器时出现问题。
         </el-text>
       </el-form-item>
-      <el-form-item>
-        <el-button type="primary" @click="saveHandle">保存</el-button>
+      <el-form-item label="视频限流器">
+        <div>
+          <div>
+            <el-switch v-model="formData.videoRateLimit.enabled" />
+          </div>
+          <div>
+            <el-text class="warning-text" type="warning" size="small">
+              开启限流器后如果限制请求或桶容量过小，会影响云播或导致云播失败。清桶时间为1分钟，限流器修改后，需要等清桶后才能生效。
+            </el-text>
+          </div>
+        </div>
+      </el-form-item>
+      <el-form-item label="限流器每秒请求限制">
+        <el-input-number v-model="formData.videoRateLimit.requestsPerSecond" :min="1" :max="100" />
+      </el-form-item>
+      <el-form-item label="限流器桶容量">
+        <el-input-number v-model="formData.videoRateLimit.burst" :min="1" :max="100" />
       </el-form-item>
     </el-form>
+    <div class="save-button-container">
+      <el-button type="primary" @click="saveHandle" icon="Edit">保存</el-button>
+    </div>
   </div>
 </template>
 <script lang="ts" setup>
@@ -70,6 +88,11 @@ const formData = ref<I_appSystemConfig>({
   notAllowServerOpenFile: false,
   playVideoFormats: ['h264', 'vp8', 'vp9', 'av1', 'hevc'],
   playAudioFormats: ['aac', 'opus', 'mp3', 'vorbis', 'pcm_s16le', 'pcm_s24le'],
+  videoRateLimit: {
+    enabled: false,
+    requestsPerSecond: 5,
+    burst: 10
+  }
 })
 
 const loading = ref(false);
@@ -120,8 +143,48 @@ onMounted(async () => {
 })
 </script>
 <style lang="scss" scoped>
-.warning-text {
-  line-height: 1.1rem;
-  padding-top: 5px;
+.setting-data {
+  width: 960px;
+  height: 100%;
+  display: flex;
+  gap: 10px;
+  flex-direction: column;
+
+  .warning-text {
+    line-height: 1.1rem;
+    padding-top: 5px;
+  }
+
+  .el-form {
+    flex: 1;
+    padding: 0 20px;
+    overflow: auto;
+
+    .el-alert {
+      margin-bottom: 10px;
+    }
+
+    .alert-msg {
+      padding: 0 10px;
+    }
+  }
+
+  .color-picker-block {
+    display: flex;
+    gap: 6px;
+
+    .color-picker-btn {
+      display: flex;
+      align-items: center;
+    }
+  }
+
+  .save-button-container {
+    flex-shrink: 1;
+    padding: 5px 15px;
+    background-color: #262727;
+    display: flex;
+    justify-content: flex-end;
+  }
 }
 </style>

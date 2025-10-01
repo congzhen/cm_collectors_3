@@ -85,7 +85,12 @@ export interface I_appData {
 export interface I_appConfig {
   logoName: string;
   isAdminLogin: boolean;
+}
 
+export interface I_appSystemVideoRateLimit {
+  enabled: boolean;
+  requestsPerSecond: number;
+  burst: number;
 }
 
 export interface I_appSystemConfig extends I_appConfig {
@@ -95,4 +100,5 @@ export interface I_appSystemConfig extends I_appConfig {
   notAllowServerOpenFile: boolean;
   playVideoFormats: string[];
   playAudioFormats: string[];
+  videoRateLimit: I_appSystemVideoRateLimit;
 }

@@ -1,5 +1,7 @@
 package datatype
 
+import "cm_collectors_server/config"
+
 type ResDataList struct {
 	DataList any   `json:"dataList"  `
 	Total    int64 `json:"total"  `
@@ -23,12 +25,13 @@ type App_Config struct {
 
 type App_SystemConfig struct {
 	App_Config
-	AdminPassword          string   `json:"adminPassword"`
-	IsAutoCreateM3u8       bool     `json:"isAutoCreateM3u8"`
-	Language               string   `json:"language"`
-	NotAllowServerOpenFile bool     `json:"notAllowServerOpenFile"`
-	PlayVideoFormats       []string `json:"playVideoFormats"`
-	PlayAudioFormats       []string `json:"playAudioFormats"`
+	AdminPassword          string                `json:"adminPassword"`
+	IsAutoCreateM3u8       bool                  `json:"isAutoCreateM3u8"`
+	Language               string                `json:"language"`
+	NotAllowServerOpenFile bool                  `json:"notAllowServerOpenFile"`
+	PlayVideoFormats       []string              `json:"playVideoFormats"`
+	PlayAudioFormats       []string              `json:"playAudioFormats"`
+	VideoRateLimit         config.VideoRateLimit `json:"videoRateLimit"`
 }
 
 // 用户类型

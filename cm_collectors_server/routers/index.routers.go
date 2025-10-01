@@ -78,11 +78,12 @@ func publicRouter(router *gin.Engine) {
 	routerGroup.GET("play/open/resource/folder/:resourceId", controllers.Play{}.PlayOpenResourceFolder)
 	routerGroup.GET("/play/update/:resourceId", controllers.Play{}.PlayUpdate)
 
-	routerGroup.GET("/video/mp4/:dramaSeriesId/v.mp4", controllers.Play{}.PlayVideoMP4)
+	routerGroup.GET("/video/m3u8/:dramaSeriesId/v.m3u8", controllers.Play{}.VideoM3u8)
+	routerGroup.GET("hls_video/:dramaSeriesId/:start/:duration", middleware.VideoStreamRateLimitMiddleware(), controllers.Play{}.PlayVideoHLS)
+
+	routerGroup.GET("/video/mp4/:dramaSeriesId/v.mp4", middleware.VideoStreamRateLimitMiddleware(), controllers.Play{}.PlayVideoMP4)
 	routerGroup.GET("/video/mp4/:dramaSeriesId/v.srt", controllers.Play{}.VideoSubtitle)
 	routerGroup.GET("/video/mp4/:dramaSeriesId/v.ass", controllers.Play{}.VideoSubtitle)
-	routerGroup.GET("/video/m3u8/:dramaSeriesId/v.m3u8", controllers.Play{}.VideoM3u8)
-	routerGroup.GET("hls_video/:dramaSeriesId/:start/:duration", controllers.Play{}.PlayVideoHLS)
 	routerGroup.GET("/video/subtitle/:dramaSeriesId", controllers.Play{}.VideoSubtitle)
 
 	routerGroup.GET("files/list/image/:dramaSeriesId", controllers.FilesCL{}.FilesList_Image)
