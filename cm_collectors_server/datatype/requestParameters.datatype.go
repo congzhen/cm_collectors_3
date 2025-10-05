@@ -192,3 +192,12 @@ type ReqParam_ImportData_ScanDisk_ImportData struct {
 	ReqParam_ImportData_ScanDisk_ImportPaths
 	FilePath string `json:"filePath"`
 }
+
+type ReqParam_Scraper struct {
+	FilesBasesId string         `json:"filesBases_id"`
+	Config       Config_Scraper `json:"config"`
+}
+type ReqParam_ScraperProcess struct {
+	ReqParam_Scraper
+	FilePath string `json:"filePath"`
+}

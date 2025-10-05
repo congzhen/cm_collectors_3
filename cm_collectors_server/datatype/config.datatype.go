@@ -44,3 +44,15 @@ type Config_ScanDisk_Nfo struct {
 	PerformerAutoCreate     bool     `json:"performerAutoCreate"`
 	PerformerThumbs         []string `json:"performerThumbs"`
 }
+
+type Config_Scraper struct {
+	ScanDiskPaths        []string `json:"scanDiskPaths"`
+	VideoSuffixName      []string `json:"videoSuffixName"`
+	ScraperConfigs       []string `json:"scraperConfigs"`
+	RetryCount           int      `json:"retryCount"`
+	SkipIfNfoExists      bool     `json:"skipIfNfoExists"`
+	SaveNfo              bool     `json:"saveNfo"`
+	EnableDownloadImages bool     `json:"enableDownloadImages"`
+	UseTagAsImageName    bool     `json:"useTagAsImageName"`
+	EnableUserSimulation bool     `json:"enableUserSimulation"`
+}

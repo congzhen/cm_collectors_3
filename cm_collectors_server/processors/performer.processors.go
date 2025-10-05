@@ -72,7 +72,7 @@ func (Performer) SavePerformerPhoto(par *datatype.ReqParam_PerformerData) (strin
 	filePath := path.Join(core.Config.System.FilePath, "performerFace", par.Performer.PerformerBasesID, photoName)
 
 	// 将Base64图片保存为文件
-	err := utils.SaveBase64AsImage(par.PhotoBase64, filePath)
+	err := utils.SaveBase64AsImage(par.PhotoBase64, filePath, true)
 	if err != nil {
 		return "", errorMessage.WrapError(errorMessage.Err_performer_Save_Photo_Failed, err)
 	}

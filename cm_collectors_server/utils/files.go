@@ -284,3 +284,27 @@ func FileSHA256(filePath string) (string, error) {
 	hashInBytes := hash.Sum(nil)
 	return fmt.Sprintf("%x", hashInBytes), nil
 }
+
+// WriteStringToFile 将字符串写入指定文件
+// 参数:
+// filePath: 文件的完整路径
+// content: 要写入的字符串内容
+// 返回值:
+// error: 错误信息，如果写入成功则为nil
+func WriteStringToFile(filePath string, content string) error {
+	// 确保目录存在
+	dir := filepath.Dir(filePath)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return err
+	}
+
+	// 创建或截断文件并写入内容
+	file, err := os.Create(filePath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	_, err = file.WriteString(content)
+	return err
+}

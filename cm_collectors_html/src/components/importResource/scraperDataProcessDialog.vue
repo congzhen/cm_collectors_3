@@ -1,5 +1,5 @@
 <template>
-  <dialogCommon ref="dialogCommonRef" title="导入数据列表" btnSubmitTitle="导入数据" @submit="submitHandle" @closed="closeHandle">
+  <dialogCommon ref="dialogCommonRef" title="刮削数据列表" btnSubmitTitle="刮削数据" @submit="submitHandle" @closed="closeHandle">
     <el-table :data="pathList" height="400px" border size="small" style="width: 100%">
       <el-table-column type="index" width="50" />
       <el-table-column width="32">
@@ -10,6 +10,9 @@
             </el-icon>
             <el-icon v-else-if="waiting">
               <Paperclip />
+            </el-icon>
+            <el-icon v-else-if="scope.row.msg != ''">
+              <CloseBold />
             </el-icon>
             <el-icon v-else class="element-rotating" size="14">
               <Loading />
@@ -29,31 +32,28 @@
 <script lang="ts" setup>
 import { ref } from 'vue';
 import dialogCommon from '../com/dialog/dialog-common.vue';
+import type { I_config_scraperData } from '@/dataType/config.dataType';
 import { debounceNow } from '@/assets/debounce';
-import { importDataServer } from '@/server/importData.server';
-import { appStoreData } from '@/storeData/app.storeData';
-import type { I_config_scanDisk } from '@/dataType/config.dataType';
 import { ElMessageBox } from 'element-plus';
-const store = {
-  appStoreData: appStoreData(),
-}
+import { scraperDataServer } from '@/server/scraper.server';
+import { appStoreData } from '@/storeData/app.storeData';
+
 interface I_pathList {
   path: string;
   status: boolean;
   msg: string;
 }
+const store = {
+  appStoreData: appStoreData(),
+}
 
-const emits = defineEmits(['success'])
 
 const dialogCommonRef = ref<InstanceType<typeof dialogCommon>>();
 const pathList = ref<I_pathList[]>([]);
 const waiting = ref(true);
-
-let config: I_config_scanDisk;
+let config: I_config_scraperData;
 let workStatus = true;
-
-
-const init = (_pathList: string[], _config: I_config_scanDisk) => {
+const init = (_pathList: string[], _config: I_config_scraperData) => {
   workStatus = true;
   waiting.value = true;
   dialogCommonRef.value?.disabledSubmit(false);
@@ -67,7 +67,6 @@ const init = (_pathList: string[], _config: I_config_scanDisk) => {
   });
   config = _config;
 }
-
 const submitHandle = debounceNow(async () => {
   dialogCommonRef.value?.disabledSubmit(true);
   waiting.value = false;
@@ -75,37 +74,30 @@ const submitHandle = debounceNow(async () => {
     if (!workStatus) {
       return;
     }
-    const result = await importDataServer.scanDiskImportData(store.appStoreData.currentFilesBases.id, pathList.value[i].path, config);
+    const result = await scraperDataServer.scraperDataProcess(store.appStoreData.currentFilesBases.id, pathList.value[i].path, config);
     if (!result.status) {
       pathList.value[i].msg = result.msg;
     }
-    pathList.value[i].status = true;
+    pathList.value[i].status = result.status;
   }
   success();
 })
-
 const closeHandle = () => {
   workStatus = false;
 }
-
 const success = () => {
-  ElMessageBox.alert('导入成功', {
+  ElMessageBox.alert('刮削完成', {
     confirmButtonText: 'OK',
   })
-  emits('success')
 }
 
-const open = (_pathList: string[], _config: I_config_scanDisk) => {
+const open = (_pathList: string[], _config: I_config_scraperData) => {
   init(_pathList, _config)
   dialogCommonRef.value?.open();
 };
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const close = () => {
-  dialogCommonRef.value?.close();
-}
+
 
 defineExpose({ open })
-
 </script>
 <style scoped lang="scss">
 .table-icon {

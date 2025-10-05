@@ -28,7 +28,7 @@ export default {
     nfoStatus: true,
     roots: ['movie', 'root'],
     titles: ['title', 'originaltitle', 'sorttitle'],
-    issueNumbers: ['num'],
+    issueNumbers: ['id', 'num'],
     issuingDates: ['releasedate', 'premiered', 'year'],
     abstracts: ['outline', 'plot', 'originalplot'],
     tags: ['tag', 'genre'],
@@ -36,6 +36,6 @@ export default {
     performerNames: ['actor.name', 'actor.title'],
     performerMatchAliasName: true,
     performerAutoCreate: true,
-    performerThumbs: ['actor.thumb', 'actor.poster'],
+    performerThumbs: ['actor.thumb', 'actor.poster', 'actors'],
   }
 }

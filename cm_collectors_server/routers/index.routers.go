@@ -123,6 +123,10 @@ func AdminRouter(router *gin.Engine) {
 
 	routerGroup.POST("importData/scanDiskImportPaths", controllers.ImportData{}.ScanDiskImportPaths)
 	routerGroup.POST("importData/scanDiskImportData", controllers.ImportData{}.ScanDiskImportData)
+
+	routerGroup.GET("scraper/configs", controllers.Scraper{}.ScraperConfigs)
+	routerGroup.POST("scraper/pretreatment", controllers.Scraper{}.Pretreatment)
+	routerGroup.POST("scraper/scraperDataProcess", controllers.Scraper{}.ScraperDataProcess)
 }
 func SFMRouter(router *gin.Engine) {
 	routerGroup := router.Group("/api", middleware.AdminLoginApiMiddleware())

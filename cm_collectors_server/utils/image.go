@@ -149,7 +149,7 @@ func ResizeImageByMaxWidth(data []byte, maxWidth int) ([]byte, int, int, error) 
 	return scaledData, newWidth, newHeight, nil
 }
 
-func SaveBase64AsImage(base64Str, filePath string) error {
+func SaveBase64AsImage(base64Str, filePath string, hasMimeType bool) error {
 	// 定义支持的 MIME 类型
 	validMimeTypes := []string{
 		"data:image/png;base64,",
@@ -157,14 +157,18 @@ func SaveBase64AsImage(base64Str, filePath string) error {
 		"data:image/gif;base64,",
 		"data:image/webp;base64,",
 	}
-
-	// 查找匹配的 MIME 类型并移除前缀
 	var replaced string
-	for _, mimeType := range validMimeTypes {
-		if strings.HasPrefix(base64Str, mimeType) {
-			replaced = strings.Replace(base64Str, mimeType, "", 1)
-			break
+	if hasMimeType {
+		// 查找匹配的 MIME 类型并移除前缀
+		for _, mimeType := range validMimeTypes {
+			if strings.HasPrefix(base64Str, mimeType) {
+				replaced = strings.Replace(base64Str, mimeType, "", 1)
+				break
+			}
 		}
+	} else {
+		replaced = base64Str
+
 	}
 
 	// 如果没有匹配的 MIME 类型，返回错误

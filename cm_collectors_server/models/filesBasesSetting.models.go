@@ -8,6 +8,7 @@ type FilesBasesSetting struct {
 	NfoJsonData      string `json:"-" gorm:"type:text;"`
 	SimpleJsonData   string `json:"-" gorm:"type:text;"`
 	ScanDiskJsonData string `json:"-" gorm:"type:text;"`
+	ScraperJsonData  string `json:"-" gorm:"type:text;"`
 }
 
 func (FilesBasesSetting) TableName() string {

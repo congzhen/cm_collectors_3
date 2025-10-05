@@ -50,6 +50,8 @@ func (FilesBases) ConfigById(id, configType string) (string, error) {
 		return filesBasesSettingInfo.NfoJsonData, nil
 	case "importSimple":
 		return filesBasesSettingInfo.SimpleJsonData, nil
+	case "scraper":
+		return filesBasesSettingInfo.ScraperJsonData, nil
 	default:
 		return filesBasesSettingInfo.ConfigJsonData, nil
 	}

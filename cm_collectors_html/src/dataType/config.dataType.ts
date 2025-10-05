@@ -7,6 +7,7 @@ export enum E_config_type {
   importScanDisk = 'importScanDisk',
   importNfo = 'importNfo',
   importSimple = 'importSimple',
+  scraper = 'scraper',
 }
 
 
@@ -225,7 +226,33 @@ export const defualtConfigScanDisk: I_config_scanDisk = {
     performerThumbs: dataset.nfo.performerThumbs,
   }
 }
-
+export interface I_config_scraperData {
+  scanDiskPaths: string[]; // 扫描磁盘路径
+  videoSuffixName: string[]; // 视频文件后缀名
+  scraperConfigs: string[];// 刮削器配置
+  retryCount: number;   //重试次数
+  //已存在nfo文件时跳过
+  skipIfNfoExists: boolean;
+  //保存元数据为nfo文件
+  saveNfo: boolean;
+  //下载元数据中的图片链接
+  enableDownloadImages: boolean;
+  //使用标签名作为图片名
+  useTagAsImageName: boolean;
+  //开启用户模拟操作
+  enableUserSimulation: boolean;
+}
+export const defualtConfigScraperData: I_config_scraperData = {
+  scanDiskPaths: [],
+  videoSuffixName: dataset.videoSuffixName,
+  scraperConfigs: [],
+  retryCount: 3,
+  skipIfNfoExists: true,
+  saveNfo: true,
+  enableDownloadImages: true,
+  useTagAsImageName: true,
+  enableUserSimulation: false,
+}
 
 export interface I_config_nfo {
   abstract: string; // 描述

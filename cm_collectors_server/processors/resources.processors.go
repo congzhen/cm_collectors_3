@@ -168,7 +168,7 @@ func (Resources) SaveResourcePhoto(par *datatype.ReqParam_Resource) (string, err
 	filePath := path.Join(core.Config.System.FilePath, "resCoverPoster", par.Resource.FilesBasesID, photoName)
 
 	// 将Base64图片保存为文件
-	err := utils.SaveBase64AsImage(par.PhotoBase64, filePath)
+	err := utils.SaveBase64AsImage(par.PhotoBase64, filePath, true)
 	if err != nil {
 		return "", errorMessage.WrapError(errorMessage.Err_Resources_Save_Photo_Failed, err)
 	}

@@ -53,7 +53,7 @@
            -->
         </div>
         <div class="menu-item" v-admin @click="openImportResource">
-          <el-tooltip content="导入" placement="bottom">
+          <el-tooltip content="导入与刮削" placement="bottom">
             <el-icon>
               <Magnet />
             </el-icon>
