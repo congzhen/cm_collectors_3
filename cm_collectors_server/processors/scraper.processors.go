@@ -19,8 +19,9 @@ type Scraper struct {
 func (Scraper) getConfigPath(fileName string) string {
 	return path.Join("./scraper", fileName+".json")
 }
-func (Scraper) getNfoPath(filePath, nfoName string) string {
-	return path.Join(utils.GetDirPathFromFilePath(filePath), nfoName+".nfo")
+func (Scraper) getNfoPath(filePath string) string {
+	//将路径文件的后缀名替换成nfo
+	return path.Join(utils.GetDirPathFromFilePath(filePath), utils.GetFileNameFromPath(filePath, false)+".nfo")
 }
 func (Scraper) getSaveImagePath(filePath, imageName string) string {
 	return path.Join(utils.GetDirPathFromFilePath(filePath), imageName)
@@ -67,20 +68,11 @@ func (t Scraper) Pretreatment(filesBasesId string, config datatype.Config_Scrape
 	if len(config.ScraperConfigs) == 0 {
 		return filesPaths, nil
 	}
-	// 获取配置文件路径
-	configPath := t.getConfigPath(config.ScraperConfigs[0])
-	// 加载配置
-	scraperConfig, err := cmscraper.LoadConfig(configPath)
-	if err != nil {
-		return nil, err
-	}
 	// 筛选待处理文件
 	newFilesPaths := make([]string, 0)
 	for _, filePath := range filesPaths {
-		// 获取 NFO 文件名
-		nfoName := cmscraper.ParseID(filePath, scraperConfig)
 		// 获取 NFO 文件路径
-		nfoPath := t.getNfoPath(filePath, nfoName)
+		nfoPath := t.getNfoPath(filePath)
 		// 检查 NFO 文件是否存在
 		if !utils.FileExists(nfoPath) {
 			// 如果不存在，则添加到待处理列表中
@@ -124,11 +116,14 @@ func (t Scraper) ScraperDataProcess(filesBasesId, filePath string, config dataty
 							fmt.Println("保存图片失败 %s: %v", imageName, err)
 						}
 					}
+				} else {
+					processErr = fmt.Errorf("下载图片失败: %w", err)
+					continue
 				}
 			}
 			// 是否 保存 NFO
 			if config.SaveNfo && cmscraper.IsValidMetadata(metadata, scraperConfig) {
-				saveNfoPath := t.getNfoPath(filePath, id)
+				saveNfoPath := t.getNfoPath(filePath)
 				nfo := cmscraper.ToNFO(metadata, &scraperConfig.Sites[len(scraperConfig.Sites)-1])
 				processErr = utils.WriteStringToFile(saveNfoPath, nfo)
 			}
