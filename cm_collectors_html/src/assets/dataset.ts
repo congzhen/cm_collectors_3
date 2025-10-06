@@ -33,7 +33,7 @@ export default {
     abstracts: ['outline', 'plot', 'originalplot'],
     tags: ['tag', 'genre'],
     tagAutoCreate: true,
-    performerNames: ['actor.name', 'actor.title'],
+    performerNames: ['actor.name', 'actor.title', 'actors'],
     performerMatchAliasName: true,
     performerAutoCreate: true,
     performerThumbs: ['actor.thumb', 'actor.poster', 'actors'],
