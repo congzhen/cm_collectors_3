@@ -201,3 +201,23 @@ type ReqParam_ScraperProcess struct {
 	ReqParam_Scraper
 	FilePath string `json:"filePath"`
 }
+
+type ReqParam_SearchScraperPerformer struct {
+	PerformerBasesId      string `json:"performerBases_id"`
+	LastScraperUpdateTime string `json:"lastScraperUpdateTime"`
+}
+
+type E_PerformerUpdateOperate string
+
+const (
+	E_PerformerUpdateOperate_Update E_PerformerUpdateOperate = "update"
+	E_PerformerUpdateOperate_Cover  E_PerformerUpdateOperate = "cover"
+)
+
+type ReqParam_ScraperPerformerDataProcess struct {
+	PerformerBasesId string                   `json:"performerBases_id"`
+	PerformerId      string                   `json:"performerId"`
+	PerformerName    string                   `json:"performerName"`
+	ScraperConfig    string                   `json:"scraperConfig"`
+	Operate          E_PerformerUpdateOperate `json:"operate" binding:"required,oneof=update cover"`
+}

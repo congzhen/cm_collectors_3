@@ -26,6 +26,9 @@ func (Performer) DataList(performerBasesId string, fetchCount bool, page, limit 
 func (Performer) ListTopPreferredPerformers(preferredIds []string, mainPerformerBasesId string, shieldNoPerformerPhoto bool, limit int) (*[]models.Performer, error) {
 	return models.Performer{}.ListTopPreferredPerformers(core.DBS(), preferredIds, mainPerformerBasesId, shieldNoPerformerPhoto, limit)
 }
+func (Performer) SearchLastScraperUpdateTime(performerBasesId, lastScraperUpdateTime string) (*[]models.PerformerBasic, error) {
+	return models.Performer{}.SearchLastScraperUpdateTime(core.DBS(), performerBasesId, lastScraperUpdateTime)
+}
 
 func (Performer) InfoByName(performerBasesID, name string, searchAliasName bool) (*models.Performer, error) {
 	info, err := models.Performer{}.InfoByName(core.DBS(), performerBasesID, name, searchAliasName)
@@ -34,7 +37,13 @@ func (Performer) InfoByName(performerBasesID, name string, searchAliasName bool)
 	}
 	return info, err
 }
-
+func (Performer) InfoByID(id string) (*models.Performer, error) {
+	info, err := models.Performer{}.InfoByID(core.DBS(), id)
+	if err != nil && err == gorm.ErrRecordNotFound {
+		err = errorMessage.Err_performer_Not_Found
+	}
+	return info, err
+}
 func (t Performer) PerformerInfoByNameNotFoundCreate(filesBasesId, name, photoBase64 string) (*models.Performer, error) {
 	mainPerformerBasesId, err := FilesBases{}.GetMainPerformerBasesId(filesBasesId)
 	if err != nil {
@@ -61,18 +70,26 @@ func (Performer) RecycleBin(performerBasesId string) (*[]models.Performer, error
 	return models.Performer{}.RecycleBin(core.DBS(), performerBasesId)
 }
 
+// 判断演员图片是否存在
+func (Performer) PerformerPhotoExists(performerBasesID, photoName string) bool {
+	filePath := path.Join(core.Config.System.FilePath, "performerFace", performerBasesID, photoName)
+	_, err := os.Stat(filePath)
+	return err == nil
+}
+
 // SavePerformerPhoto 保存或更新表演者的图片
-func (Performer) SavePerformerPhoto(par *datatype.ReqParam_PerformerData) (string, error) {
+func (t Performer) SavePerformerPhoto(par *datatype.ReqParam_PerformerData) (string, error) {
 	if par.PhotoBase64 == "" || par.Performer.PerformerBasesID == "" {
 		return "", nil // 如果没有图片数据或PerformerBasesID，则不处理
 	}
-
+	return t._savePerformerPhoto(par.Performer.PerformerBasesID, par.PhotoBase64)
+}
+func (Performer) _savePerformerPhoto(performerBasesID, photoBase64 string) (string, error) {
 	// 生成唯一的图片名称
 	photoName := fmt.Sprintf("%s.jpg", core.GenerateUniqueID())
-	filePath := path.Join(core.Config.System.FilePath, "performerFace", par.Performer.PerformerBasesID, photoName)
-
+	filePath := path.Join(core.Config.System.FilePath, "performerFace", performerBasesID, photoName)
 	// 将Base64图片保存为文件
-	err := utils.SaveBase64AsImage(par.PhotoBase64, filePath, true)
+	err := utils.SaveBase64AsImage(photoBase64, filePath, true)
 	if err != nil {
 		return "", errorMessage.WrapError(errorMessage.Err_performer_Save_Photo_Failed, err)
 	}
@@ -198,4 +215,105 @@ func (t Performer) Update(par *datatype.ReqParam_PerformerData) (*models.Perform
 		return nil, err
 	}
 	return &performerModels, nil
+}
+
+func (t Performer) UpdateScraperByModels(id string, dataModels models.Performer, perforomerPhotoBase64 string, updateOperate datatype.E_PerformerUpdateOperate) error {
+	dataModels.ID = id
+	info, err := t.InfoByID(id)
+	if err != nil {
+		return err
+	}
+	dataModels.KeyWords = utils.PinyinInitials(dataModels.Name + dataModels.AliasName)
+	var fieldsToUpdate []string
+
+	// 定义所有可能需要更新的字段
+	allFields := []struct {
+		fieldName string
+		isEmpty   func(models.Performer) bool
+	}{
+		{"name", func(p models.Performer) bool { return p.Name == "" }},
+		{"aliasName", func(p models.Performer) bool { return p.AliasName == "" }},
+		{"birthday", func(p models.Performer) bool { return p.Birthday == "" }},
+		{"nationality", func(p models.Performer) bool { return p.Nationality == "" }},
+		{"introduction", func(p models.Performer) bool { return p.Introduction == "" }},
+		{"cup", func(p models.Performer) bool { return p.Cup == "" }},
+		{"bust", func(p models.Performer) bool { return p.Bust == "" }},
+		{"hip", func(p models.Performer) bool { return p.Hip == "" }},
+		{"waist", func(p models.Performer) bool { return p.Waist == "" }},
+	}
+
+	if updateOperate == datatype.E_PerformerUpdateOperate_Update {
+		// 在更新模式下，只更新空白字段
+		updateKeyWords := false
+		for _, f := range allFields {
+			// 检查现有记录中的字段是否为空
+			switch f.fieldName {
+			case "name":
+				if info.Name == "" && dataModels.Name != "" {
+					fieldsToUpdate = append(fieldsToUpdate, f.fieldName)
+					updateKeyWords = true
+				}
+			case "aliasName":
+				if info.AliasName == "" && dataModels.AliasName != "" {
+					fieldsToUpdate = append(fieldsToUpdate, f.fieldName)
+					updateKeyWords = true
+				}
+			default:
+				// 对于其他字段，只在当前值为空且新值非空时更新
+				if f.isEmpty(*info) {
+					fieldsToUpdate = append(fieldsToUpdate, f.fieldName)
+				}
+			}
+		}
+
+		if updateKeyWords {
+			fieldsToUpdate = append(fieldsToUpdate, "keyWords")
+		}
+
+		// 处理照片更新
+		if perforomerPhotoBase64 != "" {
+			needToUpdatePhoto := false
+			if info.Photo == "" {
+				// 如果当前没有照片，直接更新
+				needToUpdatePhoto = true
+			} else if !t.PerformerPhotoExists(info.PerformerBasesID, info.Photo) {
+				// 如果当前有照片但文件不存在，也更新
+				needToUpdatePhoto = true
+			}
+
+			if needToUpdatePhoto {
+				photoID, err := t._savePerformerPhoto(info.PerformerBasesID, perforomerPhotoBase64)
+				if err == nil { // 保存成功时才更新photo字段
+					dataModels.Photo = photoID
+					fieldsToUpdate = append(fieldsToUpdate, "photo")
+				}
+			}
+		}
+	} else {
+		// 在替换模式下，更新所有字段
+		for _, f := range allFields {
+			fieldsToUpdate = append(fieldsToUpdate, f.fieldName)
+		}
+		fieldsToUpdate = append(fieldsToUpdate, "keyWords")
+
+		// 处理照片更新
+		if perforomerPhotoBase64 != "" {
+			// 在替换模式下，如果已有照片且文件存在，则先删除旧照片
+			if info.Photo != "" && t.PerformerPhotoExists(info.PerformerBasesID, info.Photo) {
+				t.DeletePerformerPhoto(info.PerformerBasesID, info.Photo)
+			}
+
+			// 保存新照片
+			photoID, err := t._savePerformerPhoto(info.PerformerBasesID, perforomerPhotoBase64)
+			if err == nil { // 保存成功时才更新photo字段
+				dataModels.Photo = photoID
+				fieldsToUpdate = append(fieldsToUpdate, "photo")
+			}
+		}
+	}
+	lastScraperUpdateTime := datatype.CustomDate{}
+	lastScraperUpdateTime.SetValue(core.TimeNow())
+	dataModels.LastScraperUpdateTime = &lastScraperUpdateTime
+	fieldsToUpdate = append(fieldsToUpdate, "lastScraperUpdateTime")
+	return dataModels.Update(core.DBS(), &dataModels, fieldsToUpdate)
 }

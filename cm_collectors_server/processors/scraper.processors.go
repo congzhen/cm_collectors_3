@@ -137,3 +137,63 @@ func (t Scraper) ScraperDataProcess(filesBasesId, filePath string, config dataty
 	}
 	return processErr
 }
+
+func (t Scraper) ScraperPerformerDataProcess(par *datatype.ReqParam_ScraperPerformerDataProcess) error {
+	// 加载配置
+	scraperConfig, err := cmscraper.LoadConfig(t.getConfigPath(par.ScraperConfig))
+	if err != nil {
+		return err
+	}
+	// 创建刮削器
+	scraperSL := cmscraper.NewScraper(scraperConfig, time.Duration(5), 1)
+	ctx := context.Background()
+	metadata, pageUrl, err := scraperSL.Scrape(ctx, par.PerformerName)
+	if err != nil {
+		return err
+	}
+	images, err := cmscraper.GetMetadataImages(ctx, pageUrl, metadata, true, false, 1.0)
+	if err != nil {
+		return err
+	}
+	perforomerPhotoBase64 := ""
+	// 判断image中是否有 avatar ，photo , cover ，如果有则使用第一个
+	imageTags := []string{"avatar", "photo", "cover"}
+	for _, tag := range imageTags {
+		if image, ok := images[fmt.Sprintf("%s.jpg", tag)]; ok {
+			perforomerPhotoBase64 = image
+			break
+		}
+	}
+	performerModels := models.Performer{
+		ID: par.PerformerId,
+	}
+	nameTages := []string{"name", "title"}
+	aliasNameTags := []string{"aliasName", "alias", "alias_name"}
+	birthdayTags := []string{"birthday", "birth", "birthday_date"}
+	nationalityTags := []string{"nationality", "nation", "nation_name"}
+	introductionTags := []string{"introduction", "intro", "desc", "description"}
+	cupTags := []string{"cup", "cup_size", "cup_size_name"}
+	bustTags := []string{"bust", "bust_size", "bust_size_name"}
+	waistTags := []string{"waist", "waist_size", "waist_size_name"}
+	hipTags := []string{"hip", "hip_size", "hip_size_name"}
+	performerModels.Name = t.getMetadataCoontentByTags(metadata, nameTages)
+	performerModels.AliasName = t.getMetadataCoontentByTags(metadata, aliasNameTags)
+	performerModels.Birthday = t.getMetadataCoontentByTags(metadata, birthdayTags)
+	performerModels.Nationality = t.getMetadataCoontentByTags(metadata, nationalityTags)
+	performerModels.Introduction = t.getMetadataCoontentByTags(metadata, introductionTags)
+	performerModels.Cup = t.getMetadataCoontentByTags(metadata, cupTags)
+	performerModels.Bust = t.getMetadataCoontentByTags(metadata, bustTags)
+	performerModels.Waist = t.getMetadataCoontentByTags(metadata, waistTags)
+	performerModels.Hip = t.getMetadataCoontentByTags(metadata, hipTags)
+	return Performer{}.UpdateScraperByModels(par.PerformerId, performerModels, perforomerPhotoBase64, par.Operate)
+}
+func (Scraper) getMetadataCoontentByTags(metadata *map[string]any, tags []string) string {
+	for _, tag := range tags {
+		if data, ok := (*metadata)[tag]; ok {
+			if dataStr, ok := data.(string); ok {
+				return dataStr
+			}
+		}
+	}
+	return ""
+}

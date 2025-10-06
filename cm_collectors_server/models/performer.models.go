@@ -8,25 +8,26 @@ import (
 )
 
 type Performer struct {
-	ID               string               `json:"id" gorm:"primaryKey;type:char(20);"`
-	PerformerBasesID string               `json:"performerBases_id" gorm:"column:performerBases_id;type:char(20);;index:idx_performer_performerBasesID;"`
-	Name             string               `json:"name" gorm:"type:varchar(200);"`
-	AliasName        string               `json:"aliasName" gorm:"column:aliasName;type:varchar(500);"`
-	KeyWords         string               `json:"keyWords" gorm:"column:keyWords;type:varchar(500);"`
-	Birthday         string               `json:"birthday" gorm:"column:birthday;type:varchar(10);"`
-	Nationality      string               `json:"nationality" gorm:"type:varchar(200);"`
-	CareerPerformer  bool                 `json:"careerPerformer" gorm:"column:careerPerformer;type:tinyint(1);default:1"`
-	CareerDirector   bool                 `json:"careerDirector" gorm:"column:careerDirector;type:tinyint(1);default:0"`
-	Photo            string               `json:"photo" gorm:"type:varchar(100);"`
-	Introduction     string               `json:"introduction" gorm:"type:text;"`
-	Cup              string               `json:"cup" gorm:"type:varchar(10);index:idx_performer_cup;"`
-	Bust             string               `json:"bust" gorm:"type:varchar(10);"`
-	Waist            string               `json:"waist" gorm:"type:varchar(10);"`
-	Hip              string               `json:"hip" gorm:"type:varchar(10);"`
-	Stars            int                  `json:"stars" gorm:"type:int;"`
-	RetreatStatus    bool                 `json:"retreatStatus" gorm:"column:retreatStatus;type:tinyint(1);default:0"`
-	CreatedAt        *datatype.CustomTime `json:"-" gorm:"column:addTime;type:datetime"`
-	Status           bool                 `json:"status" gorm:"type:tinyint(1);default:1"`
+	ID                    string               `json:"id" gorm:"primaryKey;type:char(20);"`
+	PerformerBasesID      string               `json:"performerBases_id" gorm:"column:performerBases_id;type:char(20);;index:idx_performer_performerBasesID;"`
+	Name                  string               `json:"name" gorm:"type:varchar(200);"`
+	AliasName             string               `json:"aliasName" gorm:"column:aliasName;type:varchar(500);"`
+	KeyWords              string               `json:"keyWords" gorm:"column:keyWords;type:varchar(500);"`
+	Birthday              string               `json:"birthday" gorm:"column:birthday;type:varchar(10);"`
+	Nationality           string               `json:"nationality" gorm:"type:varchar(200);"`
+	CareerPerformer       bool                 `json:"careerPerformer" gorm:"column:careerPerformer;type:tinyint(1);default:1"`
+	CareerDirector        bool                 `json:"careerDirector" gorm:"column:careerDirector;type:tinyint(1);default:0"`
+	Photo                 string               `json:"photo" gorm:"type:varchar(100);"`
+	Introduction          string               `json:"introduction" gorm:"type:text;"`
+	Cup                   string               `json:"cup" gorm:"type:varchar(10);index:idx_performer_cup;"`
+	Bust                  string               `json:"bust" gorm:"type:varchar(10);"`
+	Waist                 string               `json:"waist" gorm:"type:varchar(10);"`
+	Hip                   string               `json:"hip" gorm:"type:varchar(10);"`
+	Stars                 int                  `json:"stars" gorm:"type:int;"`
+	RetreatStatus         bool                 `json:"retreatStatus" gorm:"column:retreatStatus;type:tinyint(1);default:0"`
+	CreatedAt             *datatype.CustomTime `json:"-" gorm:"column:addTime;type:datetime"`
+	LastScraperUpdateTime *datatype.CustomDate `json:"lastScraperUpdateTime" gorm:"column:lastScraperUpdateTime;type:date;default:NULL"`
+	Status                bool                 `json:"status" gorm:"type:tinyint(1);default:1"`
 }
 
 type PerformerBasic struct {
@@ -59,6 +60,22 @@ func (Performer) BasicList(db *gorm.DB, performerBasesIds []string, careerPerfor
 	return &list, err
 }
 
+func (Performer) SearchLastScraperUpdateTime(db *gorm.DB, performerBasesId, lastScraperUpdateTime string) (*[]PerformerBasic, error) {
+	var list []PerformerBasic
+	db = db.Model(&Performer{}).Where("performerBases_id = ?", performerBasesId)
+	if lastScraperUpdateTime != "" {
+		//转换成日期
+		lastData := datatype.CustomDate{}
+		lastData.SetValue(lastScraperUpdateTime)
+		lastDataValue, err := lastData.Value()
+		if err == nil {
+			db = db.Where("lastScraperUpdateTime < ?", lastDataValue)
+		}
+	}
+	err := db.Order("addTime desc").Find(&list).Error
+	return &list, err
+}
+
 func (Performer) InfoByName(db *gorm.DB, performerBasesID, name string, searchAliasName bool) (*Performer, error) {
 	var performer Performer
 	if searchAliasName {
@@ -68,6 +85,11 @@ func (Performer) InfoByName(db *gorm.DB, performerBasesID, name string, searchAl
 	}
 
 	err := db.First(&performer).Error
+	return &performer, err
+}
+func (Performer) InfoByID(db *gorm.DB, id string) (*Performer, error) {
+	var performer Performer
+	err := db.Where("id = ?", id).First(&performer).Error
 	return &performer, err
 }
 

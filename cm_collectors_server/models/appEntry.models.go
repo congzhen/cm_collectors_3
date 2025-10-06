@@ -249,6 +249,7 @@ func AutoDatabase(db *gorm.DB) error {
 			Migrate: func(tx *gorm.DB) error {
 				err := tx.AutoMigrate(
 					&FilesBasesSetting{},
+					&Performer{},
 				)
 				if err != nil {
 					core.LogErr(err)

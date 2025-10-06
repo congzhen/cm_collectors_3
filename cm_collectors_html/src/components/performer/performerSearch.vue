@@ -6,6 +6,7 @@
     <selectStar width="200px" @change="changeStarHandle" />
     <selectCup v-if="store.appStoreData.currentConfigApp.plugInUnit_Cup" :search-mode="true" width="200px"
       @change="changeCupHandle" />
+    <el-button icon="Magnet" v-admin v-if="props.admin" @click="emits('scraper')">刮削</el-button>
   </div>
 </template>
 <script setup lang="ts">
@@ -31,7 +32,7 @@ const searchData = reactive<I_search_performer>({
   cup: '',
 })
 
-const emits = defineEmits(['add', 'recycleBin', 'search'])
+const emits = defineEmits(['add', 'recycleBin', 'search', 'scraper'])
 
 
 const changeSearchHandle = (val: string) => {

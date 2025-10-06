@@ -4,7 +4,7 @@
     </performerInfo>
     <div class="performer-container">
       <performerSearch class="performer-search" :admin="true" @add="addPerformerHandle" @recycleBin="recycleBinHandle"
-        @search="changeSearchHandle">
+        @search="changeSearchHandle" @scraper="scraperHandle">
       </performerSearch>
       <div class="performer-list-main" v-loading="loading">
         <el-scrollbar>
@@ -29,11 +29,14 @@
   <performerRecycleBinDialog ref="performerRecycleBinDialogRef" :performerBasesId="props.performerBasesId"
     @success="getDataListAndCount">
   </performerRecycleBinDialog>
+  <scraperPerformerDialog ref="scraperPerformerDialogRef" @success="getDataListAndCount">
+  </scraperPerformerDialog>
 </template>
 <script lang="ts" setup>
 import { ref, onMounted } from 'vue';
 import performerFormDrawer from '@/components/performer/performerFormDrawer.vue';
 import performerRecycleBinDialog from '@/components/performer/performerRecycleBinDialog.vue';
+import scraperPerformerDialog from '../importResource/scraperPerformerDialog.vue';
 import performerSearch from '@/components/performer/performerSearch.vue';
 import performerInfo from '@/components/performer/performerInfo.vue';
 import performerBlock from '@/components/performer/performerBlock.vue';
@@ -60,6 +63,7 @@ const props = defineProps({
 })
 const performerFormDrawerRef = ref<InstanceType<typeof performerFormDrawer>>();
 const performerRecycleBinDialogRef = ref<InstanceType<typeof performerRecycleBinDialog>>();
+const scraperPerformerDialogRef = ref<InstanceType<typeof scraperPerformerDialog>>();
 const loading = ref(false);
 const dataList = ref<I_performer[]>([]);
 const dataCount = ref(0);
@@ -146,6 +150,10 @@ const changeSearchHandle = (search: I_search_performer) => {
   searchCondition = search;
   fetchCount = true;
   getDataList();
+}
+
+const scraperHandle = () => {
+  scraperPerformerDialogRef.value?.open(props.performerBasesId)
 }
 
 

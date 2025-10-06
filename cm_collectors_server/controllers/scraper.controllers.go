@@ -46,3 +46,29 @@ func (Scraper) ScraperDataProcess(c *gin.Context) {
 	}
 	response.OkWithData(true, c)
 }
+
+func (Scraper) SearchScraperPerformer(c *gin.Context) {
+	var par datatype.ReqParam_SearchScraperPerformer
+	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {
+		return
+	}
+	datalist, err := processors.Performer{}.SearchLastScraperUpdateTime(par.PerformerBasesId, par.LastScraperUpdateTime)
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	response.OkWithData(datalist, c)
+}
+
+func (Scraper) ScraperPerformerDataProcess(c *gin.Context) {
+	var par datatype.ReqParam_ScraperPerformerDataProcess
+	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {
+		return
+	}
+	err := processors.Scraper{}.ScraperPerformerDataProcess(&par)
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	response.OkWithData(true, c)
+}

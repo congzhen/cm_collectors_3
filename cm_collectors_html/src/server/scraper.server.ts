@@ -1,5 +1,6 @@
 import request from "@/assets/request";
 import type { I_config_scraperData } from "@/dataType/config.dataType";
+import type { I_performerBasic } from "@/dataType/performer.dataType";
 const routerGroupUri = '';
 export const scraperDataServer = {
   configs: async () => {
@@ -26,6 +27,29 @@ export const scraperDataServer = {
         filesBases_id,
         filePath,
         config,
+      }
+    });
+  },
+  searchScraperPerformerData: async (performerBases_id: string, lastScraperUpdateTime: string) => {
+    return await request<I_performerBasic[]>({
+      url: `${routerGroupUri}/scraper/searchScraperPerformer`,
+      method: 'post',
+      data: {
+        performerBases_id,
+        lastScraperUpdateTime,
+      }
+    });
+  },
+  scraperPerformerDataProcess: async (performerBases_id: string, performerId: string, performerName: string, scraperConfig: string, operate: string) => {
+    return await request<I_performerBasic[]>({
+      url: `${routerGroupUri}/scraper/scraperPerformerDataProcess`,
+      method: 'post',
+      data: {
+        performerBases_id,
+        performerId,
+        performerName,
+        scraperConfig,
+        operate,
       }
     });
   }
