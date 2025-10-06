@@ -16,6 +16,9 @@
           <div class="condition-item-label">检索路径:</div>
           <div class="condition-item-content">
             <el-input v-model="formData.searchPath" :disabled="!formData.searchPathStatus">
+              <template #prepend>
+                <el-button icon="FolderOpened" @click="openServerFileManagement('searchPath')" />
+              </template>
               <template #append> <el-button icon="Search" @click="searchHandle">检索</el-button></template>
             </el-input>
           </div>
@@ -23,7 +26,11 @@
         <div class="condition-item">
           <div class="condition-item-label">替换路径:</div>
           <div class="condition-item-content">
+
             <el-input v-model="formData.replacePath" :disabled="!formData.replacePathStatus">
+              <template #prepend>
+                <el-button icon="FolderOpened" @click="openServerFileManagement('replacePath')" />
+              </template>
               <template #append> <el-button icon="Refresh" @click="replacePathHandle()">替换</el-button></template>
             </el-input>
           </div>
@@ -43,9 +50,14 @@
       </ul>
     </div>
   </dialogCommon>
+  <serverFileManagementDialog ref="serverFileManagementDialogRef" @selectedFiles="selectedFilesHandle"
+    :show="[E_sfm_FileType.Directory]">
+  </serverFileManagementDialog>
 </template>
 <script lang="ts" setup>
 import dialogCommon from '@/components/com/dialog/dialog-common.vue';
+import serverFileManagementDialog from '@/components/serverFileManagement/serverFileManagementDialog.vue';
+import { E_sfm_FileType, type I_sfm_FileEntry } from '@/components/serverFileManagement/com/dataType';
 import { ref } from 'vue';
 import { filesBasesStoreData } from '@/storeData/filesBases.storeData';
 import { debounceNow } from '@/assets/debounce';
@@ -59,7 +71,7 @@ const store = {
 }
 
 const dialogCommonRef = ref<InstanceType<typeof dialogCommon>>();
-
+const serverFileManagementDialogRef = ref<InstanceType<typeof serverFileManagementDialog>>();
 const formData = ref({
   filesBasesIds: [],
   filesBasesIdsStatus: true,
@@ -96,6 +108,7 @@ const searchHandle = debounceNow(async () => {
     } else {
       ElMessage.error(result.msg);
     }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     ElMessage.error('提交失败，请稍后再试');
   } finally {
@@ -121,6 +134,7 @@ const replacePathHandle = debounceNow(async () => {
     } else {
       ElMessage.error(result.msg);
     }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     ElMessage.error('提交失败，请稍后再试');
   } finally {
@@ -151,6 +165,22 @@ const searchContentShowRed = (contentText: string) => {
   );
 }
 
+type openServerFileManagementFieldType = 'searchPath' | 'replacePath';
+let openServerFileManagementField: openServerFileManagementFieldType = 'searchPath';
+const openServerFileManagement = (opt: openServerFileManagementFieldType) => {
+  openServerFileManagementField = opt;
+  serverFileManagementDialogRef.value?.open();
+}
+const selectedFilesHandle = (slc: I_sfm_FileEntry[]) => {
+  if (slc.length == 0) {
+    return;
+  }
+  if (openServerFileManagementField == 'replacePath') {
+    formData.value.replacePath = slc[slc.length - 1].path;
+  } else {
+    formData.value.searchPath = slc[slc.length - 1].path;
+  }
+}
 
 const open = () => {
   init();
