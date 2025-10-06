@@ -72,6 +72,8 @@ func publicRouter(router *gin.Engine) {
 
 	routerGroup.GET("/resource/info/:resourceId", controllers.Resource{}.Info)
 	routerGroup.POST("/resource/dataList", controllers.Resource{}.DataList)
+	routerGroup.GET("/resource/sampleImages/:resourceId", controllers.Resource{}.SampleImages)
+	routerGroup.GET("/resource/sampleData/:resourceId", controllers.Resource{}.SampleImageData)
 
 	routerGroup.GET("play/open/resource/:resourceId", controllers.Play{}.PlayOpenResource)
 	routerGroup.GET("play/open/dramaSeries/:dramaSeriesId", controllers.Play{}.PlayOpenDramaSeries)

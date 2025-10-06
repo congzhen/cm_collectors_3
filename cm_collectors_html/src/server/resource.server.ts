@@ -1,4 +1,4 @@
-import request from "@/assets/request";
+import request, { type IRequest } from "@/assets/request";
 import type { I_dramaSeriesWithResource, I_resource, I_resource_base, I_resourceDramaSeries_base } from "@/dataType/resource.dataType";
 import type { I_searchData } from "@/dataType/search.dataType";
 const routerGroupUri = '';
@@ -21,6 +21,19 @@ export const resourceServer = {
         searchData,
       }
     })
+  },
+  sampleImages: async (id: string, sampleFolder: string) => {
+    const obj: IRequest = {
+      url: `${routerGroupUri}/resource/sampleImages/${id}`,
+      method: 'get',
+    }
+    sampleFolder = encodeURIComponent(sampleFolder);
+    if (sampleFolder != '') {
+      obj.params = {
+        q: sampleFolder
+      }
+    }
+    return await request<string[]>(obj);
   },
   create: async (resource: I_resource_base, photoBase64: string, performers: string[], directors: string[], tags: string[], dramaSeries: I_resourceDramaSeries_base[]) => {
     return await request<I_resource>({

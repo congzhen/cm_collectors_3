@@ -7,6 +7,7 @@ import (
 	"cm_collectors_server/models"
 	"cm_collectors_server/utils"
 	"fmt"
+	"net/url"
 	"os"
 	"path"
 
@@ -34,6 +35,56 @@ func (Resources) Info(id string) (*models.Resources, error) {
 		return info, err
 	}
 	return info, nil
+}
+
+func (Resources) SampleImages(id, imagePath string) ([]string, error) {
+	var decodedImagePath = ""
+	var err error
+	if imagePath != "" {
+		decodedImagePath, err = url.QueryUnescape(imagePath)
+		if err != nil {
+			return []string{}, err
+		}
+	}
+
+	firstDramaSeries, err := ResourcesDramaSeries{}.FirstInfoByResourcesID(id)
+	if err != nil {
+		return []string{}, err
+	}
+	if firstDramaSeries.Src == "" || !utils.FileExists(firstDramaSeries.Src) {
+		return []string{}, nil
+	}
+
+	fullImagesPath := utils.GetDirPathFromFilePath(firstDramaSeries.Src)
+	if decodedImagePath != "" {
+		fullImagesPath = path.Join(fullImagesPath, decodedImagePath)
+	}
+	imagePaths, err := utils.GetFilesByExtensions([]string{fullImagesPath}, utils.FileImageExtensions, false)
+	newImagePaths := make([]string, len(imagePaths))
+	for i, imagePath := range imagePaths {
+		//获取去掉folderPath的文件名
+		newImagePaths[i] = utils.TrimBasePath(imagePath, fullImagesPath)
+	}
+	return newImagePaths, nil
+}
+func (Resources) SampleImageBytes(id, imagePath string) (string, []byte, error) {
+	decodedImagePath, err := url.QueryUnescape(imagePath)
+	if err != nil {
+		return "", nil, err
+	}
+	cleanPath := utils.SanitizePath(decodedImagePath)
+	firstDramaSeries, err := ResourcesDramaSeries{}.FirstInfoByResourcesID(id)
+	if err != nil {
+		return "", nil, err
+	}
+	if firstDramaSeries.Src == "" || !utils.FileExists(firstDramaSeries.Src) {
+		return "", nil, fmt.Errorf("图片不存在")
+	}
+	folderPath := utils.GetDirPathFromFilePath(firstDramaSeries.Src)
+	fullImagePath := path.Join(folderPath, cleanPath)
+	ext := utils.FileExt(cleanPath)
+	imageBytes, err := utils.ReadFile(fullImagePath)
+	return ext, imageBytes, err
 }
 
 func (t Resources) CreateResource(par *datatype.ReqParam_Resource) (*models.Resources, error) {

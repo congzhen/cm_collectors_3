@@ -118,6 +118,17 @@
           </el-button-group>
         </div>
       </el-form-item>
+
+      <el-alert title="剧照设置" type="success" :closable="false" />
+      <el-form-item label="显示剧照">
+        <el-switch v-model="filesConfig.sampleStatus" inline-prompt active-text="显示" inactive-text="关闭" />
+      </el-form-item>
+      <el-form-item label="剧照最大显示数量">
+        <el-input-number v-model="filesConfig.sampleShowMax" :min="1" :max="100" />
+      </el-form-item>
+      <el-form-item label="剧照相对文件夹">
+        <el-input v-model="filesConfig.sampleFolder" />
+      </el-form-item>
       <!--
       <el-form-item label="随机海报">
         <el-checkbox v-model="filesConfig.randomPosterStatus" label="开启随机海报" border />

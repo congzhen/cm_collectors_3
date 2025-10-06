@@ -8,6 +8,7 @@
         <detailsBtn :resource="props.resource" @update-resouce-success="updateResourceSuccessHandle"
           @delete-resource-success="deleteResourceSuccessHandle"></detailsBtn>
       </div>
+
       <div class="details-container">
         <detailsInfo :resource="props.resource"></detailsInfo>
       </div>
@@ -20,6 +21,7 @@ import type { I_resource } from '@/dataType/resource.dataType'
 import { getResourceCoverPoster } from '@/common/photo';
 import detailsInfo from '@/components/details/detailsInfo.vue'
 import detailsBtn from '@/components/details/detailsBtn.vue'
+
 
 const props = defineProps({
   resource: {

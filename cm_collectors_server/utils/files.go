@@ -25,6 +25,8 @@ const (
 	FileTimeDesc
 )
 
+var FileImageExtensions = []string{".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp"}
+
 // GetFilesByExtensions 根据指定的文件扩展名筛选目录中的文件
 // 参数:
 // dirPaths: 要搜索的目录路径数组，每个路径都是完整的绝对路径
@@ -185,6 +187,26 @@ func GetDirPathFromFilePath(filePath string) string {
 	return filepath.ToSlash(filepath.Dir(filePath))
 }
 
+// TrimBasePath 从文件路径中移除基础路径部分
+// 参数:
+// fullPath: 完整的文件路径
+// basePath: 要移除的基础路径
+// 返回值:
+// string: 移除基础路径后的相对路径部分
+func TrimBasePath(fullPath, basePath string) string {
+	// 标准化路径分隔符
+	fullPath = filepath.ToSlash(fullPath)
+	basePath = filepath.ToSlash(basePath)
+
+	// 确保basePath以斜杠结尾
+	if !strings.HasSuffix(basePath, "/") {
+		basePath += "/"
+	}
+
+	// 移除基础路径部分
+	return strings.TrimPrefix(fullPath, basePath)
+}
+
 // FileExists 判断文件或目录是否存在
 // 参数:
 // path: 要检查的文件或目录路径
@@ -285,6 +307,15 @@ func FileSHA256(filePath string) (string, error) {
 	return fmt.Sprintf("%x", hashInBytes), nil
 }
 
+// FileExt 获取文件路径的扩展名
+// 参数:
+// filePath: 文件的完整路径
+// 返回值:
+// string: 文件的扩展名，包括前导点号（如".txt"），如果文件没有扩展名则返回空字符串
+func FileExt(filePath string) string {
+	return strings.ToLower(filepath.Ext(filePath))
+}
+
 // WriteStringToFile 将字符串写入指定文件
 // 参数:
 // filePath: 文件的完整路径
@@ -307,4 +338,49 @@ func WriteStringToFile(filePath string, content string) error {
 
 	_, err = file.WriteString(content)
 	return err
+}
+
+// SanitizePath 对路径进行安全处理，防止路径遍历攻击
+// 参数:
+// path: 需要处理的路径
+// 返回值:
+// string: 安全处理后的路径
+func SanitizePath(path string) string {
+	// 使用filepath.Clean清理路径，移除冗余的元素如..和.
+	cleanPath := filepath.Clean(path)
+
+	// 移除路径开头的分隔符，防止绝对路径
+	cleanPath = strings.TrimPrefix(cleanPath, string(filepath.Separator))
+
+	// 移除路径开头的../等相对路径元素
+	for strings.HasPrefix(cleanPath, ".."+string(filepath.Separator)) ||
+		strings.HasPrefix(cleanPath, "..") {
+		if strings.HasPrefix(cleanPath, ".."+string(filepath.Separator)) {
+			cleanPath = strings.TrimPrefix(cleanPath, ".."+string(filepath.Separator))
+		} else if strings.HasPrefix(cleanPath, "..") {
+			cleanPath = strings.TrimPrefix(cleanPath, "..")
+		}
+	}
+
+	return cleanPath
+}
+
+// ReadFile 读取指定路径的文件内容
+// 参数:
+// fullPath: 文件路径
+// 返回值:
+// []byte: 文件内容
+// error: 错误信息
+func ReadFile(fullPath string) ([]byte, error) {
+	// 检查文件是否存在
+	if !FileExists(fullPath) {
+		return nil, fmt.Errorf("file does not exist")
+	}
+	// 读取文件内容
+	content, err := os.ReadFile(fullPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read file")
+	}
+
+	return content, nil
 }

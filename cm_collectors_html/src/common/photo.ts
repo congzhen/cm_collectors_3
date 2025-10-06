@@ -1,5 +1,6 @@
 import type { I_performer } from "@/dataType/performer.dataType";
 import type { I_resource, I_resource_base } from "@/dataType/resource.dataType";
+import { appStoreData } from "@/storeData/app.storeData";
 
 export const getResourceCoverPoster = (resource: I_resource | I_resource_base | undefined) => {
   if (!resource || !resource.coverPoster || resource.coverPoster == '') return '';
@@ -10,7 +11,17 @@ export const getPerformerPhoto = (performer: I_performer | undefined) => {
   if (!performer || !performer.photo || performer.photo == '') return '';
   return `/api/performerFace/${performer.performerBases_id}/${performer.photo}`
 }
-
+export const getSamplePhoto = (resource: I_resource | I_resource_base | undefined, imagePath: string) => {
+  if (!resource || !resource.coverPoster || resource.coverPoster == '') return '';
+  const store = {
+    appStoreData: appStoreData(),
+  }
+  if (store.appStoreData.currentConfigApp.sampleFolder != '') {
+    imagePath = '/' + store.appStoreData.currentConfigApp.sampleFolder + '/' + imagePath;
+  }
+  const encodedImagePath = encodeURIComponent(imagePath);
+  return `/api/resource/sampleData/${resource.id}?q=${encodedImagePath}`
+}
 
 export const getFileImageByDramaSeriesId = (dramaSeriesId: string, filesName: string, thumbWidth: number = 0, thumbLevel: number = 0) => {
   if (dramaSeriesId == '' || filesName == '') return '';

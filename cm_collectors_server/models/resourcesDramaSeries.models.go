@@ -30,6 +30,12 @@ type DramaSeriesWithResource struct {
 	Title       string `json:"title"`
 }
 
+func (ResourcesDramaSeries) DataListByResourcesID(db *gorm.DB, resourcesID string) (*[]ResourcesDramaSeries, error) {
+	var list []ResourcesDramaSeries
+	err := db.Where("resources_id = ?", resourcesID).Order("sort asc").Find(&list).Error
+	return &list, err
+}
+
 func (t ResourcesDramaSeries) SearchPath(db *gorm.DB, filesBasesIds []string, searchPath string) (*[]DramaSeriesWithResource, error) {
 	var dataList []DramaSeriesWithResource
 	db = db.Table(fmt.Sprintf("%s AS t", t.TableName())).

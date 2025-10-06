@@ -4,6 +4,7 @@ import (
 	"cm_collectors_server/datatype"
 	"cm_collectors_server/processors"
 	"cm_collectors_server/response"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -33,6 +34,46 @@ func (Resource) DataList(c *gin.Context) {
 		Total:    total,
 	}
 	response.OkWithData(resDataList, c)
+}
+
+func (Resource) SampleImages(c *gin.Context) {
+	resourceId := c.Param("resourceId")
+	imagePath := c.Query("q")
+	dataList, err := processors.Resources{}.SampleImages(resourceId, imagePath)
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(dataList, c)
+}
+func (Resource) SampleImageData(c *gin.Context) {
+	resourceId := c.Param("resourceId")
+	imagePath := c.Query("q")
+	if imagePath == "" {
+		response.FailWithCode(5, c)
+		return
+	}
+	ext, imageBytes, err := processors.Resources{}.SampleImageBytes(resourceId, imagePath)
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	// 设置正确的Content-Type头
+	contentType := "application/octet-stream"
+	switch ext {
+	case ".jpg", ".jpeg":
+		contentType = "image/jpeg"
+	case ".png":
+		contentType = "image/png"
+	case ".gif":
+		contentType = "image/gif"
+	case ".webp":
+		contentType = "image/webp"
+	case ".bmp":
+		contentType = "image/bmp"
+	case ".svg":
+		contentType = "image/svg+xml"
+	}
+	c.Header("Content-Type", contentType)
+	c.Data(http.StatusOK, contentType, imageBytes)
 }
 
 func (Resource) CreateResource(c *gin.Context) {

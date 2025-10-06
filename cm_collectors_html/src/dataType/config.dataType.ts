@@ -75,6 +75,10 @@ export interface I_config_app {
   openResModeMovies_SoftType: E_resourceOpenMode_SoftType; // 软件内置播放器类型
   openResModeComic: E_resourceOpenMode;  // 漫画 - 打开方式
   openResModeAtlas: E_resourceOpenMode; // 图集 - 打开方式
+
+  sampleStatus: boolean;//显示剧照
+  sampleShowMax: number; //剧照最大显示数量
+  sampleFolder: string; //剧照文件夹
 }
 
 export const defualtConfigApp: I_config_app = {
@@ -146,6 +150,10 @@ export const defualtConfigApp: I_config_app = {
   openResModeMovies_SoftType: E_resourceOpenMode_SoftType.Windows,
   openResModeComic: E_resourceOpenMode.Soft,
   openResModeAtlas: E_resourceOpenMode.Soft,
+
+  sampleStatus: true,
+  sampleShowMax: 100,
+  sampleFolder: '',
 }
 
 export interface I_coverPosterData {

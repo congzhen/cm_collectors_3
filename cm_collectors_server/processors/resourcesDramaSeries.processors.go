@@ -12,6 +12,22 @@ import (
 
 type ResourcesDramaSeries struct{}
 
+func (ResourcesDramaSeries) DataListByResourcesID(resourcesID string) (*[]models.ResourcesDramaSeries, error) {
+	return models.ResourcesDramaSeries{}.DataListByResourcesID(core.DBS(), resourcesID)
+}
+func (t ResourcesDramaSeries) FirstInfoByResourcesID(resourcesID string) (*models.ResourcesDramaSeries, error) {
+	dramaSeriesSlc, err := t.DataListByResourcesID(resourcesID)
+	if err != nil {
+		return nil, err
+	}
+	if len(*dramaSeriesSlc) == 0 {
+		return nil, errorMessage.Err_Resources_Play_DramaSeries_Not_Found
+	}
+	firstDramaSeries := (*dramaSeriesSlc)[0]
+	return &firstDramaSeries, nil
+
+}
+
 func (ResourcesDramaSeries) SearchPath(filesBasesIds []string, searchPath string) (*[]models.DramaSeriesWithResource, error) {
 	return models.ResourcesDramaSeries{}.SearchPath(core.DBS(), filesBasesIds, searchPath)
 }

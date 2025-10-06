@@ -42,6 +42,13 @@
           </div>
         </div>
       </div>
+      <div class="info-block" v-if="store.appStoreData.currentFilesBasesAppConfig.sampleStatus">
+        <el-alert class="tagAlert" title="剧照" type="primary" :closable="false" />
+        <div class="sample-list">
+          <detailsSampleImages :resource="props.resource"></detailsSampleImages>
+        </div>
+      </div>
+
       <div class="info-block">
         <el-alert class="tagAlert" title="标签" type="warning" :closable="false" />
         <div class="tag-list">
@@ -66,6 +73,7 @@ import { appStoreData } from '@/storeData/app.storeData';
 import { playResource } from '@/common/play';
 import resourceDramaSeriesList from '@/components/resource/resourceDramaSeriesList.vue'
 import performerPopoverBlock from '@/components/performer/performerPopoverBlock.vue'
+import detailsSampleImages from './detailsSampleImages.vue';
 import { AppLang } from '@/language/app.lang'
 const appLang = AppLang()
 
@@ -148,6 +156,10 @@ const playResourceDramaSeriesHandle = (ds: I_resourceDramaSeries) => {
       width: 32%;
       overflow: hidden;
     }
+  }
+
+  .sample-list {
+    padding-top: 4px;
   }
 
   .tag-list {
