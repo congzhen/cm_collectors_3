@@ -31,7 +31,7 @@ export default {
     issueNumbers: ['id', 'num'],
     issuingDates: ['releasedate', 'premiered', 'year'],
     abstracts: ['outline', 'plot', 'originalplot'],
-    tags: ['tag', 'genre'],
+    tags: ['tag', 'tags', 'genre', 'genres'],
     tagAutoCreate: true,
     performerNames: ['actor.name', 'actor.title', 'actors'],
     performerMatchAliasName: true,
