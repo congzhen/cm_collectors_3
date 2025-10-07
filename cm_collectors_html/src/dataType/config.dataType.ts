@@ -238,6 +238,7 @@ export interface I_config_scraperData {
   scanDiskPaths: string[]; // 扫描磁盘路径
   videoSuffixName: string[]; // 视频文件后缀名
   scraperConfigs: string[];// 刮削器配置
+  concurrency: number; // 并发数
   retryCount: number;   //重试次数
   //已存在nfo文件时跳过
   skipIfNfoExists: boolean;
@@ -254,6 +255,7 @@ export const defualtConfigScraperData: I_config_scraperData = {
   scanDiskPaths: [],
   videoSuffixName: dataset.videoSuffixName,
   scraperConfigs: [],
+  concurrency: 3,
   retryCount: 3,
   skipIfNfoExists: true,
   saveNfo: true,

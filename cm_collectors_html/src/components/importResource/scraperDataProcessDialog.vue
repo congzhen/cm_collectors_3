@@ -8,7 +8,7 @@
             <el-icon v-if="scope.row.status" size="14">
               <Select />
             </el-icon>
-            <el-icon v-else-if="waiting">
+            <el-icon v-else-if="scope.row.waiting">
               <Paperclip />
             </el-icon>
             <el-icon v-else-if="scope.row.msg != ''">
@@ -41,6 +41,7 @@ import { appStoreData } from '@/storeData/app.storeData';
 interface I_pathList {
   path: string;
   status: boolean;
+  waiting: boolean;
   msg: string;
 }
 const store = {
@@ -62,6 +63,7 @@ const init = (_pathList: string[], _config: I_config_scraperData) => {
     pathList.value.push({
       path,
       status: false,
+      waiting: true,
       msg: '',
     });
   });
@@ -70,16 +72,50 @@ const init = (_pathList: string[], _config: I_config_scraperData) => {
 const submitHandle = debounceNow(async () => {
   dialogCommonRef.value?.disabledSubmit(true);
   waiting.value = false;
-  for (let i = 0; i < pathList.value.length; i++) {
-    if (!workStatus) {
+
+  // 使用信号量控制并发数
+  const concurrency = config.concurrency || 3; // 默认并发数为3
+  const total = pathList.value.length;
+  let index = 0;
+
+  const processItem = async () => {
+    const currentIndex = index++;
+    if (currentIndex >= total || !workStatus) {
       return;
     }
-    const result = await scraperDataServer.scraperDataProcess(store.appStoreData.currentFilesBases.id, pathList.value[i].path, config);
-    if (!result.status) {
-      pathList.value[i].msg = result.msg;
+
+    const item = pathList.value[currentIndex];
+    item.waiting = false;
+
+    // 添加随机延迟（0-2秒）
+    const delay = Math.random() * 2000;
+    await new Promise(resolve => setTimeout(resolve, delay));
+
+    try {
+      const result = await scraperDataServer.scraperDataProcess(
+        store.appStoreData.currentFilesBases.id,
+        item.path,
+        config
+      );
+
+      if (!result.status) {
+        item.msg = result.msg;
+      }
+      item.status = result.status;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      item.msg = error.message || '请求失败';
+      item.status = false;
     }
-    pathList.value[i].status = result.status;
-  }
+
+    // 继续处理下一个
+    await processItem();
+  };
+
+  // 启动并发任务
+  const promises = Array(Math.min(concurrency, total)).fill(null).map(() => processItem());
+  await Promise.all(promises);
+
   success();
 })
 const closeHandle = () => {

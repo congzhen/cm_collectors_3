@@ -18,6 +18,11 @@
               <datePicker v-model="formData.lastScraperUpdateTime" placeholder="最后更新时间" width="140px" />
             </div>
             <div class="form-item">
+              <el-select v-model="formData.concurrency" style="width: 60px">
+                <el-option v-for="item in [1, 2, 3, 4, 5, 6, 7, 8, 9]" :key="item" :label="item" :value="item" />
+              </el-select>
+            </div>
+            <div class="form-item">
               <el-button type="success" icon="Search" plain @click="searchScraperDataHandle">检索数据</el-button>
             </div>
           </div>
@@ -78,7 +83,8 @@ const dialogCommonRef = ref<InstanceType<typeof dialogCommon>>();
 const formData = ref({
   scraperConfig: '',
   operate: 'update',
-  lastScraperUpdateTime: ''
+  lastScraperUpdateTime: '',
+  concurrency: 3,
 })
 const loading = ref(false);
 const dataList = ref<I_scraperPerformer[]>([]);
@@ -123,19 +129,56 @@ const submitHandle = debounceNow(async () => {
     return
   }
   dialogCommonRef.value?.disabledSubmit(true);
-  for (let i = 0; i < dataList.value.length; i++) {
-    if (!workStatus) {
+
+  // 使用信号量控制并发数
+  const concurrency = formData.value.concurrency;
+  const total = dataList.value.length;
+  let index = 0;
+
+  const processItem = async () => {
+    const currentIndex = index++;
+    if (currentIndex >= total || !workStatus) {
       return;
     }
-    dataList.value[i].waiting = false;
-    const result = await scraperDataServer.scraperPerformerDataProcess(performerBasesId, dataList.value[i].info.id, dataList.value[i].info.name, formData.value.scraperConfig, formData.value.operate);
-    if (!result.status) {
-      dataList.value[i].msg = result.msg;
+
+    const item = dataList.value[currentIndex];
+    item.waiting = false;
+
+    // 添加随机延迟（0-2秒）
+    const delay = Math.random() * 2000;
+    await new Promise(resolve => setTimeout(resolve, delay));
+
+    try {
+      const result = await scraperDataServer.scraperPerformerDataProcess(
+        performerBasesId,
+        item.info.id,
+        item.info.name,
+        formData.value.scraperConfig,
+        formData.value.operate
+      );
+
+      if (!result.status) {
+        item.msg = result.msg;
+      }
+      item.status = result.status;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      item.msg = error.message || '请求失败';
+      item.status = false;
     }
-    dataList.value[i].status = result.status;
-  }
+
+    // 继续处理下一个
+    await processItem();
+  };
+
+  // 启动并发任务
+  const promises = Array(Math.min(concurrency, total)).fill(null).map(() => processItem());
+  await Promise.all(promises);
+
   success();
 })
+
+
 const success = () => {
   ElMessageBox.alert('刮削完成', {
     confirmButtonText: 'OK',

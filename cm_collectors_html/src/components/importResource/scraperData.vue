@@ -25,6 +25,9 @@
         <el-form-item label="应用刮削器配置文件">
           <selectScraperConfig v-model="formData.scraperConfigs" multiple />
         </el-form-item>
+        <el-form-item label="并发处理数量">
+          <el-input-number v-model="formData.concurrency" :min="1" :max="10" />
+        </el-form-item>
         <el-form-item label="重试次数">
           <el-input-number v-model="formData.retryCount" :min="0" :max="10" />
         </el-form-item>
