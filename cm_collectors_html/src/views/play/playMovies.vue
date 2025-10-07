@@ -31,6 +31,14 @@
               </performerDetails>
             </div>
           </div>
+
+          <div v-if="store.appStoreData.currentFilesBasesAppConfig.sampleStatus">
+            <el-alert class="tagAlert" title="剧照" type="warning" :closable="false" />
+          </div>
+          <div v-if="store.appStoreData.currentFilesBasesAppConfig.sampleStatus">
+            <detailsSampleImages :resource="resourceInfo" :columns="8"></detailsSampleImages>
+          </div>
+
           <el-alert class="tagAlert" title="标签" type="warning" :closable="false" />
           <div class="tag-list">
             <el-tag type="info" effect="plain" size="large" v-for="item, key in resourceInfo.tags" :key="key">
@@ -64,6 +72,7 @@ import HeaderView from '../HeaderView.vue'
 import videoPlay from "@/components/play/videoPlay.vue";
 import resourceDramaSeriesList from '@/components/resource/resourceDramaSeriesList.vue'
 import performerDetails from '@/components/performer/performerDetails.vue'
+import detailsSampleImages from '@/components/details/detailsSampleImages.vue'
 import { E_headerMode } from '@/dataType/app.dataType'
 import type { I_resource, I_resourceDramaSeries } from '@/dataType/resource.dataType';
 import { resourceServer } from '@/server/resource.server';

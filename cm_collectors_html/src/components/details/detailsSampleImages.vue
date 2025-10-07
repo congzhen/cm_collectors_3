@@ -2,8 +2,7 @@
   <div class="details-sample-images" v-if="props.resource && sampleImagesUrl.length > 0">
     <div class="images-container" :style="{ gridTemplateColumns: `repeat(${props.columns || 3}, minmax(0, 1fr))` }">
       <div v-for="(image, index) in sampleImagesUrls_C" :key="index" class="image-item">
-        <el-image :src="image" fit="cover" class="sample-image" :preview-src-list="sampleImagesUrls_C"
-          :initial-index="index" hide-on-click-modal preview-teleported>
+        <el-image :src="image" fit="cover" class="sample-image" @click="openImageViewer(index)">
           <template #placeholder>
             <div class="image-placeholder">
               <el-icon>
@@ -21,7 +20,9 @@
         </el-image>
       </div>
     </div>
+    <imageViewer ref="imageViewerRef" :imageList="sampleImagesUrls_C"></imageViewer>
   </div>
+
 </template>
 
 <script setup lang="ts">
@@ -32,6 +33,7 @@ import { ref, onMounted, computed, type PropType, watch } from 'vue'
 import { ElImage, ElIcon } from 'element-plus'
 import { Picture } from '@element-plus/icons-vue'
 import { appStoreData } from '@/storeData/app.storeData';
+import imageViewer from '@/components/play/imageViewer.vue';
 const store = {
   appStoreData: appStoreData(),
 }
@@ -50,6 +52,7 @@ watch(() => props.resource, () => {
   init();
 }, { deep: true })
 
+const imageViewerRef = ref<InstanceType<typeof imageViewer>>();
 const sampleImagesUrl = ref<string[]>([])
 
 //限制剧照最大显示数量
@@ -61,6 +64,7 @@ const sampleImagesUrls_C = computed(() => {
 const init = async () => {
   sampleImagesUrl.value = [];
   await getSampleImages();
+  console.log(props.resource?.id);
 }
 
 const getSampleImages = async () => {
@@ -75,7 +79,9 @@ const getSampleImages = async () => {
     });
   }
 }
-
+const openImageViewer = (index: number) => {
+  imageViewerRef.value?.openImageViewer(index);
+}
 onMounted(async () => {
   await init();
 })

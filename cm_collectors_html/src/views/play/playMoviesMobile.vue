@@ -62,6 +62,14 @@
       </div>
     </div>
 
+    <!-- 剧照 -->
+    <div class="tag-section" v-if="resourceInfo && store.appStoreData.currentFilesBasesAppConfig.sampleStatus">
+      <div class="section-title">剧照</div>
+      <div>
+        <detailsSampleImages class="sample-list" :resource="resourceInfo" :columns="3"></detailsSampleImages>
+      </div>
+    </div>
+
     <!-- 标签 -->
     <div class="tag-section" v-if="resourceInfo && resourceInfo.tags.length > 0">
       <div class="section-title">标签</div>
@@ -85,6 +93,7 @@ import { ref, onMounted, nextTick } from "vue";
 import { useRouter } from 'vue-router';
 import videoPlay from "@/components/play/videoPlay.vue";
 import type { I_resource, I_resourceDramaSeries } from '@/dataType/resource.dataType';
+import detailsSampleImages from '@/components/details/detailsSampleImages.vue'
 import { resourceServer } from '@/server/resource.server';
 import { ElMessage } from 'element-plus';
 import performerPhoto from "@/components/performer/performerPhoto.vue";

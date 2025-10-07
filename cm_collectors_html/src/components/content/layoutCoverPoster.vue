@@ -64,7 +64,9 @@ defineExpose({ change });
 }
 
 .mobile-layout li {
+  /*
   aspect-ratio: 158 / 214;
+  */
 }
 
 .mobile-layout li :deep(.content-style1) {
