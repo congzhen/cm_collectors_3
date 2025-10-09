@@ -9,7 +9,9 @@ import (
 // 支持的编解码器列表
 var (
 	CT_SupportedVideoCodecs = []string{"h264", "vp8", "vp9", "av1", "hevc"}
-	CT_SupportedAudioCodecs = []string{"aac", "mp3", "vorbis", "opus", "pcm_s16le", "pcm_s24le"}
+	// 特殊检测出的格式
+	CT_SupportedVideoCodecsTs = []string{"png", "mjpeg", "tiff", "ffv1", "prores", "dnxhd", "gif", "rawvideo"}
+	CT_SupportedAudioCodecs   = []string{"aac", "mp3", "vorbis", "opus", "pcm_s16le", "pcm_s24le"}
 )
 
 type VideoInfo struct {
@@ -89,7 +91,7 @@ func (v VideoInfo) IsWebCompatible(formatInfo VideoFormatInfo) bool {
 			fmt.Println("######################### 视频编码：", stream.CodecName)
 			// 支持的视频编解码器包括 H.264 (所有profile), VP8, VP9, AV1, HEVC/H.265
 			// 注意: HEVC支持有限，主要在Safari和Edge中
-			if !slices.Contains(v.GetSupportedVideoCodecs(), stream.CodecName) {
+			if !slices.Contains(v.GetSupportedVideoCodecs(), stream.CodecName) && !slices.Contains(CT_SupportedVideoCodecsTs, stream.CodecName) {
 				webCompatible = false
 			}
 		}
