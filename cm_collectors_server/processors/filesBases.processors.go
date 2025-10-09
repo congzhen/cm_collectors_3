@@ -38,7 +38,32 @@ func (FilesBases) GetMainPerformerBasesId(filesBasesID string) (string, error) {
 	}
 	return mainID, nil
 }
-
+func (FilesBases) SetConfigById(id, config, configType string) error {
+	filesBasesSettingModels := models.FilesBasesSetting{
+		FilesBasesID: id,
+	}
+	updateFields := []string{}
+	switch configType {
+	case "filesBases":
+		filesBasesSettingModels.ConfigJsonData = config
+		updateFields = append(updateFields, "config_json_data")
+	case "importScanDisk":
+		filesBasesSettingModels.ScanDiskJsonData = config
+		updateFields = append(updateFields, "scan_disk_json_data")
+	case "importNfo":
+		filesBasesSettingModels.NfoJsonData = config
+		updateFields = append(updateFields, "nfo_json_data")
+	case "importSimple":
+		filesBasesSettingModels.SimpleJsonData = config
+		updateFields = append(updateFields, "simple_json_data")
+	case "scraper":
+		filesBasesSettingModels.ScraperJsonData = config
+		updateFields = append(updateFields, "scraper_json_data")
+	default:
+		return nil
+	}
+	return models.FilesBasesSetting{}.Update(core.DBS(), id, &filesBasesSettingModels, updateFields)
+}
 func (FilesBases) ConfigById(id, configType string) (string, error) {
 	filesBasesSettingInfo, err := models.FilesBasesSetting{}.InfoByFilesBasesID(core.DBS(), id)
 	if err != nil {

@@ -95,6 +95,12 @@ type ReqParam_FielsBases struct {
 	Status bool   `json:"status"`
 }
 
+// 请求参数 - 保存配置
+type ReqParam_FilesBasesSetConfig struct {
+	ID     string `json:"id"`
+	Config string `json:"config"`
+}
+
 // 请求参数 - 获取演员列表
 type ReqParam_PerformersList struct {
 	PerformerBasesIds []string `json:"performerBasesIds"`

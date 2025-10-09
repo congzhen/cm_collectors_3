@@ -55,6 +55,7 @@ const submitHandle = async () => {
     } else {
       ElMessage.error(result.msg);
     }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     ElMessage.error('提交失败，请稍后再试');
   } finally {

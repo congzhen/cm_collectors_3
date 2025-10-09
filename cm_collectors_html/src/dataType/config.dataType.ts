@@ -25,6 +25,7 @@ export interface I_config_app {
   coverPosterWidthStatus: boolean; // 封面宽度状态
   coverPosterHeightBase: number;  // 封面高度
   coverPosterHeightStatus: boolean; // 封面高度状态
+  coverPosterGap: number; // 封面间距
   definition: string[]; // 清晰度
   definitionFontColor: string; // 清晰度颜色
   definitionRgba: string; // 清晰度颜色
@@ -122,6 +123,7 @@ export const defualtConfigApp: I_config_app = {
   coverPosterWidthBase: 316,
   coverPosterHeightStatus: true,
   coverPosterHeightBase: 218,
+  coverPosterGap: 4.8,
   playAtlasImageWidth: 150,
   playAtlasMode: 'waterfall',
   playAtlasPageLimit: 100,

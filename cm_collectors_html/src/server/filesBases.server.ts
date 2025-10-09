@@ -47,5 +47,15 @@ export const filesBasesServer = {
       url: `${routerGroupUri}/filesBases/config/${id}/${configType}`,
       method: 'get',
     });
+  },
+  setFilesBasesConfigById: async (id: string, config: I_config_app) => {
+    return await request<boolean>({
+      url: `${routerGroupUri}/filesBases/setConfig/filesBases`,
+      method: 'put',
+      data: {
+        id,
+        config: JSON.stringify(config),
+      }
+    });
   }
 }

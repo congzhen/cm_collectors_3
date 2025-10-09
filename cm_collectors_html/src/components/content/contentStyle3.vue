@@ -82,6 +82,11 @@ const coverPosterSize_C = computed(() => {
 
   .content-cover {
     position: relative;
+
+    .el-image {
+      width: 100%;
+      height: 100%;
+    }
   }
 
   .play-icon {

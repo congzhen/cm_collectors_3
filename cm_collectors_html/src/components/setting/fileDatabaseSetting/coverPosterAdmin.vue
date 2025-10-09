@@ -47,6 +47,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'update:coverPosterDataDefaultSelect', val: number): void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (e: 'update:coverPosterData', val: Array<any>): void;
 }>()
 const coverPosterBz = (width: number, height: number) => {

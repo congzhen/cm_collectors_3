@@ -68,3 +68,14 @@ func (FilesBases) Config(c *gin.Context) {
 	}
 	response.OkWithData(configStr, c)
 }
+func (FilesBases) SetConfig_FilesBases(c *gin.Context) {
+	var par datatype.ReqParam_FilesBasesSetConfig
+	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {
+		return
+	}
+	err := processors.FilesBases{}.SetConfigById(par.ID, par.Config, "filesBases")
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(true, c)
+}

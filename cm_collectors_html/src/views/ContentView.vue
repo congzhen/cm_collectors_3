@@ -8,13 +8,15 @@
     </div>
     <div class="paging">
       <el-pagination background layout="total, prev, pager, next, jumper" v-model:current-page="currentPage"
-        :total="dataCount" :page-size="pageSize" @change="changePageHandle" />
+        :total="dataCount" :page-size="pageSize" :pager-count="5" size="small" @change="changePageHandle" />
+      <coverAdjuster v-admin></coverAdjuster>
     </div>
   </div>
 </template>
 <script setup lang="ts">
 import contentList from '@/components/content/contentList.vue'
 import contentListAdmin from '@/components/content/contentListAdmin.vue';
+import coverAdjuster from '@/components/setting/fileDatabaseSetting/coverAdjuster.vue';
 import { ref, onMounted, watch } from 'vue'
 import { appStoreData } from '@/storeData/app.storeData';
 import { searchStoreData } from '@/storeData/search.storeData';
@@ -134,9 +136,12 @@ defineExpose({ init, init_DataList, showDataList });
   }
 
   .paging {
-    width: 100%;
+    width: calc(100% - 10px);
     padding-top: 5px;
+    padding-right: 10px;
     flex-shrink: 0;
+    display: flex;
+    justify-content: space-between;
   }
 }
 </style>

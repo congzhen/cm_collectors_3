@@ -259,7 +259,9 @@
       <el-form-item label="高度基数">
         <el-input-number v-model="filesConfig.coverPosterHeightBase" />
       </el-form-item>
-
+      <el-form-item label="间距">
+        <el-input-number v-model="filesConfig.coverPosterGap" :precision="1" :step="0.1" />
+      </el-form-item>
       <!--
       <el-alert title="路径虚拟转换" type="success" :closable="false" />
       <el-form-item label="转换配置">
