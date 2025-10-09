@@ -70,6 +70,12 @@ const coverPosterSize_C = computed(() => {
     .play-icon {
       display: block;
     }
+
+    .content-cover {
+      .el-image {
+        scale: 1.05;
+      }
+    }
   }
 
   .top-bar {

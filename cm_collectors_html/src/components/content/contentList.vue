@@ -8,6 +8,10 @@
       v-else-if="store.appStoreData.currentConfigApp.resourcesShowMode == 'coverPosterBox'" :data-list="props.dataList"
       @select-resources="selectResourcesHandle">
     </layoutCoverPosterBox>
+    <layoutCoverPosterBoxWideSeparate ref="layoutCoverPosterBoxWideSeparateRef"
+      v-else-if="store.appStoreData.currentConfigApp.resourcesShowMode == 'coverPosterBoxWideSeparate'"
+      :data-list="props.dataList" @select-resources="selectResourcesHandle">
+    </layoutCoverPosterBoxWideSeparate>
     <layoutCoverPosterWaterfall ref="layoutCoverPosterWaterfallRef"
       v-else-if="store.appStoreData.currentConfigApp.resourcesShowMode == 'coverPosterWaterfall'"
       :data-list="props.dataList" @select-resources="selectResourcesHandle">
@@ -24,6 +28,7 @@
 <script lang="ts" setup>
 import layoutCoverPoster from './layoutCoverPoster.vue';
 import layoutCoverPosterBox from './layoutCoverPosterBox.vue';
+import layoutCoverPosterBoxWideSeparate from './layoutCoverPosterBoxWideSeparate.vue';
 import layoutCoverPosterWaterfall from './layoutCoverPosterWaterfall.vue';
 import layoutShortVideo from './layoutShortVideo.vue';
 import layoutTable from './layoutTable.vue';
@@ -43,6 +48,7 @@ const emits = defineEmits(['selectResources']);
 
 const layoutCoverPosterRef = ref<typeof layoutCoverPoster>();
 const layoutCoverPosterBoxRef = ref<typeof layoutCoverPosterBox>();
+const layoutCoverPosterBoxWideSeparateRef = ref<typeof layoutCoverPosterBoxWideSeparate>();
 const layoutCoverPosterWaterfallRef = ref<typeof layoutCoverPosterWaterfall>();
 const layoutShortVideoRef = ref<typeof layoutShortVideo>();
 const layoutTableRef = ref<typeof layoutTable>();
@@ -58,6 +64,9 @@ const change = () => {
       break;
     case 'coverPosterBox':
       layoutCoverPosterBoxRef.value?.change();
+      break;
+    case 'coverPosterBoxWideSeparate':
+      layoutCoverPosterBoxWideSeparateRef.value?.change();
       break;
     case 'coverPosterWaterfall':
       layoutCoverPosterWaterfallRef.value?.change();
