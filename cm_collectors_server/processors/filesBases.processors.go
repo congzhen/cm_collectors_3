@@ -5,6 +5,7 @@ import (
 	"cm_collectors_server/datatype"
 	"cm_collectors_server/models"
 	"cm_collectors_server/utils"
+	"encoding/json"
 
 	"gorm.io/gorm"
 )
@@ -44,6 +45,8 @@ func (FilesBases) ConfigById(id, configType string) (string, error) {
 		return "", err
 	}
 	switch configType {
+	case "filesBases":
+		return filesBasesSettingInfo.ConfigJsonData, nil
 	case "importScanDisk":
 		return filesBasesSettingInfo.ScanDiskJsonData, nil
 	case "importNfo":
@@ -55,6 +58,35 @@ func (FilesBases) ConfigById(id, configType string) (string, error) {
 	default:
 		return filesBasesSettingInfo.ConfigJsonData, nil
 	}
+}
+
+// 获取FilesBases配置信息
+func (t FilesBases) Config_FilesBases(id string) (datatype.Config_FilesBases, error) {
+	var config datatype.Config_FilesBases
+	jsonConfig, err := t.ConfigById(id, "filesBases")
+	if err != nil {
+		return config, err
+	}
+
+	err = json.Unmarshal([]byte(jsonConfig), &config)
+	if err != nil {
+		return config, err
+	}
+	return config, nil
+}
+
+// 获取FilesBases配置信息
+func (t FilesBases) Config_ScanDisk(id string) (datatype.Config_ScanDisk, error) {
+	var config datatype.Config_ScanDisk
+	jsonConfig, err := t.ConfigById(id, "importScanDisk")
+	if err != nil {
+		return config, err
+	}
+	err = json.Unmarshal([]byte(jsonConfig), &config)
+	if err != nil {
+		return config, err
+	}
+	return config, nil
 }
 
 // 设置FilesBases信息

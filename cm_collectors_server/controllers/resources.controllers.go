@@ -92,7 +92,7 @@ func (Resource) UpdateResource(c *gin.Context) {
 	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {
 		return
 	}
-	info, err := processors.Resources{}.UpdateResource(&par)
+	info, err := processors.Resources{}.UpdateResource(&par, true)
 	if err := ResError(c, err); err != nil {
 		return
 	}

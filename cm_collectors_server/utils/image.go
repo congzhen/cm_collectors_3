@@ -30,6 +30,58 @@ func ImageToBase64(imagePath string) (string, error) {
 	return ImageBytesToBase64(content)
 }
 
+// Base64ToBytes 将base64编码的字符串转换为字节切片
+// 支持带MIME类型前缀和不带前缀的base64字符串
+// 参数:
+//   - base64Str: base64编码的字符串
+//   - hasMimeType: 是否包含MIME类型前缀 (如 "data:image/jpeg;base64,")
+//
+// 返回值:
+//   - []byte: 解码后的字节数据
+//   - error: 错误信息，如果解码成功则为nil
+func Base64ToBytes(base64Str string, hasMimeType bool) ([]byte, error) {
+	// 定义支持的 MIME 类型前缀
+	validMimeTypes := []string{
+		"data:image/png;base64,",
+		"data:image/jpeg;base64,",
+		"data:image/gif;base64,",
+		"data:image/webp;base64,",
+	}
+
+	var replaced string
+	if hasMimeType {
+		// 移除 MIME 类型前缀
+		replaced = base64Str
+		for _, mimeType := range validMimeTypes {
+			if strings.HasPrefix(base64Str, mimeType) {
+				replaced = strings.Replace(base64Str, mimeType, "", 1)
+				break
+			}
+		}
+
+		// 如果没有找到有效的 MIME 类型前缀且字符串包含前缀，返回错误
+		if replaced == base64Str && strings.Contains(base64Str, ";base64,") {
+			return nil, errors.New("unsupported or invalid MIME type")
+		}
+	} else {
+		// 不包含 MIME 类型前缀的情况
+		replaced = base64Str
+	}
+
+	// 检查字符串是否为空
+	if replaced == "" {
+		return nil, errors.New("empty base64 string")
+	}
+
+	// 解码 Base64 数据
+	data, err := base64.StdEncoding.DecodeString(replaced)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode base64: %v", err)
+	}
+
+	return data, nil
+}
+
 // ImageToBytes 将指定路径的图片文件读取为字节切片
 // 参数:
 //

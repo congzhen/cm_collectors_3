@@ -240,6 +240,7 @@ export interface I_config_scraperData {
   scraperConfigs: string[];// 刮削器配置
   concurrency: number; // 并发数
   retryCount: number;   //重试次数
+  timeout: number; // 超时时间
   //已存在nfo文件时跳过
   skipIfNfoExists: boolean;
   //保存元数据为nfo文件
@@ -257,6 +258,7 @@ export const defualtConfigScraperData: I_config_scraperData = {
   scraperConfigs: [],
   concurrency: 3,
   retryCount: 3,
+  timeout: 30,
   skipIfNfoExists: true,
   saveNfo: true,
   enableDownloadImages: true,

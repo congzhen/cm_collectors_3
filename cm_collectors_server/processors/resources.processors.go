@@ -96,7 +96,7 @@ func (t Resources) CreateResource(par *datatype.ReqParam_Resource) (*models.Reso
 		if err != nil {
 			return err
 		}
-		return t.SetResources(tx, id, par)
+		return t.SetResources(tx, id, par, true)
 	})
 	if err != nil {
 		return nil, err
@@ -104,7 +104,7 @@ func (t Resources) CreateResource(par *datatype.ReqParam_Resource) (*models.Reso
 	return t.Info(id)
 }
 
-func (t Resources) UpdateResource(par *datatype.ReqParam_Resource) (*models.Resources, error) {
+func (t Resources) UpdateResource(par *datatype.ReqParam_Resource, setResourcesDramaSeries bool) (*models.Resources, error) {
 	dbs := core.DBS()
 	var id string
 	err := dbs.Transaction(func(tx *gorm.DB) error {
@@ -113,7 +113,7 @@ func (t Resources) UpdateResource(par *datatype.ReqParam_Resource) (*models.Reso
 		if err != nil {
 			return err
 		}
-		return t.SetResources(tx, id, par)
+		return t.SetResources(tx, id, par, setResourcesDramaSeries)
 	})
 	if err != nil {
 		return nil, err
@@ -162,7 +162,7 @@ func (t Resources) DeleteResource(resourceId string) error {
 	})
 }
 
-func (Resources) SetResources(db *gorm.DB, resourceID string, par *datatype.ReqParam_Resource) error {
+func (Resources) SetResources(db *gorm.DB, resourceID string, par *datatype.ReqParam_Resource, setResourcesDramaSeries bool) error {
 	return db.Transaction(func(tx *gorm.DB) error {
 		err := ResourcesPerformers{}.SetResourcesPerformers(tx, resourceID, par.Performers)
 		if err != nil {
@@ -176,9 +176,11 @@ func (Resources) SetResources(db *gorm.DB, resourceID string, par *datatype.ReqP
 		if err != nil {
 			return err
 		}
-		err = ResourcesDramaSeries{}.SetResourcesDramaSeries(tx, resourceID, par.DramaSeries)
-		if err != nil {
-			return err
+		if setResourcesDramaSeries {
+			err = ResourcesDramaSeries{}.SetResourcesDramaSeries(tx, resourceID, par.DramaSeries)
+			if err != nil {
+				return err
+			}
 		}
 		return nil
 	})
@@ -266,6 +268,9 @@ func (t Resources) Create(tx *gorm.DB, par *datatype.ReqParam_Resource) (string,
 		CreatedAt:         &createdAt,
 		Status:            true,
 	}
+	if par.Resource.LastScraperUpdateTime != nil {
+		resourcesModels.LastScraperUpdateTime = par.Resource.LastScraperUpdateTime
+	}
 	return id, resourcesModels.Create(tx, &resourcesModels)
 }
 
@@ -273,6 +278,10 @@ func (t Resources) Update(db *gorm.DB, par *datatype.ReqParam_Resource) (string,
 	id := par.Resource.ID
 	if id == "" {
 		return "", errorMessage.Err_Resources_ID_Empty
+	}
+	info, err := t.Info(id)
+	if err != nil {
+		return "", err
 	}
 	coverPoster, err := t.SaveResourcePhoto(par)
 	if err != nil {
@@ -313,8 +322,12 @@ func (t Resources) Update(db *gorm.DB, par *datatype.ReqParam_Resource) (string,
 	}
 	if coverPoster != "" {
 		resourcesModels.CoverPoster = coverPoster
-		t.DeleteResourcePhoto(par.Resource.FilesBasesID, par.Resource.CoverPoster)
+		t.DeleteResourcePhoto(info.FilesBasesID, info.CoverPoster)
 		fieldsToUpdate = append(fieldsToUpdate, "coverPoster")
+	}
+	if par.Resource.LastScraperUpdateTime != nil {
+		resourcesModels.LastScraperUpdateTime = par.Resource.LastScraperUpdateTime
+		fieldsToUpdate = append(fieldsToUpdate, "lastScraperUpdateTime")
 	}
 	return id, resourcesModels.Update(db, &resourcesModels, fieldsToUpdate)
 }

@@ -250,6 +250,7 @@ func AutoDatabase(db *gorm.DB) error {
 				err := tx.AutoMigrate(
 					&FilesBasesSetting{},
 					&Performer{},
+					&Resources{},
 				)
 				if err != nil {
 					core.LogErr(err)

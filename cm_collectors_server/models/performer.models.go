@@ -71,6 +71,8 @@ func (Performer) SearchLastScraperUpdateTime(db *gorm.DB, performerBasesId, last
 		if err == nil {
 			db = db.Where("lastScraperUpdateTime < ?", lastDataValue)
 		}
+	} else {
+		db = db.Where("lastScraperUpdateTime is null")
 	}
 	err := db.Order("addTime desc").Find(&list).Error
 	return &list, err

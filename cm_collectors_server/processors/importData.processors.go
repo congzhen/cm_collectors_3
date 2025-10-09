@@ -104,10 +104,107 @@ func (t ImportData) ScanDiskImportData(filesBasesId, filePath string, config dat
 		}
 	}
 
+	coverPosterBase64, coverPosterWidth, coverPosterHeight, err := ImportData{}.GetCoverPosterBase64(filePath, config)
+
+	// 资源标题
+	resourceTitle := t.GetResourceTitle(filePath, config)
+
+	resourceDataParam := datatype.ReqParam_Resource{
+		Resource: datatype.ReqParam_ResourceBase{
+			FilesBasesID:      filesBasesId,
+			Title:             resourceTitle,
+			Mode:              datatype.E_resourceMode_Movies,
+			CoverPosterMode:   config.CoverPosterType,
+			CoverPosterWidth:  coverPosterWidth,
+			CoverPosterHeight: coverPosterHeight,
+		},
+		PhotoBase64: coverPosterBase64,
+		DramaSeries: []datatype.ReqParam_resourceDramaSeries_Base{
+			{Src: filePath},
+		},
+	}
+
+	if config.AutoCreatePoster {
+		resourceDataParam.Resource.Definition = t.VideoDefinition(filePath, config)
+	}
+
+	t.Nfo(filesBasesId, path.Join(fileDir, fileName+".nfo"), config.Nfo, &resourceDataParam)
+
+	// 创建资源
+	_, err = Resources{}.CreateResource(&resourceDataParam)
+	return err
+}
+
+// GetResourceTitle 根据配置的命名模式生成资源标题
+//
+// 该函数根据不同的资源命名模式配置，从文件路径中提取相应的部分作为资源标题。
+// 支持目录名、文件名、目录+文件名以及完整路径四种命名方式。
+//
+// 参数:
+//   - filePath: 视频文件的完整路径
+//   - config: 磁盘扫描配置，包含资源命名模式等配置项
+//
+// 返回值:
+//   - string: 根据配置生成的资源标题
+func (ImportData) GetResourceTitle(filePath string, config datatype.Config_ScanDisk) string {
+	// 资源标题
+	dirName := utils.GetDirNameFromFilePath(filePath)
+	fileName := utils.GetFileNameFromPath(filePath, false)
+	resourceTitle := fileName
+	switch config.ResourceNamingMode {
+	case datatype.ResourceNamingModeDirName:
+		resourceTitle = dirName
+	case datatype.ResourceNamingModeDirFileName:
+		resourceTitle = dirName + fileName
+	case datatype.ResourceNamingModeFullPathName:
+		resourceTitle = filePath
+	}
+	return resourceTitle
+}
+
+// VideoDefinition 获取视频文件的清晰度信息
+//
+// 该函数通过FFmpeg工具获取视频文件的基本信息，包括宽度和高度，
+// 然后根据这些尺寸信息确定视频的清晰度等级并返回
+//
+// 参数:
+//   - filePath: 视频文件的完整路径
+//   - config: 磁盘扫描配置信息
+//
+// 返回值:
+//   - string: 视频清晰度标识符（如"4K"、"1080P"等），如果获取失败则返回空字符串
+
+func (ImportData) VideoDefinition(filePath string, config datatype.Config_ScanDisk) string {
+	videoBasicInfo, err := processorsffmpeg.VideoInfo{}.GetVideoBasicInfo(filePath)
+	if err == nil {
+		videoDefinition := processorsffmpeg.VideoInfo{}.GetVideoDefinition(videoBasicInfo.Width, videoBasicInfo.Height)
+		return string(videoDefinition)
+	}
+	return ""
+}
+
+// GetCoverPosterBase64 获取视频文件的封面海报Base64编码及相关尺寸信息
+//
+// 该函数首先在视频文件所在目录查找匹配的图片文件作为封面海报，
+// 如果未找到且配置允许自动创建，则从视频中提取关键帧作为海报，
+// 然后根据配置对海报进行尺寸调整和裁剪，最后转换为Base64编码返回
+//
+// 参数:
+//   - filePath: 视频文件的完整路径
+//   - config: 磁盘扫描配置，包含封面海报后缀名、匹配规则和处理选项等配置项
+//
+// 返回值:
+//   - string: 封面海报的Base64编码字符串
+//   - int: 封面海报的宽度
+//   - int: 封面海报的高度
+//   - error: 执行过程中可能出现的错误
+func (t ImportData) GetCoverPosterBase64(filePath string, config datatype.Config_ScanDisk) (string, int, int, error) {
+	fileDir := utils.GetDirPathFromFilePath(filePath)
+	fileName := utils.GetFileNameFromPath(filePath, false)
 	// 查找符合后缀名的图片文件
 	imagePaths, err := utils.GetFilesByExtensions([]string{fileDir}, config.CoverPosterSuffixName, false)
 	if err != nil {
-		return err
+		return "", 0, 0, err
 	}
 	// 匹配图片文件
 	coverPosterPath := t.findCoverPoster(imagePaths, fileName, config.CoverPosterMatchName, config.CoverPosterFuzzyMatch, config.CoverPosterUseRandomImageIfNoMatch)
@@ -155,47 +252,7 @@ func (t ImportData) ScanDiskImportData(filesBasesId, filePath string, config dat
 
 	// 转换为Base64
 	coverPosterBase64, _ = utils.ImageBytesToBase64(coverPosterBytes)
-
-	// 资源标题
-	resourceTitle := fileName
-	dirName := utils.GetDirNameFromFilePath(filePath)
-	switch config.ResourceNamingMode {
-	case datatype.ResourceNamingModeDirName:
-		resourceTitle = dirName
-	case datatype.ResourceNamingModeDirFileName:
-		resourceTitle = dirName + fileName
-	case datatype.ResourceNamingModeFullPathName:
-		resourceTitle = filePath
-	}
-
-	resourceDataParam := datatype.ReqParam_Resource{
-		Resource: datatype.ReqParam_ResourceBase{
-			FilesBasesID:      filesBasesId,
-			Title:             resourceTitle,
-			Mode:              datatype.E_resourceMode_Movies,
-			CoverPosterMode:   -1,
-			CoverPosterWidth:  coverPosterWidth,
-			CoverPosterHeight: coverPosterHeight,
-		},
-		PhotoBase64: coverPosterBase64,
-		DramaSeries: []datatype.ReqParam_resourceDramaSeries_Base{
-			{Src: filePath},
-		},
-	}
-
-	if config.AutoCreatePoster {
-		videoBasicInfo, err := processorsffmpeg.VideoInfo{}.GetVideoBasicInfo(filePath)
-		if err == nil {
-			videoDefinition := processorsffmpeg.VideoInfo{}.GetVideoDefinition(videoBasicInfo.Width, videoBasicInfo.Height)
-			resourceDataParam.Resource.Definition = string(videoDefinition)
-		}
-	}
-
-	t.nfo(filesBasesId, path.Join(fileDir, fileName+".nfo"), config.Nfo, &resourceDataParam)
-
-	// 创建资源
-	_, err = Resources{}.CreateResource(&resourceDataParam)
-	return err
+	return coverPosterBase64, coverPosterWidth, coverPosterHeight, err
 }
 
 // findCoverPoster 在给定的图片路径中查找匹配的封面海报
@@ -261,7 +318,20 @@ func (ImportData) findCoverPoster(imagePaths []string, targetFileName string, co
 	return ""
 }
 
-func (ImportData) nfo(filesBasesId, nfoPath string, nfoConfig datatype.Config_ScanDisk_Nfo, data *datatype.ReqParam_Resource) error {
+// Nfo 从NFO文件中解析元数据并应用到资源数据
+//
+// 该函数读取指定路径的NFO文件(XML格式)，解析其中的元数据，
+// 并根据配置将解析的数据应用到资源数据结构中。
+//
+// 参数:
+//   - filesBasesId: 文件库ID
+//   - nfoPath: NFO文件的完整路径
+//   - nfoConfig: NFO配置信息，包含是否启用NFO功能及解析规则
+//   - data: 资源数据指针，用于存储从NFO文件解析出的元数据
+//
+// 返回值:
+//   - error: 执行过程中可能出现的错误
+func (t ImportData) Nfo(filesBasesId, nfoPath string, nfoConfig datatype.Config_ScanDisk_Nfo, data *datatype.ReqParam_Resource) error {
 	if !nfoConfig.NfoStatus {
 		return nil
 	}
@@ -288,8 +358,27 @@ func (ImportData) nfo(filesBasesId, nfoPath string, nfoConfig datatype.Config_Sc
 		return err
 	}
 
-	// 根据Roots配置获取根节点
+	return t.NfoExecData(filesBasesId, nfoPath, rootElement, nfoConfig, data)
+}
+
+// NfoExecData 从NFO配置中提取XML数据并填充到资源数据结构中
+//
+// 该函数根据NFO配置中指定的XPath路径从XML数据中提取各种媒体信息，
+// 包括标题、番号、发行日期、简介、标签、演员等，并将这些信息填充到资源数据结构中。
+//
+// 参数:
+//   - filesBasesId: 文件库ID，用于关联标签和演员信息
+//   - nfoPath: NFO文件的完整路径，用于定位相关资源文件
+//   - rootElement: 已解析的XML根元素数据映射
+//   - nfoConfig: NFO配置信息，包含各类字段的XPath路径配置
+//   - data: 资源数据指针，用于存储从XML中提取的信息
+//
+// 返回值:
+//   - error: 执行过程中可能出现的错误
+func (ImportData) NfoExecData(filesBasesId, nfoPath string, rootElement map[string]interface{}, nfoConfig datatype.Config_ScanDisk_Nfo, data *datatype.ReqParam_Resource) error {
 	var xmlData map[string]interface{}
+
+	// 根据Roots配置获取根节点
 	if len(nfoConfig.Roots) > 0 {
 		// 有指定根节点
 		for _, rootPath := range nfoConfig.Roots {
@@ -367,7 +456,7 @@ func (ImportData) nfo(filesBasesId, nfoPath string, nfoConfig datatype.Config_Sc
 
 	performerPhotoBase64 := ""
 	// 提取演员照片
-	if len(nfoConfig.PerformerThumbs) > 0 {
+	if len(nfoConfig.PerformerThumbs) > 0 && nfoPath != "" {
 		for _, performerThumbPath := range nfoConfig.PerformerThumbs {
 			if values := utils.XML_getXMLValuesByPath(xmlData, performerThumbPath); len(values) > 0 {
 				for _, value := range values {

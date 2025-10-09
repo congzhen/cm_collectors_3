@@ -217,7 +217,21 @@ func (t Performer) Update(par *datatype.ReqParam_PerformerData) (*models.Perform
 	return &performerModels, nil
 }
 
-func (t Performer) UpdateScraperByModels(id string, dataModels models.Performer, perforomerPhotoBase64 string, updateOperate datatype.E_PerformerUpdateOperate) error {
+// UpdateScraperByModels 根据抓取的数据更新演员信息
+//
+// 该函数支持两种更新模式：
+// 1. 更新模式(E_PerformerUpdateOperate_Update)：仅当原字段为空时才更新
+// 2. 覆盖模式(E_PerformerUpdateOperate_Cover)：强制更新所有字段
+//
+// 参数:
+//   - id: 演员ID
+//   - dataModels: 包含新演员数据的模型
+//   - perforomerPhotoBase64: 演员照片的base64编码字符串
+//   - updateOperate: 更新操作类型，决定更新策略
+//
+// 返回值:
+//   - error: 更新过程中发生的错误，如果没有错误则为nil
+func (t Performer) UpdateScraperByModels(id string, dataModels models.Performer, perforomerPhotoBase64 string, updateOperate datatype.E_ScraperOperate) error {
 	dataModels.ID = id
 	info, err := t.InfoByID(id)
 	if err != nil {

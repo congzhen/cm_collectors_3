@@ -6,7 +6,7 @@ general:
     language: zhCn
     notAllowServerOpenFile: false
     videoRateLimit:
-        enabled: true
+        enabled: false
         requestsPerSecond: 5
         burst: 10
 sqlite3:

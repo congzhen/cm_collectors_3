@@ -31,6 +31,9 @@
         <el-form-item label="重试次数">
           <el-input-number v-model="formData.retryCount" :min="0" :max="10" />
         </el-form-item>
+        <el-form-item label="超时时间">
+          <el-input-number v-model="formData.timeout" :min="1" :max="300" />
+        </el-form-item>
         <el-form-item>
           <el-checkbox v-model="formData.skipIfNfoExists" label="已存在nfo文件时跳过" />
           <el-checkbox v-model="formData.saveNfo" label="保存元数据为nfo文件" />

@@ -26,20 +26,21 @@ type ReqParam_Resource struct {
 	DramaSeries []ReqParam_resourceDramaSeries_Base `json:"dramaSeries"`
 }
 type ReqParam_ResourceBase struct {
-	ID                string         `json:"id"`
-	FilesBasesID      string         `json:"filesBases_id" binding:"required"`
-	Mode              E_resourceMode `json:"mode" binding:"required"`
-	Title             string         `json:"title" binding:"required"`
-	IssueNumber       string         `json:"issueNumber"`
-	CoverPoster       string         `json:"coverPoster"`
-	CoverPosterMode   int            `json:"coverPosterMode"`
-	CoverPosterWidth  int            `json:"coverPosterWidth"`
-	CoverPosterHeight int            `json:"coverPosterHeight"`
-	IssuingDate       string         `json:"issuingDate"`
-	Country           string         `json:"country"`
-	Definition        string         `json:"definition"`
-	Stars             int            `json:"stars"`
-	Abstract          string         `json:"abstract"`
+	ID                    string         `json:"id"`
+	FilesBasesID          string         `json:"filesBases_id" binding:"required"`
+	Mode                  E_resourceMode `json:"mode" binding:"required"`
+	Title                 string         `json:"title" binding:"required"`
+	IssueNumber           string         `json:"issueNumber"`
+	CoverPoster           string         `json:"coverPoster"`
+	CoverPosterMode       int            `json:"coverPosterMode"`
+	CoverPosterWidth      int            `json:"coverPosterWidth"`
+	CoverPosterHeight     int            `json:"coverPosterHeight"`
+	IssuingDate           string         `json:"issuingDate"`
+	Country               string         `json:"country"`
+	Definition            string         `json:"definition"`
+	Stars                 int            `json:"stars"`
+	Abstract              string         `json:"abstract"`
+	LastScraperUpdateTime *CustomDate    `json:"lastScraperUpdateTime"`
 }
 type ReqParam_resourceDramaSeries_Base struct {
 	ID  string `json:"id"`
@@ -207,17 +208,32 @@ type ReqParam_SearchScraperPerformer struct {
 	LastScraperUpdateTime string `json:"lastScraperUpdateTime"`
 }
 
-type E_PerformerUpdateOperate string
+type E_ScraperOperate string
 
 const (
-	E_PerformerUpdateOperate_Update E_PerformerUpdateOperate = "update"
-	E_PerformerUpdateOperate_Cover  E_PerformerUpdateOperate = "cover"
+	E_PerformerUpdateOperate_Update E_ScraperOperate = "update"
+	E_PerformerUpdateOperate_Cover  E_ScraperOperate = "cover"
 )
 
 type ReqParam_ScraperPerformerDataProcess struct {
-	PerformerBasesId string                   `json:"performerBases_id"`
-	PerformerId      string                   `json:"performerId"`
-	PerformerName    string                   `json:"performerName"`
-	ScraperConfig    string                   `json:"scraperConfig"`
-	Operate          E_PerformerUpdateOperate `json:"operate" binding:"required,oneof=update cover"`
+	PerformerBasesId string           `json:"performerBases_id"`
+	PerformerId      string           `json:"performerId"`
+	PerformerName    string           `json:"performerName"`
+	ScraperConfig    string           `json:"scraperConfig"`
+	Operate          E_ScraperOperate `json:"operate" binding:"required,oneof=update cover"`
+}
+
+type ReqParam_ScraperOneResourceDataProcess struct {
+	ResourdId      string           `json:"resourdId"`
+	FilesBases_ID  string           `json:"filesBases_id" binding:"required"`
+	ScraperConfig  string           `json:"scraperConfig" binding:"required"`
+	Timeout        int              `json:"timeout"`
+	Operate        E_ScraperOperate `json:"operate" binding:"required,oneof=update cover"`
+	SaveNfo        bool             `json:"saveNfo"`
+	SaveImage      bool             `json:"saveImage"`
+	CutPoster      bool             `json:"cutPoster"`
+	UseExistNfo    bool             `json:"useExistNfo"`
+	Title          string           `json:"title"`
+	IssueNumber    string           `json:"issueNumber"`
+	DramaSeriesSrc string           `json:"dramaSeriesSrc"`
 }

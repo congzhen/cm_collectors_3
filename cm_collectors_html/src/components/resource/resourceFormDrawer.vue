@@ -114,12 +114,14 @@
     <template #footerBtn>
       <div v-if="formData.mode == E_resourceDramaSeriesType.Movies">
         <el-button @click="videoThumbnailPosterHandle">获取视频预览图</el-button>
+        <el-button @click="scraperVideoInfoHandle">刮削视频信息</el-button>
       </div>
     </template>
   </drawerForm>
   <serverFileManagementDialog ref="serverFileManagementDialogRef" @selectedFiles="selectedFilesHandle">
   </serverFileManagementDialog>
   <videoThumbnailPosterDialog ref="videoThumbnailPosterDialogRef" @selectImage="selectThumbnailPosterHandle" />
+  <scraperOneResourceDialog ref="scraperOneResourceDialogRef" @success="success"></scraperOneResourceDialog>
 </template>
 <script lang="ts" setup>
 import { reactive, ref, computed } from 'vue'
@@ -142,11 +144,13 @@ import type { I_sfm_FileEntry } from '@/components/serverFileManagement/com/data
 import { LoadingService } from '@/assets/loading';
 import { resourceServer } from '@/server/resource.server';
 import { getResourceCoverPoster } from '@/common/photo';
+import scraperOneResourceDialog from '../importResource/scraperOneResourceDialog.vue';
 import draggable from 'vuedraggable';
 import { AppLang } from '@/language/app.lang'
 const appLang = AppLang()
 
 import { base64ToFile, getImageDimensions, scaleImage } from '@/assets/image';
+import type { I_scraperOneResource } from '@/dataType/other.dataType';
 const store = {
   appStoreData: appStoreData(),
 }
@@ -158,7 +162,7 @@ const setImageRef = ref<InstanceType<typeof setImage>>();
 const serverFileManagementDialogRef = ref<InstanceType<typeof serverFileManagementDialog>>();
 const videoThumbnailPosterDialogRef = ref<InstanceType<typeof videoThumbnailPosterDialog>>();
 const resourceFormCoverPosterContainerRef = ref<HTMLElement | null>(null);
-
+const scraperOneResourceDialogRef = ref<InstanceType<typeof scraperOneResourceDialog>>();
 
 
 let mode: 'add' | 'edit' = 'add'
@@ -300,8 +304,7 @@ const submitHandle = async () => {
       : resourceServer.update(formData.value, photoBase64, performers.value, directors.value, _tags, dramaSeries.value);
     const result = await apiCall;
     if (result.status) {
-      emits('success', result.data);
-      close();
+      success(result.data)
     } else {
       ElMessage.error(result.msg);
     }
@@ -315,10 +318,23 @@ const submitHandle = async () => {
 
 const videoThumbnailPosterHandle = () => {
   if (dramaSeries.value.length == 0 && dramaSeries.value[0].src != '') {
-    ElMessage.error('请先设置视频次元');
+    ElMessage.error('请先设置一个视频资源');
     return;
   }
   videoThumbnailPosterDialogRef.value?.open(dramaSeries.value[0].src);
+}
+
+const scraperVideoInfoHandle = () => {
+  if (formData.value.title == '' && formData.value.issueNumber == '' && (dramaSeries.value.length == 0 || dramaSeries.value[0].src == '')) {
+    ElMessage.error('请先至少设置标题、版号/番号、视频资源的其中一项');
+    return;
+  }
+  const scraperOneResource: I_scraperOneResource = {
+    title: formData.value.title,
+    issueNumber: formData.value.issueNumber,
+    dramaSeriesSrc: dramaSeries.value.length > 0 && dramaSeries.value[0] ? dramaSeries.value[0].src : ''
+  }
+  scraperOneResourceDialogRef.value?.open(formData.value.id, scraperOneResource);
 }
 
 const selectThumbnailPosterHandle = async (imageBase64: string) => {
@@ -332,6 +348,11 @@ const selectThumbnailPosterHandle = async (imageBase64: string) => {
     height: height
   }
   setImageRef.value?.openCropper(imageFile, '50%', width, height, width, height)
+}
+
+const success = (data: I_resource) => {
+  emits('success', data);
+  close();
 }
 
 const open = (_mode: 'add' | 'edit', res: I_resource | null = null) => {

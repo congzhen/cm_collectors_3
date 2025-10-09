@@ -1,6 +1,7 @@
 import request from "@/assets/request";
 import type { I_config_scraperData } from "@/dataType/config.dataType";
 import type { I_performerBasic } from "@/dataType/performer.dataType";
+import type { I_resource } from "@/dataType/resource.dataType";
 const routerGroupUri = '';
 export const scraperDataServer = {
   configs: async () => {
@@ -50,6 +51,26 @@ export const scraperDataServer = {
         performerName,
         scraperConfig,
         operate,
+      }
+    });
+  },
+  scraperOneResourceDataProcess: async (resourdId: string, filesBases_id: string, scraperConfig: string, timeout: number, operate: string, saveNfo: boolean, saveImage: boolean, cutPoster: boolean, useExistNfo: boolean, title: string, issueNumber: string, dramaSeriesSrc: string) => {
+    return await request<I_resource>({
+      url: `${routerGroupUri}/scraper/scraperOneResourceDataProcess`,
+      method: 'post',
+      data: {
+        resourdId,
+        filesBases_id,
+        scraperConfig,
+        timeout,
+        operate,
+        saveNfo,
+        saveImage,
+        cutPoster,
+        useExistNfo,
+        title,
+        issueNumber,
+        dramaSeriesSrc,
       }
     });
   }
