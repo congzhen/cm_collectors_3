@@ -40,10 +40,12 @@ cm_collectors_server/html/*
 cm_collectors_server/ffmpeg/*
 cm_collectors_server/*.exe*
 cm_collectors_server/scraper/*av*.json
+cm_collectors_server/scraper.log
 /build/*
 
 
 cm_collectors_wails/build/bin
 cm_collectors_wails/node_modules
 cm_collectors_wails/frontend/dist
+
 

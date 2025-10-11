@@ -15,6 +15,7 @@ import (
 
 // ScraperChromeDp 刮削器 - 使用ChromeDP实现的刮削器
 type ScraperChromeDp struct {
+	headless   bool                     // 是否使用无头模式
 	config     *ScraperConfig           // 刮削器配置
 	cache      map[string]*CachedResult // 缓存结果，以ID为键存储已抓取的数据
 	retryDelay time.Duration            // 重试延迟时间
@@ -28,6 +29,7 @@ func (s *ScraperChromeDp) Scrape(ctx context.Context, id string) (*map[string]an
 	// 检查缓存，如果启用缓存且已存在该ID的数据，则直接返回缓存结果
 	if s.config.CacheEnabled {
 		if cachedResult, exists := s.cache[id]; exists {
+			LogInfo("刮削页面:", cachedResult.TargetURL)
 			return cachedResult.Metadata, cachedResult.TargetURL, nil
 		}
 	}
@@ -39,7 +41,7 @@ func (s *ScraperChromeDp) Scrape(ctx context.Context, id string) (*map[string]an
 		if err != nil {
 			return nil, "", fmt.Errorf("%w: %v", ErrSearchScrapingFailed, err)
 		}
-		fmt.Println("从搜索结果中获取的ID:", id)
+		LogInfo("从搜索结果中获取的ID: %s", id)
 	}
 
 	// 按优先级排序站点，优先级数字越小越优先
@@ -60,12 +62,13 @@ func (s *ScraperChromeDp) Scrape(ctx context.Context, id string) (*map[string]an
 					TargetURL: targetURL,
 				}
 			}
+			LogInfo("刮削页面:", targetURL)
 			return metadata, targetURL, nil
 		}
 		// 记录错误但继续尝试下一个站点
-		fmt.Printf("从站点 %s 刮削失败: %v\n", site.Name, err)
+		LogError("从站点 %s 刮削失败: %v", site.Name, err)
 	}
-
+	LogError(ErrNoMetadataFound.Error())
 	return nil, "", ErrNoMetadataFound
 }
 
@@ -75,7 +78,7 @@ func (s *ScraperChromeDp) Scrape(ctx context.Context, id string) (*map[string]an
 func (s *ScraperChromeDp) scrapeSearch(ctx context.Context, searchConfig *SearchConfig, id string) (string, error) {
 	// 创建 Chrome 实例，配置各种参数以模拟真实浏览器
 	allocCtx, cancel := chromedp.NewExecAllocator(context.Background(),
-		chromedp.Flag("headless", true),              // 启用无头模式
+		chromedp.Flag("headless", s.headless),        // 启用无头模式
 		chromedp.Flag("no-sandbox", true),            // 无沙箱模式
 		chromedp.Flag("disable-gpu", true),           // 禁用GPU
 		chromedp.Flag("disable-dev-shm-usage", true), // 禁用/dev/shm使用
@@ -98,7 +101,7 @@ func (s *ScraperChromeDp) scrapeSearch(ctx context.Context, searchConfig *Search
 
 	// 构建目标URL，将{id}替换为实际ID
 	targetURL := strings.Replace(searchConfig.URL, "{id}", id, -1)
-	fmt.Printf("正在访问: %s\n", targetURL)
+	LogInfo("正在访问: %s", targetURL)
 
 	// 页面内容变量，用于存储获取到的HTML
 	var htmlContent string
@@ -117,24 +120,27 @@ func (s *ScraperChromeDp) scrapeSearch(ctx context.Context, searchConfig *Search
 			break
 		}
 		if s.retryCount > 1 {
-			fmt.Printf("第 %d 次尝试失败: %v\n", i+1, err)
+			LogError("第 %d 次尝试失败: %v", i+1, err)
 			time.Sleep(s.retryDelay * time.Second)
 		}
 
 	}
 
 	if err != nil {
+		LogError(err.Error())
 		return id, fmt.Errorf("%w: %v", ErrSearchScrapingFailed, err)
 	}
 
 	// 使用 goquery 解析页面HTML内容
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(htmlContent))
 	if err != nil {
+		LogError(err.Error())
 		return id, fmt.Errorf("%w: %v", ErrSearchScrapingFailed, err)
 	}
 
 	// 根据config中的selectors获取数据
 	if searchConfig.Selectors.Selector == "" {
+		LogError(err.Error())
 		return id, fmt.Errorf("%w: %v", ErrInvalidSelectorConfig, searchConfig)
 	}
 
@@ -150,9 +156,9 @@ func (s *ScraperChromeDp) scrapeSearch(ctx context.Context, searchConfig *Search
 		// 解析JSON数据
 		var jsonData map[string]interface{}
 		if err := json.Unmarshal([]byte(jsonStr), &jsonData); err != nil {
+			LogError(err.Error())
 			return id, fmt.Errorf("JSON解析失败: %v", err)
 		}
-		fmt.Println("--------------", jsonData)
 		// 根据点号分隔的路径获取嵌套值
 		if val, exists := getNestedValue(jsonData, searchConfig.Selectors.JsonSelector); exists {
 			// 将值转换为字符串
@@ -163,7 +169,9 @@ func (s *ScraperChromeDp) scrapeSearch(ctx context.Context, searchConfig *Search
 				value = fmt.Sprintf("%v", val)
 			}
 		} else {
-			return id, fmt.Errorf("在JSON中未找到路径: %s", searchConfig.Selectors.Selector)
+			err := fmt.Errorf("在JSON中未找到路径: %s", searchConfig.Selectors.Selector)
+			LogError(err.Error())
+			return id, err
 		}
 
 	case "attribute":
@@ -207,7 +215,7 @@ func (s *ScraperChromeDp) scrapeSearch(ctx context.Context, searchConfig *Search
 func (s *ScraperChromeDp) scrapeSite(ctx context.Context, site SiteConfig, id string) (*map[string]any, string, error) {
 	// 创建 Chrome 实例，配置各种参数以模拟真实浏览器
 	allocCtx, cancel := chromedp.NewExecAllocator(context.Background(),
-		chromedp.Flag("headless", true),
+		chromedp.Flag("headless", s.headless),
 		chromedp.Flag("no-sandbox", true),
 		chromedp.Flag("disable-gpu", true),
 		chromedp.Flag("disable-dev-shm-usage", true),
@@ -236,7 +244,7 @@ func (s *ScraperChromeDp) scrapeSite(ctx context.Context, site SiteConfig, id st
 
 	// 构建目标URL，将{id}替换为实际ID
 	targetURL := strings.Replace(site.URL, "{id}", id, -1)
-	fmt.Printf("正在访问: %s\n", targetURL)
+	LogInfo("正在访问: %s", targetURL)
 
 	// 页面内容变量，用于存储获取到的HTML
 	var htmlContent string
@@ -255,19 +263,22 @@ func (s *ScraperChromeDp) scrapeSite(ctx context.Context, site SiteConfig, id st
 			break
 		}
 		if s.retryCount > 1 {
-			fmt.Printf("第 %d 次尝试失败: %v\n", i+1, err)
+			err := fmt.Errorf("第 %d 次尝试失败: %v\n", i+1, err)
+			LogError(err.Error())
 			time.Sleep(s.retryDelay * time.Second)
 		}
 
 	}
 
 	if err != nil {
+		LogError(err.Error())
 		return nil, "", fmt.Errorf("%w: %v", ErrMetadataScrapingFailed, err)
 	}
 
 	// 使用 goquery 解析页面HTML内容
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(htmlContent))
 	if err != nil {
+		LogError(err.Error())
 		return nil, "", fmt.Errorf("%w: %v", ErrMetadataScrapingFailed, err)
 	}
 

@@ -14,6 +14,8 @@ import (
 
 // ScraperChromeDp_DownLoad 图片下载器 - 使用ChromeDP下载图片
 type ScraperChromeDp_DownLoad struct {
+	Headless               bool    // 是否使用无头模式
+	VisitHome              bool    // 是否访问主页
 	EnableScrollSimulation bool    // 是否启用滚动模拟，模拟真实用户浏览行为
 	ScrollIntervalFactor   float64 // 滚动间隔系数，控制滚动操作的时间间隔
 }
@@ -25,6 +27,7 @@ func (s ScraperChromeDp_DownLoad) Download_Images_WithChromeDP(ctx context.Conte
 	// 解析图片URL以构建referer，防止防盗链
 	u, err := url.Parse(pageURL)
 	if err != nil {
+		LogError(err.Error())
 		return nil, fmt.Errorf("%w: %v", ErrInvalidImageURL, err)
 	}
 
@@ -34,7 +37,7 @@ func (s ScraperChromeDp_DownLoad) Download_Images_WithChromeDP(ctx context.Conte
 	// 增强浏览器模拟配置，尽可能模拟真实浏览器行为
 	allocCtx, cancel := chromedp.NewExecAllocator(ctx,
 		// 浏览器基础配置
-		chromedp.Flag("headless", true),              // 启用无头模式
+		chromedp.Flag("headless", s.Headless),        // 启用无头模式
 		chromedp.Flag("no-sandbox", true),            // 无沙箱模式
 		chromedp.Flag("disable-gpu", false),          // 启用GPU
 		chromedp.Flag("disable-dev-shm-usage", true), // 禁用/dev/shm使用
@@ -87,65 +90,67 @@ func (s ScraperChromeDp_DownLoad) Download_Images_WithChromeDP(ctx context.Conte
 	for key := range imageMap {
 		result[key] = "" // 初始化所有key的值为空字符串
 	}
+	if s.VisitHome {
+		// 先访问主页，模拟真实用户行为
+		homepageURL := referer
 
-	// 先访问主页，模拟真实用户行为
-	homepageURL := referer
+		// 构建主页操作列表
+		homepageActions := []chromedp.Action{
+			// 启用网络功能
+			network.Enable(),
+			// 访问主页
+			chromedp.Navigate(homepageURL),
+			chromedp.WaitReady("body", chromedp.ByQuery),
+		}
 
-	// 构建主页操作列表
-	homepageActions := []chromedp.Action{
-		// 启用网络功能
-		network.Enable(),
-		// 访问主页
-		chromedp.Navigate(homepageURL),
-		chromedp.WaitReady("body", chromedp.ByQuery),
-	}
+		// 如果启用了滚动模拟，则添加滚动操作
+		if s.EnableScrollSimulation {
+			// 随机等待一段时间后滚动到页面1/3处
+			sleepDuration := time.Duration(float64(rand.Intn(3)+2) * s.ScrollIntervalFactor)
+			homepageActions = append(homepageActions,
+				chromedp.Sleep(sleepDuration*time.Second),
+				chromedp.Evaluate(`window.scrollTo(0, document.body.scrollHeight/3);`, nil),
+			)
 
-	// 如果启用了滚动模拟，则添加滚动操作
-	if s.EnableScrollSimulation {
-		// 随机等待一段时间后滚动到页面1/3处
-		sleepDuration := time.Duration(float64(rand.Intn(3)+2) * s.ScrollIntervalFactor)
-		homepageActions = append(homepageActions,
-			chromedp.Sleep(sleepDuration*time.Second),
-			chromedp.Evaluate(`window.scrollTo(0, document.body.scrollHeight/3);`, nil),
-		)
+			// 随机等待一段时间后滚动到页面2/3处
+			sleepDuration = time.Duration(float64(rand.Intn(2)+1) * s.ScrollIntervalFactor)
+			homepageActions = append(homepageActions,
+				chromedp.Sleep(sleepDuration*time.Second),
+				chromedp.Evaluate(`window.scrollTo(0, document.body.scrollHeight*2/3);`, nil),
+			)
 
-		// 随机等待一段时间后滚动到页面2/3处
-		sleepDuration = time.Duration(float64(rand.Intn(2)+1) * s.ScrollIntervalFactor)
-		homepageActions = append(homepageActions,
-			chromedp.Sleep(sleepDuration*time.Second),
-			chromedp.Evaluate(`window.scrollTo(0, document.body.scrollHeight*2/3);`, nil),
-		)
+			// 随机等待一段时间后滚动到页面底部
+			sleepDuration = time.Duration(float64(rand.Intn(2)+1) * s.ScrollIntervalFactor)
+			homepageActions = append(homepageActions,
+				chromedp.Sleep(sleepDuration*time.Second),
+				chromedp.Evaluate(`window.scrollTo(0, document.body.scrollHeight);`, nil),
+			)
 
-		// 随机等待一段时间后滚动到页面底部
-		sleepDuration = time.Duration(float64(rand.Intn(2)+1) * s.ScrollIntervalFactor)
-		homepageActions = append(homepageActions,
-			chromedp.Sleep(sleepDuration*time.Second),
-			chromedp.Evaluate(`window.scrollTo(0, document.body.scrollHeight);`, nil),
-		)
+			// 随机等待一段时间后滚动到页面顶部
+			sleepDuration = time.Duration(float64(rand.Intn(2)+1) * s.ScrollIntervalFactor)
+			homepageActions = append(homepageActions,
+				chromedp.Sleep(sleepDuration*time.Second),
+				chromedp.Evaluate(`window.scrollTo(0, 0);`, nil),
+			)
 
-		// 随机等待一段时间后滚动到页面顶部
-		sleepDuration = time.Duration(float64(rand.Intn(2)+1) * s.ScrollIntervalFactor)
-		homepageActions = append(homepageActions,
-			chromedp.Sleep(sleepDuration*time.Second),
-			chromedp.Evaluate(`window.scrollTo(0, 0);`, nil),
-		)
+			// 最后随机等待一段时间
+			sleepDuration = time.Duration(float64(rand.Intn(2)+1) * s.ScrollIntervalFactor)
+			homepageActions = append(homepageActions,
+				chromedp.Sleep(sleepDuration*time.Second),
+			)
+		} else {
+			// 如果未启用滚动模拟，至少添加基本的等待时间
+			homepageActions = append(homepageActions,
+				chromedp.Sleep(time.Duration(rand.Intn(3)+2)*time.Second),
+			)
+		}
 
-		// 最后随机等待一段时间
-		sleepDuration = time.Duration(float64(rand.Intn(2)+1) * s.ScrollIntervalFactor)
-		homepageActions = append(homepageActions,
-			chromedp.Sleep(sleepDuration*time.Second),
-		)
-	} else {
-		// 如果未启用滚动模拟，至少添加基本的等待时间
-		homepageActions = append(homepageActions,
-			chromedp.Sleep(time.Duration(rand.Intn(3)+2)*time.Second),
-		)
-	}
-
-	// 执行主页访问操作
-	err = chromedp.Run(chromeCtx, homepageActions...)
-	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrHomepageAccessFailed, err)
+		// 执行主页访问操作
+		err = chromedp.Run(chromeCtx, homepageActions...)
+		if err != nil {
+			LogError(err.Error())
+			return nil, fmt.Errorf("%w: %v", ErrHomepageAccessFailed, err)
+		}
 	}
 
 	// 构建imageMap的JSON字符串表示，用于在浏览器中创建图片元素
@@ -179,14 +184,8 @@ func (s ScraperChromeDp_DownLoad) Download_Images_WithChromeDP(ctx context.Conte
 
 	// 构建图片页面操作列表
 	pageActions := []chromedp.Action{
-		// 设置referer头，防止防盗链
-		chromedp.ActionFunc(func(ctx context.Context) error {
-			headers := map[string]interface{}{
-				"Referer": referer,
-				"Accept":  "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
-			}
-			return network.SetExtraHTTPHeaders(headers).Do(ctx)
-		}),
+		// 启用网络功能
+		network.Enable(),
 		// 导航到图片页面URL
 		chromedp.Navigate(pageURL),
 		chromedp.WaitReady("body", chromedp.ByQuery),
@@ -251,6 +250,7 @@ func (s ScraperChromeDp_DownLoad) Download_Images_WithChromeDP(ctx context.Conte
 	// 访问图片页面URL并执行所有操作
 	err = chromedp.Run(chromeCtx, pageActions...)
 	if err != nil {
+		LogError(err.Error())
 		return nil, fmt.Errorf("%w: %v", ErrImagePageAccessFailed, err)
 	}
 
@@ -303,5 +303,6 @@ func (s ScraperChromeDp_DownLoad) Download_Images_WithChromeDP(ctx context.Conte
 		fmt.Println("查看完毕后，请在控制台按回车键继续...")
 		fmt.Scanln() // 等待用户按键
 	*/
+	LogInfo("图片数量: %d", len(result))
 	return result, nil
 }

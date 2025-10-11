@@ -42,6 +42,13 @@ func getDefaultConfig() *config.Config {
 			LogLevel:            "Error",
 			UpdateSoftConfig:    "https://objectstorageapi.ap-southeast-1.clawcloudrun.com/vj5i0ntw-cm-collectors-3/updateConfig/updateSoftConfig.json",
 		},
+		Scraper: config.Scraper{
+			Headless:  true,
+			LogPath:   "./scraper.log",
+			LogStatus: true,
+			VisitHome: false,
+			Timeout:   30,
+		},
 		Play: config.Play{
 			PlayVideoFormats: []string{"h264", "vp8", "vp9", "av1", "hevc"},
 			PlayAudioFormats: []string{"aac", "opus", "mp3", "vorbis", "pcm_s16le", "pcm_s24le"},

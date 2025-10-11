@@ -103,7 +103,9 @@ func (t Scraper) ScraperDataProcess(filesBasesId, filePath string, config dataty
 				continue
 			}
 			// 创建刮削器
-			scraperSL := cmscraper.NewScraper(scraperConfig, time.Duration(config.Timeout), 1)
+			scraperSL := cmscraper.NewScraper(scraperConfig, core.Config.Scraper.Headless, time.Duration(config.Timeout), 1, core.Config.Scraper.LogStatus, core.Config.Scraper.LogPath)
+			// 关闭日志
+			defer cmscraper.CloseGlobalLogger()
 			id := cmscraper.ParseID(filePath, scraperConfig)
 			ctx := context.Background()
 			metadata, pageUrl, err := scraperSL.Scrape(ctx, id)
@@ -114,18 +116,17 @@ func (t Scraper) ScraperDataProcess(filesBasesId, filePath string, config dataty
 			// 是否下载图片
 			if config.EnableDownloadImages {
 				// 获取元数据的base64图片数据map
-				images, err := cmscraper.GetMetadataImages(ctx, pageUrl, metadata, config.UseTagAsImageName, config.EnableUserSimulation, 1.0)
+				images, err := cmscraper.GetMetadataImages(ctx, pageUrl, metadata, config.UseTagAsImageName, core.Config.Scraper.Headless, core.Config.Scraper.VisitHome, config.EnableUserSimulation, 1.0)
 				if err == nil && len(images) > 0 {
 					// 保存图片
 					for imageName, base64Data := range images {
 						// 保存图片
 						saveImagePath := t.getSaveImagePath(filePath, imageName)
-						if err := utils.SaveBase64AsImage(base64Data, saveImagePath, true); err != nil {
-							fmt.Println("保存图片失败 %s: %v", imageName, err)
-						}
+						cmscraper.SaveBase64AsImage(base64Data, saveImagePath, true)
 					}
 				} else {
 					processErr = fmt.Errorf("下载图片失败: %w", err)
+					cmscraper.LogError(processErr.Error())
 					continue
 				}
 			}
@@ -133,7 +134,7 @@ func (t Scraper) ScraperDataProcess(filesBasesId, filePath string, config dataty
 			if config.SaveNfo && cmscraper.IsValidMetadata(metadata, scraperConfig) {
 				saveNfoPath := t.getNfoPath(filePath)
 				nfo := cmscraper.ToNFO(metadata, &scraperConfig.Sites[len(scraperConfig.Sites)-1])
-				processErr = utils.WriteStringToFile(saveNfoPath, nfo)
+				processErr = cmscraper.SaveNfoFile(saveNfoPath, []byte(nfo))
 			}
 			// 如果没有错误,且元数据里有数据，则返回
 			if processErr == nil && cmscraper.IsValidMetadata(metadata, scraperConfig) {
@@ -165,13 +166,15 @@ func (t Scraper) ScraperPerformerDataProcess(par *datatype.ReqParam_ScraperPerfo
 		return err
 	}
 	// 创建刮削器
-	scraperSL := cmscraper.NewScraper(scraperConfig, time.Duration(5), 1)
+	scraperSL := cmscraper.NewScraper(scraperConfig, core.Config.Scraper.Headless, time.Duration(core.Config.Scraper.Timeout), 1, core.Config.Scraper.LogStatus, core.Config.Scraper.LogPath)
+	// 关闭日志
+	defer cmscraper.CloseGlobalLogger()
 	ctx := context.Background()
 	metadata, pageUrl, err := scraperSL.Scrape(ctx, par.PerformerName)
 	if err != nil {
 		return err
 	}
-	images, err := cmscraper.GetMetadataImages(ctx, pageUrl, metadata, true, false, 1.0)
+	images, err := cmscraper.GetMetadataImages(ctx, pageUrl, metadata, true, core.Config.Scraper.Headless, core.Config.Scraper.VisitHome, false, 1.0)
 	if err != nil {
 		return err
 	}
@@ -292,7 +295,9 @@ func (t Scraper) ScraperOneResourceDataProcess(par *datatype.ReqParam_ScraperOne
 			return nil, err
 		}
 		// 创建刮削器
-		scraperSL := cmscraper.NewScraper(scraperConfig, time.Duration(par.Timeout), 1)
+		scraperSL := cmscraper.NewScraper(scraperConfig, core.Config.Scraper.Headless, time.Duration(par.Timeout), 1, core.Config.Scraper.LogStatus, core.Config.Scraper.LogPath)
+		// 关闭日志
+		defer cmscraper.CloseGlobalLogger()
 		var scrapeIDS = [3]string{}
 		if par.IssueNumber != "" {
 			scrapeIDS[0] = par.IssueNumber
@@ -323,14 +328,12 @@ func (t Scraper) ScraperOneResourceDataProcess(par *datatype.ReqParam_ScraperOne
 			return nil, errors.New("没有找到匹配的元数据")
 		}
 		// 获取图片
-		metadataImages, err = cmscraper.GetMetadataImages(ctx, pageUrl, metadata, true, false, 1.0)
+		metadataImages, err = cmscraper.GetMetadataImages(ctx, pageUrl, metadata, true, core.Config.Scraper.Headless, core.Config.Scraper.VisitHome, false, 1.0)
 		if err == nil && len(metadataImages) > 0 && filePathExists && par.SaveImage {
 			// 保存图片
 			for imageName, base64Data := range metadataImages {
 				saveImagePath := t.getSaveImagePath(filePath, imageName)
-				if err := utils.SaveBase64AsImage(base64Data, saveImagePath, true); err != nil {
-					fmt.Println("保存图片失败 %s: %v", imageName, err)
-				}
+				cmscraper.SaveBase64AsImage(base64Data, saveImagePath, true)
 			}
 		}
 		// 生成 NFO
@@ -346,7 +349,7 @@ func (t Scraper) ScraperOneResourceDataProcess(par *datatype.ReqParam_ScraperOne
 		// 保存 NFO
 		if filePathExists && par.SaveNfo && cmscraper.IsValidMetadata(metadata, scraperConfig) {
 			saveNfoPath := t.getNfoPath(filePath)
-			err := utils.WriteStringToFile(saveNfoPath, nfo)
+			err := cmscraper.SaveNfoFile(saveNfoPath, []byte(nfo))
 			if err != nil {
 				return nil, err
 			}

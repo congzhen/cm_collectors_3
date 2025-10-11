@@ -2,7 +2,9 @@ package cmscraper
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/url"
 	"os"
@@ -129,16 +131,30 @@ func LoadConfig(filePath string) (*ScraperConfig, error) {
 	return &config, nil
 }
 
-// NewScraper 创建新的刮削器
-// 参数：config - 刮削器配置, retryDelay - 重试延迟, retryCount - 重试次数
-// 返回：初始化的ScraperChromeDp实例
-func NewScraper(config *ScraperConfig, retryDelay time.Duration, retryCount int) *ScraperChromeDp {
+// NewScraper 创建一个新的ScraperChromeDp实例
+// config: 爬虫配置信息
+// headless: 是否启用无头模式
+// retryDelay: 重试延迟时间
+// retryCount: 重试次数
+// logEnabled: 是否启用日志
+// logPath: 日志文件路径
+// 返回值: ScraperChromeDp实例指针
+func NewScraper(config *ScraperConfig, headless bool, retryDelay time.Duration, retryCount int, logEnabled bool, logPath string) *ScraperChromeDp {
 	scraper := &ScraperChromeDp{
+		headless:   headless,
 		config:     config,
 		cache:      make(map[string]*CachedResult), // 初始化缓存
 		retryDelay: retryDelay,
 		retryCount: retryCount,
 	}
+	if logEnabled {
+		// 配置全局日志设置
+		SetGlobalLogEnabled(logEnabled)
+		if logPath != "" {
+			SetGlobalLogFilePath(logPath)
+		}
+	}
+	LogInfo("***创建刮削器***")
 	return scraper
 }
 
@@ -161,6 +177,7 @@ func ParseID(filePath string, config *ScraperConfig) string {
 			}
 			matches := re.FindStringSubmatch(filename)
 			if len(matches) > 1 {
+				LogInfo("解析得到的ID: %s", matches[1])
 				// 返回第一个捕获组
 				return matches[1]
 			}
@@ -170,17 +187,21 @@ func ParseID(filePath string, config *ScraperConfig) string {
 	// 如果没有匹配的模式，返回清理后的文件名
 	filename = strings.ReplaceAll(filename, "_", "-")
 	filename = strings.ReplaceAll(filename, " ", "-")
+	LogInfo("解析得到的ID: %s", filename)
 	return filename
 }
 
 // GetMetadataImages 从元数据中提取图片URL并下载
 // 参数：ctx - 上下文, pageURL - 页面URL, metadata - 元数据,
 //
-//	useTagName - 是否使用标签名作为文件名, enableScrollSimulation - 是否启用滚动模拟,
-//	scrollIntervalFactor - 滚动间隔系数
+// useTagName - 是否使用标签名作为文件名,
+// headless - 是否无头模式,
+// visitHome - 是否访问主页,
+// enableScrollSimulation - 是否启用滚动模拟,
+// scrollIntervalFactor - 滚动间隔系数
 //
 // 返回：图片文件名到base64数据的映射和可能的错误
-func GetMetadataImages(ctx context.Context, pageURL string, metadata *map[string]any, useTagName bool, enableScrollSimulation bool, scrollIntervalFactor float64) (map[string]string, error) {
+func GetMetadataImages(ctx context.Context, pageURL string, metadata *map[string]any, useTagName bool, headless bool, visitHome bool, enableScrollSimulation bool, scrollIntervalFactor float64) (map[string]string, error) {
 	images := make(map[string]string) // 存储图片文件名到URL的映射
 
 	// 遍历元数据，提取图片URL
@@ -237,6 +258,8 @@ func GetMetadataImages(ctx context.Context, pageURL string, metadata *map[string
 
 	// 使用ChromeDP下载图片
 	scd := ScraperChromeDp_DownLoad{
+		Headless:               headless,
+		VisitHome:              visitHome,
 		EnableScrollSimulation: enableScrollSimulation,
 		ScrollIntervalFactor:   scrollIntervalFactor,
 	}
@@ -298,6 +321,7 @@ func xmlEscape(s string) string {
 // 返回：是否有效的布尔值
 func IsValidMetadata(metadata *map[string]any, config *ScraperConfig) bool {
 	if metadata == nil || len(*metadata) == 0 {
+		LogError("元数据无效")
 		return false
 	}
 
@@ -317,11 +341,13 @@ func IsValidMetadata(metadata *map[string]any, config *ScraperConfig) bool {
 	// 检查至少有一个配置中定义的字段在元数据中有有效值
 	for field := range configFields {
 		if value, exists := (*metadata)[field]; exists && !isEmptyValue(value) {
+			LogInfo("元数据有效")
 			return true
 		}
 	}
 
 	// 如果没有任何配置的字段有值，则认为元数据无效
+	LogError("元数据无效")
 	return false
 }
 
@@ -448,4 +474,71 @@ func getNestedValue(data map[string]interface{}, path string) (interface{}, bool
 	}
 
 	return nil, false
+}
+
+// SaveBase64AsImage 保存 Base64 字符串为图片
+func SaveBase64AsImage(base64Str, filePath string, hasMimeType bool) error {
+	// 定义支持的 MIME 类型
+	validMimeTypes := []string{
+		"data:image/png;base64,",
+		"data:image/jpeg;base64,",
+		"data:image/gif;base64,",
+		"data:image/webp;base64,",
+	}
+	var replaced string
+	if hasMimeType {
+		// 查找匹配的 MIME 类型并移除前缀
+		for _, mimeType := range validMimeTypes {
+			if strings.HasPrefix(base64Str, mimeType) {
+				replaced = strings.Replace(base64Str, mimeType, "", 1)
+				break
+			}
+		}
+	} else {
+		replaced = base64Str
+
+	}
+
+	// 如果没有匹配的 MIME 类型，返回错误
+	if replaced == "" {
+		err := errors.New("unsupported or invalid base64 string")
+		LogError("保存图片 %s 失败: %v", filePath, err)
+		return err
+	}
+
+	// 解码 Base64 数据
+	data, err := base64.StdEncoding.DecodeString(replaced)
+	if err != nil {
+		LogError("保存图片 %s 失败: %v", filePath, err)
+		return err
+	}
+
+	// 检查文件夹是否存在，不存在则创建
+	dirPath := filepath.Dir(filePath)
+	if _, err := os.Stat(dirPath); os.IsNotExist(err) {
+		err := os.MkdirAll(dirPath, os.ModePerm)
+		if err != nil {
+			LogError("保存图片 %s 失败: %v", filePath, err)
+			return fmt.Errorf("failed to create directory: %w", err)
+		}
+	}
+
+	// 存储为文件
+	err = os.WriteFile(filePath, data, os.ModePerm)
+	if err != nil {
+		LogError("保存图片 %s 失败: %v", filePath, err)
+		return err
+	}
+	LogInfo("保存图片 %s 成功！", filePath)
+	return nil
+}
+
+// 保存NFO文件
+func SaveNfoFile(nfoFilePath string, data []byte) error {
+	err := os.WriteFile(nfoFilePath, []byte(data), 0644)
+	if err != nil {
+		LogError("保存NFO文件失败:", err)
+	}
+	LogInfo("保存NFO文件成功！")
+	return err
 }
