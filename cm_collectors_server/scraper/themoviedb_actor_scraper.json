@@ -1,5 +1,5 @@
 {
-  "name": "avwikidb_actor_scraper",
+  "name": "themoviedb_actor_scraper",
   "cache_enabled": true,
   "file_patterns": ["([A-Z0-9]+-[0-9]+)", "([a-z0-9]+-[0-9]+)"],
   "headers": {
