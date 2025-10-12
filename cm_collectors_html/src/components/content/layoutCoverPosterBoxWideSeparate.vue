@@ -60,9 +60,12 @@ defineExpose({ change });
 
     &.mobile-layout {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 0.8em;
-      padding-bottom: 0.8em;
+      gap: 20px !important;
+      padding-bottom: 20px !important;
+
+      :deep(.content-style3) {
+        width: 100% !important;
+      }
     }
   }
 }
