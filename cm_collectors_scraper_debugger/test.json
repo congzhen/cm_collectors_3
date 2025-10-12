@@ -1,0 +1,12 @@
+{
+  "headless": false,
+  "visitHome": false,
+  "scraperConfig": "./scraper/javbus_scraper.json",
+  "id": "NACT-027",
+  "timeOut": 30,
+  "retryCount": 3,
+  "imageUseTagName": true,
+  "enableScrollSimulation": false,
+  "savePath": "./save/",
+  "log": true
+}

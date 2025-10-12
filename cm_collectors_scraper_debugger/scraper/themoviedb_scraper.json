@@ -1,0 +1,99 @@
+{
+  "name": "themoviedb_scraper",
+  "cache_enabled": true,
+  "proxy": {
+    "enabled": false,
+    "protocol": "http",
+    "host": "127.0.0.1",
+    "port": 8080
+  },
+  "file_patterns": ["([A-Z0-9]+-[0-9]+)", "([a-z0-9]+-[0-9]+)"],
+  "headers": {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+    "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Connection": "keep-alive",
+    "Upgrade-Insecure-Requests": "1",
+    "Sec-Ch-Ua": "\"Chromium\";v=\"118\", \"Google Chrome\";v=\"118\", \"Not=A?Brand\";v=\"99\"",
+    "Sec-Ch-Ua-Mobile": "?0",
+    "Sec-Ch-Ua-Platform": "\"Windows\"",
+    "Sec-Fetch-Dest": "document",
+    "Sec-Fetch-Mode": "navigate",
+    "Sec-Fetch-Site": "none",
+    "Sec-Fetch-User": "?1",
+    "Cache-Control": "max-age=0"
+  },
+  "search": {
+    "url": "https://www.themoviedb.org/search?query={id}",
+    "selectors": {
+      "selector": ".white_column .search_results:first-child .card:first-child a.result",
+      "type": "attribute",
+      "attribute": "href"
+    }
+  },
+  "sites": [
+    {
+      "name": "themoviedb_detail",
+      "url": "https://www.themoviedb.org/{id}",
+      "priority": 2,
+      "selectors": {
+        "id": {
+          "selector": "meta[property='og:url']",
+          "type": "attribute",
+          "attribute": "content",
+          "post_process": {
+            "type": "regexp",
+            "pattern": "([0-9]+)$"
+          }
+        },
+        "title": {
+          "selector": "h2 > a",
+          "type": "text"
+        },
+        "description": {
+          "selector": "meta[name='description']",
+          "type": "attribute",
+          "attribute": "content"
+        },
+        "premiered": {
+          "selector": "section.facts p:contains('首播日期')",
+          "type": "text",
+          "post_process": {
+            "type": "regexp",
+            "pattern": "([0-9]{4}-[0-9]{2}-[0-9]{2})"
+          }
+        },
+        "actors": {
+          "selector": ".people .card p a",
+          "type": "array"
+        },
+        "tags": {
+          "selector": ".genres a",
+          "type": "array"
+        },
+        "rating": {
+          "selector": "div.user_score_chart",
+          "type": "attribute",
+          "attribute": "data-percent"
+        },
+        "cover": {
+          "selector": "div.poster img",
+          "type": "attribute",
+          "attribute": "src",
+          "post_process": {
+            "type": "filename"
+          }
+        },
+        "cover_url": {
+          "selector": "div.poster img",
+          "type": "attribute",
+          "attribute": "src",
+          "post_process": {
+            "type": "absolute_url"
+          }
+        }
+      }
+    }
+  ]
+}
