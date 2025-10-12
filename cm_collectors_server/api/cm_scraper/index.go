@@ -53,8 +53,9 @@ type SelectorConfig struct {
 
 // PostProcessor 定义后处理器配置 - 对提取的数据进行二次处理
 type PostProcessor struct {
-	Type    string `json:"type"`    // 处理类型：regexp(正则), absolute_url(绝对URL), filename(文件名)
-	Pattern string `json:"pattern"` // 处理模式，根据Type有不同的含义
+	Type        string `json:"type"`        // 处理类型：regexp(正则), absolute_url(绝对URL), filename(文件名)
+	Pattern     string `json:"pattern"`     // 处理模式，根据Type有不同的含义
+	Replacement string `json:"replacement"` // 替换模式，用于正则表达式替换
 }
 
 // ProxyConfig 代理配置 - 定义HTTP代理设置
@@ -383,6 +384,10 @@ func applyPostProcess(value string, postProcess *PostProcessor, baseURL string) 
 			if err != nil {
 				// 正则表达式编译失败，返回空字符串
 				return ""
+			}
+			// 如果定义了 replacement，则执行替换操作
+			if postProcess.Replacement != "" {
+				return re.ReplaceAllString(value, postProcess.Replacement)
 			}
 			matches := re.FindStringSubmatch(value)
 			// 如果匹配成功且有捕获组，则返回第一个捕获组
