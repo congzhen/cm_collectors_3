@@ -1,0 +1,52 @@
+{
+  "name": "avwikidb_actor_scraper",
+  "cache_enabled": true,
+  "file_patterns": ["([A-Z0-9]+-[0-9]+)", "([a-z0-9]+-[0-9]+)"],
+  "headers": {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+    "Accept-Language": "ja-JP,ja;q=0.9,en;q=0.8",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Connection": "keep-alive",
+    "Upgrade-Insecure-Requests": "1"
+  },
+  "search": {
+    "url": "https://www.themoviedb.org/search/person?query={id}",
+    "selectors": {
+      "selector": ".results .item:first-child .flex .content .name a.result",
+      "type": "attribute",
+      "attribute": "href"
+    }
+  },
+  "sites": [
+    {
+      "name": "themoviedb_actor_detail",
+      "url": "https://www.themoviedb.org{id}",
+      "priority": 2,
+      "selectors": {
+        "avatar": {
+          "selector": ".profile .blurred img.profile",
+          "type": "attribute",
+          "attribute": "src"
+        },
+        "name": {
+          "selector": ".white_column .title a",
+          "type": "text"
+        },
+        "birth": {
+          "selector": "p:has(strong:contains('生日'))",
+          "type": "text",
+          "post_process": {
+            "type": "regexp",
+            "pattern": "[\\s\\S]*?(\\d{4})\\s*年\\s*(\\d{1,2})\\s*月\\s*(\\d{1,2})\\s*日[\\s\\S]*",
+            "replacement": "$1-$2-$3"
+          }
+        },
+        "intro": {
+          "selector": ".white_column .full_wrapper .text p",
+          "type": "text"
+        }
+      }
+    }
+  ]
+}
