@@ -269,6 +269,12 @@ func (t Scraper) ScraperOneResourceDataProcess(par *datatype.ReqParam_ScraperOne
 	// 元数据图片
 	var metadataImages map[string]string
 
+	//配置文件ScanDisk json解构
+	configScanDisk, err := FilesBases{}.Config_ScanDisk(par.FilesBases_ID)
+	if err != nil {
+		return nil, err
+	}
+
 	//是否可以直接调用已存在的nfo
 	if par.UseExistNfo && par.DramaSeriesSrc != "" {
 		// 获取 NFO 文件路径
@@ -356,11 +362,6 @@ func (t Scraper) ScraperOneResourceDataProcess(par *datatype.ReqParam_ScraperOne
 		}
 	}
 
-	//配置文件ScanDisk json解构
-	configScanDisk, err := FilesBases{}.Config_ScanDisk(par.FilesBases_ID)
-	if err != nil {
-		return nil, err
-	}
 	var coverPosterBase64 string
 	var coverPosterWidth int
 	var coverPosterHeight int

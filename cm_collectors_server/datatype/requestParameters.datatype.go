@@ -214,6 +214,11 @@ type ReqParam_SearchScraperPerformer struct {
 	LastScraperUpdateTime string `json:"lastScraperUpdateTime"`
 }
 
+type ReqParam_ImportData_UpdateScanDiskConfig struct {
+	FilesBasesId      string `json:"filesBases_id"`
+	DefaultConfigJson string `json:"defaultConfigJson"`
+}
+
 type E_ScraperOperate string
 
 const (

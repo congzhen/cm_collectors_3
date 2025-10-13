@@ -2,9 +2,11 @@ package controllers
 
 import (
 	"cm_collectors_server/datatype"
+	"cm_collectors_server/errorMessage"
 	"cm_collectors_server/processors"
 	"cm_collectors_server/response"
 	"cm_collectors_server/utils"
+	"errors"
 
 	"github.com/gin-gonic/gin"
 )
@@ -80,7 +82,11 @@ func (Scraper) ScraperOneResourceDataProcess(c *gin.Context) {
 	}
 	info, err := processors.Scraper{}.ScraperOneResourceDataProcess(&par)
 	if err != nil {
-		response.FailWithMessage(err.Error(), c)
+		if errors.Is(err, errorMessage.Err_No_Config_ScanDisk) {
+			ResError(c, err)
+		} else {
+			response.FailWithMessage(err.Error(), c)
+		}
 		return
 	}
 	response.OkWithData(info, c)

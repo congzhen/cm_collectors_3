@@ -1,5 +1,5 @@
 import request from "@/assets/request";
-import type { I_config_scanDisk } from "@/dataType/config.dataType";
+import { defualtConfigScanDisk, type I_config_scanDisk } from "@/dataType/config.dataType";
 const routerGroupUri = '';
 export const importDataServer = {
   scanDiskImportPaths: async (filesBases_id: string, config: I_config_scanDisk) => {
@@ -22,5 +22,16 @@ export const importDataServer = {
         config,
       }
     });
-  }
+  },
+  createScanDiskDefaultConfig: async (filesBases_id: string) => {
+    const defaultConfigJson = JSON.stringify(defualtConfigScanDisk);
+    return await request<I_config_scanDisk>({
+      url: `${routerGroupUri}/importData/updateScanDiskConfig`,
+      method: 'post',
+      data: {
+        filesBases_id,
+        defaultConfigJson,
+      }
+    });
+  },
 }

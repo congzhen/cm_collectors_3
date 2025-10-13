@@ -48,9 +48,11 @@ import { getDirectoryFromPath, getFileNameFromPath } from '@/assets/path';
 import selectScraperConfig from '../com/form/selectScraperConfig.vue';
 import { debounceNow } from '@/assets/debounce';
 import { scraperDataServer } from '@/server/scraper.server';
-import { ElMessage } from 'element-plus';
+import { ElMessage, ElMessageBox } from 'element-plus';
 import type { I_resource } from '@/dataType/resource.dataType';
 import { appStoreData } from '@/storeData/app.storeData';
+import { LoadingService } from '@/assets/loading'
+import { importDataServer } from '@/server/importData.server';
 const store = {
   app: appStoreData(),
 }
@@ -124,7 +126,11 @@ const submitHandle = debounceNow(async () => {
       scraperOneResource.value.dramaSeriesSrc,
     );
     if (!result.status) {
-      ElMessage.error(result.msg);
+      if (result.statusCode == 5000) {
+        createConfigMessage();
+      } else {
+        ElMessage.error(result.msg);
+      }
       return;
     } else {
       ElMessage.success('刮削成功');
@@ -137,6 +143,33 @@ const submitHandle = debounceNow(async () => {
     dialogCommonRef.value?.disabledSubmit(false);
   }
 })
+
+const createConfigMessage = () => {
+  ElMessageBox.confirm(
+    '还没有导入配置，是否现在创建默认导入配置',
+    {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    }
+  ).then(async () => {
+    try {
+      LoadingService.show();
+      const result = await importDataServer.createScanDiskDefaultConfig(store.app.currentFilesBases.id);
+      if (result.status) {
+        ElMessage.success('配置创建成功');
+      } else {
+        ElMessage.error(result.msg);
+      }
+    } catch (error) {
+      ElMessage.error(String(error));
+    } finally {
+      LoadingService.hide();
+    }
+  }).catch(() => {
+
+  })
+}
 
 const success = (data: I_resource) => {
   dialogCommonRef.value?.close();

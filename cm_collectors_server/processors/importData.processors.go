@@ -19,6 +19,13 @@ import (
 type ImportData struct {
 }
 
+func (ImportData) UpdateScanDiskConfig(filesBasesId, defaultConfigJson string) error {
+	settingModel := models.FilesBasesSetting{
+		ScanDiskJsonData: defaultConfigJson,
+	}
+	return settingModel.Update(core.DBS(), filesBasesId, &settingModel, []string{"scan_disk_json_data"})
+}
+
 // ScanDiskImportPaths 扫描磁盘路径中的视频文件，并更新扫描配置
 //
 // 该函数会扫描指定路径下的所有视频文件，将扫描配置保存到数据库，

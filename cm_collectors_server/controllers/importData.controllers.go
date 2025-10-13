@@ -33,3 +33,15 @@ func (ImportData) ScanDiskImportData(c *gin.Context) {
 	}
 	response.OkWithData(true, c)
 }
+
+func (ImportData) UpdateScanDiskConfig(c *gin.Context) {
+	var par datatype.ReqParam_ImportData_UpdateScanDiskConfig
+	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {
+		return
+	}
+	err := processors.ImportData{}.UpdateScanDiskConfig(par.FilesBasesId, par.DefaultConfigJson)
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(true, c)
+}
