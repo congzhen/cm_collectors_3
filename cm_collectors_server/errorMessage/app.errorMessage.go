@@ -16,5 +16,7 @@ var (
 	Err_Tag_Not_Found      = NewErrorData(4001, "标签不存在")
 	Err_TagClaSS_Not_Found = NewErrorData(4002, "标签分类不存在")
 
+	Err_No_Config_ScanDisk = NewErrorData(5000, "请先创建导入配置")
+
 	Err_Current_Server_Has_Been_Set_To_Disallow_This_Peration = NewErrorData(9000, "当前服务器已禁止此操作")
 )

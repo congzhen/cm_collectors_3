@@ -3,6 +3,7 @@ package processors
 import (
 	"cm_collectors_server/core"
 	"cm_collectors_server/datatype"
+	"cm_collectors_server/errorMessage"
 	"cm_collectors_server/models"
 	"cm_collectors_server/utils"
 	"encoding/json"
@@ -106,6 +107,9 @@ func (t FilesBases) Config_ScanDisk(id string) (datatype.Config_ScanDisk, error)
 	jsonConfig, err := t.ConfigById(id, "importScanDisk")
 	if err != nil {
 		return config, err
+	}
+	if jsonConfig == "" {
+		return config, errorMessage.Err_No_Config_ScanDisk
 	}
 	err = json.Unmarshal([]byte(jsonConfig), &config)
 	if err != nil {
