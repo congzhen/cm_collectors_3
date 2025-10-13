@@ -24,7 +24,7 @@
               </div>
               <div class="setting-item">
                 <span class="setting-label">间距</span>
-                <el-slider v-model="coverPosterGap" :min="0" :max="50" step="0.1" />
+                <el-slider v-model="coverPosterGap" :min="0" :max="50" :step="0.1" />
               </div>
             </div>
             <div class="other-settings">

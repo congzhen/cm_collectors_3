@@ -95,6 +95,7 @@ export const appStoreData = defineStore('app', {
       }
       // 设置当前filesBases
       this.currentFilesBases = info.data;
+      this.currentPerformerBasesIds = [];
 
       // 设置currentMainPerformerBasesId 与 currentPerformerBasesIds
       info.data.filesRelatedPerformerBases.forEach((item) => {

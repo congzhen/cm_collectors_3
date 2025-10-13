@@ -5,7 +5,7 @@
       <label style="font-size: 1.5em">{{ props.title }}</label>
     </template>
     <template #default>
-      <slot></slot>
+      <slot v-if="drawerVisible"></slot>
     </template>
     <template #footer v-if="props.footer">
       <div class="drawer-footer" style="flex: auto">
