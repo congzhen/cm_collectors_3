@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"reflect"
 
 	"gopkg.in/yaml.v3"
 )
@@ -112,7 +113,60 @@ func createDefaultConfig() error {
 	return nil
 }
 
+// mergeWithDefaults 使用默认配置填充未设置的字段
+func mergeWithDefaults(defaultConfig, userConfig *config.Config) {
+	mergeRecursive(reflect.ValueOf(defaultConfig).Elem(), reflect.ValueOf(userConfig).Elem())
+}
+
+// mergeRecursive 递归合并两个结构体
+func mergeRecursive(defaultVal, userVal reflect.Value) {
+	switch userVal.Kind() {
+	case reflect.Struct:
+		for i := 0; i < userVal.NumField(); i++ {
+			field := userVal.Field(i)
+			defaultField := defaultVal.Field(i)
+
+			// 检查字段是否可以设置
+			if field.CanSet() {
+				// 如果是结构体则递归处理
+				if field.Kind() == reflect.Struct {
+					mergeRecursive(defaultField, field)
+				} else if isZeroValue(field) && !isZeroValue(defaultField) {
+					// 如果用户配置中的字段是零值，而默认配置中的字段不是零值，则使用默认值
+					field.Set(defaultField)
+				}
+			}
+		}
+	case reflect.Slice:
+		// 对于切片，如果用户配置为空则使用默认值
+		if userVal.Len() == 0 && defaultVal.Len() > 0 {
+			userVal.Set(defaultVal)
+		}
+		// 其他类型不需要特殊处理
+	}
+}
+
+// isZeroValue 检查值是否为零值
+func isZeroValue(v reflect.Value) bool {
+	switch v.Kind() {
+	case reflect.Slice, reflect.Map, reflect.Ptr, reflect.Interface, reflect.Chan:
+		return v.IsNil()
+	case reflect.Struct:
+		// 对于结构体，检查所有字段是否都是零值
+		for i := 0; i < v.NumField(); i++ {
+			if !isZeroValue(v.Field(i)) {
+				return false
+			}
+		}
+		return true
+	default:
+		// 对于其他类型，使用reflect.Zero比较
+		return reflect.DeepEqual(v.Interface(), reflect.Zero(v.Type()).Interface())
+	}
+}
+
 func initConf() *config.Config {
+	defaultConfig := getDefaultConfig()
 	c := &config.Config{}
 	yamlConf, err := os.ReadFile(configFile)
 	if err != nil {
@@ -128,10 +182,16 @@ func initConf() *config.Config {
 			panic(fmt.Errorf("重新读取配置文件失败:%s", err))
 		}
 	}
+
+	// 先将配置解析到空结构体中
 	err = yaml.Unmarshal(yamlConf, c)
 	if err != nil {
 		log.Fatalf("config Init Unmarshal: %v", err)
 	}
+
+	// 使用默认配置填充未设置的字段
+	mergeWithDefaults(defaultConfig, c)
+
 	log.Println("config yamlFile load Init success.")
 	return c
 }
