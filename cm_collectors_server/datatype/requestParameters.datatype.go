@@ -215,8 +215,8 @@ type ReqParam_SearchScraperPerformer struct {
 }
 
 type ReqParam_ImportData_UpdateScanDiskConfig struct {
-	FilesBasesId      string `json:"filesBases_id"`
-	DefaultConfigJson string `json:"defaultConfigJson"`
+	FilesBasesId string `json:"filesBases_id"`
+	ConfigJson   string `json:"configJson"`
 }
 
 type E_ScraperOperate string

@@ -7,6 +7,7 @@ import (
 	"cm_collectors_server/models"
 	"cm_collectors_server/utils"
 	"encoding/json"
+	"errors"
 
 	"gorm.io/gorm"
 )
@@ -65,9 +66,15 @@ func (FilesBases) SetConfigById(id, config, configType string) error {
 	}
 	return models.FilesBasesSetting{}.Update(core.DBS(), id, &filesBasesSettingModels, updateFields)
 }
-func (FilesBases) ConfigById(id, configType string) (string, error) {
+func (t FilesBases) ConfigById(id, configType string) (string, error) {
 	filesBasesSettingInfo, err := models.FilesBasesSetting{}.InfoByFilesBasesID(core.DBS(), id)
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			err := models.FilesBasesSetting{}.CreateNull(core.DBS(), id)
+			if err == nil {
+				return t.ConfigById(id, configType)
+			}
+		}
 		return "", err
 	}
 	switch configType {

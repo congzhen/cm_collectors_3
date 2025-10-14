@@ -39,7 +39,7 @@ func (ImportData) UpdateScanDiskConfig(c *gin.Context) {
 	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {
 		return
 	}
-	err := processors.ImportData{}.UpdateScanDiskConfig(par.FilesBasesId, par.DefaultConfigJson)
+	err := processors.ImportData{}.UpdateScanDiskConfig(par.FilesBasesId, par.ConfigJson)
 	if err := ResError(c, err); err != nil {
 		return
 	}

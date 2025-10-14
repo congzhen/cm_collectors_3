@@ -13,6 +13,9 @@
         <scraperData ref="scraperDataRef" v-if="modeRadio === 'scraper'" @success="successHandle"></scraperData>
       </div>
     </div>
+    <template #footerBtn>
+      <el-button v-if="modeRadio === 'scanDisk'" @click="saveConfigHandle">保存配置</el-button>
+    </template>
   </drawerCommon>
 </template>
 <script lang="ts" setup>
@@ -65,10 +68,19 @@ const submitHandle = () => {
   }
 }
 
+const saveConfigHandle = () => {
+  switch (modeRadio.value) {
+    case 'scanDisk':
+      modeScanDiskRef.value?.saveConfig();
+      break;
+  }
+}
+
 const successHandle = () => {
   colse();
   emits('success')
 }
+
 
 const open = async () => {
   drawerCommonRef.value?.open();

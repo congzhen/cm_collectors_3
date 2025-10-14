@@ -23,14 +23,17 @@ export const importDataServer = {
       }
     });
   },
-  createScanDiskDefaultConfig: async (filesBases_id: string) => {
-    const defaultConfigJson = JSON.stringify(defualtConfigScanDisk);
+  updateScanDiskConfig: async (filesBases_id: string, config: I_config_scanDisk | null = null) => {
+    if (config == null) {
+      config = defualtConfigScanDisk;
+    }
+    const configJson = JSON.stringify(config);
     return await request<I_config_scanDisk>({
       url: `${routerGroupUri}/importData/updateScanDiskConfig`,
       method: 'post',
       data: {
         filesBases_id,
-        defaultConfigJson,
+        configJson,
       }
     });
   },

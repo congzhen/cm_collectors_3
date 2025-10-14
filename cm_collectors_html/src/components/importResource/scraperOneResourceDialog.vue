@@ -155,7 +155,7 @@ const createConfigMessage = () => {
   ).then(async () => {
     try {
       LoadingService.show();
-      const result = await importDataServer.createScanDiskDefaultConfig(store.app.currentFilesBases.id);
+      const result = await importDataServer.updateScanDiskConfig(store.app.currentFilesBases.id, null);
       if (result.status) {
         ElMessage.success('配置创建成功');
       } else {

@@ -176,23 +176,29 @@ const getConfig = async () => {
   }
 }
 
+const getConfigScanDisk = (): I_config_scanDisk => {
+  const configData = formData.value;
+  if (configData.coverPosterType == -1) {
+    configData.coverPosterWidth = 0;
+    configData.coverPosterHeight = 0;
+  } else {
+    const coverPosterData = store.appStoreData.currentConfigApp.coverPosterData[configData.coverPosterType];
+    if (coverPosterData) {
+      configData.coverPosterWidth = coverPosterData.width;
+      configData.coverPosterHeight = coverPosterData.height;
+    }
+  }
+  return configData
+}
+
 const submit = debounceNow(async () => {
   if (formData.value.scanDiskPaths.length == 0) {
     ElMessage.error('请先设置监控路径');
     return;
   }
   try {
-    const configData = formData.value;
-    if (configData.coverPosterType == -1) {
-      configData.coverPosterWidth = 0;
-      configData.coverPosterHeight = 0;
-    } else {
-      const coverPosterData = store.appStoreData.currentConfigApp.coverPosterData[configData.coverPosterType];
-      if (coverPosterData) {
-        configData.coverPosterWidth = coverPosterData.width;
-        configData.coverPosterHeight = coverPosterData.height;
-      }
-    }
+    const configData = getConfigScanDisk();
+
     loading.value = true;
     const result = await importDataServer.scanDiskImportPaths(store.appStoreData.currentFilesBases.id, configData);
     if (!result.status) {
@@ -205,12 +211,29 @@ const submit = debounceNow(async () => {
       modeScanDiskImportDataDialogRef.value?.open(result.data, configData);
     }
   } catch (error) {
-    console.log(error);
+    ElMessage.error(String(error));
   } finally {
     loading.value = false;
   }
 });
 
+const saveConfig = debounceNow(async () => {
+  try {
+    loading.value = true;
+    const configData = getConfigScanDisk();
+    const result = await importDataServer.updateScanDiskConfig(store.appStoreData.currentFilesBases.id, configData);
+    if (!result.status) {
+      ElMessage.error(result.msg);
+      return;
+    } else {
+      ElMessage.success('保存成功');
+    }
+  } catch (error) {
+    ElMessage.error(String(error));
+  } finally {
+    loading.value = false;
+  }
+})
 
 const addDiskLocationHandle = () => {
   serverFileManagementDialogRef.value?.open();
@@ -235,7 +258,7 @@ const successHandle = () => {
 }
 
 
-defineExpose({ init, submit })
+defineExpose({ init, submit, saveConfig })
 
 </script>
 <style lang="scss" scoped>
