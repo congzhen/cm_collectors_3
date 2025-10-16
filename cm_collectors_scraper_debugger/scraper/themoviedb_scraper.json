@@ -52,12 +52,11 @@
           "type": "text"
         },
         "description": {
-          "selector": "meta[name='description']",
-          "type": "attribute",
-          "attribute": "content"
+          "selector": ".header_poster_wrapper .header_info .overview p",
+          "type": "text"
         },
         "premiered": {
-          "selector": "section.facts p:contains('首播日期')",
+          "selector": ".facts .release",
           "type": "text",
           "post_process": {
             "type": "regexp",
