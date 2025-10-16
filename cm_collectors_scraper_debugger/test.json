@@ -1,8 +1,8 @@
 {
   "headless": false,
   "visitHome": false,
-  "scraperConfig": "./scraper/javbus_scraper.json",
-  "id": "NACT-027",
+  "scraperConfig": "./scraper/themoviedb_scraper.json",
+  "id": "凡人修仙传",
   "timeOut": 30,
   "retryCount": 3,
   "imageUseTagName": true,

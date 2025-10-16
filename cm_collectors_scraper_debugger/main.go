@@ -5,11 +5,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
-	"os/signal"
 	"path/filepath"
-	"syscall"
 	"time"
 )
 
@@ -30,27 +27,38 @@ func main() {
 	// 读取test.json
 	data, err := os.ReadFile("test.json")
 	if err != nil {
-		log.Fatal("读取文件失败:", err)
+		fmt.Printf("读取文件失败: %v\n", err)
+		waitForExit()
+		return
 	}
 	var testJson TestJson
 	err = json.Unmarshal(data, &testJson)
 	if err != nil {
-		log.Fatal("JSON解析失败:", err)
+		fmt.Printf("JSON解析失败: %v\n", err)
+		waitForExit()
+		return
 	}
-	go test(testJson)
-	// 创建信号通道
-	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 
-	// 等待信号
-	<-sigChan
-	fmt.Println("收到退出信号，正在关闭...")
+	// 直接执行测试函数，而不是在goroutine中执行
+	test(testJson)
+
+	waitForExit()
 }
+
+func waitForExit() {
+	// 提示用户按任意键退出
+	fmt.Println("\n按任意键退出...")
+	// 等待用户输入
+	b := make([]byte, 1)
+	os.Stdin.Read(b)
+}
+
 func test(testJson TestJson) {
 	// 加载配置
 	config, err := cmscraper.LoadConfig(testJson.ScraperConfig)
 	if err != nil {
-		log.Fatal("加载配置失败:", err)
+		fmt.Printf("加载配置失败: %v\n", err)
+		return
 	}
 	// 创建刮削器
 	s := cmscraper.NewScraper(config, testJson.Headless, time.Duration(testJson.Timeout), testJson.RetryCount, true, "scraper.log")
@@ -66,7 +74,8 @@ func test(testJson TestJson) {
 	ctx := context.Background()
 	metadata, pageUrl, err := s.Scrape(ctx, id)
 	if err != nil {
-		log.Fatal("刮削失败:", err)
+		fmt.Printf("刮削失败: %v\n", err)
+		return
 	}
 	for k, v := range *metadata {
 		fmt.Printf("%s: %s\n", k, v)
@@ -75,27 +84,32 @@ func test(testJson TestJson) {
 
 	//判断元数据是否有效
 	if !cmscraper.IsValidMetadata(metadata, config) {
+		fmt.Println("元数据无效")
 		return
 	}
 
 	// 获取图片的base64编码
-	images, err := cmscraper.GetMetadataImages(ctx, pageUrl, metadata, testJson.ImageUseTagName, testJson.Headless, testJson.VisitHome, testJson.EnableScrollSimulation, 1.0)
+	images, err := cmscraper.GetMetadataImages(ctx, config, pageUrl, metadata, testJson.ImageUseTagName, testJson.Headless, testJson.VisitHome, testJson.EnableScrollSimulation, 1.0)
 	if err != nil {
 		cmscraper.LogError("获取图片base64失败: %v", err)
+		fmt.Printf("获取图片base64失败: %v\n", err)
 	} else {
 		for filename, base64Data := range images {
-			fmt.Println("文件名: %s\n", filename)
+			fmt.Printf("文件名: %s\n", filename)
 			// 安全地显示base64数据
 			if len(base64Data) > 100 {
-				fmt.Println("Base64: %s...\n", base64Data[:100])
+				fmt.Printf("Base64: %s...\n", base64Data[:100])
 			} else {
-				fmt.Println("Base64: %s\n", base64Data)
+				fmt.Printf("Base64: %s\n", base64Data)
 			}
-			fmt.Println("Base64长度: %d 字符\n\n", len(base64Data))
+			fmt.Printf("Base64长度: %d 字符\n\n", len(base64Data))
 
 			// 保存图片到当前目录
 			savePath := filepath.Join(testJson.SavePath, saveFolder, filename)
-			cmscraper.SaveBase64AsImage(base64Data, savePath, true)
+			err := cmscraper.SaveBase64AsImage(base64Data, savePath, true)
+			if err != nil {
+				fmt.Printf("保存图片失败: %v\n", err)
+			}
 		}
 	}
 	nfo := cmscraper.ToNFO(metadata, &config.Sites[len(config.Sites)-1])
@@ -103,5 +117,12 @@ func test(testJson TestJson) {
 	fmt.Println(nfo)
 	//保存NFO
 	nfoFilePath := filepath.Join(testJson.SavePath, saveFolder, fmt.Sprintf("%s.nfo", id))
-	cmscraper.SaveNfoFile(nfoFilePath, []byte(nfo))
+	err = cmscraper.SaveNfoFile(nfoFilePath, []byte(nfo))
+	if err != nil {
+		fmt.Printf("保存NFO文件失败: %v\n", err)
+	} else {
+		fmt.Println("NFO文件保存成功")
+	}
+
+	fmt.Println("\n任务执行完成!")
 }
