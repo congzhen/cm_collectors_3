@@ -39,11 +39,15 @@
           <el-checkbox v-model="formData.saveNfo" label="保存元数据为nfo文件" />
         </el-form-item>
         <el-form-item>
-          <el-checkbox v-model="formData.enableDownloadImages" label="下载元数据中的图片链接" />
-          <el-checkbox v-model="formData.useTagAsImageName" label="使用标签名作为图片名" />
-          <el-checkbox v-model="formData.enableUserSimulation" label="开启用户模拟操作" />
-          <el-text type="warning">下载图片会耗费更多时间进行反反爬</el-text>
-          <el-text type="warning">开启模拟操作会降低刮削速度，增加反反爬能力</el-text>
+          <div>
+            <el-checkbox v-model="formData.enableDownloadImages" label="下载元数据中的图片链接" />
+            <el-checkbox v-model="formData.useTagAsImageName" label="使用标签名作为图片名" />
+            <el-checkbox v-model="formData.enableUserSimulation" label="开启用户模拟操作" />
+          </div>
+          <div class="warning-list">
+            <el-text type="warning">下载图片会耗费更多时间进行反反爬</el-text>
+            <el-text type="warning">开启模拟操作会降低刮削速度，增加反反爬能力</el-text>
+          </div>
         </el-form-item>
       </div>
     </el-form>
@@ -178,6 +182,10 @@ defineExpose({ init, submit })
 
     .el-form {
       width: 90%;
+    }
+
+    .warning-list {
+      display: contents;
     }
   }
 }

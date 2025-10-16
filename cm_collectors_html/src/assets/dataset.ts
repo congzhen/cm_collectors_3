@@ -30,7 +30,7 @@ export default {
     titles: ['title', 'originaltitle', 'sorttitle'],
     issueNumbers: ['id', 'num'],
     issuingDates: ['releasedate', 'premiered', 'year'],
-    abstracts: ['outline', 'plot', 'originalplot'],
+    abstracts: ['outline', 'description', 'plot', 'originalplot'],
     tags: ['tag', 'tags', 'genre', 'genres'],
     tagAutoCreate: true,
     performerNames: ['actor.name', 'actor.title', 'actors'],

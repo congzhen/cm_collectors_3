@@ -1,6 +1,6 @@
 <template>
   <dialogCommon ref="dialogCommonRef" title="刮削资源信息" width="560px" btnSubmitTitle="刮削数据" @submit="submitHandle">
-    <div class="scraperOneResource" :loading="loading">
+    <div class="scraperOneResource" v-loading="loading">
       <div class="form">
         <el-form ref="ruleFormRef" :model="formData" label-width="100px" status-icon>
           <div class="form-main">
