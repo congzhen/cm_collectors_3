@@ -192,17 +192,24 @@ func ParseID(filePath string, config *ScraperConfig) string {
 	return filename
 }
 
-// GetMetadataImages 从元数据中提取图片URL并下载
-// 参数：ctx - 上下文, pageURL - 页面URL, metadata - 元数据,
+// GetMetadataImages 从元数据中提取图片信息，并使用 ChromeDP 下载这些图片。
+// 它会根据配置决定如何生成图片文件名，并返回一个映射（文件名到URL）以及可能发生的错误。
 //
-// useTagName - 是否使用标签名作为文件名,
-// headless - 是否无头模式,
-// visitHome - 是否访问主页,
-// enableScrollSimulation - 是否启用滚动模拟,
-// scrollIntervalFactor - 滚动间隔系数
+// 参数说明：
+//   - ctx: 上下文，用于控制请求的生命周期。
+//   - config: 爬虫配置对象，包含浏览器行为等设置。
+//   - pageURL: 当前页面的URL，用于构造相对路径或访问主页。
+//   - metadata: 包含元数据的映射，值可以是字符串或字符串数组，表示图片链接。
+//   - useTagName: 是否使用字段名作为图片文件名。
+//   - headless: 是否以无头模式运行浏览器。
+//   - visitHome: 是否需要访问网站主页以加载 Cookie 或资源。
+//   - enableScrollSimulation: 是否启用滚动模拟来触发懒加载。
+//   - scrollIntervalFactor: 滚动间隔系数，影响滚动频率。
 //
-// 返回：图片文件名到base64数据的映射和可能的错误
-func GetMetadataImages(ctx context.Context, pageURL string, metadata *map[string]any, useTagName bool, headless bool, visitHome bool, enableScrollSimulation bool, scrollIntervalFactor float64) (map[string]string, error) {
+// 返回值：
+//   - map[string]string: 映射关系，键为本地图片文件名，值为对应的图片URL。
+//   - error: 如果过程中发生错误，则返回非空error。
+func GetMetadataImages(ctx context.Context, config *ScraperConfig, pageURL string, metadata *map[string]any, useTagName bool, headless bool, visitHome bool, enableScrollSimulation bool, scrollIntervalFactor float64) (map[string]string, error) {
 	images := make(map[string]string) // 存储图片文件名到URL的映射
 
 	// 遍历元数据，提取图片URL
@@ -260,6 +267,7 @@ func GetMetadataImages(ctx context.Context, pageURL string, metadata *map[string
 	// 使用ChromeDP下载图片
 	scd := ScraperChromeDp_DownLoad{
 		Headless:               headless,
+		Config:                 config,
 		VisitHome:              visitHome,
 		EnableScrollSimulation: enableScrollSimulation,
 		ScrollIntervalFactor:   scrollIntervalFactor,

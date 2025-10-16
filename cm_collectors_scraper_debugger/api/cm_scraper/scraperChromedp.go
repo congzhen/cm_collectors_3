@@ -22,6 +22,74 @@ type ScraperChromeDp struct {
 	retryCount int                      // 最大重试次数
 }
 
+func GetNewExecAllocator(headless bool, proxyConfig *ProxyConfig) (context.Context, context.CancelFunc) {
+	opts := []chromedp.ExecAllocatorOption{
+		chromedp.Flag("headless", headless),
+		chromedp.Flag("no-sandbox", true),
+		chromedp.Flag("disable-gpu", true),
+		chromedp.Flag("disable-dev-shm-usage", true),
+		chromedp.Flag("window-size", "1920,1080"),
+		chromedp.Flag("disable-background-timer-throttling", true),
+		chromedp.Flag("disable-backgrounding-occluded-windows", true),
+		chromedp.Flag("disable-renderer-backgrounding", true),
+		chromedp.Flag("disable-ipc-flooding-protection", true),
+		chromedp.Flag("disable-background-networking", true),
+		chromedp.Flag("disable-features", "VizDisplayCompositor"),
+		chromedp.UserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36"),
+
+		chromedp.Flag("lang", "zh-CN,zh;q=0.9,en;q=0.8"),
+		chromedp.Flag("charset", "utf-8"),
+		chromedp.Flag("accept-charset", "utf-8"),
+
+		chromedp.Flag("disable-blink-features", "AutomationControlled"),
+		chromedp.Flag("disable-features", "TranslateUI"),
+		chromedp.Flag("disable-ipc-flooding-protection", true),
+
+		chromedp.Flag("disable-background-timer-throttling", true),
+		chromedp.Flag("disable-backgrounding-occluded-windows", true),
+		chromedp.Flag("disable-renderer-backgrounding", true),
+		chromedp.Flag("disable-background-networking", false),
+		chromedp.Flag("disable-default-apps", false),
+		chromedp.Flag("disable-extensions", false),
+		chromedp.Flag("metrics-recording-only", false),
+		chromedp.Flag("enable-automation", false),
+		chromedp.Flag("enable-blink-features", ""),
+
+		chromedp.Flag("disable-web-security", true),
+		chromedp.Flag("disable-features", "CrossSiteDocumentBlockingIfIsolating"),
+		chromedp.Flag("disable-site-isolation-trials", true),
+		chromedp.Flag("enable-features", "NetworkService,NetworkServiceInProcess"),
+
+		chromedp.Flag("allow-file-access-from-files", true),
+		chromedp.Flag("allow-running-insecure-content", true),
+
+		chromedp.Flag("disable-strict-mime-type-checking", true),
+	}
+
+	// 如果启用了代理配置，则添加代理设置
+	if proxyConfig != nil && proxyConfig.Enabled {
+		var proxyServer string
+		if proxyConfig.Username != "" && proxyConfig.Password != "" {
+			// 带认证的代理
+			proxyServer = fmt.Sprintf("%s://%s:%s@%s:%d",
+				proxyConfig.Protocol,
+				proxyConfig.Username,
+				proxyConfig.Password,
+				proxyConfig.Host,
+				proxyConfig.Port)
+		} else {
+			// 不带认证的代理
+			proxyServer = fmt.Sprintf("%s://%s:%d",
+				proxyConfig.Protocol,
+				proxyConfig.Host,
+				proxyConfig.Port)
+		}
+		opts = append(opts, chromedp.Flag("proxy-server", proxyServer))
+	}
+
+	return chromedp.NewExecAllocator(context.Background(), opts...)
+}
+
 // Scrape 根据ID刮削元数据 - 主要的刮削入口函数
 // 参数：ctx - 上下文, id - 要刮削的ID
 // 返回：元数据映射、目标URL和可能的错误
@@ -77,18 +145,7 @@ func (s *ScraperChromeDp) Scrape(ctx context.Context, id string) (*map[string]an
 // 返回：搜索到的真实ID和可能的错误
 func (s *ScraperChromeDp) scrapeSearch(ctx context.Context, searchConfig *SearchConfig, id string) (string, error) {
 	// 创建 Chrome 实例，配置各种参数以模拟真实浏览器
-	allocCtx, cancel := chromedp.NewExecAllocator(context.Background(),
-		chromedp.Flag("headless", s.headless),        // 启用无头模式
-		chromedp.Flag("no-sandbox", true),            // 无沙箱模式
-		chromedp.Flag("disable-gpu", true),           // 禁用GPU
-		chromedp.Flag("disable-dev-shm-usage", true), // 禁用/dev/shm使用
-		chromedp.Flag("window-size", "1920,1080"),    // 设置窗口大小
-		chromedp.UserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36"),
-		// 添加字符集和语言相关配置
-		chromedp.Flag("lang", "zh-CN,zh;q=0.9,en;q=0.8"),
-		chromedp.Flag("charset", "utf-8"),
-		chromedp.Flag("accept-charset", "utf-8"),
-	)
+	allocCtx, cancel := GetNewExecAllocator(s.headless, s.config.Proxy)
 	defer cancel()
 
 	// 创建浏览器上下文
@@ -117,6 +174,11 @@ func (s *ScraperChromeDp) scrapeSearch(ctx context.Context, searchConfig *Search
 		)
 
 		if err == nil {
+			// 打印获取到的HTML长度以供调试
+			LogInfo("成功获取页面内容，HTML长度: %d", len(htmlContent))
+			if len(htmlContent) < 100 {
+				LogInfo("获取到的HTML内容: %s", htmlContent)
+			}
 			break
 		}
 		if s.retryCount > 1 {
@@ -214,18 +276,7 @@ func (s *ScraperChromeDp) scrapeSearch(ctx context.Context, searchConfig *Search
 // 返回：元数据映射、目标URL和可能的错误
 func (s *ScraperChromeDp) scrapeSite(ctx context.Context, site SiteConfig, id string) (*map[string]any, string, error) {
 	// 创建 Chrome 实例，配置各种参数以模拟真实浏览器
-	allocCtx, cancel := chromedp.NewExecAllocator(context.Background(),
-		chromedp.Flag("headless", s.headless),
-		chromedp.Flag("no-sandbox", true),
-		chromedp.Flag("disable-gpu", true),
-		chromedp.Flag("disable-dev-shm-usage", true),
-		chromedp.Flag("window-size", "1920,1080"),
-		chromedp.UserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36"),
-		// 添加字符集和语言相关配置
-		chromedp.Flag("lang", "zh-CN,zh;q=0.9,en;q=0.8"),
-		chromedp.Flag("charset", "utf-8"),
-		chromedp.Flag("accept-charset", "utf-8"),
-	)
+	allocCtx, cancel := GetNewExecAllocator(s.headless, s.config.Proxy)
 	defer cancel()
 
 	// 读取config里的headers,并设置请求头
@@ -250,6 +301,7 @@ func (s *ScraperChromeDp) scrapeSite(ctx context.Context, site SiteConfig, id st
 	var htmlContent string
 
 	// 访问页面，最多重试3次
+	fmt.Println("------------------------")
 	var err error
 	for i := 0; i < s.retryCount; i++ {
 		err = chromedp.Run(chromeCtx,
@@ -260,6 +312,11 @@ func (s *ScraperChromeDp) scrapeSite(ctx context.Context, site SiteConfig, id st
 		)
 
 		if err == nil {
+			// 打印获取到的HTML长度以供调试
+			LogInfo("成功获取页面内容，HTML长度: %d", len(htmlContent))
+			if len(htmlContent) < 100 {
+				LogInfo("获取到的HTML内容: %s", htmlContent)
+			}
 			break
 		}
 		if s.retryCount > 1 {

@@ -14,10 +14,11 @@ import (
 
 // ScraperChromeDp_DownLoad 图片下载器 - 使用ChromeDP下载图片
 type ScraperChromeDp_DownLoad struct {
-	Headless               bool    // 是否使用无头模式
-	VisitHome              bool    // 是否访问主页
-	EnableScrollSimulation bool    // 是否启用滚动模拟，模拟真实用户浏览行为
-	ScrollIntervalFactor   float64 // 滚动间隔系数，控制滚动操作的时间间隔
+	Headless               bool           // 是否使用无头模式
+	Config                 *ScraperConfig // 刮削器配置
+	VisitHome              bool           // 是否访问主页
+	EnableScrollSimulation bool           // 是否启用滚动模拟，模拟真实用户浏览行为
+	ScrollIntervalFactor   float64        // 滚动间隔系数，控制滚动操作的时间间隔
 }
 
 // Download_Images_WithChromeDP 使用ChromeDP下载图片
@@ -35,46 +36,7 @@ func (s ScraperChromeDp_DownLoad) Download_Images_WithChromeDP(ctx context.Conte
 	referer := u.Scheme + "://" + u.Host + "/"
 
 	// 增强浏览器模拟配置，尽可能模拟真实浏览器行为
-	allocCtx, cancel := chromedp.NewExecAllocator(ctx,
-		// 浏览器基础配置
-		chromedp.Flag("headless", s.Headless),        // 启用无头模式
-		chromedp.Flag("no-sandbox", true),            // 无沙箱模式
-		chromedp.Flag("disable-gpu", false),          // 启用GPU
-		chromedp.Flag("disable-dev-shm-usage", true), // 禁用/dev/shm使用
-		chromedp.Flag("window-size", "1920,1080"),    // 设置窗口大小
-
-		// 用户代理设置
-		chromedp.UserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"),
-		chromedp.Flag("lang", "zh-CN,zh;q=0.9,en;q=0.8"),
-
-		// 反反爬相关配置，避免被检测为自动化程序
-		chromedp.Flag("disable-blink-features", "AutomationControlled"),
-		chromedp.Flag("disable-features", "TranslateUI"),
-		chromedp.Flag("disable-ipc-flooding-protection", true),
-
-		// 更多反检测配置
-		chromedp.Flag("disable-background-timer-throttling", true),
-		chromedp.Flag("disable-backgrounding-occluded-windows", true),
-		chromedp.Flag("disable-renderer-backgrounding", true),
-		chromedp.Flag("disable-background-networking", false),
-		chromedp.Flag("disable-default-apps", false),
-		chromedp.Flag("disable-extensions", false),
-		chromedp.Flag("metrics-recording-only", false),
-		chromedp.Flag("enable-automation", false),
-		chromedp.Flag("enable-blink-features", ""),
-
-		// 减少跨域限制的参数
-		chromedp.Flag("disable-web-security", true), // 禁用同源策略
-		chromedp.Flag("disable-features", "CrossSiteDocumentBlockingIfIsolating"),
-		chromedp.Flag("disable-site-isolation-trials", true), // 禁用站点隔离
-
-		// 允许访问本地文件
-		chromedp.Flag("allow-file-access-from-files", true),
-		chromedp.Flag("allow-running-insecure-content", true),
-
-		// 禁用安全策略
-		chromedp.Flag("disable-strict-mime-type-checking", true),
-	)
+	allocCtx, cancel := GetNewExecAllocator(s.Headless, s.Config.Proxy)
 	//defer cancel()
 
 	// 创建浏览器上下文

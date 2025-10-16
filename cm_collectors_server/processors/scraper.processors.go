@@ -116,7 +116,7 @@ func (t Scraper) ScraperDataProcess(filesBasesId, filePath string, config dataty
 			// 是否下载图片
 			if config.EnableDownloadImages {
 				// 获取元数据的base64图片数据map
-				images, err := cmscraper.GetMetadataImages(ctx, pageUrl, metadata, config.UseTagAsImageName, core.Config.Scraper.Headless, core.Config.Scraper.VisitHome, config.EnableUserSimulation, 1.0)
+				images, err := cmscraper.GetMetadataImages(ctx, scraperConfig, pageUrl, metadata, config.UseTagAsImageName, core.Config.Scraper.Headless, core.Config.Scraper.VisitHome, config.EnableUserSimulation, 1.0)
 				if err == nil && len(images) > 0 {
 					// 保存图片
 					for imageName, base64Data := range images {
@@ -174,7 +174,7 @@ func (t Scraper) ScraperPerformerDataProcess(par *datatype.ReqParam_ScraperPerfo
 	if err != nil {
 		return err
 	}
-	images, err := cmscraper.GetMetadataImages(ctx, pageUrl, metadata, true, core.Config.Scraper.Headless, core.Config.Scraper.VisitHome, false, 1.0)
+	images, err := cmscraper.GetMetadataImages(ctx, scraperConfig, pageUrl, metadata, true, core.Config.Scraper.Headless, core.Config.Scraper.VisitHome, false, 1.0)
 	if err != nil {
 		return err
 	}
@@ -334,7 +334,7 @@ func (t Scraper) ScraperOneResourceDataProcess(par *datatype.ReqParam_ScraperOne
 			return nil, errors.New("没有找到匹配的元数据")
 		}
 		// 获取图片
-		metadataImages, err = cmscraper.GetMetadataImages(ctx, pageUrl, metadata, true, core.Config.Scraper.Headless, core.Config.Scraper.VisitHome, false, 1.0)
+		metadataImages, err = cmscraper.GetMetadataImages(ctx, scraperConfig, pageUrl, metadata, true, core.Config.Scraper.Headless, core.Config.Scraper.VisitHome, false, 1.0)
 		if err == nil && len(metadataImages) > 0 && filePathExists && par.SaveImage {
 			// 保存图片
 			for imageName, base64Data := range metadataImages {
