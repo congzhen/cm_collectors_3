@@ -1,12 +1,16 @@
 {
-  "version": "3.0.2",
+  "version": "3.0.3",
   "changelog": [
     "***新特性***",
-    "新增云播放功能（推荐使用 PotPlayer 播放器以获得最佳体验）",
-    "新增云播放协议脚本",
-    "新增 Docker 容器化部署",
-    "优化 NFO 文件导入性能，移除链接尝试下载功能",
-    "新增数据库迁移过程的错误日志记录"
+    "优化视频流传输性能及缓存机制",
+    "新增视频限流器，提升带宽控制能力",
+    "新增视频与演员信息刮削器",
+    "新增刮削器配置调试工具",
+    "新增路径替换功能，支持通过文件管理器选择路径",
+    "新增剧照展示功能",
+    "新增宽图盒子资源显示模式",
+    "新增快捷调整资源显示方式的功能",
+    "更新Dockerfile以适配刮削器功能"
   ],
   "windowsDownloadUrl": "https://objectstorageapi.ap-southeast-1.clawcloudrun.com/vj5i0ntw-cm-collectors-3/download/last/cm_collectors_3_windows.zip",
   "linuxDownloadUrl": "https://objectstorageapi.ap-southeast-1.clawcloudrun.com/vj5i0ntw-cm-collectors-3/download/last/cm_collectors_3_linux.zip",

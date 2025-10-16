@@ -10,8 +10,13 @@ E-mail: czpk673@gmail.com
 
 - **Windows 版**: [cm_collectors_3_windows.zip](https://objectstorageapi.ap-southeast-1.clawcloudrun.com/vj5i0ntw-cm-collectors-3/download/last/cm_collectors_3_windows.zip)
 - **Linux 版**: [cm_collectors_3_linux.zip](https://objectstorageapi.ap-southeast-1.clawcloudrun.com/vj5i0ntw-cm-collectors-3/download/last/cm_collectors_3_linux.zip)
-- **Docker 镜像**: [cm_collectors_server_docker.tar](https://objectstorageapi.ap-southeast-1.clawcloudrun.com/vj5i0ntw-cm-collectors-3/download/last/cm_collectors_server_docker.tar)
+- **Docker 镜像**:由于刮削器依赖 Chrome 浏览器和特定操作系统环境，暂不提供预构建的 Docker 镜像。请下载 Linux 版本并使用项目中的 Dockerfile 自行构建。
 - **云播插件**: [video_caller.zip](https://objectstorageapi.ap-southeast-1.clawcloudrun.com/vj5i0ntw-cm-collectors-3/download/last/video_caller.zip)
+- **刮削调试器**:[scraper_debugger.zip](https://objectstorageapi.ap-southeast-1.clawcloudrun.com/vj5i0ntw-cm-collectors-3/download/last/scraper_debugger.zip)
+
+### 说明
+
+使用刮削器时，系统需要已安装 chrome 浏览器
 
 ## 项目结构
 
@@ -70,6 +75,9 @@ cd cm_collectors_windows_launcher && go build -ldflags -H=windowsgui -o ../build
 
 # 构建视频调用器
 cd cm_collectors_video_caller && set GOOS=windows&& set GOARCH=amd64&& go build -ldflags -H=windowsgui -tags tray -o ../build/video_caller/cm_collectors_video_caller.exe . && copy config.json ..\build\video_caller\  && copy setup_cm_video_caller.bat ..\build\video_caller\ && copy uninstall_cm_video_caller.bat ..\build\video_caller\ && cd ..
+
+# 构建刮削调试器
+cd cm_collectors_scraper_debugger && set GOOS=windows&& set GOARCH=amd64&& go build -o ../build/scraper_debugger/cm_collectors_scraper_debugger.exe . && copy test.json ..\build\scraper_debugger\ && robocopy scraper ..\build\scraper_debugger\scraper\ && cd ..
 
 
 # 构建docker *构建前需要先构建Linux可执行文件

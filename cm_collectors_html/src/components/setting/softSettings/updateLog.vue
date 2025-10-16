@@ -16,6 +16,26 @@
         </div>
       </el-timeline-item>
       -->
+      <el-timeline-item center timestamp="2025/10/17" placement="top">
+        <h4 class="version-title">版本: v 3.0.3</h4>
+        <div class="rawContent">
+          <h5 class="section-title">新特性</h5>
+          <p class="logContent">优化视频流传输性能及缓存机制</p>
+          <p class="logContent">新增视频限流器，提升带宽控制能力</p>
+          <p class="logContent">新增视频与演员信息刮削器</p>
+          <p class="logContent">新增刮削器配置调试工具</p>
+          <p class="logContent">新增路径替换功能，支持通过文件管理器选择路径</p>
+          <p class="logContent">新增剧照展示功能</p>
+          <p class="logContent">新增宽图盒子资源显示模式</p>
+          <p class="logContent">新增快捷调整资源显示方式的功能</p>
+          <p class="logContent">更新Dockerfile以适配刮削器功能</p>
+        </div>
+        <div class="rawContent">
+          <h5 class="section-title bug-fix">BUG修复</h5>
+          <p class="logContent">修复部分视频因特殊编码格式导致误转码的问题</p>
+          <p class="logContent">修复移动端页面样式异常问题</p>
+        </div>
+      </el-timeline-item>
       <el-timeline-item center timestamp="2025/9/23" placement="top">
         <h4 class="version-title">版本: v 3.0.2</h4>
         <div class="rawContent">
