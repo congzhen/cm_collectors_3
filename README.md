@@ -2,17 +2,26 @@
 
 CM Collectors 3 是一个多媒体文件管理系统，用于收集、管理和播放视频与图片等。主要基于 Vue.js + Go 开发。
 
-## 如果有问题或意见，请发邮件联系
+## 联系方式
 
-E-mail: czpk673@gmail.com
+如果有问题或意见，可以通过以下方式联系我们：
+
+- **电子邮件**: czpk673@gmail.com
+
+- **Telegram 群组**: [https://t.me/+rFdWuJ8si_IzNTc1](https://t.me/+rFdWuJ8si_IzNTc1)
+  ![Telegram 群组二维码](cm_collectors_html/public/tg.png)
 
 ### 下载地址
 
 - **Windows 版**: [cm_collectors_3_windows.zip](https://objectstorageapi.ap-southeast-1.clawcloudrun.com/vj5i0ntw-cm-collectors-3/download/last/cm_collectors_3_windows.zip)
 - **Linux 版**: [cm_collectors_3_linux.zip](https://objectstorageapi.ap-southeast-1.clawcloudrun.com/vj5i0ntw-cm-collectors-3/download/last/cm_collectors_3_linux.zip)
-- **Docker 镜像**:由于刮削器依赖 Chrome 浏览器和特定操作系统环境，暂不提供预构建的 Docker 镜像。请下载 Linux 版本并使用项目中的 Dockerfile 自行构建。
+- **Docker 镜像**:由于刮削器依赖 Chrome 浏览器和特定操作系统环境导致打包的软件体积超过 1GB，所以暂不提供预构建的 Docker 镜像。请下载 Linux 版本并使用项目中的 Dockerfile 自行构建。
 - **云播插件**: [video_caller.zip](https://objectstorageapi.ap-southeast-1.clawcloudrun.com/vj5i0ntw-cm-collectors-3/download/last/video_caller.zip)
 - **刮削调试器**:[scraper_debugger.zip](https://objectstorageapi.ap-southeast-1.clawcloudrun.com/vj5i0ntw-cm-collectors-3/download/last/scraper_debugger.zip)
+
+### 简介视频
+
+想快速了解 CM Collectors 3 的功能和使用方法？观看我们的 [YouTube 介绍视频](https://youtu.be/3mRCA8Va8G4)
 
 ### 说明
 
