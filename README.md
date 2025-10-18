@@ -7,9 +7,11 @@ CM Collectors 3 是一个多媒体文件管理系统，用于收集、管理和�
 如果有问题或意见，可以通过以下方式联系我们：
 
 - **电子邮件**: czpk673@gmail.com
-
 - **Telegram 群组**: [https://t.me/+rFdWuJ8si_IzNTc1](https://t.me/+rFdWuJ8si_IzNTc1)
+
+<div align="left">
   <img src="cm_collectors_html/public/tg.png" alt="Telegram 二维码" width="200">
+</div>
 
 ### 下载地址
 
