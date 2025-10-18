@@ -395,7 +395,7 @@ func (t Scraper) ScraperOneResourceDataProcess(par *datatype.ReqParam_ScraperOne
 				}
 			}
 			// 如果设置了封面海报类型，则进行裁剪
-			if configScanDisk.CoverPosterType > 0 {
+			if configScanDisk.CoverPosterType >= 0 {
 				coverPosterWidth = configScanDisk.CoverPosterWidth
 				coverPosterHeight = configScanDisk.CoverPosterHeight
 
@@ -418,7 +418,6 @@ func (t Scraper) ScraperOneResourceDataProcess(par *datatype.ReqParam_ScraperOne
 		}
 
 	}
-
 	// 资源标题
 	resourceTitle := ImportData{}.GetResourceTitle(filePath, configScanDisk)
 	lastScraperUpdateTime := datatype.CustomDate{}
@@ -466,7 +465,7 @@ func (t Scraper) ScraperOneResourceDataProcess(par *datatype.ReqParam_ScraperOne
 				}
 				if resourceInfo.IssuingDate.IsZero() == false {
 					issuingDate, err := resourceInfo.IssuingDate.Value()
-					if err != nil {
+					if err == nil {
 						resourceDataParam.Resource.IssuingDate = issuingDate.(string)
 					}
 				}

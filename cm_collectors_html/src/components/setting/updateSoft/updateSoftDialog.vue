@@ -11,7 +11,7 @@
           <div class="version-item">
             <span class="version-label">最新版本：</span>
             <span class="version-number" :class="{ 'update-available': hasUpdate }">{{ latestVersion || '检查中...'
-            }}</span>
+              }}</span>
           </div>
         </div>
       </div>
@@ -39,12 +39,14 @@
               <p v-if="updateInfo?.linuxDownloadUrl">{{ updateInfo.linuxDownloadUrl }}</p>
               <p v-else>暂无</p>
             </div>
+            <!--
             <div class="update-download">
               <p class="update-download-version">v{{ latestVersion }}</p>
               <p>docker 下载地址:</p>
               <p v-if="updateInfo?.dockerDownloadUrl">{{ updateInfo.dockerDownloadUrl }}</p>
               <p v-else>暂无</p>
             </div>
+            -->
             <div class="update-download">
               <p class="update-download-version">v{{ latestVersion }}</p>
               <p>云播脚本 下载地址:</p>

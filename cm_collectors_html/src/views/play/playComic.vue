@@ -325,6 +325,10 @@ onUnmounted(() => {
         flex-direction: column;
         gap: 10px;
 
+        .el-image {
+          width: 100%;
+        }
+
         .title {
           font-size: 14px;
         }

@@ -181,9 +181,9 @@ onMounted(async () => {
     overflow: hidden;
 
     .main {
-      width: calc(100% - 80px);
+      width: calc(100% - 20px);
       height: calc(100% - 20px);
-      padding: 10px 40px;
+      padding: 10px;
       display: flex;
       gap: 20px;
       overflow-y: auto;
@@ -240,6 +240,10 @@ onMounted(async () => {
         display: flex;
         flex-direction: column;
         gap: 10px;
+
+        .el-image {
+          width: 100%;
+        }
 
         .title {
           font-size: 14px;
