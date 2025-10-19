@@ -48,7 +48,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, onMounted, onUnmounted, type Ref, type PropType } from 'vue'
+import { ref, computed, onMounted, onUnmounted, type Ref, type PropType, nextTick } from 'vue'
 import ContextMenuManager from './contentMenuManager'
 
 // 定义菜单项接口
@@ -104,9 +104,27 @@ const menuStyle = computed(() => {
 const submenuStyle = computed(() => {
   if (!activeSubmenu.value) return {}
 
+  // 默认位置
+  let top = position.value.y
+  let left = position.value.x + parseInt(props.width)
+
+  // 检查子菜单是否超出右侧边界
+  if (left + parseInt(props.width) > window.innerWidth) {
+    // 如果超出右侧边界，则显示在主菜单左侧
+    left = position.value.x - parseInt(props.width)
+  }
+
+  // 检查子菜单是否超出底部边界
+  // 这里使用估计高度，实际应该根据子菜单项数计算
+  const estimatedHeight = activeSubmenu.value.children ? activeSubmenu.value.children.length * 36 + 30 : 200
+  if (top + estimatedHeight > window.innerHeight) {
+    // 向上调整位置
+    top = Math.max(0, window.innerHeight - estimatedHeight)
+  }
+
   return {
-    top: `${position.value.y}px`,
-    left: `${position.value.x + parseInt(props.width)}px`,
+    top: `${top}px`,
+    left: `${left}px`,
     minWidth: props.width,
     maxWidth: props.width
   }
@@ -120,14 +138,53 @@ const handleContextMenu = (event: MouseEvent) => {
   // 注册当前菜单到全局管理器
   ContextMenuManager.registerMenu(hideMenu)
 
-  // 计算菜单位置，确保不会超出视窗
+  // 初始位置
   const x = Math.min(event.clientX, window.innerWidth - parseInt(props.width))
-  const y = Math.min(event.clientY, window.innerHeight - 200)
 
-  position.value = { x, y }
+  // 先设置菜单位置
+  position.value = { x, y: event.clientY }
   isVisible.value = true
   activeSubmenu.value = null
   activeSubmenuIndex.value = null
+
+  // 使用 nextTick 确保 DOM 已更新后再计算位置
+  nextTick(() => {
+    if (contextMenuRef.value) {
+      const menuRect = contextMenuRef.value.getBoundingClientRect()
+      const menuHeight = menuRect.height
+
+      // 计算最终y坐标，确保菜单不会超出视口
+      let finalY = event.clientY
+
+      // 如果菜单向下展开会超出底部边界
+      if (event.clientY + menuHeight > window.innerHeight) {
+        // 尝试向上展开
+        const upwardY = event.clientY - menuHeight
+
+        // 如果向上展开会超出顶部边界
+        if (upwardY < 0) {
+          // 最终选择保留更多菜单项的方案
+          // 如果向下展开能显示更多菜单项
+          if (window.innerHeight - event.clientY > event.clientY) {
+            // 向下展开，但限制最大高度
+            finalY = event.clientY
+            contextMenuRef.value.style.maxHeight = (window.innerHeight - event.clientY - 10) + 'px'
+            contextMenuRef.value.style.overflowY = 'auto'
+          } else {
+            // 向上展开，但限制最大高度
+            finalY = 10
+            contextMenuRef.value.style.maxHeight = (event.clientY - 20) + 'px'
+            contextMenuRef.value.style.overflowY = 'auto'
+          }
+        } else {
+          // 正常向上展开
+          finalY = upwardY
+        }
+      }
+
+      position.value.y = finalY
+    }
+  })
 }
 
 // 处理菜单项点击
@@ -180,6 +237,12 @@ const hideMenu = () => {
   activeSubmenu.value = null
   activeSubmenuIndex.value = null
   ContextMenuManager.unregisterMenu()
+
+  // 清除可能设置的滚动样式
+  if (contextMenuRef.value) {
+    contextMenuRef.value.style.maxHeight = ''
+    contextMenuRef.value.style.overflowY = ''
+  }
 }
 
 // 处理点击外部区域
