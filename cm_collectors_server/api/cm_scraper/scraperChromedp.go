@@ -447,6 +447,10 @@ func (s *ScraperChromeDp) scrapeSite(ctx context.Context, site SiteConfig, id st
 					if len(matches) > 1 {
 						metadata[field] = matches[1]
 					}
+				case "split":
+					// 分割字符串后处理
+					parts := strings.Split(strValue, processor.Pattern)
+					metadata[field] = parts
 				}
 			}
 		}
