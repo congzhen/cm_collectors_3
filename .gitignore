@@ -39,11 +39,9 @@ cm_collectors_server/gin.log
 cm_collectors_server/html/*
 cm_collectors_server/ffmpeg/*
 cm_collectors_server/*.exe*
-cm_collectors_server/scraper/*av*.json
 cm_collectors_server/scraper.log
 /build/*
 
-cm_collectors_scraper_debugger/scraper/*av*.json
 cm_collectors_scraper_debugger/save/*
 cm_collectors_scraper_debugger/*.log
 
