@@ -1,8 +1,8 @@
 {
   "headless": false,
   "visitHome": false,
-  "scraperConfig": "./scraper/javbus_scraper.json",
-  "id": "MIMK-244",
+  "scraperConfig": "./scraper/themoviedb_scraper.json",
+  "id": "拯救大兵瑞恩",
   "savePath": "./save/",
   "batch": false,
   "batchSkipExitsNfo": true,
