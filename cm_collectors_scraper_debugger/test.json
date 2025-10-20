@@ -1,12 +1,16 @@
 {
   "headless": false,
   "visitHome": false,
-  "scraperConfig": "./scraper/themoviedb_scraper.json",
-  "id": "凡人修仙传",
+  "scraperConfig": "./scraper/javbus_scraper.json",
+  "id": "MIMK-244",
+  "savePath": "./save/",
+  "batch": false,
+  "batchSkipExitsNfo": true,
+  "batchFolderPath": "G:/a2/test",
+  "batchExtensions": ".mp4,.mkv",
   "timeOut": 30,
   "retryCount": 3,
   "imageUseTagName": true,
   "enableScrollSimulation": false,
-  "savePath": "./save/",
   "log": true
 }
