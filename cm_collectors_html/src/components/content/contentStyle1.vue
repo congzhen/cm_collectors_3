@@ -17,7 +17,7 @@
         </el-icon>
       </div>
       <div class="title-bg"></div>
-      <div class="title">{{ props.resource.title }}</div>
+      <div class="title" :style="titleStyleObj_C">{{ props.resource.title }}</div>
     </div>
   </contentRightClickMenu>
 </template>
@@ -30,6 +30,7 @@ import { playResource } from '@/common/play';
 import { getResourceCoverPoster } from '@/common/photo';
 import { isMobile } from '@/assets/mobile';
 import contentRightClickMenu from './contentRightClickMenu.vue';
+import dataset from '@/assets/dataset';
 const store = {
   appStoreData: appStoreData(),
 }
@@ -55,6 +56,16 @@ const coverPosterSize_C = computed(() => {
     width,
     height,
   }
+})
+
+const titleStyleObj_C = computed(() => {
+  const obj: Record<string, string> = {};
+  if (dataset.coverTitleAlign.indexOf(store.appStoreData.currentConfigApp.coverTitleAlign) > -1) {
+    obj['text-align'] = store.appStoreData.currentConfigApp.coverTitleAlign;
+  } else {
+    obj['text-align'] = 'left'
+  }
+  return obj
 })
 
 </script>
@@ -121,7 +132,7 @@ const coverPosterSize_C = computed(() => {
   .title {
     position: absolute;
     margin-top: -1.7em;
-    width: 100%;
+    width: calc(100% - 0.4em);
     line-height: 1.7em;
     z-index: 6;
     padding: 0 0.2em;

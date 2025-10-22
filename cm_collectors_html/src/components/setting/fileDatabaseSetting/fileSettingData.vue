@@ -69,6 +69,13 @@
       <el-form-item v-if="filesConfig.resourcesShowMode == 'coverPosterWaterfall'" label="封面海报瀑布流-列数">
         <el-input-number v-model="filesConfig.coverPosterWaterfallColumn" :min="1" :max="20" />
       </el-form-item>
+      <el-form-item label="封面标题对齐方式">
+        <el-select v-model="filesConfig.coverTitleAlign">
+          <el-option label="左对齐" value="left" />
+          <el-option label="居中" value="center" />
+          <el-option label="右对齐" value="right" />
+        </el-select>
+      </el-form-item>
       <el-form-item label="详情剧集显示模式">
         <selectDetailsDramaSeriesMode v-model="filesConfig.detailsDramaSeriesMode" />
       </el-form-item>

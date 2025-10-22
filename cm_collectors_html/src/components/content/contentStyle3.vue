@@ -10,7 +10,6 @@
         </div>
       </div>
       <div class="info">
-
         <div class="block-two">
           <div class="issueNumber">{{ props.resource.issueNumber }}</div>
           <div class="tags">
@@ -23,7 +22,7 @@
             <el-rate v-model="localStars" disabled />
           </div>
         </div>
-        <div class="title">{{ props.resource.title }}</div>
+        <div class="title" :style="titleStyleObj_C">{{ props.resource.title }}</div>
       </div>
     </div>
   </contentRightClickMenu>
@@ -36,6 +35,7 @@ import { computed, ref, type PropType } from 'vue';
 import { playResource } from '@/common/play';
 import { appStoreData } from '@/storeData/app.storeData';
 import { getResourceCoverPoster } from '@/common/photo';
+import dataset from '@/assets/dataset';
 const store = {
   appStoreData: appStoreData(),
 }
@@ -61,6 +61,17 @@ const coverPosterSize_C = computed(() => {
     height,
   }
 })
+
+const titleStyleObj_C = computed(() => {
+  const obj: Record<string, string> = {};
+  if (dataset.coverTitleAlign.indexOf(store.appStoreData.currentConfigApp.coverTitleAlign) > -1) {
+    obj['text-align'] = store.appStoreData.currentConfigApp.coverTitleAlign;
+  } else {
+    obj['text-align'] = 'left'
+  }
+  return obj
+})
+
 </script>
 <style lang="scss" scoped>
 .content-style3 {

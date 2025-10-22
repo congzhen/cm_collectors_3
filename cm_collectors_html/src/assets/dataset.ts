@@ -15,6 +15,7 @@ export default {
   cup: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'Max'],
   resMode: ['movies', 'comic', 'atlas', 'files', 'videoLink'],
   resourcesShowMode: ['coverPoster', 'coverPosterBox', 'coverPosterBoxWideSeparate', 'coverPosterWaterfall', 'shortVideo', 'table'],
+  coverTitleAlign: ['left', 'center', 'right'],
   detailsDramaSeriesMode: ['fileName', 'digit'],
   playAtlasMode: ['waterfall', 'flex'],
   playComicMode: ['scaleToOriginal', 'fullScreen'],

@@ -62,6 +62,7 @@ export interface I_config_app {
   resourcesShowMode: string; // 资源-显示模式
   coverPosterBoxInfoWidth: number; // 资源-显示模式-封面海报盒子-信息宽度
   coverPosterWaterfallColumn: number; // 资源-显示模式-封面海报瀑布流-列数
+  coverTitleAlign: string; // 封面海报盒子-标题对齐模式 left right center
   routeConversion: I_routeConversion[];// 路由转换
   shieldNoPerformerPhoto: boolean; // 屏蔽无照片演员
   showPreviewImage: boolean; // 显示预览图片
@@ -98,6 +99,7 @@ export const defualtConfigApp: I_config_app = {
   resourcesShowMode: 'coverPoster',
   coverPosterBoxInfoWidth: 200,
   coverPosterWaterfallColumn: 8,
+  coverTitleAlign: 'left',
   detailsDramaSeriesMode: E_detailsDramaSeriesMode.fileName,
   historyModule: true,
   hotModule: true,

@@ -3,7 +3,7 @@
     <div class="content-style2">
       <div class="content-cover"
         :style="{ width: coverPosterSize_C.width + 'px', height: coverPosterSize_C.height + 'px' }">
-        <el-image :src="getResourceCoverPoster(props.resource)" fit="contain" />
+        <el-image :src="getResourceCoverPoster(props.resource)" fit="cover" />
         <div class="play-icon" @click.stop="playResource(props.resource)">
           <el-icon>
             <VideoPlay />
@@ -11,7 +11,7 @@
         </div>
       </div>
       <div class="content-info" :style="{ width: store.appStoreData.currentConfigApp.coverPosterBoxInfoWidth + 'px' }">
-        <h4 class="title">{{ props.resource.title }}</h4>
+        <h4 class="title" :style="titleStyleObj_C">{{ props.resource.title }}</h4>
         <contentTagDisplay :resource="props.resource"></contentTagDisplay>
         <div class="tag-list">
           <el-tag effect="plain" size="small" v-for="item, key in props.resource.performers" :key="key">
@@ -36,6 +36,7 @@ import { coverPosterSize } from '@/common/photo';
 import contentTagDisplay from './contentTagDisplay.vue'
 import { playResource } from '@/common/play';
 import contentRightClickMenu from './contentRightClickMenu.vue';
+import dataset from '@/assets/dataset';
 const store = {
   appStoreData: appStoreData(),
 }
@@ -52,6 +53,16 @@ const coverPosterSize_C = computed(() => {
     height,
   }
 })
+const titleStyleObj_C = computed(() => {
+  const obj: Record<string, string> = {};
+  if (dataset.coverTitleAlign.indexOf(store.appStoreData.currentConfigApp.coverTitleAlign) > -1) {
+    obj['text-align'] = store.appStoreData.currentConfigApp.coverTitleAlign;
+  } else {
+    obj['text-align'] = 'left'
+  }
+  return obj
+})
+
 </script>
 <style lang="scss" scoped>
 .content-style2 {

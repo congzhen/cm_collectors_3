@@ -16,15 +16,23 @@
             <div class="size-settings">
               <div class="setting-item">
                 <el-checkbox v-model="coverPosterWidthStatus" label="锁定宽度" />
-                <el-slider v-model="coverPosterWidthBase" :min="10" :max="1000" />
+                <el-slider v-model="coverPosterWidthBase" :min="10" :max="1000" size="small" />
               </div>
               <div class="setting-item">
                 <el-checkbox v-model="coverPosterHeightStatus" label="锁定高度" />
-                <el-slider v-model="coverPosterHeightBase" :min="10" :max="1000" />
+                <el-slider v-model="coverPosterHeightBase" :min="10" :max="1000" size="small" />
               </div>
               <div class="setting-item">
                 <span class="setting-label">间距</span>
-                <el-slider v-model="coverPosterGap" :min="0" :max="50" :step="0.1" />
+                <el-slider v-model="coverPosterGap" :min="0" :max="50" :step="0.1" size="small" />
+              </div>
+              <div class="setting-item">
+                <span class="setting-label">封面标题对齐方式</span>
+                <el-radio-group v-model="coverTitleAlign" size="small">
+                  <el-radio-button label="左对齐" value="left" />
+                  <el-radio-button label="居中" value="center" />
+                  <el-radio-button label="右对齐" value="right" />
+                </el-radio-group>
               </div>
             </div>
             <div class="other-settings">
@@ -105,6 +113,18 @@ const coverPosterGap = computed({
   get: () => store.appStoreData.currentConfigApp.coverPosterGap,
   set: (value) => {
     store.appStoreData.currentConfigApp.coverPosterGap = value;
+  }
+});
+
+const coverTitleAlign = computed({
+  get: () => {
+    if (store.appStoreData.currentConfigApp.coverTitleAlign) {
+      return store.appStoreData.currentConfigApp.coverTitleAlign;
+    }
+    return 'left';
+  },
+  set: (value) => {
+    store.appStoreData.currentConfigApp.coverTitleAlign = value;
   }
 });
 
