@@ -3,7 +3,7 @@
     <div class="content-style2">
       <div class="content-cover"
         :style="{ width: coverPosterSize_C.width + 'px', height: coverPosterSize_C.height + 'px' }">
-        <el-image :src="getResourceCoverPoster(props.resource)" fit="cover" />
+        <contentCoverImage :resource="props.resource"></contentCoverImage>
         <div class="play-icon" @click.stop="playResource(props.resource)">
           <el-icon>
             <VideoPlay />
@@ -30,7 +30,7 @@
 <script setup lang="ts">
 import type { I_resource } from '@/dataType/resource.dataType';
 import { computed, type PropType } from 'vue';
-import { getResourceCoverPoster } from '@/common/photo';
+import contentCoverImage from './contentCoverImage.vue';
 import { appStoreData } from '@/storeData/app.storeData';
 import { coverPosterSize } from '@/common/photo';
 import contentTagDisplay from './contentTagDisplay.vue'

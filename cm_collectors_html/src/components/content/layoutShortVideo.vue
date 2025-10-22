@@ -11,7 +11,7 @@
                   :class="{ active: index === currentPlayIndex, ['waterfall-item-' + index]: true }"
                   @click.stop="clickResourceHandle(index)">
 
-                  <el-image :src="item.src" :title="item.title" @load="onImageLoad" />
+                  <el-image :src="item.src" :title="item.title" :fit="fit_C" @load="onImageLoad" />
 
                   <div v-if="!isMobile()" class="play-icon" @click.stop="selectResourcesHandle(item)">
                     <el-icon>
@@ -111,7 +111,12 @@ const dataList_C = computed(() => {
     }
   })
 });
-
+const fit_C = computed(() => {
+  if (store.appStoreData.currentConfigApp.coverImageFit) {
+    return store.appStoreData.currentConfigApp.coverImageFit
+  }
+  return 'cover'
+})
 const currentPlayDramaSeriesId_C = computed(() => {
   return getResourceDramaSeriesId(currentPlayIndex.value);
 });

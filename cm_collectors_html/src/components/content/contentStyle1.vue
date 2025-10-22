@@ -7,7 +7,7 @@
       </div>
 
       <div class="content-cover">
-        <el-image :src="getResourceCoverPoster(props.resource)" fit="cover" />
+        <contentCoverImage :resource="props.resource"></contentCoverImage>
       </div>
 
 
@@ -22,15 +22,16 @@
   </contentRightClickMenu>
 </template>
 <script setup lang="ts">
+import contentCoverImage from './contentCoverImage.vue';
 import type { I_resource } from '@/dataType/resource.dataType';
 import contentTagDisplay from './contentTagDisplay.vue';
 import { computed, type PropType } from 'vue';
 import { appStoreData } from '@/storeData/app.storeData';
 import { playResource } from '@/common/play';
-import { getResourceCoverPoster } from '@/common/photo';
 import { isMobile } from '@/assets/mobile';
 import contentRightClickMenu from './contentRightClickMenu.vue';
 import dataset from '@/assets/dataset';
+import { coverPosterSize } from '@/common/photo';
 const store = {
   appStoreData: appStoreData(),
 }
@@ -43,19 +44,13 @@ const props = defineProps({
 })
 
 const coverPosterSize_C = computed(() => {
-  let width = props.resource.coverPosterWidth;
-  let height = props.resource.coverPosterHeight;
-  if (store.appStoreData.currentConfigApp.coverPosterWidthStatus) {
-    width = store.appStoreData.currentConfigApp.coverPosterWidthBase;
-  }
-  if (store.appStoreData.currentConfigApp.coverPosterHeightStatus) {
-    width = store.appStoreData.currentConfigApp.coverPosterHeightBase / height * width;
-    height = store.appStoreData.currentConfigApp.coverPosterHeightBase;
-  }
+
+  const { width, height } = coverPosterSize(props.resource.coverPosterWidth, props.resource.coverPosterHeight, store.appStoreData.currentConfigApp.coverPosterWidthStatus, store.appStoreData.currentConfigApp.coverPosterWidthBase, store.appStoreData.currentConfigApp.coverPosterHeightStatus, store.appStoreData.currentConfigApp.coverPosterHeightBase)
   return {
     width,
     height,
   }
+
 })
 
 const titleStyleObj_C = computed(() => {

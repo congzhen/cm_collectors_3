@@ -7,7 +7,7 @@
           <template #default="{ item, index }">
             <contentRightClickMenu :resource="props.dataList[index]">
               <div class="waterfall-item" @click="selectResourcesHandle(item)">
-                <el-image :src="item.src" :title="item.title" @load="onImageLoad" />
+                <el-image :src="item.src" :title="item.title" :fit="fit_C" @load="onImageLoad" />
                 <div class="play-icon" @click.stop="playResource(item)">
                   <el-icon>
                     <VideoPlay />
@@ -85,6 +85,12 @@ const waterfallBreakpoints = computed(() => {
   }
 
 });
+const fit_C = computed(() => {
+  if (store.appStoreData.currentConfigApp.coverImageFit) {
+    return store.appStoreData.currentConfigApp.coverImageFit
+  }
+  return 'cover'
+})
 const selectResourcesHandle = (item: I_resource) => {
   emits('selectResources', item)
 }

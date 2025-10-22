@@ -115,6 +115,7 @@ type Config_FilesBases struct {
 	ResourcesShowMode            string                    `json:"resourcesShowMode"`            // 资源-显示模式
 	CoverPosterBoxInfoWidth      int                       `json:"coverPosterBoxInfoWidth"`      // 资源-显示模式-封面海报盒子-信息宽度
 	CoverPosterWaterfallColumn   int                       `json:"coverPosterWaterfallColumn"`   // 资源-显示模式-封面海报瀑布流-列数
+	CoverImageFit                string                    `json:"coverImageFit"`                // 封面图片填充方式
 	CoverTitleAlign              string                    `json:"coverTitleAlign"`              // 封面标题对齐 left right center
 	RouteConversion              []IRouteConversion        `json:"routeConversion"`              // 路由转换
 	ShieldNoPerformerPhoto       bool                      `json:"shieldNoPerformerPhoto"`       // 屏蔽无照片演员

@@ -1,8 +1,8 @@
 <template>
   <contentRightClickMenu :resource="props.resource">
     <div class="content-style3" :style="{ width: coverPosterSize_C.width + 'px' }">
-      <div class="content-cover">
-        <el-image :src="getResourceCoverPoster(props.resource)" fit="cover" />
+      <div class="content-cover" :style="{ height: coverPosterSize_C.height + 'px' }">
+        <contentCoverImage :resource="props.resource"></contentCoverImage>
         <div class="play-icon" @click.stop="playResource(props.resource)">
           <el-icon>
             <VideoPlay />
@@ -34,8 +34,9 @@ import contentTagDisplay from './contentTagDisplay.vue';
 import { computed, ref, type PropType } from 'vue';
 import { playResource } from '@/common/play';
 import { appStoreData } from '@/storeData/app.storeData';
-import { getResourceCoverPoster } from '@/common/photo';
+import contentCoverImage from './contentCoverImage.vue';
 import dataset from '@/assets/dataset';
+import { coverPosterSize } from '@/common/photo';
 const store = {
   appStoreData: appStoreData(),
 }
@@ -47,19 +48,12 @@ const props = defineProps({
 })
 const localStars = ref(props.resource.stars)
 const coverPosterSize_C = computed(() => {
-  let width = props.resource.coverPosterWidth;
-  let height = props.resource.coverPosterHeight;
-  if (store.appStoreData.currentConfigApp.coverPosterWidthStatus) {
-    width = store.appStoreData.currentConfigApp.coverPosterWidthBase;
-  }
-  if (store.appStoreData.currentConfigApp.coverPosterHeightStatus) {
-    width = store.appStoreData.currentConfigApp.coverPosterHeightBase / height * width;
-    height = store.appStoreData.currentConfigApp.coverPosterHeightBase;
-  }
+  const { width, height } = coverPosterSize(props.resource.coverPosterWidth, props.resource.coverPosterHeight, store.appStoreData.currentConfigApp.coverPosterWidthStatus, store.appStoreData.currentConfigApp.coverPosterWidthBase, store.appStoreData.currentConfigApp.coverPosterHeightStatus, store.appStoreData.currentConfigApp.coverPosterHeightBase)
   return {
     width,
     height,
   }
+
 })
 
 const titleStyleObj_C = computed(() => {
@@ -78,6 +72,7 @@ const titleStyleObj_C = computed(() => {
   display: flex;
   flex-direction: column;
   cursor: pointer;
+  overflow: hidden;
 
   &:hover {
     .play-icon {
@@ -93,6 +88,8 @@ const titleStyleObj_C = computed(() => {
 
   .content-cover {
     position: relative;
+    width: 100%;
+    height: 100%;
 
     .el-image {
       width: 100%;

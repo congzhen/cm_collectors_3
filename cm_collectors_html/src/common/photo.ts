@@ -52,7 +52,9 @@ export const coverPosterSize = (coverPosterWidth: number, coverPosterHeight: num
     width = configCoverPosterWidthBase;
   }
   if (configCoverPosterHeightStatus) {
-    width = configCoverPosterHeightBase / height * width;
+    if (!configCoverPosterWidthStatus) {
+      width = configCoverPosterHeightBase / height * width;
+    }
     height = configCoverPosterHeightBase;
   }
   return {

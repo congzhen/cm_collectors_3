@@ -27,13 +27,13 @@
                 <el-slider v-model="coverPosterGap" :min="0" :max="50" :step="0.1" size="small" />
               </div>
               <div class="setting-item">
-                <span class="setting-label">封面标题对齐方式</span>
-                <el-radio-group v-model="coverTitleAlign" size="small">
-                  <el-radio-button label="左对齐" value="left" />
-                  <el-radio-button label="居中" value="center" />
-                  <el-radio-button label="右对齐" value="right" />
+                <span class="setting-label">封面图填充方式</span>
+                <el-radio-group v-model="coverImageFit" size="small">
+                  <el-radio-button v-for="item, index in dataset.coverImageFit" :key="index" :label="item"
+                    :value="item" />
                 </el-radio-group>
               </div>
+
             </div>
             <div class="other-settings">
               <div class="setting-item">
@@ -47,6 +47,14 @@
               <div class="setting-item">
                 <span class="setting-label">详情显示模式</span>
                 <selectResourceDetailsShowMode v-model="resourceDetailsShowMode" style="width:160px;" />
+              </div>
+              <div class="setting-item">
+                <span class="setting-label">封面标题对齐方式</span>
+                <el-radio-group v-model="coverTitleAlign" size="small">
+                  <el-radio-button label="左对齐" value="left" />
+                  <el-radio-button label="居中" value="center" />
+                  <el-radio-button label="右对齐" value="right" />
+                </el-radio-group>
               </div>
             </div>
           </div>
@@ -116,6 +124,20 @@ const coverPosterGap = computed({
   }
 });
 
+const coverImageFit = computed({
+  get: () => {
+    console.log(store.appStoreData.currentConfigApp.coverImageFit);
+    if (store.appStoreData.currentConfigApp.coverImageFit) {
+      return store.appStoreData.currentConfigApp.coverImageFit;
+    }
+
+    return 'cover';
+  },
+  set: (value) => {
+    store.appStoreData.currentConfigApp.coverImageFit = value;
+  }
+});
+
 const coverTitleAlign = computed({
   get: () => {
     if (store.appStoreData.currentConfigApp.coverTitleAlign) {
@@ -165,7 +187,7 @@ const saveConfig = debounceNow(async () => {
   margin-bottom: 20px;
 
   .resources-mode-selector {
-    width: 30%;
+    width: 26%;
     flex-shrink: 0;
   }
 
@@ -176,7 +198,7 @@ const saveConfig = debounceNow(async () => {
 
     .size-settings,
     .other-settings {
-      width: 50%;
+      width: 60%;
       flex-shrink: 0;
       display: flex;
       flex-direction: column;
