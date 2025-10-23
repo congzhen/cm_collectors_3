@@ -1,5 +1,5 @@
 <template>
-  <dialogCommon ref="dialogCommonRef" title="设置批量资源标签" width="900px" top="10vh" @submit="submitHandle">
+  <dialogCommon ref="dialogCommonRef" :title="title_C" width="900px" top="10vh" @submit="submitHandle">
     <div class="resource-set-tag" v-loading="loading">
       <div class="resource-set-tag-container">
         <div class="tag-container">
@@ -21,7 +21,7 @@
 <script lang="ts" setup>
 import dialogCommon from '@/components/com/dialog/dialog-common.vue';
 import type { I_resource } from '@/dataType/resource.dataType';
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { appStoreData } from '@/storeData/app.storeData';
 import { debounceNow } from '@/assets/debounce';
 import { ElMessage } from 'element-plus';
@@ -35,10 +35,19 @@ const dialogCommonRef = ref<InstanceType<typeof dialogCommon>>();
 
 const loading = ref(false)
 const tags = ref<Record<string, string[]>>({});
+const mode = ref<'add' | 'remove'>('add');
 let resourceIds: string[] = [];
 
+const title_C = computed(() => {
+  if (mode.value === 'add') {
+    return '批量添加标签';
+  } else {
+    return '批量删除标签';
+  }
+})
 
-const init = (_resourceSlc: I_resource[]) => {
+const init = (_resourceSlc: I_resource[], _mode: 'add' | 'remove') => {
+  mode.value = _mode;
   tags.value = {};
   resourceIds = _resourceSlc.map(item => item.id);
 }
@@ -60,9 +69,9 @@ const submitHandle = debounceNow(async () => {
       ElMessage.error('请选择标签');
       return;
     }
-    const result = await resourceServer.batchAddTag(resourceIds, tagIds);
+    const result = await resourceServer.batchSetTag(mode.value, resourceIds, tagIds);
     if (result.status) {
-      ElMessage.success('提交成功');
+      ElMessage.success('标签设置成功');
       emits('success');
       close();
     } else {
@@ -76,8 +85,8 @@ const submitHandle = debounceNow(async () => {
   }
 })
 
-const open = (_resourceSlc: I_resource[]) => {
-  init(_resourceSlc);
+const open = (_resourceSlc: I_resource[], _mode: 'add' | 'remove') => {
+  init(_resourceSlc, _mode);
   dialogCommonRef.value?.open();
 }
 const close = () => {

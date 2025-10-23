@@ -73,11 +73,12 @@ export const resourceServer = {
       },
     });
   },
-  batchAddTag: async (resourceIds: string[], tags: string[]) => {
+  batchSetTag: async (mode: 'add' | 'remove', resourceIds: string[], tags: string[]) => {
     return await request<I_resource[]>({
-      url: `${routerGroupUri}/resource/batchAddTag`,
+      url: `${routerGroupUri}/resource/batchSetTag`,
       method: 'put',
       data: {
+        mode,
         resourceIds,
         tags
       },

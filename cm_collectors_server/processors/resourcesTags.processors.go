@@ -10,8 +10,12 @@ import (
 
 type ResourcesTags struct{}
 
+func (ResourcesTags) ListByResourceID(tx *gorm.DB, resourceID string) (*[]models.ResourcesTags, error) {
+	return models.ResourcesTags{}.ListByResourceID(tx, resourceID)
+}
+
 func (t ResourcesTags) GetTagIdsByResourceID(tx *gorm.DB, resourceID string) ([]string, error) {
-	list, err := models.ResourcesTags{}.ListByResourceID(tx, resourceID)
+	list, err := t.ListByResourceID(tx, resourceID)
 	if err != nil {
 		return []string{}, err
 	}

@@ -109,12 +109,12 @@ func (Resource) UpdateResourceTag(c *gin.Context) {
 	}
 	response.OkWithData(info, c)
 }
-func (Resource) BatchAddTag(c *gin.Context) {
-	var par datatype.ReqParam_BatchAddTag
+func (Resource) BatchSetTag(c *gin.Context) {
+	var par datatype.ReqParam_BatchSetTag
 	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {
 		return
 	}
-	err := processors.Resources{}.BatchAddTag(par.ResourceIDS, par.Tags)
+	err := processors.Resources{}.BatchSetTag(par.Mode, par.ResourceIDS, par.Tags)
 	if err := ResError(c, err); err != nil {
 		return
 	}

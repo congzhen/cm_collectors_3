@@ -60,7 +60,8 @@ type ReqParam_ResourceTag struct {
 	ResourceID string   `json:"resourceId"`
 	Tags       []string `json:"tags"`
 }
-type ReqParam_BatchAddTag struct {
+type ReqParam_BatchSetTag struct {
+	Mode        string   `json:"mode" binding:"required,oneof=add remove"`
 	ResourceIDS []string `json:"resourceIds"`
 	Tags        []string `json:"tags"`
 }

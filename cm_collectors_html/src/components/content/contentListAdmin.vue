@@ -4,6 +4,7 @@
       <el-button-group>
         <el-button @click="batchDeleteHandle">批量删除</el-button>
         <el-button @click="batchAddTagHandle">批量添加标签</el-button>
+        <el-button @click="batchDeleteTagHandle">批量删除标签</el-button>
       </el-button-group>
     </div>
     <div class="table-container">
@@ -109,7 +110,16 @@ const batchAddTagHandle = () => {
   if (selectedResources.length == 0) {
     ElMessage.error('请选择要添加标签的资源');
   } else {
-    resourceSetTagBatchDialogRef.value?.open(selectedResources)
+    resourceSetTagBatchDialogRef.value?.open(selectedResources, 'add')
+  }
+}
+const batchDeleteTagHandle = () => {
+  if (!tableRef.value) return;
+  const selectedResources = tableRef.value.getSelectionRows() as I_resource[];
+  if (selectedResources.length == 0) {
+    ElMessage.error('请选择要删除标签的资源');
+  } else {
+    resourceSetTagBatchDialogRef.value?.open(selectedResources, 'remove')
   }
 }
 

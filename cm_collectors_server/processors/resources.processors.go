@@ -130,26 +130,47 @@ func (t Resources) UpdateResourceTag(resourceID string, tags []string) (*models.
 	return t.Info(resourceID)
 }
 
-// BatchAddTag 为多个资源批量添加标签
-// resourceIDS: 资源ID数组
-// tags: 需要添加的标签ID数组
-// 返回错误信息，如果添加成功则返回nil
-func (t Resources) BatchAddTag(resourceIDS, tags []string) error {
+func (t Resources) BatchSetTag(mode string, resourceIDS, tags []string) error {
 	db := core.DBS()
 	return db.Transaction(func(tx *gorm.DB) error {
 		for _, resourceId := range resourceIDS {
-			// 获取当前资源已有的标签ID
-			tagIds, err := ResourcesTags{}.GetTagIdsByResourceID(tx, resourceId)
-			if err != nil {
-				return err
+
+			if mode == "remove" {
+				list, err := ResourcesTags{}.ListByResourceID(tx, resourceId)
+				if err != nil {
+					return err
+				}
+				deleteIds := []string{}
+				for _, tagId := range tags {
+					for _, v := range *list {
+						if v.TagID == tagId {
+							deleteIds = append(deleteIds, v.ID)
+						}
+					}
+				}
+				dataMap, err := utils.SliceToMap(*list, "ID")
+				if err != nil {
+					return err
+				}
+				err = ResourcesTags{}.handleDeletes(tx, dataMap, deleteIds)
+				if err != nil {
+					return err
+				}
+			} else {
+				// 获取当前资源已有的标签ID
+				tagIds, err := ResourcesTags{}.GetTagIdsByResourceID(tx, resourceId)
+				if err != nil {
+					return err
+				}
+				// 计算需要添加的标签ID（在tags中但不在tagIds中的标签）
+				addIds := utils.ArrayDifference(tags, tagIds)
+				// 执行添加操作
+				err = ResourcesTags{}.handleAdds(tx, addIds, resourceId)
+				if err != nil {
+					return err
+				}
 			}
-			// 计算需要添加的标签ID（在tags中但不在tagIds中的标签）
-			addIds := utils.ArrayDifference(tags, tagIds)
-			// 执行添加操作
-			err = ResourcesTags{}.handleAdds(tx, addIds, resourceId)
-			if err != nil {
-				return err
-			}
+
 		}
 		return nil
 	})
