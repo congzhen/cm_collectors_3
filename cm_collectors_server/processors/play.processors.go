@@ -4,6 +4,8 @@ import (
 	"cm_collectors_server/core"
 	"cm_collectors_server/errorMessage"
 	"cm_collectors_server/models"
+	processorsFFmpeg "cm_collectors_server/processorsFFmpeg"
+	"cm_collectors_server/utils"
 	"errors"
 	"os"
 	"path/filepath"
@@ -13,12 +15,38 @@ import (
 
 type Play struct{}
 
+type PlayVideoInfo struct {
+	VideoBasicInfo processorsFFmpeg.VideoBasicInfo `json:"video_basic_info"`
+	IsWeb          bool                            `json:"is_web"`
+}
+
 // AllowServerOpenFile 检测是否允许服务器打开文件
 func (Play) AllowServerOpenFile() error {
 	if core.Config.General.NotAllowServerOpenFile {
 		return errorMessage.Err_Current_Server_Has_Been_Set_To_Disallow_This_Peration
 	}
 	return nil
+}
+
+func (p Play) PlayVideoInfo(dramaSeriesId string) (*PlayVideoInfo, error) {
+	playSrc, err := ResourcesDramaSeries{}.GetSrc(dramaSeriesId)
+	if err != nil {
+		return nil, err
+	}
+	if !utils.FileExists(playSrc) {
+		return nil, errorMessage.Err_Resources_Play_Src_Error
+	}
+	pf_videoInfo := processorsFFmpeg.VideoInfo{}
+	// 设置支持的编解码器
+	pf_videoInfo.SetSupportedVideoCodecs(core.Config.Play.PlayVideoFormats)
+	pf_videoInfo.SetSupportedAudioCodecs(core.Config.Play.PlayAudioFormats)
+	videoFormatInfo, err := pf_videoInfo.GetVideoFormatInfo(playSrc)
+	if err != nil {
+		return nil, err
+	}
+	isWeb := pf_videoInfo.IsWebCompatible(videoFormatInfo)
+	videoBasicInfo := pf_videoInfo.GetVideoBasicInfoByVideoFormatInfo(videoFormatInfo)
+	return &PlayVideoInfo{VideoBasicInfo: videoBasicInfo, IsWeb: isWeb}, nil
 }
 
 func (p Play) PlayUpdate(resourceId, dramaSeriesId string) error {

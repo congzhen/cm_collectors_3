@@ -102,3 +102,15 @@ export interface I_appSystemConfig extends I_appConfig {
   playAudioFormats: string[];
   videoRateLimit: I_appSystemVideoRateLimit;
 }
+export interface I_video_basic_info {
+  width: number;
+  height: number;
+  duration: string;
+  bit_rate: string;
+  size: string;
+}
+
+export interface I_playVideoInfo {
+  video_basic_info: I_video_basic_info;
+  is_web: boolean;
+}

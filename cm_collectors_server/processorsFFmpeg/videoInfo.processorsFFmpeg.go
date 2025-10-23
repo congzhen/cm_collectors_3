@@ -136,13 +136,16 @@ func (v VideoInfo) GetVideoFormatInfo(src string) (VideoFormatInfo, error) {
 
 // GetVideoBasicInfo 获取视频基本信息（宽度、高度等）
 func (v VideoInfo) GetVideoBasicInfo(src string) (VideoBasicInfo, error) {
-	var basicInfo VideoBasicInfo
-
 	// 获取视频格式信息
 	formatInfo, err := v.GetVideoFormatInfo(src)
 	if err != nil {
-		return basicInfo, fmt.Errorf("无法获取视频格式信息: %v", err)
+		return VideoBasicInfo{}, fmt.Errorf("无法获取视频格式信息: %v", err)
 	}
+	basicInfo := v.GetVideoBasicInfoByVideoFormatInfo(formatInfo)
+	return basicInfo, nil
+}
+func (v VideoInfo) GetVideoBasicInfoByVideoFormatInfo(formatInfo VideoFormatInfo) VideoBasicInfo {
+	var basicInfo VideoBasicInfo
 
 	// 查找视频流以获取宽度和高度
 	for _, stream := range formatInfo.Streams {
@@ -164,7 +167,7 @@ func (v VideoInfo) GetVideoBasicInfo(src string) (VideoBasicInfo, error) {
 	basicInfo.Size = formatInfo.Format.Size
 	basicInfo.BitRate = formatInfo.Format.BitRate
 
-	return basicInfo, nil
+	return basicInfo
 }
 
 // GetVideoDefinition 根据视频的宽度和高度确定视频清晰度

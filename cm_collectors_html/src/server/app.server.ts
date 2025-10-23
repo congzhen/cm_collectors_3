@@ -1,5 +1,5 @@
 import request, { type IRequest } from "@/assets/request";
-import type { I_appSystemConfig, I_appData } from "@/dataType/app.dataType";
+import type { I_appSystemConfig, I_appData, I_playVideoInfo } from "@/dataType/app.dataType";
 const routerGroupUri = '';
 export const appDataServer = {
   init: async () => {
@@ -44,6 +44,12 @@ export const appDataServer = {
       }
     }
     return await request<boolean>(obj);
+  },
+  playVideoInfo: async (dramaSeriesId: string) => {
+    return await request<I_playVideoInfo>({
+      url: `${routerGroupUri}/play/video/info/${dramaSeriesId}`,
+      method: 'get',
+    });
   },
   getAppConfig: async () => {
     return await request<I_appSystemConfig>({

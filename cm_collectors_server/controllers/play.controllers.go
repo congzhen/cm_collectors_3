@@ -22,7 +22,14 @@ func (Play) PlayUpdate(c *gin.Context) {
 	}
 	response.OkWithData(true, c)
 }
-
+func (Play) PlayVideoInfo(c *gin.Context) {
+	dramaSeriesId := c.Param("dramaSeriesId")
+	info, err := processors.Play{}.PlayVideoInfo(dramaSeriesId)
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(info, c)
+}
 func (Play) PlayOpenResource(c *gin.Context) {
 	resourceId := c.Param("resourceId")
 	dramaSeriesId := c.Query("dramaSeriesId")
