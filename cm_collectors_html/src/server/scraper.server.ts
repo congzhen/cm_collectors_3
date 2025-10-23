@@ -1,6 +1,6 @@
 import request from "@/assets/request";
 import type { I_config_scraperData } from "@/dataType/config.dataType";
-import type { I_performerBasic } from "@/dataType/performer.dataType";
+import type { I_performer, I_performerBasic } from "@/dataType/performer.dataType";
 import type { I_resource } from "@/dataType/resource.dataType";
 const routerGroupUri = '';
 export const scraperDataServer = {
@@ -71,6 +71,20 @@ export const scraperDataServer = {
         title,
         issueNumber,
         dramaSeriesSrc,
+      }
+    });
+  },
+  scraperOnePerformerDataProcess: async (performerId: string, performerName: string, performerBases_id: string, scraperConfig: string, timeout: number, operate: string) => {
+    return await request<I_performer>({
+      url: `${routerGroupUri}/scraper/scraperOnePerformerDataProcess`,
+      method: 'post',
+      data: {
+        performerId,
+        performerName,
+        performerBases_id,
+        scraperConfig,
+        timeout,
+        operate,
       }
     });
   }

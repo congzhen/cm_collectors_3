@@ -253,3 +253,11 @@ type ReqParam_ScraperOneResourceDataProcess struct {
 	IssueNumber    string           `json:"issueNumber"`
 	DramaSeriesSrc string           `json:"dramaSeriesSrc"`
 }
+type ReqParam_ScraperOnePerformerDataProcess struct {
+	PerformerId       string           `json:"performerId"`
+	PerformerBases_Id string           `json:"performerBases_id" binding:"required"`
+	PerformerName     string           `json:"performerName" binding:"required"`
+	ScraperConfig     string           `json:"scraperConfig" binding:"required"`
+	Timeout           int              `json:"timeout"`
+	Operate           E_ScraperOperate `json:"operate" binding:"required,oneof=update cover"`
+}

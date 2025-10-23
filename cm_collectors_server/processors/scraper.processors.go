@@ -160,35 +160,67 @@ func (t Scraper) ScraperDataProcess(filesBasesId, filePath string, config dataty
 // 返回值:
 //   - error: 如果处理过程中出现错误则返回错误信息，否则返回nil
 func (t Scraper) ScraperPerformerDataProcess(par *datatype.ReqParam_ScraperPerformerDataProcess) error {
-	// 加载配置
-	scraperConfig, err := cmscraper.LoadConfig(t.getConfigPath(par.ScraperConfig))
+	performerModels, perforomerPhotoBase64, err := t.execScraperPerformerData(par.PerformerId, par.PerformerName, par.ScraperConfig, core.Config.Scraper.Timeout)
 	if err != nil {
 		return err
 	}
+	return Performer{}.UpdateScraperByModels(par.PerformerId, performerModels, perforomerPhotoBase64, par.Operate)
+}
+func (t Scraper) ScraperOnePerformerDataProcess(par *datatype.ReqParam_ScraperOnePerformerDataProcess) (*models.Performer, error) {
+	mode := "add"
+	performerId := par.PerformerId
+	if par.PerformerId != "" {
+		mode = "update"
+	} else {
+		performerId = core.GenerateUniqueID()
+	}
+
+	performerModels, perforomerPhotoBase64, err := t.execScraperPerformerData(performerId, par.PerformerName, par.ScraperConfig, par.Timeout)
+	if err != nil {
+		return nil, err
+	}
+	if mode == "update" {
+		err = Performer{}.UpdateScraperByModels(performerId, performerModels, perforomerPhotoBase64, par.Operate)
+	} else {
+		performerModels.PerformerBasesID = par.PerformerBases_Id
+		err = Performer{}.CreateScraperByModels(performerId, performerModels, perforomerPhotoBase64)
+	}
+	if err != nil {
+		return nil, err
+	}
+	return Performer{}.InfoByID(performerId)
+}
+
+func (t Scraper) execScraperPerformerData(performerId, performerName, scraperConfigName string, timeout int) (models.Performer, string, error) {
+	// 加载配置
+	scraperConfig, err := cmscraper.LoadConfig(t.getConfigPath(scraperConfigName))
+	if err != nil {
+		return models.Performer{}, "", err
+	}
 	// 创建刮削器
-	scraperSL := cmscraper.NewScraper(scraperConfig, core.Config.Scraper.Headless, time.Duration(core.Config.Scraper.Timeout), 1, core.Config.Scraper.LogStatus, core.Config.Scraper.LogPath)
+	scraperSL := cmscraper.NewScraper(scraperConfig, core.Config.Scraper.Headless, time.Duration(timeout), 1, core.Config.Scraper.LogStatus, core.Config.Scraper.LogPath)
 	// 关闭日志
 	defer cmscraper.CloseGlobalLogger()
 	ctx := context.Background()
-	metadata, pageUrl, err := scraperSL.Scrape(ctx, par.PerformerName)
+	metadata, pageUrl, err := scraperSL.Scrape(ctx, performerName)
 	if err != nil {
-		return err
+		return models.Performer{}, "", err
 	}
 	images, err := cmscraper.GetMetadataImages(ctx, scraperConfig, pageUrl, metadata, true, core.Config.Scraper.Headless, core.Config.Scraper.VisitHome, false, 1.0)
-	if err != nil {
-		return err
-	}
 	perforomerPhotoBase64 := ""
-	// 判断image中是否有 avatar ，photo , cover ，如果有则使用第一个
-	imageTags := []string{"avatar", "photo", "cover"}
-	for _, tag := range imageTags {
-		if image, ok := images[fmt.Sprintf("%s.jpg", tag)]; ok {
-			perforomerPhotoBase64 = image
-			break
+	if err == nil {
+		// 判断image中是否有 avatar ，photo , cover ，如果有则使用第一个
+		imageTags := []string{"avatar", "photo", "cover"}
+		for _, tag := range imageTags {
+			if image, ok := images[fmt.Sprintf("%s.jpg", tag)]; ok {
+				perforomerPhotoBase64 = image
+				break
+			}
 		}
 	}
+
 	performerModels := models.Performer{
-		ID: par.PerformerId,
+		ID: performerId,
 	}
 	nameTages := []string{"name", "title"}
 	aliasNameTags := []string{"aliasName", "alias", "alias_name"}
@@ -208,7 +240,7 @@ func (t Scraper) ScraperPerformerDataProcess(par *datatype.ReqParam_ScraperPerfo
 	performerModels.Bust = t.getMetadataContentByTags(metadata, bustTags)
 	performerModels.Waist = t.getMetadataContentByTags(metadata, waistTags)
 	performerModels.Hip = t.getMetadataContentByTags(metadata, hipTags)
-	return Performer{}.UpdateScraperByModels(par.PerformerId, performerModels, perforomerPhotoBase64, par.Operate)
+	return performerModels, perforomerPhotoBase64, nil
 }
 
 // getMetadataContentByTags 从元数据中按标签顺序查找第一个存在的字符串值

@@ -47,7 +47,11 @@
         </div>
       </div>
     </div>
+    <template #footerBtn>
+      <el-button @click="scraperPerformerInfoHandle">刮削演员信息</el-button>
+    </template>
   </drawerForm>
+  <scraperOnePerformerDialog ref="scraperOnePerformerDialogRef" @success="success" />
 </template>
 <script lang="ts" setup>
 import { reactive, ref } from 'vue'
@@ -64,6 +68,7 @@ import { LoadingService } from '@/assets/loading'
 import { performerServer } from '@/server/performer.server'
 import { getPerformerPhoto } from '@/common/photo';
 import { AppLang } from '@/language/app.lang'
+import scraperOnePerformerDialog from '../importResource/scraperOnePerformerDialog.vue'
 const appLang = AppLang()
 
 const store = {
@@ -79,6 +84,7 @@ const emits = defineEmits(['success'])
 
 const drawerFormRef = ref<InstanceType<typeof drawerForm>>()
 const setImageRef = ref<InstanceType<typeof setImage>>()
+const scraperOnePerformerDialogRef = ref<InstanceType<typeof scraperOnePerformerDialog>>()
 
 let mode: 'add' | 'edit' = 'add'
 const initialFormData: I_performer = {
@@ -122,8 +128,7 @@ const submitHandle = async () => {
       : performerServer.update(formData.value, photoBase64);
     const result = await apiCall;
     if (result.status) {
-      drawerFormRef.value?.close();
-      emits('success', mode === 'add' ? true : false);
+      success()
     } else {
       ElMessage.error(result.msg);
     }
@@ -133,6 +138,16 @@ const submitHandle = async () => {
   } finally {
     LoadingService.hide();
   }
+}
+
+const scraperPerformerInfoHandle = () => {
+  const performerBases_id = formData.value.performerBases_id === '' ? props.performerBasesId : formData.value.performerBases_id;
+  scraperOnePerformerDialogRef.value?.open(formData.value.id, performerBases_id, formData.value.name);
+}
+
+const success = () => {
+  emits('success', mode === 'add' ? true : false);
+  drawerFormRef.value?.close();
 }
 
 const open = (_mode: 'add' | 'edit', _performer: I_performer | null = null) => {

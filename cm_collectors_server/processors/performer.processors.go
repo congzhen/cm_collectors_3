@@ -217,6 +217,27 @@ func (t Performer) Update(par *datatype.ReqParam_PerformerData) (*models.Perform
 	return &performerModels, nil
 }
 
+func (t Performer) CreateScraperByModels(id string, dataModels models.Performer, perforomerPhotoBase64 string) error {
+	if perforomerPhotoBase64 != "" {
+		// 保存图片
+		photoName, err := t._savePerformerPhoto(dataModels.PerformerBasesID, perforomerPhotoBase64)
+		if err != nil {
+			return err
+		}
+		dataModels.Photo = photoName
+	}
+	db := core.DBS()
+	createdAt := datatype.CustomTime(core.TimeNow())
+	dataModels.ID = id
+	dataModels.KeyWords = utils.PinyinInitials(dataModels.Name + dataModels.AliasName)
+	dataModels.CreatedAt = &createdAt
+	dataModels.Status = true
+	lastScraperUpdateTime := datatype.CustomDate{}
+	lastScraperUpdateTime.SetValue(core.TimeNow())
+	dataModels.LastScraperUpdateTime = &lastScraperUpdateTime
+	return dataModels.Create(db, &dataModels)
+}
+
 // UpdateScraperByModels 根据抓取的数据更新演员信息
 //
 // 该函数支持两种更新模式：

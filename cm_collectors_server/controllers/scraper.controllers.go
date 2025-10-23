@@ -91,3 +91,15 @@ func (Scraper) ScraperOneResourceDataProcess(c *gin.Context) {
 	}
 	response.OkWithData(info, c)
 }
+func (Scraper) ScraperOnePerformerDataProcess(c *gin.Context) {
+	var par datatype.ReqParam_ScraperOnePerformerDataProcess
+	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {
+		return
+	}
+	info, err := processors.Scraper{}.ScraperOnePerformerDataProcess(&par)
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	response.OkWithData(info, c)
+}
