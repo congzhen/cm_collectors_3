@@ -3,10 +3,11 @@
     <div class="btn-container">
       <el-button-group>
         <el-button @click="batchDeleteHandle">批量删除</el-button>
+        <el-button @click="batchAddTagHandle">批量添加标签</el-button>
       </el-button-group>
     </div>
     <div class="table-container">
-      <el-table ref="tableRef" :data="props.dataList" border height="100%" size="small" style="width: 100%">
+      <el-table ref="tableRef" :data="props.dataList" border height="100%" style="width: 100%">
         <el-table-column type="selection" width="55" />
         <el-table-column width="120" label="操作">
           <template #default="{ row }">
@@ -47,17 +48,20 @@
         </el-table-column>
       </el-table>
       <resourceFormDrawer ref="resourceFormDrawerRef" @success="updateResourceSuccessHandle"></resourceFormDrawer>
+      <resourceSetTagBatchDialog ref="resourceSetTagBatchDialogRef" @success="updateResourceSuccessHandle">
+      </resourceSetTagBatchDialog>
     </div>
   </div>
 </template>
 <script lang="ts" setup>
 import type { I_resource } from '@/dataType/resource.dataType';
 import resourceFormDrawer from '@/components/resource/resourceFormDrawer.vue'
+import resourceSetTagBatchDialog from '../resource/resourceSetTagBatchDialog.vue';
 import { getResourceCoverPoster } from '@/common/photo';
 import { playResource, playOpenResourceFolder } from '@/common/play'
 import { resourceDelete, resourceBatchDelete } from '@/common/resource'
 import { ref, type PropType } from 'vue';
-import type { ElTable } from 'element-plus';
+import { ElMessage, type ElTable } from 'element-plus';
 import { AppLang } from '@/language/app.lang'
 const appLang = AppLang()
 
@@ -71,6 +75,7 @@ const emits = defineEmits(['selectResources', 'updateData']);
 
 const tableRef = ref<InstanceType<typeof ElTable>>()
 const resourceFormDrawerRef = ref<InstanceType<typeof resourceFormDrawer>>()
+const resourceSetTagBatchDialogRef = ref<InstanceType<typeof resourceSetTagBatchDialog>>()
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const selectResourcesHandle = (item: I_resource) => {
   emits('selectResources', item)
@@ -97,6 +102,15 @@ const batchDeleteHandle = () => {
   resourceBatchDelete(selectedResources, () => {
     emits('updateData')
   })
+}
+const batchAddTagHandle = () => {
+  if (!tableRef.value) return;
+  const selectedResources = tableRef.value.getSelectionRows() as I_resource[];
+  if (selectedResources.length == 0) {
+    ElMessage.error('请选择要添加标签的资源');
+  } else {
+    resourceSetTagBatchDialogRef.value?.open(selectedResources)
+  }
 }
 
 </script>

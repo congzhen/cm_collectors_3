@@ -60,6 +60,10 @@ type ReqParam_ResourceTag struct {
 	ResourceID string   `json:"resourceId"`
 	Tags       []string `json:"tags"`
 }
+type ReqParam_BatchAddTag struct {
+	ResourceIDS []string `json:"resourceIds"`
+	Tags        []string `json:"tags"`
+}
 
 // 请求参数 - 创建filesBases
 type ReqParam_CreateFilesBases struct {

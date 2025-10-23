@@ -109,6 +109,17 @@ func (Resource) UpdateResourceTag(c *gin.Context) {
 	}
 	response.OkWithData(info, c)
 }
+func (Resource) BatchAddTag(c *gin.Context) {
+	var par datatype.ReqParam_BatchAddTag
+	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {
+		return
+	}
+	err := processors.Resources{}.BatchAddTag(par.ResourceIDS, par.Tags)
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(true, c)
+}
 
 func (Resource) DeleteResource(c *gin.Context) {
 	resourceId := c.Param("resourceId")

@@ -121,6 +121,34 @@ func InSliceByFieldGeneric[T any](slice []T, fieldName string, value interface{}
 	return false
 }
 
+// ArrayDifference 返回在第一个数组中但不在第二个数组中的元素
+// 使用泛型支持任意可比较类型
+// 参数:
+//
+//	arr1: 第一个数组
+//	arr2: 第二个数组
+//
+// 返回值:
+//
+//	包含在第一个数组中但不在第二个数组中的元素的新切片
+func ArrayDifference[T comparable](arr1, arr2 []T) []T {
+	// 创建一个 map 存储第二个数组的所有元素，便于快速查找
+	elemMap := make(map[T]bool)
+	for _, v := range arr2 {
+		elemMap[v] = true
+	}
+
+	// 遍历第一个数组，找出不在第二个数组中的元素
+	diff := make([]T, 0)
+	for _, v := range arr1 {
+		if !elemMap[v] {
+			diff = append(diff, v)
+		}
+	}
+
+	return diff
+}
+
 // ArrayIntersectDiff 计算两个切片的交集、差集1和差集2。
 // 其中，交集是同时存在于slice1和slice2中的元素组成的切片。
 // 差集1是存在于slice1中但不存在于slice2中的元素组成的切片。

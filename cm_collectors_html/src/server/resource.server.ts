@@ -73,6 +73,16 @@ export const resourceServer = {
       },
     });
   },
+  batchAddTag: async (resourceIds: string[], tags: string[]) => {
+    return await request<I_resource[]>({
+      url: `${routerGroupUri}/resource/batchAddTag`,
+      method: 'put',
+      data: {
+        resourceIds,
+        tags
+      },
+    });
+  },
   delete: async (id: string) => {
     return await request<boolean>({
       url: `${routerGroupUri}/resource/delete/${id}`,
