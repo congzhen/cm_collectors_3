@@ -151,6 +151,11 @@ a,
   animation: rotate360 2s linear infinite;
 }
 
+.el-form-item__label {
+  pointer-events: none;
+  user-select: none;
+}
+
 @keyframes rotate360 {
   from {
     transform: rotate(0deg);
