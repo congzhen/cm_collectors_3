@@ -101,7 +101,7 @@
       </el-form-item>
       <el-form-item label="封面上显示标签(自定义)">
         <selectTag v-model="filesConfig.coverDisplayTag" data-source="database" :filesBasesId="props.filesBasesId"
-          multiple />
+          multiple reorder />
       </el-form-item>
       <el-form-item label="标签背景色">
         <div class="color-picker-block">

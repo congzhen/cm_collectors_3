@@ -1,8 +1,12 @@
 <template>
-  <el-select-v2 v-model="selectVal" clearable :style="{ width: props.width }" placeholder="标签" @change="changeHandle"
-    @clear="handleClear" :multiple="props.multiple" filterable :options="options" :loading="loading"
-    :filter-method="filterMethod" :props="selectProps">
-  </el-select-v2>
+  <div class="select-tag" :style="{ width: props.width }">
+    <el-select-v2 class="list" v-model="selectVal" clearable placeholder="标签" @change="changeHandle"
+      @clear="handleClear" :multiple="props.multiple" filterable :options="options" :loading="loading"
+      :filter-method="filterMethod" :props="selectProps">
+    </el-select-v2>
+    <el-button class="btn" icon="Memo" v-if="props.reorder && props.multiple" @click="openSortHandle"></el-button>
+    <selectTagSortDialog ref="selectTagSortDialogRef" @success="successSortHandle"></selectTagSortDialog>
+  </div>
 </template>
 <script setup lang="ts">
 import { debounce } from '@/assets/debounce';
@@ -11,6 +15,7 @@ import { tagServer } from '@/server/tag.server';
 import { ElMessage } from 'element-plus';
 import { ref, onMounted, onActivated, type PropType, computed } from 'vue';
 import { appStoreData } from '@/storeData/app.storeData';
+import selectTagSortDialog from './selectTagSortDialog.vue';
 const store = {
   appStoreData: appStoreData(),
 }
@@ -35,9 +40,16 @@ const props = defineProps({
   tagClassId: {
     type: String,
     default: ''
+  },
+  reorder: {
+    type: Boolean,
+    default: false
   }
 })
 const emit = defineEmits(['change'])
+
+const selectTagSortDialogRef = ref<InstanceType<typeof selectTagSortDialog>>();
+
 let list: I_tag[] = [];
 const options = ref<I_tag[]>([]);
 const loading = ref(false);
@@ -92,6 +104,21 @@ const handleClear = () => {
   }
 }
 
+const openSortHandle = () => {
+  const slc: I_tag[] = [];
+  list.forEach(item => {
+    if (selectVal.value.indexOf(item.id) > -1) {
+      slc.push(item)
+    }
+  })
+  selectTagSortDialogRef.value?.open(slc);
+}
+const successSortHandle = (ids: string[]) => {
+  if (props.multiple) {
+    selectVal.value = ids;
+  }
+}
+
 const filterMethod = debounce((query: string) => {
   loading.value = true
   if (query !== '') {
@@ -115,6 +142,19 @@ onActivated(async () => {
 
 </script>
 <style lang="scss" scoped>
+.select-tag {
+  display: flex;
+  gap: 5px;
+
+  .list {
+    flex: 1;
+  }
+
+  .btn {
+    flex-shrink: 0;
+  }
+}
+
 .performer-item {
   display: flex;
   gap: 10px;
