@@ -33,7 +33,8 @@ func (Performer) DataList(c *gin.Context) {
 	search := c.Query("search")
 	star := c.Query("star")
 	cup := c.Query("cup")
-	dataList, total, err := processors.Performer{}.DataList(performerBasesId, fetchCount, page, limit, search, star, cup)
+	charIndex := c.Query("charIndex")
+	dataList, total, err := processors.Performer{}.DataList(performerBasesId, fetchCount, page, limit, search, star, cup, charIndex)
 	if err := ResError(c, err); err != nil {
 		return
 	}

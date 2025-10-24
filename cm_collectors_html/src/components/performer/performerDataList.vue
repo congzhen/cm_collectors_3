@@ -3,24 +3,32 @@
     <performerInfo class="performer-info" v-if="props.showPerformerInfo" :performer="currentShowPerformer">
     </performerInfo>
     <div class="performer-container">
-      <performerSearch class="performer-search" :admin="true" @add="addPerformerHandle" @recycleBin="recycleBinHandle"
-        @search="changeSearchHandle" @scraper="scraperHandle">
-      </performerSearch>
-      <div class="performer-list-main" v-loading="loading">
-        <el-scrollbar>
-          <ul class="performer-list">
-            <li v-for="(performer, index) in dataList" :key="index">
-              <performerBlock :performer="performer" :tool="true" :admin="true" :attrAge="true" :attrNationality="true"
-                @search="searchPerformerHandle" @click.stop="clickPerformerHandle(performer)"
-                @edit="editPerformerHandle(performer)" @delete="deletePerformerHandle(performer)">
-              </performerBlock>
-            </li>
-          </ul>
-        </el-scrollbar>
+      <div class="performer-index">
+        <span v-for="item, index in indexChars" :key="index" :class="{ 'select-index': item === selectIndex }"
+          @click="selectCharIndexHandle(item)">
+          {{ item }}
+        </span>
       </div>
-      <div class="performer-paging">
-        <el-pagination background layout="total, prev, pager, next, jumper" v-model:current-page="currentPage"
-          :total="dataCount" :page-size="pageSize" @change="changePageHandle" />
+      <div class="performer-container-main">
+        <performerSearch class="performer-search" :admin="true" @add="addPerformerHandle" @recycleBin="recycleBinHandle"
+          @search="changeSearchHandle" @scraper="scraperHandle">
+        </performerSearch>
+        <div class="performer-list-main" v-loading="loading">
+          <el-scrollbar>
+            <ul class="performer-list">
+              <li v-for="(performer, index) in dataList" :key="index">
+                <performerBlock :performer="performer" :tool="true" :admin="true" :attrAge="true"
+                  :attrNationality="true" @search="searchPerformerHandle" @click.stop="clickPerformerHandle(performer)"
+                  @edit="editPerformerHandle(performer)" @delete="deletePerformerHandle(performer)">
+                </performerBlock>
+              </li>
+            </ul>
+          </el-scrollbar>
+        </div>
+        <div class="performer-paging">
+          <el-pagination background layout="total, prev, pager, next, jumper" v-model:current-page="currentPage"
+            :total="dataCount" :page-size="pageSize" @change="changePageHandle" />
+        </div>
       </div>
     </div>
   </div>
@@ -46,6 +54,7 @@ import { ElMessage } from 'element-plus';
 import { messageBoxConfirm } from '../../common/messageBox';
 import { searchStoreData } from '@/storeData/search.storeData';
 import { useRouter } from 'vue-router';
+
 const router = useRouter()
 const store = {
   searchStoreData: searchStoreData(),
@@ -70,11 +79,13 @@ const dataCount = ref(0);
 let fetchCount = true;
 const currentPage = ref(1);
 const pageSize = ref(75);
-
+const indexChars = ref(['ALL', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'])
+const selectIndex = ref('ALL');
 let searchCondition: I_search_performer = {
   search: '',
   star: '',
   cup: '',
+  charIndex: '',
 }
 
 const currentShowPerformer = ref<I_performer | undefined>(undefined);
@@ -92,6 +103,7 @@ const getDataListAndCount = async (fetchCountStatus: boolean = true) => {
 }
 const getDataList = async () => {
   loading.value = true;
+  searchCondition.charIndex = selectIndex.value;
   const result = await performerServer.dataList(props.performerBasesId, fetchCount, currentPage.value, pageSize.value, searchCondition);
   if (result && result.status) {
     dataList.value = result.data.dataList;
@@ -151,6 +163,11 @@ const changeSearchHandle = (search: I_search_performer) => {
   fetchCount = true;
   getDataList();
 }
+const selectCharIndexHandle = (charIndex: string) => {
+  selectIndex.value = charIndex;
+  fetchCount = true;
+  getDataList();
+}
 
 const scraperHandle = () => {
   scraperPerformerDialogRef.value?.open(props.performerBasesId)
@@ -168,6 +185,7 @@ onMounted(async () => {
   height: 100%;
   overflow: hidden;
   display: flex;
+  gap: 5px;
 
   .performer-info {
     flex-shrink: 0;
@@ -176,37 +194,78 @@ onMounted(async () => {
   }
 
   .performer-container {
-    flex-grow: 1;
-    margin-left: 1.5em;
+    flex: 1;
+    overflow: hidden;
     display: flex;
-    flex-direction: column;
+    gap: 5px;
 
-    .performer-search {
-      flex-shrink: 0;
+    .performer-index {
+      width: 40px;
       display: flex;
-    }
+      flex-direction: column;
+      gap: 3px;
 
-    .performer-list-main {
-      flex-grow: 1;
-      overflow: hidden;
-      padding: 0.5em 0;
+      span {
+        display: block;
+        width: 100%;
+        height: 21px;
+        line-height: 21px;
+        text-align: center;
+        background-color: #262727;
+        border-radius: 2px;
+        cursor: pointer;
+        /*禁止选择 */
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+      }
 
-      .performer-list {
-        list-style-type: none;
-        display: flex;
-        flex-wrap: wrap;
-        align-content: flex-start;
-        gap: 0.5em;
+      span:hover {
+        background-color: #3d3f3f;
+      }
 
-        li {
-          width: 100px;
-        }
+      .select-index {
+        background-color: #E67F23;
+      }
+
+      .select-index:hover {
+        background-color: #E67F23;
       }
     }
 
-    .performer-paging {
-      flex-shrink: 0;
-      padding-top: 5px;
+    .performer-container-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+
+      .performer-search {
+        flex-shrink: 0;
+        display: flex;
+      }
+
+      .performer-list-main {
+        flex-grow: 1;
+        overflow: hidden;
+        padding: 0.5em 0;
+
+        .performer-list {
+          list-style-type: none;
+          display: flex;
+          flex-wrap: wrap;
+          align-content: flex-start;
+          gap: 0.5em;
+
+          li {
+            width: 100px;
+          }
+        }
+      }
+
+      .performer-paging {
+        flex-shrink: 0;
+        padding-top: 5px;
+      }
     }
   }
 }

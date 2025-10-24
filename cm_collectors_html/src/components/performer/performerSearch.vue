@@ -30,6 +30,7 @@ const searchData = reactive<I_search_performer>({
   search: '',
   star: '',
   cup: '',
+  charIndex: ''
 })
 
 const emits = defineEmits(['add', 'recycleBin', 'search', 'scraper'])

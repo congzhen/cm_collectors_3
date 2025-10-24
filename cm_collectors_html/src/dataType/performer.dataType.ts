@@ -28,6 +28,7 @@ export interface I_search_performer {
   search: string;
   star: string;
   cup: string;
+  charIndex: string;
 }
 
 

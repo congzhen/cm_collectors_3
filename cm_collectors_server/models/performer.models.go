@@ -3,6 +3,7 @@ package models
 import (
 	"cm_collectors_server/datatype"
 	"sort"
+	"strings"
 
 	"gorm.io/gorm"
 )
@@ -95,11 +96,17 @@ func (Performer) InfoByID(db *gorm.DB, id string) (*Performer, error) {
 	return &performer, err
 }
 
-func (Performer) DataList(db *gorm.DB, performerBasesId string, fetchCount bool, page, limit int, search, star, cup string) (*[]Performer, int64, error) {
+func (Performer) DataList(db *gorm.DB, performerBasesId string, fetchCount bool, page, limit int, search, star, cup, charIndex string) (*[]Performer, int64, error) {
 	var dataList []Performer
 	var total int64
 	offset := (page - 1) * limit
 	query := db.Model(Performer{}).Where("performerBases_id = ? and status = 1", performerBasesId)
+	if charIndex != "" {
+		charIndex = strings.ToLower(charIndex)
+		if charIndex != "all" {
+			query = query.Where("name like ? or keyWords like ?", charIndex+"%", charIndex+"%")
+		}
+	}
 	if search != "" {
 		searchQuery := "%" + search + "%"
 		query = query.Where("keyWords like ? or name like ? or aliasName like ?", searchQuery, searchQuery, searchQuery)

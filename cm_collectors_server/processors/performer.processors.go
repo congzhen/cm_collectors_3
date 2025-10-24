@@ -19,8 +19,8 @@ func (Performer) BasicList(performerBasesIds []string, careerPerformer, careerDi
 	return models.Performer{}.BasicList(core.DBS(), performerBasesIds, careerPerformer, careerDirector)
 }
 
-func (Performer) DataList(performerBasesId string, fetchCount bool, page, limit int, search, star, cup string) (*[]models.Performer, int64, error) {
-	return models.Performer{}.DataList(core.DBS(), performerBasesId, fetchCount, page, limit, search, star, cup)
+func (Performer) DataList(performerBasesId string, fetchCount bool, page, limit int, search, star, cup, charIndex string) (*[]models.Performer, int64, error) {
+	return models.Performer{}.DataList(core.DBS(), performerBasesId, fetchCount, page, limit, search, star, cup, charIndex)
 }
 
 func (Performer) ListTopPreferredPerformers(preferredIds []string, mainPerformerBasesId string, shieldNoPerformerPhoto bool, limit int) (*[]models.Performer, error) {
