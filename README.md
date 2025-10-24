@@ -19,7 +19,7 @@ CM Collectors 3 是一个多媒体文件管理系统，用于收集、管理和�
 - **Linux 版**: [cm_collectors_3_linux.zip](https://objectstorageapi.ap-southeast-1.clawcloudrun.com/vj5i0ntw-cm-collectors-3/download/last/cm_collectors_3_linux.zip)
 - **Docker 镜像**:由于刮削器依赖 Chrome 浏览器和特定操作系统环境导致打包的软件体积超过 1GB，所以暂不提供预构建的 Docker 镜像。请下载 Linux 版本并使用项目中的 Dockerfile 自行构建。
 - **云播插件**: [video_caller.zip](https://objectstorageapi.ap-southeast-1.clawcloudrun.com/vj5i0ntw-cm-collectors-3/download/last/video_caller.zip)
-- **刮削调试器**:[scraper_debugger.zip](https://objectstorageapi.ap-southeast-1.clawcloudrun.com/vj5i0ntw-cm-collectors-3/download/last/scraper_debugger.zip)
+- **刮削调试器**:[scraper_debugger.zip(支持并发设置)](https://objectstorageapi.ap-southeast-1.clawcloudrun.com/vj5i0ntw-cm-collectors-3/download/last/scraper_debugger.zip)
 - **刮削器配置包**:[scraper.zip(2025-10-20)](https://objectstorageapi.ap-southeast-1.clawcloudrun.com/vj5i0ntw-cm-collectors-3/download/last/scraper.zip)
 
 ### 简介视频

@@ -8,6 +8,7 @@
   "batchSkipExitsNfo": true,
   "batchFolderPath": "G:/a2/test",
   "batchExtensions": ".mp4,.mkv",
+  "batchConcurrent": 3,
   "timeOut": 30,
   "retryCount": 3,
   "imageUseTagName": true,

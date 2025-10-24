@@ -28,6 +28,7 @@ type TestJson struct {
 	BatchSkipExitsNfo      bool   `json:"batchSkipExitsNfo"`      // 是否跳过已存在的nfo文件
 	BatchFolderPath        string `json:"batchFolderPath"`        // 批量处理的文件夹路径
 	BatchExtensions        string `json:"batchExtensions"`        // 批量处理的文件扩展名
+	BatchConcurrent        int    `json:"batchConcurrent"`        // 批量处理时并发数
 }
 
 func main() {
@@ -104,7 +105,33 @@ func runCmscraper(testJson TestJson) {
 	fmt.Println("等待刮削数据", dataMap)
 
 	for id, saveFolder := range dataMap {
-		execCmscraper(config, testJson, id, saveFolder)
+		if testJson.BatchConcurrent > 1 {
+			// 创建信号量控制并发数量
+			semaphore := make(chan struct{}, testJson.BatchConcurrent)
+			done := make(chan bool)
+
+			// 并发执行
+			go func() {
+				for id, saveFolder := range dataMap {
+					semaphore <- struct{}{}
+					go func(id, saveFolder string) {
+						defer func() { <-semaphore }()
+						execCmscraper(config, testJson, id, saveFolder)
+					}(id, saveFolder)
+				}
+
+				// 等待所有goroutine完成
+				for i := 0; i < cap(semaphore); i++ {
+					semaphore <- struct{}{}
+				}
+				close(done)
+			}()
+
+			<-done
+			break
+		} else {
+			execCmscraper(config, testJson, id, saveFolder)
+		}
 	}
 
 }
