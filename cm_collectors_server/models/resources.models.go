@@ -45,7 +45,8 @@ func (Resources) TableName() string {
 func (Resources) Preload(db *gorm.DB) *gorm.DB {
 	return db.Preload("Performers").
 		Preload("Tags", func(db *gorm.DB) *gorm.DB {
-			return db.Order("sort asc")
+			return db.Joins("LEFT JOIN tagClass ON tag.tagClass_id = tagClass.id").
+				Order("tagClass.sort asc, tag.sort asc")
 		}).
 		Preload("ResourcesDramaSeries", func(db *gorm.DB) *gorm.DB {
 			return db.Order("sort asc")

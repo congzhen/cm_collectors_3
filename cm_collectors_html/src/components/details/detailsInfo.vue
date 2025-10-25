@@ -51,11 +51,7 @@
 
       <div class="info-block">
         <el-alert class="tagAlert" title="标签" type="warning" :closable="false" />
-        <div class="tag-list">
-          <el-tag type="info" effect="plain" size="large" v-for="item, key in props.resource.tags" :key="key">
-            {{ item.name }}
-          </el-tag>
-        </div>
+        <detailsTags :resource="props.resource"></detailsTags>
       </div>
       <div class="info-block">
         <el-alert class="tagAlert" title="摘要" type="info" :closable="false" />
@@ -74,6 +70,7 @@ import { playResource } from '@/common/play';
 import resourceDramaSeriesList from '@/components/resource/resourceDramaSeriesList.vue'
 import performerPopoverBlock from '@/components/performer/performerPopoverBlock.vue'
 import detailsSampleImages from './detailsSampleImages.vue';
+import detailsTags from './detailsTags.vue';
 import { AppLang } from '@/language/app.lang'
 const appLang = AppLang()
 
