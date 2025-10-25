@@ -25,6 +25,9 @@ export const performerBasesStoreData = defineStore('performerBases', {
     getPerformerBasesById: function (id: string) {
       return this.performerBases.find(item => item.id === id) || null;
     },
+    getNameById: function (id: string) {
+      return this.performerBases.find(item => item.id === id)?.name || '';
+    },
     listByIds: function (ids: string[]) {
       return this.performerBases.filter(item => ids.includes(item.id));
     },

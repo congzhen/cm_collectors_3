@@ -157,7 +157,11 @@ const openCheckUpdateSoft = () => {
 }
 
 const goToPerformer = () => {
-  router.push(`/performer/${store.appStoreData.currentMainPerformerBasesId}`)
+  if (store.appStoreData.currentPerformerBasesIds.length > 1) {
+    router.push(`/performer/basesList`)
+  } else {
+    router.push(`/performer/${store.appStoreData.currentMainPerformerBasesId}`)
+  }
 }
 const goToSetting = () => {
   router.push('/setting')

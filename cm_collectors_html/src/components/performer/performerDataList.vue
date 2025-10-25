@@ -27,7 +27,7 @@
         </div>
         <div class="performer-paging">
           <el-pagination background layout="total, prev, pager, next, jumper" v-model:current-page="currentPage"
-            :total="dataCount" :page-size="pageSize" @change="changePageHandle" />
+            :total="dataCount" :page-size="pageSize" @change="changePageHandle" size="small" />
         </div>
       </div>
     </div>

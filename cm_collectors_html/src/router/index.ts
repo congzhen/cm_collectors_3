@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import AdminLoginView from '@/views/AdminLoginView.vue'
 import IndexView from '../views/IndexView.vue'
 import PerformerView from '@/views/performerView.vue'
+import PerformerBasesListView from '@/views/performerBasesListView.vue'
 import SettingView from '@/views/SettingView.vue'
 import playMovies from '@/views/play/playMovies.vue'
 import playMoviesMobile from '@/views/play/playMoviesMobile.vue'
@@ -39,6 +40,12 @@ const router = createRouter({
       name: 'performer',
       props: route => ({ mainPerformerBasesId: route.params.mainPerformerBasesId }),
       component: PerformerView,
+      meta: { mobileAccess: false },
+    },
+    {
+      path: '/performer/basesList',
+      name: 'performerBasesList',
+      component: PerformerBasesListView,
       meta: { mobileAccess: false },
     },
     {
