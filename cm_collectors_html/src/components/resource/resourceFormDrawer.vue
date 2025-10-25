@@ -258,6 +258,7 @@ const init = (_mode: 'add' | 'edit', res: I_resource | null = null) => {
     }
   } else {
     formData.value = { ...defaultFormData }
+    formData.value.coverPosterMode = store.appStoreData.currentConfigApp.coverPosterDataDefaultSelect;
     performers.value = [];
     directors.value = [];
     dramaSeries.value = [];
