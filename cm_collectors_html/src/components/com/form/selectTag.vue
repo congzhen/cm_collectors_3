@@ -105,11 +105,14 @@ const handleClear = () => {
 }
 
 const openSortHandle = () => {
+  if (!props.multiple || !Array.isArray(selectVal.value)) return;
   const slc: I_tag[] = [];
-  list.forEach(item => {
-    if (selectVal.value.indexOf(item.id) > -1) {
-      slc.push(item)
-    }
+  selectVal.value.forEach(item => {
+    list.forEach(item2 => {
+      if (item === item2.id) {
+        slc.push(item2)
+      }
+    })
   })
   selectTagSortDialogRef.value?.open(slc);
 }
