@@ -16,6 +16,27 @@
         </div>
       </el-timeline-item>
       -->
+      <el-timeline-item center timestamp="2025/10/27" placement="top">
+        <h4 class="version-title">版本: v 3.0.4</h4>
+        <div class="rawContent">
+          <h5 class="section-title">新特性</h5>
+          <p class="logContent"></p>
+          <p class="logContent">新增播放列表功能</p>
+          <p class="logContent">新增演员多库数据显示支持</p>
+          <p class="logContent">新增按字母筛选演员功能</p>
+          <p class="logContent">新增单个演员信息刮削功能</p>
+          <p class="logContent">添加封面标签自定义排序功能</p>
+          <p class="logContent">新增批量增删标签功能</p>
+          <p class="logContent">优化封面图像尺寸计算</p>
+          <p class="logContent">添加封面图片填充方式设置</p>
+          <p class="logContent">添加封面标题对齐方式设置</p>
+        </div>
+        <div class="rawContent">
+          <h5 class="section-title bug-fix">BUG修复</h5>
+          <p class="logContent">修复右键菜单位置问题</p>
+          <p class="logContent">修复表单label触发表单组件的问题</p>
+        </div>
+      </el-timeline-item>
       <el-timeline-item center timestamp="2025/10/17" placement="top">
         <h4 class="version-title">版本: v 3.0.3</h4>
         <div class="rawContent">
