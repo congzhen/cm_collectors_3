@@ -13,6 +13,7 @@ import type { I_resource } from '@/dataType/resource.dataType'
 import { computed, type PropType } from 'vue'
 import { eventBus } from "@/main";
 import { appStoreData } from '@/storeData/app.storeData';
+import { playListAdd } from '@/common/playList'
 const store = {
   appStoreData: appStoreData(),
 }
@@ -32,6 +33,13 @@ const contentMenuItems_C = computed(() => {
       icon: 'VideoPlay',
       handler: () => {
         playResource(props.resource)
+      }
+    },
+    {
+      label: '加入播放列表',
+      icon: 'Memo',
+      handler: () => {
+        playListAdd(props.resource.id)
       }
     },
   ]
@@ -57,7 +65,7 @@ const contentMenuItems_C = computed(() => {
       },
       {
         label: '打标签',
-        icon: 'Edit',
+        icon: 'PriceTag',
         handler: () => {
           eventBus.emit('edit-resource-tag', { resource: props.resource });
         }

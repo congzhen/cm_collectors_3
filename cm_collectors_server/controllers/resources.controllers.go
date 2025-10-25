@@ -36,6 +36,19 @@ func (Resource) DataList(c *gin.Context) {
 	response.OkWithData(resDataList, c)
 }
 
+func (Resource) ListIds(c *gin.Context) {
+	var par datatype.ReqParam_ResourcesListIds
+	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {
+		return
+	}
+	println("--------------", par.Ids)
+	dataList, err := processors.Resources{}.DataListByIds(par.Ids)
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(dataList, c)
+}
+
 func (Resource) SampleImages(c *gin.Context) {
 	resourceId := c.Param("resourceId")
 	imagePath := c.Query("q")

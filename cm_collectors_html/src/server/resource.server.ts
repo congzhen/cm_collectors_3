@@ -22,6 +22,15 @@ export const resourceServer = {
       }
     })
   },
+  dataListByIds: async (ids: string[]) => {
+    return await request<I_resource[]>({
+      url: `${routerGroupUri}/resource/list/ids`,
+      method: 'post',
+      data: {
+        ids,
+      }
+    })
+  },
   sampleImages: async (id: string, sampleFolder: string) => {
     const obj: IRequest = {
       url: `${routerGroupUri}/resource/sampleImages/${id}`,

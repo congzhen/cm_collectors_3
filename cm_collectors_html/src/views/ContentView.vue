@@ -9,7 +9,10 @@
     <div class="paging">
       <el-pagination background layout="total, prev, pager, next, jumper" v-model:current-page="currentPage"
         :total="dataCount" :page-size="pageSize" :pager-count="5" size="small" @change="changePageHandle" />
-      <coverAdjuster v-admin></coverAdjuster>
+      <div class="bottom-btns">
+        <playListBtn></playListBtn>
+        <coverAdjuster v-admin></coverAdjuster>
+      </div>
     </div>
   </div>
 </template>
@@ -17,6 +20,7 @@
 import contentList from '@/components/content/contentList.vue'
 import contentListAdmin from '@/components/content/contentListAdmin.vue';
 import coverAdjuster from '@/components/setting/fileDatabaseSetting/coverAdjuster.vue';
+import playListBtn from '@/components/playList/playListBtn.vue';
 import { ref, onMounted, watch } from 'vue'
 import { appStoreData } from '@/storeData/app.storeData';
 import { searchStoreData } from '@/storeData/search.storeData';
@@ -142,6 +146,11 @@ defineExpose({ init, init_DataList, showDataList });
     flex-shrink: 0;
     display: flex;
     justify-content: space-between;
+
+    .bottom-btns {
+      display: flex;
+      gap: 5px;
+    }
   }
 }
 </style>

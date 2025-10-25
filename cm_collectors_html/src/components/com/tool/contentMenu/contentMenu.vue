@@ -13,7 +13,10 @@
           @click="handleItemClick(item)" @mouseenter="handleItemHover(item, index)">
           <template v-if="!item.separator">
             <span v-if="item.icon" class="context-menu-item__icon">
-              <i :class="item.icon"></i>
+              <el-icon v-if="isElementPlusIcon(item.icon)">
+                <component :is="item.icon" />
+              </el-icon>
+              <i v-else :class="item.icon"></i>
             </span>
             <span class="context-menu-item__label">{{ item.label }}</span>
             <span v-if="item.children && item.children.length" class="context-menu-item__arrow">
@@ -32,7 +35,10 @@
               @click="handleItemClick(subItem)">
               <template v-if="!subItem.separator">
                 <span v-if="subItem.icon" class="context-menu-item__icon">
-                  <i :class="subItem.icon"></i>
+                  <el-icon v-if="isElementPlusIcon(subItem.icon)">
+                    <component :is="subItem.icon" />
+                  </el-icon>
+                  <i v-else :class="subItem.icon"></i>
                 </span>
                 <span class="context-menu-item__label">{{ subItem.label }}</span>
                 <span v-if="subItem.shortcut" class="context-menu-item__shortcut">
@@ -90,6 +96,12 @@ const position = ref({ x: 0, y: 0 })
 const activeSubmenu: Ref<ContextMenuItem | null> = ref(null)
 const activeSubmenuIndex = ref<number | null>(null)
 const contextMenuRef: Ref<HTMLElement | null> = ref(null)
+// 判断是否为 Element Plus 图标
+const isElementPlusIcon = (icon: string | undefined) => {
+  // Element Plus 图标通常是大写字母开头的单词，如 'Edit', 'Delete', 'Plus'
+  if (!icon) return false
+  return /^[A-Z]/.test(icon)
+}
 
 // 计算菜单位置样式
 const menuStyle = computed(() => {
@@ -331,8 +343,10 @@ defineExpose({
 
 .context-menu-item__icon {
   width: 16px;
-  margin-right: 8px;
+  margin: 0 8px 2px 0;
   text-align: center;
+  display: flex;
+  align-items: center;
 }
 
 .context-menu-item__label {

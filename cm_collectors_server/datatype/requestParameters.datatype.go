@@ -17,6 +17,10 @@ type ReqParam_ResourcesList struct {
 	SearchData   ReqParam_SearchData `json:"searchData"`
 }
 
+type ReqParam_ResourcesListIds struct {
+	Ids []string `json:"ids"`
+}
+
 type ReqParam_Resource struct {
 	Resource    ReqParam_ResourceBase               `json:"resource"`
 	PhotoBase64 string                              `json:"photoBase64"`

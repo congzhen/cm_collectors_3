@@ -88,19 +88,35 @@
       </div>
     </div>
     <div class="right" v-else>
-      <div class="setting">
-        <label class="icon-text-label" @click="router.go(-1)">
-          <el-icon title="返回">
-            <Back />
-          </el-icon>
-          <span class="icon-text-span">返回</span>
-        </label>
+      <div class="setting sub-nav">
+        <el-tooltip content="主页" placement="bottom">
+          <label class="icon-text-label" @click="router.push('/')">
+            <el-icon title="主页">
+              <HomeFilled />
+            </el-icon>
+          </label>
+        </el-tooltip>
+        <el-tooltip content="播放列表" placement="bottom">
+          <label class="icon-text-label" @click="openPlayListHandle">
+            <el-icon title="播放列表">
+              <Memo />
+            </el-icon>
+          </label>
+        </el-tooltip>
+        <el-tooltip content="返回" placement="bottom">
+          <label class="icon-text-label" @click="router.go(-1)">
+            <el-icon title="返回">
+              <Back />
+            </el-icon>
+          </label>
+        </el-tooltip>
       </div>
     </div>
     <tagListDrawer ref="tagListDrawerRef" />
     <resourceFormDrawer ref="resourceFormDrawerRef" @success="createResouceSuccessHandle" />
     <importResourceDrawer ref="importResourceDrawerRef" @success="createResouceSuccessHandle" />
     <updateSoftDialog ref="updateSoftDialogRef"></updateSoftDialog>
+    <playListDrawer ref="playListDrawerRef"></playListDrawer>
   </div>
 </template>
 <script setup lang="ts">
@@ -112,6 +128,7 @@ import searchInputTagByStore from '@/components/com/form/searchInputTagByStore.v
 import resourceFormDrawer from '@/components/resource/resourceFormDrawer.vue'
 import importResourceDrawer from '@/components/importResource/importResourceDrawer.vue'
 import updateSoftDialog from '@/components/setting/updateSoft/updateSoftDialog.vue'
+import playListDrawer from '@/components/playList/playListDrawer.vue'
 import { appStoreData } from '@/storeData/app.storeData'
 import type { I_resource } from '@/dataType/resource.dataType'
 import { AppLang } from '@/language/app.lang'
@@ -127,6 +144,7 @@ const tagListDrawerRef = ref<InstanceType<typeof tagListDrawer>>()
 const resourceFormDrawerRef = ref<InstanceType<typeof resourceFormDrawer>>()
 const importResourceDrawerRef = ref<InstanceType<typeof importResourceDrawer>>()
 const updateSoftDialogRef = ref<InstanceType<typeof updateSoftDialog>>()
+const playListDrawerRef = ref<InstanceType<typeof playListDrawer>>()
 
 const props = defineProps({
   mode: {
@@ -154,6 +172,9 @@ const openImportResource = () => {
 
 const openCheckUpdateSoft = () => {
   updateSoftDialogRef.value?.open()
+}
+const openPlayListHandle = () => {
+  playListDrawerRef.value?.open()
 }
 
 const goToPerformer = () => {
@@ -258,8 +279,16 @@ const createResouceSuccessHandle = (data: I_resource) => {
           font-size: 0.65em;
         }
       }
+    }
 
+    .sub-nav {
+      display: flex;
+      align-items: center;
+      gap: 5px;
 
+      .el-icon {
+        font-size: 20px;
+      }
     }
   }
 }
