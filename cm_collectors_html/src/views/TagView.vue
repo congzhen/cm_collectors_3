@@ -107,6 +107,8 @@ const getTagDataList = (type: E_tagType): I_tagData[] => {
       const sortSlc: I_tagData[] = [
         { id: 'addTimeDesc', name: '', status: false },
         { id: 'addTimeAsc', name: '', status: false },
+        { id: 'issuingDateDesc', name: '', status: false },
+        { id: 'issuingDateAsc', name: '', status: false },
         { id: 'issueNumberDesc', name: '', status: false },
         { id: 'issueNumberAsc', name: '', status: false },
         { id: 'starDesc', name: '', status: false },

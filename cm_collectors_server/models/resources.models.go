@@ -274,6 +274,10 @@ func (Resources) setDbSearchDataOrder(db *gorm.DB, searchSort datatype.E_searchS
 		db = db.Order("stars ASC,addTime DESC")
 	case datatype.E_searchSort_starDesc:
 		db = db.Order("stars DESC,addTime DESC")
+	case datatype.E_searchSort_issuingDateAsc:
+		db = db.Order("issuingDate ASC,addTime DESC")
+	case datatype.E_searchSort_issuingDateDesc:
+		db = db.Order("issuingDate DESC,addTime DESC")
 	case datatype.E_searchSort_titleAsc:
 		db = db.Order("title ASC,addTime DESC")
 	case datatype.E_searchSort_titleDesc:

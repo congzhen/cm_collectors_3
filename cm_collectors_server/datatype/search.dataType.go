@@ -24,6 +24,8 @@ const (
 	E_searchSort_issueNumberAsc  E_searchSort = "issueNumberAsc"
 	E_searchSort_starDesc        E_searchSort = "starDesc"
 	E_searchSort_starAsc         E_searchSort = "starAsc"
+	E_searchSort_issuingDateDesc E_searchSort = "issuingDateDesc"
+	E_searchSort_issuingDateAsc  E_searchSort = "issuingDateAsc"
 	E_searchSort_titleDesc       E_searchSort = "titleDesc"
 	E_searchSort_titleAsc        E_searchSort = "titleAsc"
 	E_searchSort_history         E_searchSort = "history"
