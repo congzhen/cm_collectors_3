@@ -113,12 +113,20 @@ func (t Resources) DataList(db *gorm.DB, par *datatype.ReqParam_ResourcesList) (
 
 func (t Resources) setDbSearchData(db *gorm.DB, searchData *datatype.ReqParam_SearchData) *gorm.DB {
 	if len(searchData.SearchTextSlc) > 0 {
-		// 构建第一个 LIKE 条件
-		db = db.Where("title LIKE ?", "%"+searchData.SearchTextSlc[0]+"%")
+		// 使用参数化查询避免SQL注入风险
+		var orConditions []string
+		var params []interface{}
 
-		// 剩下的条件使用 Or 追加
-		for _, text := range searchData.SearchTextSlc[1:] {
-			db = db.Or("title LIKE ?", "%"+text+"%")
+		for _, text := range searchData.SearchTextSlc {
+			searchLike := "%" + text + "%"
+			orConditions = append(orConditions, "(title LIKE ? OR issueNumber LIKE ?)")
+			params = append(params, searchLike, searchLike)
+		}
+
+		// 将所有OR条件组合成一个整体条件，但仍使用参数化查询
+		if len(orConditions) > 0 {
+			condition := strings.Join(orConditions, " OR ")
+			db = db.Where(condition, params...)
 		}
 	}
 	db = t.setDbSearchGroup(db, "country", &searchData.Country)
