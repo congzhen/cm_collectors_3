@@ -8,7 +8,9 @@ import (
 	"cm_collectors_server/utils"
 	"errors"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"runtime"
 
 	"github.com/skratchdot/open-golang/open"
 )
@@ -126,18 +128,56 @@ func (p Play) PlayOpenResourceFolder(resourceId string) error {
 	if err != nil {
 		return err
 	}
-
+	// 清理路径
+	playSrc = filepath.Clean(playSrc)
 	// 检查播放源路径是否存在
 	err = p.checkPlaySourceExists(playSrc)
 	if err != nil {
 		return err
 	}
+	// 使用系统命令直接打开文件夹并选中文件，更好地处理特殊字符
+	err = p.openFolderAndSelectFile(playSrc)
+	if err != nil {
+		folderPath := filepath.Dir(playSrc)
+		return open.Run(folderPath)
+	}
+	return nil
+}
 
-	// 获取文件所在的目录路径
-	folderPath := filepath.Dir(playSrc)
+func (p Play) openFolderAndSelectFile(filePath string) error {
+	var cmd *exec.Cmd
 
-	// 调用系统命令打开文件夹
-	return open.Run(folderPath)
+	switch runtime.GOOS {
+	case "windows":
+		// Windows下使用 explorer 命令并添加 /select 参数来选中文件
+		cmd = exec.Command("explorer", "/select,", filePath)
+	case "darwin":
+		// macOS下使用 open 命令打开文件所在文件夹
+		// macOS没有直接选中文件的命令行选项
+		folderPath := filepath.Dir(filePath)
+		cmd = exec.Command("open", folderPath)
+	default:
+		// Linux下使用 xdg-open 命令打开文件所在文件夹
+		// 大多数Linux文件管理器没有直接选中文件的命令行选项
+		folderPath := filepath.Dir(filePath)
+		cmd = exec.Command("xdg-open", folderPath)
+	}
+
+	// 执行命令
+	err := cmd.Run()
+
+	// 特殊处理Windows下的explorer命令
+	// Windows的explorer命令有时会返回exit status 1，即使成功执行
+	if runtime.GOOS == "windows" {
+		if exitError, ok := err.(*exec.ExitError); ok {
+			// 如果是exit status 1，我们将其视为成功
+			if exitError.ExitCode() == 1 {
+				return nil
+			}
+		}
+	}
+
+	return err
 }
 
 // 检测源路径是否存在
