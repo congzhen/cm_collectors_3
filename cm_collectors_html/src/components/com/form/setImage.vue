@@ -15,7 +15,7 @@
 <script lang="ts" setup>
 import comCropperDialog from '@/components/com/cropper/cropperDialog.vue';
 import type { UploadFile } from 'element-plus';
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 
 const props = defineProps({
   src: {
@@ -78,6 +78,39 @@ const getImageSize = () => {
     height: props.cropperHeight,
   }
 }
+
+
+// 添加键盘事件处理函数
+/**
+ * 处理粘贴事件，从剪贴板中获取图片并打开裁剪器
+ * @param e 剪贴板事件对象
+ */
+const handlePaste = async (e: ClipboardEvent) => {
+  const items = e.clipboardData?.items;
+  if (!items) return;
+
+  // 遍历剪贴板中的项目，查找图片类型的数据
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    if (item.type.indexOf('image') !== -1) {
+      const file = item.getAsFile();
+      if (file) {
+        openCropper(file, '50%', props.cropperWidth, props.cropperHeight, props.cropperWidth, props.cropperHeight);
+        break;
+      }
+    }
+  }
+};
+
+onMounted(() => {
+  // 在组件挂载时添加事件监听器
+  document.addEventListener('paste', handlePaste);
+});
+
+onUnmounted(() => {
+  // 在组件卸载时移除事件监听器
+  document.removeEventListener('paste', handlePaste);
+});
 
 defineExpose({ init, getImageBase64, getImageSize, openCropper })
 
