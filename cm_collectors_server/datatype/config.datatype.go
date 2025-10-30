@@ -9,6 +9,13 @@ const (
 	ResourceNamingModeFullPathName ResourceNamingMode = "fullPathName"
 )
 
+type ImportMode string
+
+const (
+	ImportMode_append ImportMode = "append"
+	ImportMode_cover  ImportMode = "cover"
+)
+
 const CoverPosterMatchName_fileName string = "fileName"
 
 // EDetailsDramaSeriesMode 剧集显示模式
@@ -140,6 +147,7 @@ type Config_ScanDisk struct {
 	VideoSuffixName                    []string            `json:"videoSuffixName"`
 	AutoGetVideoDefinition             bool                `json:"autoGetVideoDefinition"`
 	ResourceNamingMode                 ResourceNamingMode  `json:"resourceNamingMode"`
+	ImportMode                         ImportMode          `json:"importMode"`
 	CoverPosterMatchName               []string            `json:"coverPosterMatchName"`
 	CoverPosterFuzzyMatch              bool                `json:"coverPosterFuzzyMatch"`
 	CoverPosterUseRandomImageIfNoMatch bool                `json:"coverPosterUseRandomImageIfNoMatch"`
@@ -148,7 +156,6 @@ type Config_ScanDisk struct {
 	CoverPosterWidth                   int                 `json:"coverPosterWidth"`
 	CoverPosterHeight                  int                 `json:"coverPosterHeight"`
 	AutoCreatePoster                   bool                `json:"autoCreatePoster"`
-	CheckPath                          bool                `json:"checkPath"`
 	FolderToSeries                     bool                `json:"folderToSeries"`
 	FolderToSeriesSort                 bool                `json:"folderToSeriesSort"`
 	Nfo                                Config_ScanDisk_Nfo `json:"nfo"`

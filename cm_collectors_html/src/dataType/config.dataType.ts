@@ -180,6 +180,7 @@ export interface I_config_scanDisk {
   videoSuffixName: string[]; // 视频文件后缀名
   autoGetVideoDefinition: boolean; // 自动获取视频分辨率
   resourceNamingMode: 'fileName' | 'dirName' | 'dirFileName' | 'fullPathName'; // 资源命名模式
+  importMode: 'append' | 'cover'; // 导入模式
   coverPosterMatchName: string[]; // 封面海报匹配名称
   coverPosterFuzzyMatch: boolean; // 封面海报模糊匹配
   coverPosterUseRandomImageIfNoMatch: boolean; // 无匹配时使用目录下随机图片
@@ -188,7 +189,6 @@ export interface I_config_scanDisk {
   coverPosterWidth: number; // 封面海报宽度
   coverPosterHeight: number; // 封面海报高度
   autoCreatePoster: boolean; // 自动创建封面海报
-  checkPath: boolean; // 检查路径
   folderToSeries: boolean; // 将同一文件夹下的多个视频文件合并为剧集
   folderToSeriesSort: boolean; // 合并剧集时，是否按名称重新排序
   nfo: I_config_scanDisk_nfo;
@@ -217,12 +217,12 @@ export const defualtConfigScanDisk: I_config_scanDisk = {
   coverPosterFuzzyMatch: true,
   coverPosterUseRandomImageIfNoMatch: false,
   resourceNamingMode: 'fileName',
+  importMode: 'append',
   coverPosterSuffixName: dataset.imageSuffixName,
   coverPosterType: -1,
   coverPosterWidth: 0,
   coverPosterHeight: 0,
   autoCreatePoster: true,
-  checkPath: true,
   folderToSeries: false,
   folderToSeriesSort: false,
   nfo: {

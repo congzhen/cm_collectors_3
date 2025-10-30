@@ -58,7 +58,7 @@ func (ImportData) ScanDiskImportPaths(filesBasesId string, config datatype.Confi
 	if err != nil {
 		return nil, err
 	}
-	if !config.CheckPath {
+	if config.ImportMode == datatype.ImportMode_cover {
 		return filesPaths, nil
 	}
 	nonExistingSrcPaths, err := models.ResourcesDramaSeries{}.FilterNonExistingSrcPaths(db, filesBasesId, filesPaths)
@@ -94,20 +94,33 @@ func (t ImportData) ScanDiskImportData(filesBasesId, filePath string, config dat
 	if config.FolderToSeries {
 		resourcesDramaSeries, err := ResourcesDramaSeries{}.FindDramaSeriesSlcBySearchPath(filesBasesId, fileDir)
 		if err == nil && len(*resourcesDramaSeries) > 0 {
-			resourcesID := (*resourcesDramaSeries)[0].ResourcesID
-			// 直接写入剧集信息
-			err := ResourcesDramaSeries{}.Create(core.DBS(), resourcesID, filePath, len(*resourcesDramaSeries))
-			if err != nil {
-				return err
+			existsDramaSeriesFilePath := false
+			//判断filepath是否已在改资源的剧集中，则不处理
+			for _, resourcesDramaSeries := range *resourcesDramaSeries {
+				if resourcesDramaSeries.Src == filePath {
+					existsDramaSeriesFilePath = true
+					break
+				}
 			}
-			// 是否按名称重新排序剧集
-			if config.FolderToSeriesSort {
-				err := ResourcesDramaSeries{}.SortBySrc(resourcesID)
+			if !existsDramaSeriesFilePath {
+				resourcesID := (*resourcesDramaSeries)[0].ResourcesID
+				// 直接写入剧集信息
+				err := ResourcesDramaSeries{}.Create(core.DBS(), resourcesID, filePath, len(*resourcesDramaSeries))
 				if err != nil {
 					return err
 				}
+				// 是否按名称重新排序剧集
+				if config.FolderToSeriesSort {
+					err := ResourcesDramaSeries{}.SortBySrc(resourcesID)
+					if err != nil {
+						return err
+					}
+				}
 			}
-			return nil
+			//如果是追加操作，这里已完成
+			if config.ImportMode == datatype.ImportMode_append {
+				return nil
+			}
 		}
 	}
 
@@ -137,9 +150,22 @@ func (t ImportData) ScanDiskImportData(filesBasesId, filePath string, config dat
 
 	t.Nfo(filesBasesId, path.Join(fileDir, fileName+".nfo"), config.Nfo, &resourceDataParam)
 
-	// 创建资源
-	_, err = Resources{}.CreateResource(&resourceDataParam)
-	return err
+	//根据filePath地址，查询资源是否已经存在
+	resourcesDramaSeriesScl, err := ResourcesDramaSeries{}.ListBySrc(filePath)
+	if err != nil {
+		return err
+	}
+	if len(*resourcesDramaSeriesScl) > 0 {
+		//如果已经存在，则更新
+		resourceID := (*resourcesDramaSeriesScl)[0].ResourcesID
+		resourceDataParam.Resource.ID = resourceID
+		_, err := Resources{}.UpdateResource(&resourceDataParam, false)
+		return err
+	} else {
+		// 创建资源
+		_, err = Resources{}.CreateResource(&resourceDataParam)
+		return err
+	}
 }
 
 // GetResourceTitle 根据配置的命名模式生成资源标题

@@ -39,6 +39,17 @@
             <el-radio-button label="全路径名" value="fullPathName" />
           </el-radio-group>
         </el-form-item>
+        <el-form-item label="导入方式">
+          <div class="form-column-list">
+            <el-radio-group v-model="formData.importMode" size="small">
+              <el-radio-button label="追加导入" value="append" />
+              <el-radio-button label="覆盖导入" value="cover" />
+            </el-radio-group>
+            <div><el-text type="warning">覆盖导入会更新已存在的数据并导入新资源</el-text></div>
+            <div><el-text type="warning">覆盖导入当多个资源指向同一视频地址时，仅更新最后的资源记录</el-text></div>
+          </div>
+        </el-form-item>
+
         <el-form-item label="封面海报匹配名">
           <el-select v-model="formData.coverPosterMatchName" multiple filterable allow-create default-first-option>
             <el-option v-for="item, key in dataset.coverPosterMatchName" :key="key" :label="item" :value="item" />
@@ -52,9 +63,6 @@
         </el-form-item>
         <el-form-item>
           <el-checkbox v-model="formData.autoCreatePoster" label="(未找到封面海报) 自动截取视频内容作封面海报" />
-        </el-form-item>
-        <el-form-item>
-          <el-checkbox v-model="formData.checkPath" label="检测路径是否存在 (已存在不导入)" />
         </el-form-item>
         <el-form-item>
           <el-checkbox v-model="formData.folderToSeries" label="将同一文件夹下的多个视频文件合并为剧集" />
@@ -268,6 +276,9 @@ defineExpose({ init, submit, saveConfig })
   overflow: hidden;
 
   .block {
+    .form-column-list {
+      line-height: normal;
+    }
 
     .el-alert {
       margin: 0 0 10px 0;
@@ -286,6 +297,8 @@ defineExpose({ init, submit, saveConfig })
 
     .el-form {
       width: 90%;
+
+
     }
   }
 }

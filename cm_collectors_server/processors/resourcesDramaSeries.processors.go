@@ -39,6 +39,10 @@ func (ResourcesDramaSeries) Info(id string) (*models.ResourcesDramaSeries, error
 	return models.ResourcesDramaSeries{}.Info(core.DBS(), id)
 }
 
+func (ResourcesDramaSeries) ListBySrc(src string) (*[]models.ResourcesDramaSeries, error) {
+	return models.ResourcesDramaSeries{}.ListBySrc(core.DBS(), src)
+}
+
 func (t ResourcesDramaSeries) GetSrc(id string) (string, error) {
 	info, err := t.Info(id)
 	if err == nil && info.Src == "" {

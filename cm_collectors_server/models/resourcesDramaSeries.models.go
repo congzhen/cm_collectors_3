@@ -131,6 +131,11 @@ func (ResourcesDramaSeries) Info(db *gorm.DB, id string) (*ResourcesDramaSeries,
 	err := db.Where("id = ?", id).First(&info).Error
 	return &info, err
 }
+func (ResourcesDramaSeries) ListBySrc(db *gorm.DB, src string) (*[]ResourcesDramaSeries, error) {
+	var dataList []ResourcesDramaSeries
+	err := db.Where("src = ?", src).Order("id desc").Find(&dataList).Error
+	return &dataList, err
+}
 
 func (ResourcesDramaSeries) ListByResourceID(db *gorm.DB, resourceID string) (*[]ResourcesDramaSeries, error) {
 	var dataList []ResourcesDramaSeries
