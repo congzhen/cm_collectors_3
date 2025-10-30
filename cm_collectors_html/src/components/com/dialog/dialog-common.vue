@@ -61,7 +61,7 @@ const width_C = computed(() => {
   const screenWidth = window.innerWidth
   const targetWidth = parseInt(props.width)
   if (targetWidth > screenWidth * 0.9) {
-    return `${screenWidth * 0.9}px` // 保留10%边距
+    return '90%'
   }
   return props.width
 })
