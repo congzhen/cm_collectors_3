@@ -133,7 +133,8 @@ func (p Play) PlayOpenResourceFolder(resourceId string) error {
 	// 检查播放源路径是否存在
 	err = p.checkPlaySourceExists(playSrc)
 	if err != nil {
-		return err
+		folderPath := filepath.Dir(playSrc)
+		return open.Run(folderPath)
 	}
 	// 使用系统命令直接打开文件夹并选中文件，更好地处理特殊字符
 	err = p.openFolderAndSelectFile(playSrc)
