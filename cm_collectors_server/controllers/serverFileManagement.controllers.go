@@ -20,7 +20,7 @@ func (ServerFileManagement) DefaultPathEntrySlc() []serverfilemanagement.ServerF
 	pathEntrySlc := []serverfilemanagement.ServerFileManagement_PathEntry{}
 	if runtime.GOOS == "windows" {
 		// 简化处理：列出 A-Z 盘符，判断是否存在
-		for c := 'C'; c <= 'Z'; c++ {
+		for c := 'A'; c <= 'Z'; c++ {
 			path := string(c) + `:\`
 			if _, err := os.Stat(path); err == nil {
 				path = filepath.ToSlash(path)
