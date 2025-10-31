@@ -12,6 +12,14 @@ import (
 
 const configFile = "config.yaml"
 
+// 定义始终优先使用配置文件值的字段列表（即使为零值也不使用默认值覆盖）
+var configFilePriorityFields = map[string]bool{
+	"General.IsAutoCreateM3u8": true,
+	"Scraper.LogStatus":        true,
+	"Scraper.Headless":         true,
+	"Scraper.VisitHome":        true,
+}
+
 // getDefaultConfig 返回默认配置
 func getDefaultConfig() *config.Config {
 	return &config.Config{
@@ -117,25 +125,40 @@ func createDefaultConfig() error {
 
 // mergeWithDefaults 使用默认配置填充未设置的字段
 func mergeWithDefaults(defaultConfig, userConfig *config.Config) {
-	mergeRecursive(reflect.ValueOf(defaultConfig).Elem(), reflect.ValueOf(userConfig).Elem())
+	mergeRecursive(reflect.ValueOf(defaultConfig).Elem(), reflect.ValueOf(userConfig).Elem(), "")
 }
 
 // mergeRecursive 递归合并两个结构体
-func mergeRecursive(defaultVal, userVal reflect.Value) {
+func mergeRecursive(defaultVal, userVal reflect.Value, path string) {
 	switch userVal.Kind() {
 	case reflect.Struct:
 		for i := 0; i < userVal.NumField(); i++ {
 			field := userVal.Field(i)
 			defaultField := defaultVal.Field(i)
+			fieldName := userVal.Type().Field(i).Name
+			currentPath := path
+			if currentPath == "" {
+				currentPath = fieldName
+			} else {
+				currentPath = path + "." + fieldName
+			}
 
 			// 检查字段是否可以设置
 			if field.CanSet() {
 				// 如果是结构体则递归处理
 				if field.Kind() == reflect.Struct {
-					mergeRecursive(defaultField, field)
-				} else if isZeroValue(field) && !isZeroValue(defaultField) {
-					// 如果用户配置中的字段是零值，而默认配置中的字段不是零值，则使用默认值
-					field.Set(defaultField)
+					mergeRecursive(defaultField, field, currentPath)
+				} else {
+					// 检查是否是配置文件优先字段
+					_, isConfigPriority := configFilePriorityFields[currentPath]
+
+					// 如果是配置文件优先字段，永远不使用默认值覆盖
+					if isConfigPriority {
+						// 不做任何操作，保持配置文件中的值，即使它是零值
+					} else if isZeroValue(field) && !isZeroValue(defaultField) {
+						// 如果用户配置中的字段是零值，而默认配置中的字段不是零值，则使用默认值
+						field.Set(defaultField)
+					}
 				}
 			}
 		}

@@ -78,8 +78,8 @@
           <div>启用上方开关后，刮削器将使用此处指定的浏览器路径进行数据抓取。</div>
           <div> 支持的浏览器包括Chrome、Edge等基于Chromium内核的浏览器。</div>
           <div>常见安装位置：</div>
-          <div>Windows Chrome: C:\Program Files\Google\Chrome\Application\chrome.exe</div>
-          <div>Windows Edge: C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe</div>
+          <div>Windows Chrome: C:/Program Files/Google/Chrome/Application/chrome.exe</div>
+          <div>Windows Edge: C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe</div>
           <div>macOS Chrome: /Applications/Google Chrome.app/Contents/MacOS/Google Chrome</div>
           <div>macOS Edge: /Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge</div>
           <div>Linux Chrome: /usr/bin/google-chrome 或 /usr/bin/chromium-browser</div>
