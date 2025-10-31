@@ -5,7 +5,11 @@
     </div>
     <div class="performer-photo-k">
       <div class="rectangle" v-if="!props.roundAvatar">
-        <el-image :src="getPerformerPhoto(props.performer)" fit="cover" />
+        <el-image :src="getPerformerPhoto(props.performer)" fit="cover">
+          <template #error>
+            <el-image :src="getPerformerEmptyPhoto()" fit="cover" />
+          </template>
+        </el-image>
       </div>
       <performerPhoto v-else :performer="props.performer"></performerPhoto>
     </div>
@@ -41,7 +45,7 @@ import { type PropType } from 'vue';
 import { calculateAge } from '@/assets/calculate'
 import { appStoreData } from '@/storeData/app.storeData';
 import { searchStoreData } from '@/storeData/search.storeData';
-import { getPerformerPhoto } from '@/common/photo';
+import { getPerformerPhoto, getPerformerEmptyPhoto } from '@/common/photo';
 import performerPhoto from './performerPhoto.vue'
 const store = {
   appStoreData: appStoreData(),

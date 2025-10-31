@@ -11,6 +11,15 @@ export const getPerformerPhoto = (performer: I_performer | undefined) => {
   if (!performer || !performer.photo || performer.photo == '') return '';
   return `/api/performerFace/${performer.performerBases_id}/${performer.photo}`
 }
+export const getPerformerEmptyPhoto = () => {
+  const store = {
+    appStoreData: appStoreData(),
+  }
+  if (store.appStoreData.currentConfigApp.performer_photo == '') {
+    return '/emptyPhoto.jpg';
+  }
+  return store.appStoreData.currentConfigApp.performer_photo;
+}
 export const getSamplePhoto = (resource: I_resource | I_resource_base | undefined, imagePath: string) => {
   if (!resource || !resource.coverPoster || resource.coverPoster == '') return '';
   const store = {
