@@ -14,6 +14,7 @@ import (
 
 // ScraperChromeDp_DownLoad 图片下载器 - 使用ChromeDP下载图片
 type ScraperChromeDp_DownLoad struct {
+	BrowserPath            string         //浏览器路径
 	Headless               bool           // 是否使用无头模式
 	Config                 *ScraperConfig // 刮削器配置
 	VisitHome              bool           // 是否访问主页
@@ -36,7 +37,7 @@ func (s ScraperChromeDp_DownLoad) Download_Images_WithChromeDP(ctx context.Conte
 	referer := u.Scheme + "://" + u.Host + "/"
 
 	// 增强浏览器模拟配置，尽可能模拟真实浏览器行为
-	allocCtx, cancel := GetNewExecAllocator(s.Headless, s.Config.Proxy)
+	allocCtx, cancel := GetNewExecAllocator(s.Headless, s.Config.Proxy, s.BrowserPath)
 	//defer cancel()
 
 	// 创建浏览器上下文

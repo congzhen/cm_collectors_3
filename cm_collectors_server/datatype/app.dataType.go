@@ -23,6 +23,11 @@ type App_Config struct {
 	IsAdminLogin bool   `json:"isAdminLogin"`
 }
 
+type App_Config_Scraper struct {
+	UseBrowserPath bool   `json:"useBrowserPath"`
+	BrowserPath    string `json:"browserPath"`
+}
+
 type App_SystemConfig struct {
 	App_Config
 	AdminPassword          string                `json:"adminPassword"`
@@ -32,6 +37,7 @@ type App_SystemConfig struct {
 	PlayVideoFormats       []string              `json:"playVideoFormats"`
 	PlayAudioFormats       []string              `json:"playAudioFormats"`
 	VideoRateLimit         config.VideoRateLimit `json:"videoRateLimit"`
+	Scraper                App_Config_Scraper    `json:"scraper"`
 }
 
 // 用户类型

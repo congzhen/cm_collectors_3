@@ -134,19 +134,21 @@ func LoadConfig(filePath string) (*ScraperConfig, error) {
 
 // NewScraper 创建一个新的ScraperChromeDp实例
 // config: 爬虫配置信息
+// browserPath: 浏览器路径
 // headless: 是否启用无头模式
 // retryDelay: 重试延迟时间
 // retryCount: 重试次数
 // logEnabled: 是否启用日志
 // logPath: 日志文件路径
 // 返回值: ScraperChromeDp实例指针
-func NewScraper(config *ScraperConfig, headless bool, retryDelay time.Duration, retryCount int, logEnabled bool, logPath string) *ScraperChromeDp {
+func NewScraper(config *ScraperConfig, browserPath string, headless bool, retryDelay time.Duration, retryCount int, logEnabled bool, logPath string) *ScraperChromeDp {
 	scraper := &ScraperChromeDp{
-		headless:   headless,
-		config:     config,
-		cache:      make(map[string]*CachedResult), // 初始化缓存
-		retryDelay: retryDelay,
-		retryCount: retryCount,
+		browserPath: browserPath,
+		headless:    headless,
+		config:      config,
+		cache:       make(map[string]*CachedResult), // 初始化缓存
+		retryDelay:  retryDelay,
+		retryCount:  retryCount,
 	}
 	if logEnabled {
 		// 配置全局日志设置
@@ -201,6 +203,7 @@ func ParseID(filePath string, config *ScraperConfig) string {
 //   - pageURL: 当前页面的URL，用于构造相对路径或访问主页。
 //   - metadata: 包含元数据的映射，值可以是字符串或字符串数组，表示图片链接。
 //   - useTagName: 是否使用字段名作为图片文件名。
+//   - browserPath: 浏览器路径，用于启动 ChromeDP。
 //   - headless: 是否以无头模式运行浏览器。
 //   - visitHome: 是否需要访问网站主页以加载 Cookie 或资源。
 //   - enableScrollSimulation: 是否启用滚动模拟来触发懒加载。
@@ -209,7 +212,7 @@ func ParseID(filePath string, config *ScraperConfig) string {
 // 返回值：
 //   - map[string]string: 映射关系，键为本地图片文件名，值为对应的图片URL。
 //   - error: 如果过程中发生错误，则返回非空error。
-func GetMetadataImages(ctx context.Context, config *ScraperConfig, pageURL string, metadata *map[string]any, useTagName bool, headless bool, visitHome bool, enableScrollSimulation bool, scrollIntervalFactor float64) (map[string]string, error) {
+func GetMetadataImages(ctx context.Context, config *ScraperConfig, pageURL string, metadata *map[string]any, useTagName bool, browserPath string, headless bool, visitHome bool, enableScrollSimulation bool, scrollIntervalFactor float64) (map[string]string, error) {
 	images := make(map[string]string) // 存储图片文件名到URL的映射
 
 	// 遍历元数据，提取图片URL
@@ -266,6 +269,7 @@ func GetMetadataImages(ctx context.Context, config *ScraperConfig, pageURL strin
 
 	// 使用ChromeDP下载图片
 	scd := ScraperChromeDp_DownLoad{
+		BrowserPath:            browserPath,
 		Headless:               headless,
 		Config:                 config,
 		VisitHome:              visitHome,

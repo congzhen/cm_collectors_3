@@ -87,6 +87,12 @@ export interface I_appConfig {
   isAdminLogin: boolean;
 }
 
+export interface I_appConfig_scraper {
+  useBrowserPath: boolean;
+  browserPath: string;
+
+}
+
 export interface I_appSystemVideoRateLimit {
   enabled: boolean;
   requestsPerSecond: number;
@@ -101,6 +107,7 @@ export interface I_appSystemConfig extends I_appConfig {
   playVideoFormats: string[];
   playAudioFormats: string[];
   videoRateLimit: I_appSystemVideoRateLimit;
+  scraper: I_appConfig_scraper;
 }
 export interface I_video_basic_info {
   width: number;

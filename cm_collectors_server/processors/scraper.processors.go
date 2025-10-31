@@ -19,6 +19,14 @@ import (
 type Scraper struct {
 }
 
+func (Scraper) GetBrowserPath() string {
+	if core.Config.Scraper.UseBrowserPath {
+		return core.Config.Scraper.BrowserPath
+	} else {
+		return ""
+	}
+}
+
 func (Scraper) getConfigPath(fileName string) string {
 	return path.Join("./scraper", fileName+".json")
 }
@@ -103,7 +111,7 @@ func (t Scraper) ScraperDataProcess(filesBasesId, filePath string, config dataty
 				continue
 			}
 			// 创建刮削器
-			scraperSL := cmscraper.NewScraper(scraperConfig, core.Config.Scraper.Headless, time.Duration(config.Timeout), 1, core.Config.Scraper.LogStatus, core.Config.Scraper.LogPath)
+			scraperSL := cmscraper.NewScraper(scraperConfig, t.GetBrowserPath(), core.Config.Scraper.Headless, time.Duration(config.Timeout), 1, core.Config.Scraper.LogStatus, core.Config.Scraper.LogPath)
 			// 关闭日志
 			defer cmscraper.CloseGlobalLogger()
 			id := cmscraper.ParseID(filePath, scraperConfig)
@@ -116,7 +124,7 @@ func (t Scraper) ScraperDataProcess(filesBasesId, filePath string, config dataty
 			// 是否下载图片
 			if config.EnableDownloadImages {
 				// 获取元数据的base64图片数据map
-				images, err := cmscraper.GetMetadataImages(ctx, scraperConfig, pageUrl, metadata, config.UseTagAsImageName, core.Config.Scraper.Headless, core.Config.Scraper.VisitHome, config.EnableUserSimulation, 1.0)
+				images, err := cmscraper.GetMetadataImages(ctx, scraperConfig, pageUrl, metadata, config.UseTagAsImageName, t.GetBrowserPath(), core.Config.Scraper.Headless, core.Config.Scraper.VisitHome, config.EnableUserSimulation, 1.0)
 				if err == nil && len(images) > 0 {
 					// 保存图片
 					for imageName, base64Data := range images {
@@ -198,7 +206,7 @@ func (t Scraper) execScraperPerformerData(performerId, performerName, scraperCon
 		return models.Performer{}, "", err
 	}
 	// 创建刮削器
-	scraperSL := cmscraper.NewScraper(scraperConfig, core.Config.Scraper.Headless, time.Duration(timeout), 1, core.Config.Scraper.LogStatus, core.Config.Scraper.LogPath)
+	scraperSL := cmscraper.NewScraper(scraperConfig, t.GetBrowserPath(), core.Config.Scraper.Headless, time.Duration(timeout), 1, core.Config.Scraper.LogStatus, core.Config.Scraper.LogPath)
 	// 关闭日志
 	defer cmscraper.CloseGlobalLogger()
 	ctx := context.Background()
@@ -206,7 +214,7 @@ func (t Scraper) execScraperPerformerData(performerId, performerName, scraperCon
 	if err != nil {
 		return models.Performer{}, "", err
 	}
-	images, err := cmscraper.GetMetadataImages(ctx, scraperConfig, pageUrl, metadata, true, core.Config.Scraper.Headless, core.Config.Scraper.VisitHome, false, 1.0)
+	images, err := cmscraper.GetMetadataImages(ctx, scraperConfig, pageUrl, metadata, true, t.GetBrowserPath(), core.Config.Scraper.Headless, core.Config.Scraper.VisitHome, false, 1.0)
 	perforomerPhotoBase64 := ""
 	if err == nil {
 		// 判断image中是否有 avatar ，photo , cover ，如果有则使用第一个
@@ -333,7 +341,7 @@ func (t Scraper) ScraperOneResourceDataProcess(par *datatype.ReqParam_ScraperOne
 			return nil, err
 		}
 		// 创建刮削器
-		scraperSL := cmscraper.NewScraper(scraperConfig, core.Config.Scraper.Headless, time.Duration(par.Timeout), 1, core.Config.Scraper.LogStatus, core.Config.Scraper.LogPath)
+		scraperSL := cmscraper.NewScraper(scraperConfig, t.GetBrowserPath(), core.Config.Scraper.Headless, time.Duration(par.Timeout), 1, core.Config.Scraper.LogStatus, core.Config.Scraper.LogPath)
 		// 关闭日志
 		defer cmscraper.CloseGlobalLogger()
 		var scrapeIDS = [3]string{}
@@ -366,7 +374,7 @@ func (t Scraper) ScraperOneResourceDataProcess(par *datatype.ReqParam_ScraperOne
 			return nil, errors.New("没有找到匹配的元数据")
 		}
 		// 获取图片
-		metadataImages, err = cmscraper.GetMetadataImages(ctx, scraperConfig, pageUrl, metadata, true, core.Config.Scraper.Headless, core.Config.Scraper.VisitHome, false, 1.0)
+		metadataImages, err = cmscraper.GetMetadataImages(ctx, scraperConfig, pageUrl, metadata, true, t.GetBrowserPath(), core.Config.Scraper.Headless, core.Config.Scraper.VisitHome, false, 1.0)
 		if err == nil && len(metadataImages) > 0 && filePathExists && par.SaveImage {
 			// 保存图片
 			for imageName, base64Data := range metadataImages {

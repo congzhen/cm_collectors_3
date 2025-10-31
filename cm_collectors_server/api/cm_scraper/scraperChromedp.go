@@ -15,14 +15,15 @@ import (
 
 // ScraperChromeDp 刮削器 - 使用ChromeDP实现的刮削器
 type ScraperChromeDp struct {
-	headless   bool                     // 是否使用无头模式
-	config     *ScraperConfig           // 刮削器配置
-	cache      map[string]*CachedResult // 缓存结果，以ID为键存储已抓取的数据
-	retryDelay time.Duration            // 重试延迟时间
-	retryCount int                      // 最大重试次数
+	browserPath string                   //浏览器路径
+	headless    bool                     // 是否使用无头模式
+	config      *ScraperConfig           // 刮削器配置
+	cache       map[string]*CachedResult // 缓存结果，以ID为键存储已抓取的数据
+	retryDelay  time.Duration            // 重试延迟时间
+	retryCount  int                      // 最大重试次数
 }
 
-func GetNewExecAllocator(headless bool, proxyConfig *ProxyConfig) (context.Context, context.CancelFunc) {
+func GetNewExecAllocator(headless bool, proxyConfig *ProxyConfig, browserPath string) (context.Context, context.CancelFunc) {
 	opts := []chromedp.ExecAllocatorOption{
 		chromedp.Flag("headless", headless),
 		chromedp.Flag("no-sandbox", true),
@@ -64,6 +65,11 @@ func GetNewExecAllocator(headless bool, proxyConfig *ProxyConfig) (context.Conte
 		chromedp.Flag("allow-running-insecure-content", true),
 
 		chromedp.Flag("disable-strict-mime-type-checking", true),
+	}
+
+	// 如果提供了浏览器路径，则使用指定的浏览器
+	if browserPath != "" {
+		opts = append(opts, chromedp.ExecPath(browserPath))
 	}
 
 	// 如果启用了代理配置，则添加代理设置
@@ -145,7 +151,7 @@ func (s *ScraperChromeDp) Scrape(ctx context.Context, id string) (*map[string]an
 // 返回：搜索到的真实ID和可能的错误
 func (s *ScraperChromeDp) scrapeSearch(ctx context.Context, searchConfig *SearchConfig, id string) (string, error) {
 	// 创建 Chrome 实例，配置各种参数以模拟真实浏览器
-	allocCtx, cancel := GetNewExecAllocator(s.headless, s.config.Proxy)
+	allocCtx, cancel := GetNewExecAllocator(s.headless, s.config.Proxy, s.browserPath)
 	defer cancel()
 
 	// 创建浏览器上下文
@@ -276,7 +282,7 @@ func (s *ScraperChromeDp) scrapeSearch(ctx context.Context, searchConfig *Search
 // 返回：元数据映射、目标URL和可能的错误
 func (s *ScraperChromeDp) scrapeSite(ctx context.Context, site SiteConfig, id string) (*map[string]any, string, error) {
 	// 创建 Chrome 实例，配置各种参数以模拟真实浏览器
-	allocCtx, cancel := GetNewExecAllocator(s.headless, s.config.Proxy)
+	allocCtx, cancel := GetNewExecAllocator(s.headless, s.config.Proxy, s.browserPath)
 	defer cancel()
 
 	// 读取config里的headers,并设置请求头
@@ -301,7 +307,6 @@ func (s *ScraperChromeDp) scrapeSite(ctx context.Context, site SiteConfig, id st
 	var htmlContent string
 
 	// 访问页面，最多重试3次
-	fmt.Println("------------------------")
 	var err error
 	for i := 0; i < s.retryCount; i++ {
 		err = chromedp.Run(chromeCtx,
@@ -452,6 +457,7 @@ func (s *ScraperChromeDp) scrapeSite(ctx context.Context, site SiteConfig, id st
 					parts := strings.Split(strValue, processor.Pattern)
 					metadata[field] = parts
 				}
+
 			}
 		}
 	}

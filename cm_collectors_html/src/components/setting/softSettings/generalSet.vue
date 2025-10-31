@@ -65,20 +65,48 @@
       <el-form-item label="限流器桶容量">
         <el-input-number v-model="formData.videoRateLimit.burst" :min="1" :max="100" />
       </el-form-item>
+      <el-form-item label="刮削器使用指定浏览器">
+        <el-switch v-model="formData.scraper.useBrowserPath" />
+      </el-form-item>
+      <el-form-item label="刮削器指定浏览器路径">
+        <el-input v-model="formData.scraper.browserPath">
+          <template #append>
+            <el-button icon="FolderOpened" @click="openServerFileManagement" />
+          </template>
+        </el-input>
+        <el-text class="warning-text" type="warning" size="small">
+          <div>启用上方开关后，刮削器将使用此处指定的浏览器路径进行数据抓取。</div>
+          <div> 支持的浏览器包括Chrome、Edge等基于Chromium内核的浏览器。</div>
+          <div>常见安装位置：</div>
+          <div>Windows Chrome: C:\Program Files\Google\Chrome\Application\chrome.exe</div>
+          <div>Windows Edge: C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe</div>
+          <div>macOS Chrome: /Applications/Google Chrome.app/Contents/MacOS/Google Chrome</div>
+          <div>macOS Edge: /Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge</div>
+          <div>Linux Chrome: /usr/bin/google-chrome 或 /usr/bin/chromium-browser</div>
+          <div>Linux Edge: /usr/bin/microsoft-edge</div>
+        </el-text>
+      </el-form-item>
     </el-form>
     <div class="save-button-container">
       <el-button type="primary" @click="saveHandle" icon="Edit">保存</el-button>
     </div>
   </div>
+  <serverFileManagementDialog ref="serverFileManagementDialogRef" @selectedFiles="selectedFilesHandle">
+  </serverFileManagementDialog>
 </template>
 <script lang="ts" setup>
 import selectPlayVideoFormats from '@/components/com/form/selectPlayVideoFormats.vue';
 import selectPlayAudioFormats from '@/components/com/form/selectPlayAudioFormats.vue';
+import serverFileManagementDialog from '@/components/serverFileManagement/serverFileManagementDialog.vue';
 import { ref, onMounted } from 'vue'
 import type { I_appSystemConfig } from '@/dataType/app.dataType';
 import { appDataServer } from '@/server/app.server';
 import { ElMessage } from 'element-plus';
 import { debounceNow } from '@/assets/debounce';
+import type { I_sfm_FileEntry } from '@/components/serverFileManagement/com/dataType';
+
+const serverFileManagementDialogRef = ref<InstanceType<typeof serverFileManagementDialog>>();
+
 const formData = ref<I_appSystemConfig>({
   logoName: 'CM File Collectors',
   isAdminLogin: false,
@@ -92,6 +120,10 @@ const formData = ref<I_appSystemConfig>({
     enabled: false,
     requestsPerSecond: 5,
     burst: 10
+  },
+  scraper: {
+    useBrowserPath: false,
+    browserPath: ''
   }
 })
 
@@ -120,7 +152,16 @@ const getAppConfig = async () => {
     loading.value = false;
   }
 }
-
+const openServerFileManagement = () => {
+  serverFileManagementDialogRef.value?.open();
+}
+const selectedFilesHandle = (slc: I_sfm_FileEntry[]) => {
+  console.log(slc)
+  if (slc.length == 0) {
+    return;
+  }
+  formData.value.scraper.browserPath = slc[slc.length - 1].path;
+}
 const saveHandle = debounceNow(async () => {
   try {
     loading.value = true;

@@ -44,6 +44,10 @@ func (App) GetConfig() datatype.App_SystemConfig {
 		PlayVideoFormats:       core.Config.Play.PlayVideoFormats,
 		PlayAudioFormats:       core.Config.Play.PlayAudioFormats,
 		VideoRateLimit:         core.Config.General.VideoRateLimit,
+		Scraper: datatype.App_Config_Scraper{
+			BrowserPath:    core.Config.Scraper.BrowserPath,
+			UseBrowserPath: core.Config.Scraper.UseBrowserPath,
+		},
 	}
 	return config
 }
@@ -60,5 +64,7 @@ func (App) SetConfig(config datatype.App_SystemConfig) error {
 	core.Config.Play.PlayVideoFormats = config.PlayVideoFormats
 	core.Config.Play.PlayAudioFormats = config.PlayAudioFormats
 	core.Config.General.VideoRateLimit = config.VideoRateLimit
+	core.Config.Scraper.BrowserPath = config.Scraper.BrowserPath
+	core.Config.Scraper.UseBrowserPath = config.Scraper.UseBrowserPath
 	return core.SaveConfig()
 }
