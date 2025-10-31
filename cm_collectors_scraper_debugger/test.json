@@ -1,4 +1,5 @@
 {
+  "browserPath": "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe",
   "headless": false,
   "visitHome": false,
   "scraperConfig": "./scraper/themoviedb_scraper.json",

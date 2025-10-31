@@ -14,6 +14,7 @@ import (
 )
 
 type TestJson struct {
+	BrowserPath            string `json:"browserPath"`            // 浏览器路径
 	Headless               bool   `json:"headless"`               // 是否使用无头浏览器
 	VisitHome              bool   `json:"visitHome"`              // 是否访问主页
 	ScraperConfig          string `json:"scraperConfig"`          // 配置文件路径
@@ -46,7 +47,12 @@ func main() {
 		waitForExit()
 		return
 	}
-
+	// 使用json.MarshalIndent格式化输出
+	formattedData, err := json.MarshalIndent(testJson, "", "  ")
+	if err != nil {
+		log.Fatal("JSON格式化失败:", err)
+	}
+	fmt.Println(string(formattedData))
 	// 直接执行测试函数，而不是在goroutine中执行
 	runCmscraper(testJson)
 
@@ -96,7 +102,7 @@ func runCmscraper(testJson TestJson) {
 		filePath := testJson.ID
 		id := cmscraper.ParseID(filePath, config)
 		saveFolder := fmt.Sprintf("%s@%s", time.Now().Format("20060102150405"), id)
-		dataMap[testJson.ID] = filepath.Join(testJson.SavePath, saveFolder)
+		dataMap[id] = filepath.Join(testJson.SavePath, saveFolder)
 	}
 
 	if len(dataMap) == 0 {
@@ -138,7 +144,7 @@ func runCmscraper(testJson TestJson) {
 
 func execCmscraper(config *cmscraper.ScraperConfig, testJson TestJson, id, saveFolder string) {
 	// 创建刮削器
-	s := cmscraper.NewScraper(config, testJson.Headless, time.Duration(testJson.Timeout), testJson.RetryCount, true, "scraper.log")
+	s := cmscraper.NewScraper(config, testJson.BrowserPath, testJson.Headless, time.Duration(testJson.Timeout), testJson.RetryCount, true, "scraper.log")
 	// 关闭日志
 	defer cmscraper.CloseGlobalLogger()
 
@@ -161,7 +167,7 @@ func execCmscraper(config *cmscraper.ScraperConfig, testJson TestJson, id, saveF
 	}
 
 	// 获取图片的base64编码
-	images, err := cmscraper.GetMetadataImages(ctx, config, pageUrl, metadata, testJson.ImageUseTagName, testJson.Headless, testJson.VisitHome, testJson.EnableScrollSimulation, 1.0)
+	images, err := cmscraper.GetMetadataImages(ctx, config, pageUrl, metadata, testJson.ImageUseTagName, testJson.BrowserPath, testJson.Headless, testJson.VisitHome, testJson.EnableScrollSimulation, 1.0)
 	if err != nil {
 		cmscraper.LogError("获取图片base64失败: %v", err)
 		fmt.Printf("获取图片base64失败: %v\n", err)
