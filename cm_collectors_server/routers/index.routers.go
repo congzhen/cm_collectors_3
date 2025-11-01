@@ -107,6 +107,7 @@ func AdminRouter(router *gin.Engine) {
 	routerGroup.PUT("resource/update", controllers.Resource{}.UpdateResource)
 	routerGroup.PUT("resource/update/tag", controllers.Resource{}.UpdateResourceTag)
 	routerGroup.PUT("resource/batchSetTag", controllers.Resource{}.BatchSetTag)
+	routerGroup.GET("resource/deleted/list", controllers.Resource{}.ListDeletedResource)
 	routerGroup.DELETE("resource/delete/:resourceId", controllers.Resource{}.DeleteResource)
 	routerGroup.POST("resourceDramaSeries/searchPath", controllers.ResourceDramaSeries{}.SearchPath)
 	routerGroup.POST("resourceDramaSeries/replacePath", controllers.ResourceDramaSeries{}.ReplacePath)

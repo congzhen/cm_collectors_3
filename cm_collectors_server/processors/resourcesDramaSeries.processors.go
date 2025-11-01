@@ -15,6 +15,11 @@ type ResourcesDramaSeries struct{}
 func (ResourcesDramaSeries) DataListByResourcesID(resourcesID string) (*[]models.ResourcesDramaSeries, error) {
 	return models.ResourcesDramaSeries{}.DataListByResourcesID(core.DBS(), resourcesID)
 }
+
+func (ResourcesDramaSeries) DataLisWithResourcetByFilesBasesIds(filesBasesIds []string) (*[]models.DramaSeriesWithResource, error) {
+	return models.ResourcesDramaSeries{}.DataLisWithResourcetByFilesBasesIds(core.DBS(), filesBasesIds)
+}
+
 func (t ResourcesDramaSeries) FirstInfoByResourcesID(resourcesID string) (*models.ResourcesDramaSeries, error) {
 	dramaSeriesSlc, err := t.DataListByResourcesID(resourcesID)
 	if err != nil {

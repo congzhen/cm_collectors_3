@@ -5,6 +5,7 @@ import (
 	"cm_collectors_server/processors"
 	"cm_collectors_server/response"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -133,7 +134,18 @@ func (Resource) BatchSetTag(c *gin.Context) {
 	}
 	response.OkWithData(true, c)
 }
-
+func (Resource) ListDeletedResource(c *gin.Context) {
+	idsStr := c.Query("filesBasesIds")
+	filesBasesIds := []string{}
+	if idsStr != "" {
+		filesBasesIds = strings.Split(idsStr, ",")
+	}
+	list, err := processors.Resources{}.DataListDeletedResource(filesBasesIds)
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(list, c)
+}
 func (Resource) DeleteResource(c *gin.Context) {
 	resourceId := c.Param("resourceId")
 	err := processors.Resources{}.DeleteResource(resourceId)

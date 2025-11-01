@@ -28,6 +28,41 @@ func (Resources) DataListAll(page, limit int) (*[]models.Resources, error) {
 	return models.Resources{}.DataListAll(core.DBS(), page, limit)
 }
 
+// 获取所有删除所有文件的资源
+func (t Resources) DataListDeletedResource(filesBasesIds []string) (*[]models.Resources, error) {
+	// 根据文件库ID获取关联的剧集资源信息
+	dramaSeriesWithResourceSlc, err := ResourcesDramaSeries{}.DataLisWithResourcetByFilesBasesIds(filesBasesIds)
+	if err != nil {
+		return nil, err
+	}
+	// 按资源ID分组整理剧集资源信息
+	resourceMap := map[string][]models.DramaSeriesWithResource{}
+	for _, item := range *dramaSeriesWithResourceSlc {
+		// 判断map是否存在，不存在这创建
+		if resourceMap[item.ResourcesID] == nil {
+			resourceMap[item.ResourcesID] = []models.DramaSeriesWithResource{}
+		}
+		resourceMap[item.ResourcesID] = append(resourceMap[item.ResourcesID], item)
+	}
+	// 查找已删除的资源ID（对应的所有文件都不存在的资源）
+	deletedResourceIDS := []string{}
+	for resourceID, dswrSlc := range resourceMap {
+		//遍历dswrSlc  判断里面的src的文件是否存在，如果都不存在，则写入deletedResourceIDS
+		exist := false
+		for _, item := range dswrSlc {
+			if utils.FileExists(item.Src) {
+				exist = true
+				break
+			}
+		}
+		if !exist {
+			deletedResourceIDS = append(deletedResourceIDS, resourceID)
+		}
+	}
+	// 根据已删除的资源ID获取对应的资源详情
+	return t.DataListByIds(deletedResourceIDS)
+}
+
 func (Resources) Info(id string) (*models.Resources, error) {
 	info, err := models.Resources{}.Info(core.DBS(), id)
 	if err == nil && info.ID == "" || err == gorm.ErrRecordNotFound {

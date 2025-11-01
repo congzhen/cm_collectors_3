@@ -36,6 +36,18 @@ func (ResourcesDramaSeries) DataListByResourcesID(db *gorm.DB, resourcesID strin
 	return &list, err
 }
 
+func (t ResourcesDramaSeries) DataLisWithResourcetByFilesBasesIds(db *gorm.DB, filesBasesIds []string) (*[]DramaSeriesWithResource, error) {
+	var dataList []DramaSeriesWithResource
+	db = db.Table(fmt.Sprintf("%s AS t", t.TableName())).
+		Joins(fmt.Sprintf("left join %s as  r on t.resources_id = r.id", Resources{}.TableName())).
+		Select("t.id,t.resources_id,t.src, r.title")
+	if len(filesBasesIds) > 0 {
+		db = db.Where("r.filesBases_id in (?)", filesBasesIds)
+	}
+	err := db.Order("r.addTime desc").Find(&dataList).Error
+	return &dataList, err
+}
+
 func (t ResourcesDramaSeries) SearchPath(db *gorm.DB, filesBasesIds []string, searchPath string) (*[]DramaSeriesWithResource, error) {
 	var dataList []DramaSeriesWithResource
 	db = db.Table(fmt.Sprintf("%s AS t", t.TableName())).
