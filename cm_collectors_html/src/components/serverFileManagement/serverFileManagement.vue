@@ -401,6 +401,10 @@ const getSelectedFiles = (): I_sfm_FileEntry[] => {
   const selectedRows = fileTableRef.value?.getSelectionRows() || [];
   return selectedRows;
 }
+//清除选中文件
+const clearSelectedFiles = () => {
+  fileTableRef.value?.clearSelection();
+}
 
 //获取选中文件的完整路径数组
 const getSelectedFilesCompletePath = (): string[] => {
@@ -671,7 +675,7 @@ onMounted(() => {
 })
 
 
-defineExpose({ getSelectedFiles })
+defineExpose({ getSelectedFiles, clearSelectedFiles })
 </script>
 <style lang="scss" scoped>
 .server-file-management {

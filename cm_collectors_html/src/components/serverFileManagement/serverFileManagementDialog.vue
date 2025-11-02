@@ -40,6 +40,7 @@ const selectedFilesHandle = () => {
 }
 
 const open = () => {
+  serverFileManagementRef.value?.clearSelectedFiles();
   dialogVisible.value = true
 }
 defineExpose({ open })
