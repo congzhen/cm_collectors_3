@@ -23,11 +23,13 @@ system:
     logLevel: Error
     updateSoftConfig: https://objectstorageapi.ap-southeast-1.clawcloudrun.com/vj5i0ntw-cm-collectors-3/updateConfig/updateSoftConfig.json
 scraper:
-    logStatus: true # 是否开启刮削日志
-    logPath: ./scraper.log # 日志文件路径
-    headless: true # 是否开启无头浏览器
-    visitHome: false # 是否访问首页
-    timeout: 30 # 请求超时时间
+    useBrowserPath: false
+    browserPath: ""
+    logStatus: true
+    logPath: ./scraper.log
+    headless: true
+    visitHome: false
+    timeout: 30
 play:
     playVideoFormats:
         - h264
@@ -75,3 +77,6 @@ cache:
         defaultExpireSec: 3600
 serverFileManagement:
     rootPath: []
+taryMenu:
+    - name: Chrome
+      path: C:/Program Files/Google/Chrome/Application/chrome.exe

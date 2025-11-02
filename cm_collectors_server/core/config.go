@@ -103,6 +103,7 @@ func getDefaultConfig() *config.Config {
 		ServerFileManagement: config.ServerFileManagement{
 			RootPath: []string{},
 		},
+		TaryMenu: []config.TaryMenu{},
 	}
 }
 

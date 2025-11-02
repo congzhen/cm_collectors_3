@@ -71,7 +71,7 @@
       <el-form-item label="刮削器指定浏览器路径">
         <el-input v-model="formData.scraper.browserPath">
           <template #append>
-            <el-button icon="FolderOpened" @click="openServerFileManagement" />
+            <el-button icon="FolderOpened" @click="openServerFileManagement('scraper')" />
           </template>
         </el-input>
         <el-text class="warning-text" type="warning" size="small">
@@ -85,6 +85,25 @@
           <div>Linux Chrome: /usr/bin/google-chrome 或 /usr/bin/chromium-browser</div>
           <div>Linux Edge: /usr/bin/microsoft-edge</div>
         </el-text>
+      </el-form-item>
+      <el-form-item label="windows托盘菜单">
+        <div class="tary-menu-container">
+          <div class="tary-menu" v-for="item, index in formData.taryMenu" :key="index">
+            <el-input class="name" v-model="item.name" placeholder="请输入托盘名" />
+            <el-input class="path" v-model="item.path" placeholder="请选择执行程序">
+              <template #append>
+                <el-button icon="FolderOpened" @click="openServerFileManagement('taryMenu', index)" />
+              </template>
+            </el-input>
+            <el-button class="btn" type="danger" icon="Delete" @click="delTaryMenu(index)" />
+          </div>
+          <el-button @click="addTaryMenu">添加新托盘菜单</el-button>
+          <div>
+            <el-text class="warning-text" type="warning" size="small">
+              修改托盘菜单后需要重启程序才能生效
+            </el-text>
+          </div>
+        </div>
       </el-form-item>
     </el-form>
     <div class="save-button-container">
@@ -124,7 +143,8 @@ const formData = ref<I_appSystemConfig>({
   scraper: {
     useBrowserPath: false,
     browserPath: ''
-  }
+  },
+  taryMenu: [],
 })
 
 const loading = ref(false);
@@ -152,16 +172,36 @@ const getAppConfig = async () => {
     loading.value = false;
   }
 }
-const openServerFileManagement = () => {
+let openServerFileManagementOptType = '';
+let openServerFileManagementOptIndex = 0;
+const openServerFileManagement = (optType: string, index = 0) => {
+  openServerFileManagementOptType = optType;
+  openServerFileManagementOptIndex = index;
   serverFileManagementDialogRef.value?.open();
 }
 const selectedFilesHandle = (slc: I_sfm_FileEntry[]) => {
-  console.log(slc)
   if (slc.length == 0) {
     return;
   }
-  formData.value.scraper.browserPath = slc[slc.length - 1].path;
+  switch (openServerFileManagementOptType) {
+    case 'scraper':
+      formData.value.scraper.browserPath = slc[slc.length - 1].path;
+      break;
+    case 'taryMenu':
+      formData.value.taryMenu[openServerFileManagementOptIndex].path = slc[slc.length - 1].path;
+      break;
+  }
 }
+const addTaryMenu = () => {
+  formData.value.taryMenu.push({
+    name: '',
+    path: ''
+  })
+}
+const delTaryMenu = (index: number) => {
+  formData.value.taryMenu.splice(index, 1);
+}
+
 const saveHandle = debounceNow(async () => {
   try {
     loading.value = true;
@@ -227,5 +267,29 @@ onMounted(async () => {
     display: flex;
     justify-content: flex-end;
   }
+
+  .tary-menu-container {
+    width: 100%;
+
+    .tary-menu {
+      display: flex;
+      gap: 10px;
+      padding-bottom: 8px;
+
+      .name {
+        width: 150px;
+        flex-shrink: 0;
+      }
+
+      .path {
+        flex: 1;
+      }
+
+      .btn {
+        flex-shrink: 0;
+      }
+    }
+  }
+
 }
 </style>

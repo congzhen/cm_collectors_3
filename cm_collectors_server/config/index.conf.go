@@ -10,4 +10,5 @@ type Config struct {
 	Mysql                Mysql                `yaml:"mysql"`
 	Cache                Cache                `yaml:"cache"`
 	ServerFileManagement ServerFileManagement `yaml:"serverFileManagement"`
+	TaryMenu             []TaryMenu           `yaml:"taryMenu"`
 }

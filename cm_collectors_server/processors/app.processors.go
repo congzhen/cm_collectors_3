@@ -48,6 +48,7 @@ func (App) GetConfig() datatype.App_SystemConfig {
 			BrowserPath:    core.Config.Scraper.BrowserPath,
 			UseBrowserPath: core.Config.Scraper.UseBrowserPath,
 		},
+		TaryMenu: core.Config.TaryMenu,
 	}
 	return config
 }
@@ -66,5 +67,6 @@ func (App) SetConfig(config datatype.App_SystemConfig) error {
 	core.Config.General.VideoRateLimit = config.VideoRateLimit
 	core.Config.Scraper.BrowserPath = config.Scraper.BrowserPath
 	core.Config.Scraper.UseBrowserPath = config.Scraper.UseBrowserPath
+	core.Config.TaryMenu = config.TaryMenu
 	return core.SaveConfig()
 }

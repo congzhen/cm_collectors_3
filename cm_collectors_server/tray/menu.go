@@ -14,9 +14,10 @@ import (
 
 // TrayMenu 托盘菜单结构
 type TrayMenu struct {
-	OpenWebUI *systray.MenuItem
-	OpenApp   *systray.MenuItem
-	Quit      *systray.MenuItem
+	OpenWebUI   *systray.MenuItem
+	OpenApp     *systray.MenuItem
+	Quit        *systray.MenuItem
+	CustomMenus []*systray.MenuItem // 添加自定义菜单项数组
 }
 
 // ServerAddr 服务器地址
@@ -31,15 +32,23 @@ func CreateTrayMenu(iconData []byte, serverAddr string) *TrayMenu {
 
 	// 保存服务器地址
 	ServerAddr = serverAddr
-
 	// 创建菜单项
 	menu := &TrayMenu{
 		OpenWebUI: systray.AddMenuItem("打开网页界面", "在浏览器中打开管理界面"),
 		OpenApp:   systray.AddMenuItem("打开应用程序", "启动桌面应用程序"),
-		Quit:      systray.AddMenuItem("退出", "停止服务器并退出程序"),
+	}
+
+	// 添加自定义菜单项
+	menu.CustomMenus = make([]*systray.MenuItem, 0)
+	for _, item := range core.Config.TaryMenu {
+		customItem := systray.AddMenuItem(item.Name, "")
+		menu.CustomMenus = append(menu.CustomMenus, customItem)
 	}
 
 	systray.AddSeparator()
+
+	// 添加退出菜单项
+	menu.Quit = systray.AddMenuItem("退出", "停止服务器并退出程序")
 
 	return menu
 }
@@ -67,6 +76,25 @@ func (tm *TrayMenu) HandleEvents(shutdownFunc func()) {
 			}
 		}
 	}()
+	// 为每个自定义菜单项单独启动事件监听器
+	for i := range tm.CustomMenus {
+		go func(index int) {
+			for {
+				select {
+				case <-tm.CustomMenus[index].ClickedCh:
+					// 处理自定义菜单点击事件
+					path := core.Config.TaryMenu[index].Path
+					if path == "" {
+						core.LogErr(fmt.Errorf("自定义菜单项路径为空"))
+						return
+					}
+					displayAddr := strings.Replace(ServerAddr, "0.0.0.0", "localhost", 1)
+					url := fmt.Sprintf("http://%s", displayAddr)
+					OpenBrowserWith(path, url)
+				}
+			}
+		}(i)
+	}
 }
 
 // OpenAppClicked 处理打开应用程序的逻辑

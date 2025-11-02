@@ -98,6 +98,10 @@ export interface I_appSystemVideoRateLimit {
   requestsPerSecond: number;
   burst: number;
 }
+export interface I_taryMenu {
+  name: string;
+  path: string;
+}
 
 export interface I_appSystemConfig extends I_appConfig {
   adminPassword: string;
@@ -108,6 +112,7 @@ export interface I_appSystemConfig extends I_appConfig {
   playAudioFormats: string[];
   videoRateLimit: I_appSystemVideoRateLimit;
   scraper: I_appConfig_scraper;
+  taryMenu: I_taryMenu[];
 }
 export interface I_video_basic_info {
   width: number;

@@ -38,6 +38,7 @@ type App_SystemConfig struct {
 	PlayAudioFormats       []string              `json:"playAudioFormats"`
 	VideoRateLimit         config.VideoRateLimit `json:"videoRateLimit"`
 	Scraper                App_Config_Scraper    `json:"scraper"`
+	TaryMenu               []config.TaryMenu     `json:"taryMenu"`
 }
 
 // 用户类型
