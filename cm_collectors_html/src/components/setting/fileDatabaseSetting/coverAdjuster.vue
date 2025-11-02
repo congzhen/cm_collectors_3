@@ -23,8 +23,12 @@
                 <el-slider v-model="coverPosterHeightBase" :min="10" :max="1000" size="small" />
               </div>
               <div class="setting-item">
-                <span class="setting-label">间距</span>
+                <span class="setting-label">资源间距</span>
                 <el-slider v-model="coverPosterGap" :min="0" :max="50" :step="0.1" size="small" />
+              </div>
+              <div class="setting-item">
+                <span class="setting-label">左右空距</span>
+                <el-slider v-model="contentPadding" :min="0" :max="50" size="small" />
               </div>
               <div class="setting-item">
                 <span class="setting-label">封面图填充方式</span>
@@ -124,6 +128,13 @@ const coverPosterGap = computed({
   }
 });
 
+const contentPadding = computed({
+  get: () => store.appStoreData.currentConfigApp.contentPadding,
+  set: (value) => {
+    store.appStoreData.currentConfigApp.contentPadding = value;
+  }
+});
+
 const coverImageFit = computed({
   get: () => {
     console.log(store.appStoreData.currentConfigApp.coverImageFit);
@@ -168,6 +179,8 @@ const resourceDetailsShowMode = computed({
     store.appStoreData.currentConfigApp.resourceDetailsShowMode = value;
   }
 });
+
+
 
 const saveConfig = debounceNow(async () => {
   const result = await filesBasesServer.setFilesBasesConfigById(store.appStoreData.currentFilesBases.id, store.appStoreData.currentConfigApp);

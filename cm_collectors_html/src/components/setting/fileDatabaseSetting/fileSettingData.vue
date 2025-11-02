@@ -266,8 +266,11 @@
       <el-form-item label="高度基数">
         <el-input-number v-model="filesConfig.coverPosterHeightBase" />
       </el-form-item>
-      <el-form-item label="间距">
-        <el-input-number v-model="filesConfig.coverPosterGap" :precision="1" :step="0.1" />
+      <el-form-item label="资源间距">
+        <el-input-number v-model="filesConfig.coverPosterGap" :precision="1" :min="0" :max="50" :step="0.1" />
+      </el-form-item>
+      <el-form-item label="左右空距">
+        <el-input-number v-model="filesConfig.contentPadding" :min="0" :max="50" />
       </el-form-item>
       <!--
       <el-alert title="路径虚拟转换" type="success" :closable="false" />

@@ -1,5 +1,5 @@
 <template>
-  <div class="content-list">
+  <div class="content-list" :style="contentListStyleObj_C">
     <layoutCoverPoster ref="layoutCoverPosterRef"
       v-if="store.appStoreData.currentConfigApp.resourcesShowMode == 'coverPoster'" :data-list="props.dataList"
       @select-resources="selectResourcesHandle">
@@ -33,7 +33,7 @@ import layoutCoverPosterWaterfall from './layoutCoverPosterWaterfall.vue';
 import layoutShortVideo from './layoutShortVideo.vue';
 import layoutTable from './layoutTable.vue';
 import type { I_resource } from '@/dataType/resource.dataType';
-import { ref, type PropType } from 'vue';
+import { ref, computed, type PropType } from 'vue';
 import { appStoreData } from '@/storeData/app.storeData';
 const store = {
   appStoreData: appStoreData(),
@@ -52,6 +52,16 @@ const layoutCoverPosterBoxWideSeparateRef = ref<typeof layoutCoverPosterBoxWideS
 const layoutCoverPosterWaterfallRef = ref<typeof layoutCoverPosterWaterfall>();
 const layoutShortVideoRef = ref<typeof layoutShortVideo>();
 const layoutTableRef = ref<typeof layoutTable>();
+
+const contentListStyleObj_C = computed(() => {
+  if (store.appStoreData.currentConfigApp.contentPadding == 0) {
+    return {};
+  }
+  return {
+    width: `calc(100% - ${store.appStoreData.currentConfigApp.contentPadding * 2}%)`,
+    padding: `0 ${store.appStoreData.currentConfigApp.contentPadding}%`
+  }
+})
 
 const selectResourcesHandle = (item: I_resource) => {
   emits('selectResources', item)

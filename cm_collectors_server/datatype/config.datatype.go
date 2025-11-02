@@ -86,6 +86,8 @@ type Config_FilesBases struct {
 	CoverPosterWidthStatus       bool                      `json:"coverPosterWidthStatus"`       // 封面宽度状态
 	CoverPosterHeightBase        int                       `json:"coverPosterHeightBase"`        // 封面高度
 	CoverPosterHeightStatus      bool                      `json:"coverPosterHeightStatus"`      // 封面高度状态
+	CoverPosterGap               int                       `json:"coverPosterGap"`               // 封面间隔
+	ContentPadding               int                       `json:"contentPadding"`               // 左右空距
 	Definition                   []string                  `json:"definition"`                   // 清晰度
 	DefinitionFontColor          string                    `json:"definitionFontColor"`          // 清晰度颜色
 	DefinitionRgba               string                    `json:"definitionRgba"`               // 清晰度颜色
