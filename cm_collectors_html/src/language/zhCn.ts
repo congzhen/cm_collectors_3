@@ -21,6 +21,8 @@ export default {
     coverPoster: '封面海报',
     coverPosterBox: '封面海报盒子',
     coverPosterBoxWideSeparate: '封面海报盒子-宽图',
+    coverPosterSimple: '封面海报精简',
+    coverPosterSimpleExpand: '封面海报精简-扩展',
     coverPosterWaterfall: '封面海报瀑布流',
     shortVideo: '短视频',
     table: '表格'

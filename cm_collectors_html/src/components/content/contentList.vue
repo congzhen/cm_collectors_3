@@ -12,6 +12,14 @@
       v-else-if="store.appStoreData.currentConfigApp.resourcesShowMode == 'coverPosterBoxWideSeparate'"
       :data-list="props.dataList" @select-resources="selectResourcesHandle">
     </layoutCoverPosterBoxWideSeparate>
+    <layoutCoverPosterSimple ref="layoutCoverPosterSimpleRef"
+      v-else-if="store.appStoreData.currentConfigApp.resourcesShowMode == 'coverPosterSimple'"
+      :data-list="props.dataList" @select-resources="selectResourcesHandle">
+    </layoutCoverPosterSimple>
+    <layoutCoverPosterSimpleExpand ref="layoutCoverPosterSimpleExpandRef"
+      v-else-if="store.appStoreData.currentConfigApp.resourcesShowMode == 'coverPosterSimpleExpand'"
+      :data-list="props.dataList" @select-resources="selectResourcesHandle">
+    </layoutCoverPosterSimpleExpand>
     <layoutCoverPosterWaterfall ref="layoutCoverPosterWaterfallRef"
       v-else-if="store.appStoreData.currentConfigApp.resourcesShowMode == 'coverPosterWaterfall'"
       :data-list="props.dataList" @select-resources="selectResourcesHandle">
@@ -29,6 +37,8 @@
 import layoutCoverPoster from './layoutCoverPoster.vue';
 import layoutCoverPosterBox from './layoutCoverPosterBox.vue';
 import layoutCoverPosterBoxWideSeparate from './layoutCoverPosterBoxWideSeparate.vue';
+import layoutCoverPosterSimple from './layoutCoverPosterSimple.vue';
+import layoutCoverPosterSimpleExpand from './layoutCoverPosterSimpleExpand.vue';
 import layoutCoverPosterWaterfall from './layoutCoverPosterWaterfall.vue';
 import layoutShortVideo from './layoutShortVideo.vue';
 import layoutTable from './layoutTable.vue';
@@ -50,6 +60,8 @@ const layoutCoverPosterRef = ref<typeof layoutCoverPoster>();
 const layoutCoverPosterBoxRef = ref<typeof layoutCoverPosterBox>();
 const layoutCoverPosterBoxWideSeparateRef = ref<typeof layoutCoverPosterBoxWideSeparate>();
 const layoutCoverPosterWaterfallRef = ref<typeof layoutCoverPosterWaterfall>();
+const layoutCoverPosterSimpleRef = ref<typeof layoutCoverPosterSimple>();
+const layoutCoverPosterSimpleExpandRef = ref<typeof layoutCoverPosterSimpleExpand>();
 const layoutShortVideoRef = ref<typeof layoutShortVideo>();
 const layoutTableRef = ref<typeof layoutTable>();
 
@@ -77,6 +89,12 @@ const change = () => {
       break;
     case 'coverPosterBoxWideSeparate':
       layoutCoverPosterBoxWideSeparateRef.value?.change();
+      break;
+    case 'coverPosterSimple':
+      layoutCoverPosterSimpleRef.value?.change();
+      break;
+    case 'coverPosterSimpleExpand':
+      layoutCoverPosterSimpleExpandRef.value?.change();
       break;
     case 'coverPosterWaterfall':
       layoutCoverPosterWaterfallRef.value?.change();
