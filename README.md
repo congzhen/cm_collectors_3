@@ -87,8 +87,11 @@ cd cm_collectors_wails && wails build -o ../../../build/cm_collectors_wails.exe 
 # 构建windows启动器
 cd cm_collectors_windows_launcher && go build -ldflags -H=windowsgui -o ../build/CM_launcher.exe . && cd ..
 
-# 构建视频调用器
-cd cm_collectors_video_caller && set GOOS=windows&& set GOARCH=amd64&& go build -ldflags -H=windowsgui -tags tray -o ../build/video_caller/cm_collectors_video_caller.exe . && copy config.json ..\build\video_caller\  && copy setup_cm_video_caller.bat ..\build\video_caller\ && copy uninstall_cm_video_caller.bat ..\build\video_caller\ && cd ..
+# 构建windows视频调用器
+cd cm_collectors_video_caller && set GOOS=windows&& set GOARCH=amd64&& go build -ldflags -H=windowsgui -tags tray -o ../build/video_caller/cm_collectors_video_caller.exe . && copy config.json ..\build\video_caller\  && copy setup_cm_video_caller.bat ..\build\video_caller\ && copy setup_cm_video_caller.sh ..\build\video_caller\ && copy uninstall_cm_video_caller.bat ..\build\video_caller\ && copy uninstall_cm_video_caller.sh ..\build\video_caller\ && cd ..
+
+# 构建Linux视频调用器
+cd cm_collectors_video_caller && set GOOS=linux&& set GOARCH=amd64&& go build -o ../build/video_caller/cm_collectors_video_caller . && copy config.json ..\build\video_caller\  && copy setup_cm_video_caller.bat ..\build\video_caller\ && copy setup_cm_video_caller.sh ..\build\video_caller\ && copy uninstall_cm_video_caller.bat ..\build\video_caller\ && copy uninstall_cm_video_caller.sh ..\build\video_caller\ && cd ..
 
 # 构建刮削调试器
 cd cm_collectors_scraper_debugger && set GOOS=windows&& set GOARCH=amd64&& go build -o ../build/scraper_debugger/cm_collectors_scraper_debugger.exe . && copy test.json ..\build\scraper_debugger\ && robocopy scraper ..\build\scraper_debugger\scraper\ && cd ..
