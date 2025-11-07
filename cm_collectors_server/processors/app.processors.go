@@ -48,7 +48,8 @@ func (App) GetConfig() datatype.App_SystemConfig {
 			BrowserPath:    core.Config.Scraper.BrowserPath,
 			UseBrowserPath: core.Config.Scraper.UseBrowserPath,
 		},
-		TaryMenu: core.Config.TaryMenu,
+		TaryMenu:                     core.Config.TaryMenu,
+		ServerFileManagementRootPath: core.GetConfig_ServerFileManagementRootPath(),
 	}
 	return config
 }
@@ -68,5 +69,6 @@ func (App) SetConfig(config datatype.App_SystemConfig) error {
 	core.Config.Scraper.BrowserPath = config.Scraper.BrowserPath
 	core.Config.Scraper.UseBrowserPath = config.Scraper.UseBrowserPath
 	core.Config.TaryMenu = config.TaryMenu
+	core.Config.ServerFileManagement.RootPath = config.ServerFileManagementRootPath
 	return core.SaveConfig()
 }

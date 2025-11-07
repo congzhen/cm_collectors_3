@@ -110,6 +110,7 @@ export interface I_appSystemConfig extends I_appConfig {
   notAllowServerOpenFile: boolean;
   playVideoFormats: string[];
   playAudioFormats: string[];
+  serverFileManagementRootPath: string[];
   videoRateLimit: I_appSystemVideoRateLimit;
   scraper: I_appConfig_scraper;
   taryMenu: I_taryMenu[];

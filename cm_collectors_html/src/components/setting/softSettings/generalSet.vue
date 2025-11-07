@@ -41,10 +41,11 @@
       <el-form-item label="web可播放音频格式">
         <selectPlayAudioFormats v-model="formData.playAudioFormats" multiple />
       </el-form-item>
-      <el-form-item label="指定挂载磁盘">
-        <img src="/config_serverFileManagement.png" />
+      <el-form-item label="文件管理挂载路径">
+        <selectServerFileManagementRootPath v-model="formData.serverFileManagementRootPath" multiple />
         <el-text class="warning-text" type="warning" size="small">
-          指定挂载磁盘，请根据图片所示，修改根目录下的config.yaml文件。请严格按照格式要求进行修改，否则可能导致打开文件管理器时出现问题。
+          指定挂载磁盘，未在列表中显示的磁盘（例如网络磁盘 \\192.168.1.51\影视）可手动填写后按回车键添加。<br>
+          如果指定的路径在服务器上不存在或无法访问，则该路径将不会在文件管理器中显示。
         </el-text>
       </el-form-item>
       <el-form-item label="视频限流器">
@@ -116,6 +117,7 @@
 <script lang="ts" setup>
 import selectPlayVideoFormats from '@/components/com/form/selectPlayVideoFormats.vue';
 import selectPlayAudioFormats from '@/components/com/form/selectPlayAudioFormats.vue';
+import selectServerFileManagementRootPath from '@/components/com/form/selectServerFileManagementRootPath.vue';
 import serverFileManagementDialog from '@/components/serverFileManagement/serverFileManagementDialog.vue';
 import { ref, onMounted } from 'vue'
 import type { I_appSystemConfig } from '@/dataType/app.dataType';
@@ -123,6 +125,7 @@ import { appDataServer } from '@/server/app.server';
 import { ElMessage } from 'element-plus';
 import { debounceNow } from '@/assets/debounce';
 import type { I_sfm_FileEntry } from '@/components/serverFileManagement/com/dataType';
+import dataset from '@/assets/dataset';
 
 const serverFileManagementDialogRef = ref<InstanceType<typeof serverFileManagementDialog>>();
 
@@ -133,8 +136,9 @@ const formData = ref<I_appSystemConfig>({
   isAutoCreateM3u8: false,
   language: 'zhCn',
   notAllowServerOpenFile: false,
-  playVideoFormats: ['h264', 'vp8', 'vp9', 'av1', 'hevc'],
-  playAudioFormats: ['aac', 'opus', 'mp3', 'vorbis', 'pcm_s16le', 'pcm_s24le'],
+  playVideoFormats: dataset.playVideoFormats,
+  playAudioFormats: dataset.playAudioFormats,
+  serverFileManagementRootPath: dataset.serverFileManagementRootPath,
   videoRateLimit: {
     enabled: false,
     requestsPerSecond: 5,

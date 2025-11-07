@@ -30,15 +30,16 @@ type App_Config_Scraper struct {
 
 type App_SystemConfig struct {
 	App_Config
-	AdminPassword          string                `json:"adminPassword"`
-	IsAutoCreateM3u8       bool                  `json:"isAutoCreateM3u8"`
-	Language               string                `json:"language"`
-	NotAllowServerOpenFile bool                  `json:"notAllowServerOpenFile"`
-	PlayVideoFormats       []string              `json:"playVideoFormats"`
-	PlayAudioFormats       []string              `json:"playAudioFormats"`
-	VideoRateLimit         config.VideoRateLimit `json:"videoRateLimit"`
-	Scraper                App_Config_Scraper    `json:"scraper"`
-	TaryMenu               []config.TaryMenu     `json:"taryMenu"`
+	AdminPassword                string                `json:"adminPassword"`
+	IsAutoCreateM3u8             bool                  `json:"isAutoCreateM3u8"`
+	Language                     string                `json:"language"`
+	NotAllowServerOpenFile       bool                  `json:"notAllowServerOpenFile"`
+	PlayVideoFormats             []string              `json:"playVideoFormats"`
+	PlayAudioFormats             []string              `json:"playAudioFormats"`
+	VideoRateLimit               config.VideoRateLimit `json:"videoRateLimit"`
+	Scraper                      App_Config_Scraper    `json:"scraper"`
+	TaryMenu                     []config.TaryMenu     `json:"taryMenu"`
+	ServerFileManagementRootPath []string              `json:"serverFileManagementRootPath"`
 }
 
 // 用户类型

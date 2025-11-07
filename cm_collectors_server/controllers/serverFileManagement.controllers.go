@@ -48,14 +48,23 @@ func (ServerFileManagement) DefaultPathEntrySlc() []serverfilemanagement.ServerF
 }
 
 func (t ServerFileManagement) pathEntrySlc() []serverfilemanagement.ServerFileManagement_PathEntry {
-	rootPathLen := len(core.Config.ServerFileManagement.RootPath)
+	rootPath := core.GetConfig_ServerFileManagementRootPath()
+	rootPathLen := len(rootPath)
 	if rootPathLen == 0 {
 		return t.DefaultPathEntrySlc()
 	}
-	pathEntrySlc := make([]serverfilemanagement.ServerFileManagement_PathEntry, rootPathLen)
-	for i, v := range core.Config.ServerFileManagement.RootPath {
-		pathEntrySlc[i].RealPath = v
-		pathEntrySlc[i].VirtualPath = v
+	pathEntrySlc := []serverfilemanagement.ServerFileManagement_PathEntry{}
+	for _, v := range rootPath {
+		// 在Windows系统下跳过根路径"/"
+		if runtime.GOOS == "windows" && (v == "/" || v == "\\") {
+			continue
+		}
+		if _, err := os.Stat(v); err == nil {
+			pathEntrySlc = append(pathEntrySlc, serverfilemanagement.ServerFileManagement_PathEntry{
+				RealPath:    v,
+				VirtualPath: v,
+			})
+		}
 	}
 	return pathEntrySlc
 }

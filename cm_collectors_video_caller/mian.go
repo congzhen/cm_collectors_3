@@ -45,6 +45,10 @@ func main() {
 		videoPath := args[0]
 		prefix := "cmcollectorsvideoplay://"
 		videoPath = videoPath[len(prefix)+1:]
+		// 如果第一个字母不是h,则添加h
+		if videoPath[0] != 'h' {
+			videoPath = "h" + videoPath
+		}
 		// 修复链接中可能缺少的冒号
 		if strings.HasPrefix(videoPath, "http//") {
 			videoPath = "http://" + videoPath[len("http//"):]

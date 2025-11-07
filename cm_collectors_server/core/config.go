@@ -101,7 +101,7 @@ func getDefaultConfig() *config.Config {
 			},
 		},
 		ServerFileManagement: config.ServerFileManagement{
-			RootPath: []string{},
+			RootPath: []string{"/", "A:\\", "B:\\", "C:\\", "D:\\", "E:\\", "F:\\", "G:\\", "H:\\", "I:\\", "J:\\", "K:\\", "L:\\", "M:\\", "N:\\", "O:\\", "P:\\", "Q:\\", "R:\\", "S:\\", "T:\\", "U:\\", "V:\\", "W:\\", "X:\\", "Y:\\", "Z:\\"},
 		},
 		TaryMenu: []config.TaryMenu{},
 	}
@@ -240,4 +240,12 @@ func SaveConfig() error {
 // GetConfig 获取全局配置实例
 func GetConfig() *config.Config {
 	return Config
+}
+
+func GetConfig_ServerFileManagementRootPath() []string {
+	if Config.ServerFileManagement.RootPath == nil || len(Config.ServerFileManagement.RootPath) == 0 {
+		defaultConfig := getDefaultConfig()
+		return defaultConfig.ServerFileManagement.RootPath
+	}
+	return Config.ServerFileManagement.RootPath
 }
