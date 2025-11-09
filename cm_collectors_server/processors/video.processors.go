@@ -9,9 +9,9 @@ import (
 	"io/fs"
 	"net/http"
 	"os"
-	"os/exec"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -55,7 +55,15 @@ func (v Video) VideoMP4Stream(c *gin.Context, dramaSeriesId string, needEncoding
 	if needTranscode {
 		fmt.Println("######################### 转码流")
 		// 如果需要转码，使用流式转码
-		return v.VideoMP4Stream_TranscodePlay(c, src)
+		//return v.VideoMP4Stream_TranscodePlay(c, src)
+		// 使用m3u8方式
+		m3u8Bytes, err := Video{}.GetVideoM3u8ByDuration(dramaSeriesId, processorsffmpeg.VideoInfo{}.GetVideoDuration(formatInfo))
+		if err != nil {
+			return err
+		}
+		fmt.Println("######################### 使用m3u8流")
+		c.Data(200, "application/x-mpegURL", m3u8Bytes)
+		return nil
 	} else {
 		fmt.Println("######################### 原始流")
 		return v.VideoMP4Stream_Play(c, fileInfo, src)
@@ -263,39 +271,58 @@ func (v Video) VideoMP4Stream_TranscodePlay(c *gin.Context, src string) error {
 	}
 	return nil
 }
-
 func (v Video) GetVideoM3u8(dramaSeriesId string) ([]byte, error) {
-	dramaSeries, err := ResourcesDramaSeries{}.Info(dramaSeriesId)
+	src, err := ResourcesDramaSeries{}.GetSrc(dramaSeriesId)
 	if err != nil {
 		return nil, err
 	}
-
-	m3u8FileSrc := dramaSeries.Src + ".m3u8"
-
-	// 检查文件是否存在
-	if _, err := os.Stat(m3u8FileSrc); err == nil {
-		// 文件存在，读取文件内容
-		content, err := os.ReadFile(m3u8FileSrc)
-		if err != nil {
-			return nil, fmt.Errorf("读取m3u8文件失败: %v", err)
-		}
-		return content, nil
-	} else if os.IsNotExist(err) {
-		// 文件不存在，创建m3u8文件
-		content, err := processorsffmpeg.M3U8{}.CreateM3u8File(dramaSeriesId, dramaSeries.Src, m3u8FileSrc)
-		if err != nil {
-			return nil, fmt.Errorf("创建m3u8文件失败: %v", err)
-		}
-		return content, nil
-	} else {
-		// 其他错误
-		return nil, fmt.Errorf("检查文件状态时出错: %v", err)
+	formatInfo, err := processorscache.CacheVideoInfoLastUse{}.GetVideoInfoHandle(src)
+	if err != nil {
+		return nil, fmt.Errorf("无法获取视频信息: %v", err)
 	}
+	return v.GetVideoM3u8ByDuration(dramaSeriesId, processorsffmpeg.VideoInfo{}.GetVideoDuration(formatInfo))
 }
-func (v Video) PlayVideoM3u8(dramaSeriesId string, start, duration float64) (*exec.Cmd, error) {
+func (v Video) GetVideoM3u8ByDuration(dramaSeriesId string, duration float64) ([]byte, error) {
+	// 文件不存在，创建m3u8文件
+	content, err := processorsffmpeg.M3U8{}.GenerateM3u8File(dramaSeriesId, duration)
+	if err != nil {
+		return nil, fmt.Errorf("创建m3u8文件失败: %v", err)
+	}
+	return content, nil
+}
+func (v Video) VideoM3u8StreamHLS(c *gin.Context, dramaSeriesId string, start, duration float64) error {
 	dramaSeries, err := ResourcesDramaSeries{}.Info(dramaSeriesId)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return processorsffmpeg.M3U8{}.PlayVideoM3u8(dramaSeries.Src, start, duration)
+
+	_, err = processorscache.CacheVideoInfoLastUse{}.GetVideoInfoHandle(dramaSeries.Src)
+	if err != nil {
+		return fmt.Errorf("无法获取视频信息: %v", err)
+	}
+
+	cmd, err := processorsffmpeg.M3U8{}.PlayVideoM3u8(dramaSeries.Src, start, duration, false, true)
+	if err != nil {
+		return err
+	}
+	// 设置正确的MPEG-TS响应头
+	c.Header("Content-Type", "video/MP2T")
+	c.Header("Cache-Control", "no-cache, no-store, must-revalidate")
+	c.Header("Pragma", "no-cache")
+	c.Header("Expires", "0")
+	c.Header("Connection", "keep-alive")
+
+	// 直接将输出连接到响应
+	cmd.Stdout = c.Writer
+
+	// 执行命令
+	if err := cmd.Run(); err != nil {
+		// 忽略客户端断开连接的错误
+		if !strings.Contains(err.Error(), "broken pipe") &&
+			!strings.Contains(err.Error(), "连接被对方关闭") &&
+			!strings.Contains(err.Error(), "The pipe has been ended") {
+			fmt.Printf("FFmpeg执行错误: %v\n", err)
+		}
+	}
+	return nil
 }

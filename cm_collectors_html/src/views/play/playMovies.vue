@@ -81,7 +81,7 @@ import { ref, onMounted, nextTick } from "vue";
 import { getResourceCoverPoster } from '@/common/photo';
 import { appStoreData } from '@/storeData/app.storeData';
 import { AppLang } from '@/language/app.lang'
-import { getPlayVideoURL, playUpdate } from '@/common/play';
+import { getPlayVideoURLAndType, playUpdate } from '@/common/play';
 const appLang = AppLang()
 
 const store = {
@@ -134,11 +134,12 @@ const setVideoDramaSeries = () => {
   loading.value = false;
 }
 
-const setVideoSource = (dramaSeriesId: string) => {
+const setVideoSource = async (dramaSeriesId: string) => {
   selectedDramaSeriesId.value = dramaSeriesId;
   const vp = videoPlayRef.value;
   if (!vp) return;
-  vp.setVideoSource(getPlayVideoURL(dramaSeriesId, 'mp4'), 'mp4', () => {
+  const { playUrl, playType } = await getPlayVideoURLAndType(dramaSeriesId)
+  vp.setVideoSource(playUrl, playType, () => {
     vp.addTextTrack(
       `/api/video/subtitle/${dramaSeriesId}`,
       '默认字幕',

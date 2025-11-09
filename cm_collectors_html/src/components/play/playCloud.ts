@@ -1,8 +1,12 @@
-export const playCloud = (src: string) => {
+import { getPlayVideoURL } from "@/common/play";
+import type { T_VideoPlayMode } from "@/dataType/app.dataType";
+
+export const playCloud = (dramaSeriesId: string, mode: T_VideoPlayMode) => {
   // 获取当前服务器地址
   const serverAddress = window.location.origin;
+  const path = getPlayVideoURL(dramaSeriesId, mode);
   // 创建云播放协议链接
-  const url = `cmcollectorsvideoplay://${serverAddress}${src}?playCloud=true`;
+  const url = `cmcollectorsvideoplay://${serverAddress}${path}?playCloud=true`;
   console.log('尝试打开云播放协议链接:', url);
 
   try {

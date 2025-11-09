@@ -36,7 +36,6 @@ play:
         - vp8
         - vp9
         - av1
-        - hevc
     playAudioFormats:
         - aac
         - opus
@@ -76,7 +75,34 @@ cache:
         maxMemoryMB: 100
         defaultExpireSec: 3600
 serverFileManagement:
-    rootPath: []
+    rootPath:
+        - /
+        - A:\
+        - B:\
+        - C:\
+        - D:\
+        - E:\
+        - F:\
+        - G:\
+        - H:\
+        - I:\
+        - J:\
+        - K:\
+        - L:\
+        - M:\
+        - N:\
+        - O:\
+        - P:\
+        - Q:\
+        - R:\
+        - S:\
+        - T:\
+        - U:\
+        - V:\
+        - W:\
+        - X:\
+        - Y:\
+        - Z:\
 taryMenu:
     - name: Chrome
       path: C:/Program Files/Google/Chrome/Application/chrome.exe

@@ -1,11 +1,24 @@
 <template>
   <div ref="videoPlayContainerElementRef" class="video-player-container"
     :class="{ 'fullscreen-mode': isFullscreenMode }">
-    <video ref="videoPlayerRef" class="video-js vjs-theme-city" preload="auto" width="100%" playsinline
-      webkit-playsinline x5-playsinline x5-video-player-type="h5" x5-video-player-fullscreen="true"
-      x5-video-orientation="portraint">
-      <source :src="videoSrc" :type="isHls ? 'application/x-mpegURL' : 'video/mp4'">
-    </video>
+    <div class="video-player-windows" :key="indexkey">
+      <div v-if="isLoading && !isMobile()" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <p class="loading-text">{{ loadingText }}</p>
+      </div>
+      <!-- 桌面端使用 video.js -->
+      <video v-if="!isMobile()" ref="videoPlayerRef" class="video-js vjs-theme-city" preload="auto" width="100%"
+        playsinline webkit-playsinline x5-playsinline x5-video-player-type="h5" x5-video-player-fullscreen="true"
+        x5-video-orientation="portraint">
+        <source :src="videoSrc" :type="isHls ? 'application/x-mpegURL' : 'video/mp4'">
+      </video>
+      <!-- 移动端使用原生播放器 -->
+      <video v-else ref="nativeVideoRef" class="native-video-player" controls preload="metadata" width="100%"
+        playsinline webkit-playsinline x5-playsinline x5-video-player-type="h5" x5-video-player-fullscreen="true"
+        x5-video-orientation="portraint">
+        <source :src="videoSrc" :type="isHls ? 'application/x-mpegURL' : 'video/mp4'">
+      </video>
+    </div>
     <videoPlayControls v-if="useVideoPlayControls && !isMobile()" ref="videoControlsRef" @play="handlePlay"
       @pause="handlePause" @seek="handleSeek" @volume-change="handleVolumeChange" @mute-toggle="handleMuteToggle"
       @playback-rate-change="handlePlaybackRateChange" @rotate="handleRotate" @fullscreen="handleFullscreen"
@@ -28,14 +41,16 @@ import '@videojs/themes/dist/city/index.css';
 // Sea
 //import '@videojs/themes/dist/sea/index.css';
 
-import '@videojs/http-streaming'
-
 import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { ElMessage } from 'element-plus';
 import { isMobile } from '@/assets/mobile';
 import { openInPlayerDramaSeries } from '@/common/play';
 import playCloudCheckPromptDialog from './playCloudCheckPromptDialog.vue';
-import { playCloud } from './playCloud';
+
+interface I_playerSource {
+  src: string;
+  type: 'application/x-mpegURL' | 'video/mp4';
+}
 
 const props = defineProps({
   useVideoPlayControls: {
@@ -48,10 +63,15 @@ const props = defineProps({
   },
 })
 
+const indexkey = ref(0);
+const isLoading = ref(false);
+const loadingText = ref('正在加载视频...');
+
 const videoPlayControlsHeight = 63;
 
 const videoPlayContainerElementRef = ref<HTMLDivElement | null>(null)
 const videoPlayerRef = ref<HTMLVideoElement | null>(null)
+const nativeVideoRef = ref<HTMLVideoElement | null>(null)
 const videoControlsRef = ref<InstanceType<typeof videoPlayControls> | null>(null)
 const playCloudCheckPromptDialogRef = ref<InstanceType<typeof playCloudCheckPromptDialog> | null>(null)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -65,83 +85,119 @@ const initVideoAspectRatio = ref(props.aspectRatio)
 const rotation = ref(0)
 const isFullscreen = ref(false)
 const isFullscreenMode = ref(false)
-
-// 初始化播放器
-const initializePlayer = () => {
-  const isMobileDevice = isMobile()
-  if (videoPlayerRef.value) {
-
-    // 针对移动端优化的配置
-    const mobileOptions = {
-      preload: 'metadata',
-      playsinline: true,
-      controls: true, // 控制条
-      autoplay: false,
-      muted: false,
-      techOrder: ['html5'],
-      html5: {
-        hls: {
-          overrideNative: !isMobileDevice
-        },
-        nativeVideoTracks: isMobileDevice,
-        nativeAudioTracks: isMobileDevice,
-        nativeTextTracks: isMobileDevice
+const videoOptions = (isMobileDevice: boolean) => {
+  // 公共配置
+  const baseOptions = {
+    autoplay: false,
+    controls: true,
+    preload: 'metadata',
+    techOrder: ['html5'],
+    html5: {
+      // 同时支持 hls 和 vhs 配置以确保兼容性
+      hls: {
+        overrideNative: !isMobileDevice,
+        withCredentials: false,
+        handleManifestRedirects: true
+      },
+      vhs: {
+        overrideNative: !isMobileDevice,
+        withCredentials: false,
+        handleManifestRedirects: true,
+        smoothQualityChange: true,
+        enableLowInitialPlaylist: true,
+        fastQualityChange: true,
+        limitRenditionByPlayerDimensions: false,
+        useDevicePixelRatio: true,
+        useNetworkInformationApi: true,
+        useDtsForTimestampOffset: true,
       }
     }
+  }
 
-    // 桌面端配置
-    const desktopOptions = {
-      autoplay: false,
-      controls: !props.useVideoPlayControls, // 默认禁用控制条
+  // 移动端特有配置
+  if (isMobileDevice) {
+    return {
+      ...baseOptions,
+      playsinline: true,
+      controls: true, // 移动端始终启用控制条
+      muted: false,
+      html5: {
+        ...baseOptions.html5,
+        // 移动端使用原生轨道
+        nativeVideoTracks: true,
+        nativeAudioTracks: true,
+        nativeTextTracks: true,
+        hls: {
+          ...baseOptions.html5.hls,
+          overrideNative: false // 移动端强制使用原生播放器
+        },
+        vhs: {
+          ...baseOptions.html5.vhs,
+          overrideNative: false // 移动端强制使用原生播放器
+        }
+      }
+    }
+  }
+  // 桌面端特有配置
+  else {
+    return {
+      ...baseOptions,
+      controls: !props.useVideoPlayControls, // 桌面端根据props决定是否启用控制条
       responsive: true,
       fluid: true,
       playbackRates: [0.5, 1, 1.5, 2],
-      techOrder: ['html5'],
       html5: {
+        ...baseOptions.html5,
         hls: {
+          ...baseOptions.html5.hls,
           overrideNative: true
         },
+        vhs: {
+          ...baseOptions.html5.vhs,
+          overrideNative: true,
+          cacheEncryptionKeys: true
+        },
+        // 桌面端不使用原生轨道
         nativeVideoTracks: false,
         nativeAudioTracks: false,
         nativeTextTracks: false
       }
     }
-    const options = isMobileDevice ? mobileOptions : desktopOptions
+  }
+}
 
+const setupPlayer = (_sources: I_playerSource, callBack?: () => void) => {
+  indexkey.value++;
+  nextTick(() => {
+    setTimeout(() => {
+      initializePlayer(_sources, callBack);
+    }, 100)
+  })
+}
+
+// 初始化播放器
+const initializePlayer = (_sources: I_playerSource, callBack?: () => void) => {
+  const isMobileDevice = isMobile()
+  if (videoPlayerRef.value) {
+    const options = videoOptions(isMobileDevice)
     player.value = videojs(videoPlayerRef.value, {
       ...options,
-      sources: [],
+      sources: [_sources],
       track: [],
       fill: false,
       aspectRatio: props.aspectRatio,
 
     }, function () {
-      //console.log('Player is ready');
+      if (callBack) {
+        callBack();
+      }
     })
-
     // 添加事件监听器同步播放器状态到控制组件
     setupPlayerEventListeners();
-
     // (仅在桌面端)
     if (!isMobileDevice) {
       // 添加自定义旋转按钮
       addRotateButton();
-      //监控音量变化
-      player.value.on('volumechange', function () {
-        // 获取当前音量
-        const currentVolume = player.value.volume();
-        // 获取当前静音状态
-        const isMuted = player.value.muted();
-        // 更新控制组件状态
-        if (videoControlsRef.value) {
-          videoControlsRef.value.volume = currentVolume;
-          videoControlsRef.value.isMuted = isMuted;
-        }
-        // 保存音量到本地存储
-        if (!isMuted) {
-          saveVolumeToStorage(currentVolume);
-        }
-      });
     }
   }
 }
@@ -155,6 +211,8 @@ const setupPlayerEventListeners = () => {
     if (videoControlsRef.value) {
       videoControlsRef.value.isPlaying = true;
     }
+    // 隐藏loading
+    isLoading.value = false;
   });
 
   // 监听暂停事件
@@ -174,12 +232,30 @@ const setupPlayerEventListeners = () => {
       videoControlsRef.value.duration = duration;
     }
   });
-
+  // 监听加载开始事件
+  player.value.on('loadstart', function () {
+    // 显示loading
+    isLoading.value = true;
+    loadingText.value = '正在加载视频...';
+  });
+  // 监听等待数据事件
+  player.value.on('waiting', function () {
+    // 显示loading
+    isLoading.value = true;
+    loadingText.value = '正在缓冲...';
+  });
   // 监听加载元数据事件
   player.value.on('loadedmetadata', function () {
     if (videoControlsRef.value) {
       videoControlsRef.value.duration = player.value.duration();
     }
+    // 隐藏loading
+    isLoading.value = false;
+  });
+  // 监听可以播放事件
+  player.value.on('canplay', function () {
+    // 隐藏loading
+    isLoading.value = false;
   });
 
   // 监听全屏变化事件
@@ -194,6 +270,23 @@ const setupPlayerEventListeners = () => {
       player.value.controls(false);
     }
   });
+  //监控音量变化
+  player.value.on('volumechange', function () {
+    // 获取当前音量
+    const currentVolume = player.value.volume();
+    // 获取当前静音状态
+    const isMuted = player.value.muted();
+    // 更新控制组件状态
+    if (videoControlsRef.value) {
+      videoControlsRef.value.volume = currentVolume;
+      videoControlsRef.value.isMuted = isMuted;
+    }
+    // 保存音量到本地存储
+    if (!isMuted) {
+      saveVolumeToStorage(currentVolume);
+    }
+  });
+
 };
 
 // 处理播放事件
@@ -478,74 +571,100 @@ const extractVideoIdFromPath = (path: string): string => {
 };
 
 // 设置视频源
-const setVideoSource = (src: string, type = 'mp4', fn = () => { }) => {
+const setVideoSource = (src: string, type = 'mp4', fn = () => { }, retryCount = 0) => {
   videoId.value = extractVideoIdFromPath(src)
   videoSrc.value = src
   isHls.value = type === 'm3u8' || type === 'hls'
-
-  if (player.value) {
-    // 先重置播放器
-    //resetPlayer();
-    //player.value.reset();
-
-    // 从本地存储读取并设置音量
-    const savedVolume = getVolumeFromStorage();
-    setVolume(savedVolume)
-
-    // 设置新的源
-    player.value.src({
-      src: src,
-      type: isHls.value ? 'application/x-mpegURL' : 'video/mp4'
-    })
-
-    // 添加 loadedmetadata 事件监听
-    player.value.on('loadedmetadata', function () {
-      /*
-      console.log('Video metadata loaded:', {
-        videoWidth: player.value.videoWidth(),
-        videoHeight: player.value.videoHeight(),
-        duration: player.value.duration()
-      })
-        */
-      // 同步时长到控制组件
-      if (videoControlsRef.value) {
-        videoControlsRef.value.duration = player.value.duration();
-      }
-      fn();
-    })
-
-    // 添加错误处理
-    player.value.on('error', function () {
-      const error = player.value.error()
-      console.error('Video.js Error:', error.code, error.message)
-      ElMessage({
-        showClose: true,
-        message: error.message,
-        type: 'error',
-        duration: 5000,
-      })
-    })
-
-    // 添加 loadeddata 事件监听
-    player.value.on('loadeddata', function () {
-      //console.log('Video data loaded successfully')
-
-      const _aspectRatio = getAspectRatio()
-      if (_aspectRatio) {
-        initVideoAspectRatio.value = _aspectRatio
-      }
-
-      // 重新应用旋转效果
-      if (rotation.value !== 0) {
-        setTimeout(() => {
-          const videoElement = player.value.el().querySelector('.vjs-tech');
-          if (videoElement) {
-            applyRotationTransformation(videoElement);
-          }
-        }, 0);
-      }
-    })
+  const source: I_playerSource = {
+    src: src,
+    type: isHls.value ? 'application/x-mpegURL' : 'video/mp4'
   }
+  // 移动端直接使用原生播放器
+  if (isMobile()) {
+    if (nativeVideoRef.value) {
+      // 记录当前播放状态
+      const wasPlaying = !nativeVideoRef.value.paused && !nativeVideoRef.value.ended;
+      // 为了解决某些浏览器下切换视频后UI卡住的问题，我们先暂停并重置播放器
+      nativeVideoRef.value.pause();
+      nativeVideoRef.value.removeAttribute('src');
+      void nativeVideoRef.value.load();
+
+      // 使用 nextTick 确保 DOM 更新后再设置新源
+      nextTick(() => {
+        nativeVideoRef.value!.src = src;
+        // 强制重新加载视频
+        void nativeVideoRef.value!.load();
+        // 如果之前正在播放，则在可以播放时自动播放
+        if (wasPlaying) {
+          const playHandler = () => {
+            nativeVideoRef.value?.play();
+            nativeVideoRef?.value?.removeEventListener('canplay', playHandler);
+          };
+          nativeVideoRef.value?.addEventListener('canplay', playHandler);
+        }
+      });
+    }
+    return;
+  }
+  isLoading.value = true;
+  loadingText.value = retryCount > 0 ? `重试中 (${retryCount}/3)...` : '正在加载视频...';
+  setupPlayer(source, () => {
+    if (player.value) {
+      // 从本地存储读取并设置音量
+      const savedVolume = getVolumeFromStorage();
+      setVolume(savedVolume)
+      // 添加 loadedmetadata 事件监听
+      player.value.on('loadedmetadata', function () {
+        // 同步时长到控制组件
+        if (videoControlsRef.value) {
+          videoControlsRef.value.duration = player.value.duration();
+        }
+        fn();
+        // 隐藏loading
+        isLoading.value = false;
+      })
+      // 添加错误处理
+      player.value.on('error', function () {
+        const error = player.value.error()
+        if (retryCount < 3) {
+          retryCount++
+          console.log('重试加载视频：', retryCount)
+          // 添加延迟重试，避免频繁请求
+          setTimeout(() => {
+            setVideoSource(src, type, fn, retryCount)
+          }, 1000)
+          return
+        }
+        // 隐藏loading
+        isLoading.value = false;
+        ElMessage({
+          showClose: true,
+          message: error.message,
+          type: 'error',
+          duration: 5000,
+        })
+      })
+      // 添加 loadeddata 事件监听
+      player.value.on('loadeddata', function () {
+        const _aspectRatio = getAspectRatio()
+        if (_aspectRatio) {
+          initVideoAspectRatio.value = _aspectRatio
+        }
+        // 重新应用旋转效果
+        if (rotation.value !== 0) {
+          setTimeout(() => {
+            const videoElement = player.value.el().querySelector('.vjs-tech');
+            if (videoElement) {
+              applyRotationTransformation(videoElement);
+            }
+          }, 0);
+        }
+        // 隐藏loading
+        isLoading.value = false;
+      })
+    }
+  })
+
 }
 // 设置音量（0~1）
 const setVolume = (volumeLevel: number) => {
@@ -716,9 +835,7 @@ const handleOpenInPlayer = async () => {
 
 // 云播视频
 const handleOpenCloudPlayer = async () => {
-  playCloudCheckPromptDialogRef.value?.open(() => {
-    playCloud(videoSrc.value);
-  })
+  playCloudCheckPromptDialogRef.value?.open(videoId.value)
 
 }
 
@@ -726,7 +843,7 @@ const handleOpenCloudPlayer = async () => {
 
 // 组件挂载时初始化播放器
 onMounted(() => {
-  initializePlayer()
+  //initializePlayer()
 })
 
 // 组件销毁前释放播放器资源
@@ -765,8 +882,57 @@ defineExpose({
 <style lang="scss">
 .video-player-container {
   width: 100%;
+  height: 100%;
   margin: 0 auto;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.video-player-windows {
+  flex: 1;
+  position: relative;
+}
+
+/* Loading样式 */
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+}
+
+.loading-spinner {
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top: 4px solid #fff;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 15px;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-text {
+  color: white;
+  font-size: 16px;
+  margin: 0;
 }
 
 /* 添加最大化模式样式 */
@@ -798,8 +964,18 @@ defineExpose({
 .video-js {
   background-color: #000;
   margin: 0 auto;
-  width: 100%;
-  height: 100%;
+  width: 100% !important;
+  height: 100% !important;
+
+  video {
+    /* 保证视频完整显示 */
+    object-fit: contain;
+  }
+}
+
+.native-video-player {
+  width: 100% !important;
+  height: 100% !important;
 
   video {
     /* 保证视频完整显示 */
@@ -856,5 +1032,15 @@ defineExpose({
 /* 字幕容器背景 */
 .video-js .vjs-text-track-display {
   background-color: rgba(0, 0, 0, 0) !important;
+}
+
+/* 隐藏video.js自带的loading spinner */
+.video-js .vjs-loading-spinner {
+  display: none !important;
+}
+
+/* 隐藏video.js自带的大播放按钮 */
+.video-js .vjs-big-play-button {
+  display: none !important;
 }
 </style>

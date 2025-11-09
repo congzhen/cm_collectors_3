@@ -55,7 +55,7 @@ import { computed, nextTick, ref, type PropType, onMounted, watch, onBeforeUnmou
 import type { ElScrollbar } from 'element-plus';
 import { debounce } from '@/assets/debounce';
 import videoPlay from '@/components/play/videoPlay.vue';
-import { getPlayVideoURL } from '@/common/play';
+import { getPlayVideoURLAndType } from '@/common/play';
 import contentRightClickMenu from './contentRightClickMenu.vue';
 import { appStoreData } from '@/storeData/app.storeData';
 
@@ -157,11 +157,12 @@ const onImageLoad = debounce(() => {
   });
 }, 100);
 
-const setVideoSource = (dramaSeriesId: string) => {
+const setVideoSource = async (dramaSeriesId: string) => {
   const vp = videoPlayRef.value;
   if (!vp || dramaSeriesId == '') return;
   const isPlaying = vp.isPlaying() || false;
-  vp.setVideoSource(getPlayVideoURL(dramaSeriesId, 'mp4'), 'mp4', () => {
+  const { playUrl, playType } = await getPlayVideoURLAndType(dramaSeriesId)
+  vp.setVideoSource(playUrl, playType, () => {
     vp.addTextTrack(
       `/api/video/subtitle/${dramaSeriesId}`,
       '默认字幕',

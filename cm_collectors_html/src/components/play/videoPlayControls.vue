@@ -1,8 +1,8 @@
 <template>
   <div class="video-controller">
     <!-- 播放进度条 -->
-    <div class="progress-container">
-      <div class="progress-slider-container" @click="onProgressClick">
+    <div class="progress-container" @click="onProgressClick">
+      <div class="progress-slider-container">
         <input type="range" min="0" :max="duration || 100" :value="currentTime" class="progress-slider"
           @input="onSeek" />
         <div class="progress-filled" :style="{ width: progressPercent + '%' }"></div>
@@ -319,7 +319,7 @@ defineExpose({
 .controls-right {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
 }
 
 .controls-center {
@@ -336,7 +336,7 @@ defineExpose({
   border: none;
   color: white;
   cursor: pointer;
-  padding: 5px;
+  padding: 2px;
   border-radius: 4px;
   display: flex;
   align-items: center;
@@ -344,8 +344,8 @@ defineExpose({
   transition: background-color 0.2s;
   flex-shrink: 1;
   width: auto;
-  min-width: 30px;
-  height: 36px;
+  min-width: 20px;
+  height: 24px;
 }
 
 .control-button:hover {
@@ -355,8 +355,8 @@ defineExpose({
 .icon {
   width: 100%;
   height: 100%;
-  max-width: 24px;
-  max-height: 24px;
+  max-width: 18px;
+  max-height: 18px;
 }
 
 .volume-control {
@@ -381,6 +381,12 @@ defineExpose({
   border-radius: 5px;
   outline: none;
   position: relative;
+  transition: background-color 0.2s ease;
+  cursor: pointer;
+}
+
+.volume-slider:hover {
+  background: rgba(255, 255, 255, 0.5);
 }
 
 .volume-slider::-webkit-slider-thumb {
@@ -391,6 +397,11 @@ defineExpose({
   border-radius: 50%;
   background: white;
   cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.volume-slider:hover::-webkit-slider-thumb {
+  transform: scale(1.2);
 }
 
 /* 音量滑块填充效果 */
@@ -410,7 +421,7 @@ defineExpose({
 }
 
 .time-display {
-  font-size: 14px;
+  font-size: 11px;
   min-width: 80px;
   text-align: center;
   flex-shrink: 1;
@@ -418,6 +429,7 @@ defineExpose({
 
 .progress-container {
   width: 100%;
+  cursor: pointer;
 }
 
 .progress-slider-container {
@@ -425,7 +437,7 @@ defineExpose({
   width: 100%;
   height: 5px;
   margin: 6px 0;
-  cursor: pointer;
+
 }
 
 /* 进度条背景轨道 */
@@ -439,6 +451,11 @@ defineExpose({
   background-color: rgba(255, 255, 255, 0.3);
   border-radius: 5px;
   z-index: 0;
+  transition: background-color 0.2s ease;
+}
+
+.progress-slider-container:hover::before {
+  background-color: rgba(255, 255, 255, 0.5);
 }
 
 .progress-slider {
@@ -462,6 +479,11 @@ defineExpose({
   cursor: pointer;
   position: relative;
   z-index: 3;
+  transition: transform 0.2s ease;
+}
+
+.progress-slider-container:hover .progress-slider::-webkit-slider-thumb {
+  transform: scale(1.2);
 }
 
 /* 进度条填充效果 */
@@ -480,11 +502,13 @@ defineExpose({
 .speed-control {
   position: relative;
   flex-shrink: 1;
+
 }
 
 .speed-control .control-button {
-  min-width: 40px;
-  padding: 5px 6px;
+  min-width: 36px;
+  padding: 2px 5px;
+  font-size: 10px;
 }
 
 .speed-menu {
@@ -522,13 +546,13 @@ defineExpose({
   .controls-left,
   .controls-center,
   .controls-right {
-    gap: 5px;
+    gap: 4px;
   }
 
   .control-button {
-    padding: 3px;
-    height: 32px;
-    min-width: 25px;
+    padding: 1px;
+    height: 20px;
+    min-width: 18px;
   }
 
   .time-display {
@@ -541,7 +565,7 @@ defineExpose({
   }
 
   .speed-control .control-button {
-    padding: 3px 6px;
+    padding: 1px 5px;
   }
 }
 
@@ -551,13 +575,13 @@ defineExpose({
   .controls-left,
   .controls-center,
   .controls-right {
-    gap: 3px;
+    gap: 2px;
   }
 
   .control-button {
-    padding: 2px;
-    height: 28px;
-    min-width: 20px;
+    padding: 1px;
+    height: 18px;
+    min-width: 14px;
   }
 
   .time-display {
@@ -570,8 +594,8 @@ defineExpose({
   }
 
   .speed-control .control-button {
-    padding: 2px 5px;
-    min-width: 35px;
+    padding: 1px 4px;
+    min-width: 30px;
   }
 }
 
@@ -581,13 +605,13 @@ defineExpose({
   .controls-left,
   .controls-center,
   .controls-right {
-    gap: 2px;
+    gap: 1px;
   }
 
   .control-button {
-    padding: 1px;
-    height: 24px;
-    min-width: 18px;
+    padding: 0px;
+    height: 16px;
+    min-width: 12px;
   }
 
   .time-display {
@@ -600,9 +624,9 @@ defineExpose({
   }
 
   .speed-control .control-button {
-    padding: 1px 4px;
-    min-width: 30px;
-    font-size: 12px;
+    padding: 0px 3px;
+    min-width: 25px;
+    font-size: 11px;
   }
 }
 </style>

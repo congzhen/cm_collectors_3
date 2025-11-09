@@ -65,7 +65,7 @@ export enum E_performerCareerType {
   Director = 'director',
 }
 
-
+export type T_VideoPlayMode = 'mp4' | 'm3u8';
 
 // 标签数据
 export interface I_tagData {
@@ -126,4 +126,8 @@ export interface I_video_basic_info {
 export interface I_playVideoInfo {
   video_basic_info: I_video_basic_info;
   is_web: boolean;
+}
+export interface I_playVideoData {
+  playUrl: string;
+  playType: T_VideoPlayMode;
 }

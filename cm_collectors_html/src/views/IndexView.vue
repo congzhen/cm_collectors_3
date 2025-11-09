@@ -33,7 +33,6 @@ import { ElMessage } from 'element-plus'
 import { eventBus } from '@/main'
 import ResourceSetTagDialog from '@/components/resource/resourceSetTagDialog.vue'
 import playCloudCheckPromptDialog from '@/components/play/playCloudCheckPromptDialog.vue'
-import { playCloud } from '@/components/play/playCloud'
 const store = {
   appStoreData: appStoreData(),
   searchStoreData: searchStoreData(),
@@ -103,9 +102,7 @@ const deleteResouceSuccessOnHandle = () => {
 
 const playCloundHandle = (event: unknown) => {
   const typedEvent = event as { resourceId: string; dramaSeriesId: string, playSrc: string };
-  playCloudCheckPromptDialogRef.value?.open(() => {
-    playCloud(typedEvent.playSrc);
-  })
+  playCloudCheckPromptDialogRef.value?.open(typedEvent.dramaSeriesId)
 }
 
 // 监听事件

@@ -101,7 +101,7 @@ import { AppLang } from '@/language/app.lang';
 import { appStoreData } from "@/storeData/app.storeData";
 import resourceDramaSeriesList from '@/components/resource/resourceDramaSeriesList.vue'
 import MobileHeader from '../MobileHeaderView.vue'
-import { getPlayVideoURL, playUpdate } from "@/common/play";
+import { getPlayVideoURLAndType, playUpdate } from "@/common/play";
 
 const appLang = AppLang();
 const router = useRouter();
@@ -163,11 +163,12 @@ const setVideoDramaSeries = () => {
   loading.value = false;
 };
 
-const setVideoSource = (dramaSeriesId: string) => {
+const setVideoSource = async (dramaSeriesId: string) => {
   selectedDramaSeriesId.value = dramaSeriesId;
   const vp = videoPlayRef.value;
   if (!vp) return;
-  vp.setVideoSource(getPlayVideoURL(dramaSeriesId, 'mp4'), 'mp4', () => {
+  const { playUrl, playType } = await getPlayVideoURLAndType(dramaSeriesId)
+  vp.setVideoSource(playUrl, playType, () => {
     vp.addTextTrack(
       `/api/video/subtitle/${dramaSeriesId}`,
       '默认字幕',

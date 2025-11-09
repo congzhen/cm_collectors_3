@@ -1,4 +1,4 @@
-import { E_resourceDramaSeriesType, E_resourceOpenMode, E_resourceOpenMode_SoftType } from "@/dataType/app.dataType";
+import { E_resourceDramaSeriesType, E_resourceOpenMode, E_resourceOpenMode_SoftType, type I_playVideoData, type T_VideoPlayMode } from "@/dataType/app.dataType";
 import type { I_resource } from "@/dataType/resource.dataType";
 import { appDataServer } from "@/server/app.server";
 import { appStoreData } from "@/storeData/app.storeData";
@@ -111,8 +111,31 @@ export const playOpenResourceFolder = async (resourceId: string) => {
   }
 }
 
-export const getPlayVideoURL = (dramaSeriesId: string, type = 'mp4') => {
-  return `/api/video/${type}/${dramaSeriesId}/v.${type}`;
+export const getPlayVideoURLAndType = async (dramaSeriesId: string): Promise<I_playVideoData> => {
+  const result = await appDataServer.playVideoInfo(dramaSeriesId);
+  if (!result || !result.status) {
+    ElMessage.error(result.msg);
+    return {
+      playUrl: '',
+      playType: 'mp4',
+    };
+  }
+  let playType: T_VideoPlayMode = 'mp4';
+  if (!result.data.is_web) {
+    playType = 'm3u8';
+  }
+  return {
+    playUrl: getPlayVideoURL(dramaSeriesId, playType),
+    playType: playType,
+  }
+}
+
+export const getPlayVideoURL = (dramaSeriesId: string, type: T_VideoPlayMode = 'mp4') => {
+  if (type == 'mp4') {
+    return `/api/video/mp4/${dramaSeriesId}/v.mp4`;
+  } else {
+    return `/api/video/m3u8/${dramaSeriesId}/v.m3u8`;
+  }
 }
 
 // 云播检查

@@ -1,6 +1,6 @@
 <template>
   <el-dialog v-model="dialogVisible" :title="props.title" :width="width_C" :append-to-body="true" :top="props.top"
-    :close-on-click-modal="false" @closed="closed">
+    :z-index="props.zIndex" :close-on-click-modal="false" @closed="closed">
     <slot></slot>
     <template v-if="props.footer" #footer>
       <div class="dialog-footer">
@@ -42,6 +42,10 @@ const props = defineProps({
   btnCloseTitle: {
     type: String,
     default: '',
+  },
+  zIndex: {
+    type: Number,
+    default: 999,
   },
 })
 

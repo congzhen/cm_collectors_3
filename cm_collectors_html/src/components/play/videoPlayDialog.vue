@@ -1,6 +1,6 @@
 <template>
   <el-dialog v-model="dialogVisible" :width="dialogWidth_C" class="video-play-dialog" top="20px" :modal="false"
-    :show-close="false" :modal-penetrable="true" :draggable="true" :z-index="99999" :fullscreen="fullScreenDisplay"
+    :show-close="false" :modal-penetrable="true" :draggable="true" :z-index="999" :fullscreen="fullScreenDisplay"
     :close-on-click-modal="false" append-to-body @close="closeHandle">
     <template #header="{ close }">
       <div class="video-play-dialog-header">
@@ -42,7 +42,7 @@ import videoPlay from './videoPlay.vue';
 import { resourceServer } from '@/server/resource.server';
 import { ElMessage } from 'element-plus';
 import type { I_resource } from '@/dataType/resource.dataType';
-import { getPlayVideoURL } from '@/common/play'
+import { getPlayVideoURLAndType } from '@/common/play'
 
 const videoPlayElementRef = ref<HTMLDivElement>();
 const videoPlayRef = ref<InstanceType<typeof videoPlay>>();
@@ -94,10 +94,11 @@ const getResourceInfo = async (resourceId: string): Promise<I_resource | undefin
   }
 };
 
-const setVideoSource = (dramaSeriesId: string) => {
+const setVideoSource = async (dramaSeriesId: string) => {
   const vp = videoPlayRef.value;
   if (!vp) return;
-  vp.setVideoSource(getPlayVideoURL(dramaSeriesId, 'mp4'), 'mp4', () => {
+  const { playUrl, playType } = await getPlayVideoURLAndType(dramaSeriesId)
+  vp.setVideoSource(playUrl, playType, () => {
     vp.addTextTrack(
       `/api/video/subtitle/${dramaSeriesId}`,
       '默认字幕',

@@ -1,14 +1,23 @@
 <template>
   <dialogCommon ref="dialogCommonRef" title="云播提示" @submit="handleConfirm" width="500px" :footer="true"
-    btnSubmitTitle="确定" btnCloseTitle="取消">
+    btnSubmitTitle="确定" btnCloseTitle="取消" :z-index="9999">
     <div class="play-cloud-check-content">
       <p>即将进行云播，请确保已安装云播插件。</p>
       <p>云播插件下载地址：<a @click="handleDownloadClick">{{ downloadUrl }}</a></p>
+
+      <div class="play-cloud-mode">
+        <label>云播方式：</label>
+        <el-radio-group v-model="playCloudMode" size="small" @change="setPlayCloudMode">
+          <el-radio-button label="原始流" value="mp4" />
+          <el-radio-button label="m3u8" value="m3u8" />
+        </el-radio-group>
+      </div>
+      <!--
       <div class="play-cloud-check-checkbox">
         <el-checkbox v-model="noPromptChecked" label="不再提示" />
         <el-text type="warning">恢复提示请清理缓存</el-text>
       </div>
-
+      -->
     </div>
   </dialogCommon>
 </template>
@@ -16,22 +25,47 @@
 <script lang="ts" setup>
 import { ref } from 'vue';
 import dialogCommon from '../com/dialog/dialog-common.vue';
-import { playCloudCheck, setPlayCloudCheckComplete } from '../../common/play';
+import { setPlayCloudCheckComplete } from '../../common/play';
+import type { T_VideoPlayMode } from '@/dataType/app.dataType';
+import { playCloud } from './playCloud';
 
+// 定义本地存储的键名
+const CLOUD_PLAYER_MODE_KEY = 'cloud-player-mode';
 
 const dialogCommonRef = ref<InstanceType<typeof dialogCommon>>();
 const noPromptChecked = ref(false);
 
 const downloadUrl = window.location.origin + '/video_caller.zip';
 
-const callbackFunction = ref<(() => void) | null>(null);
+const dramaSeriesId = ref('');
+const callbackFunction = ref<((mode: T_VideoPlayMode) => void) | null>(null);
+
+const playCloudMode = ref<T_VideoPlayMode>('m3u8')
+
+const init = (_dramaSeriesId: string) => {
+  dramaSeriesId.value = _dramaSeriesId;
+  playCloudMode.value = getPlayCloudMode()
+};
+
+const setPlayCloudMode = (mode: T_VideoPlayMode) => {
+  localStorage.setItem(CLOUD_PLAYER_MODE_KEY, mode)
+
+}
+const getPlayCloudMode = (): T_VideoPlayMode => {
+  const mode = localStorage.getItem(CLOUD_PLAYER_MODE_KEY)
+  if (mode) {
+    return mode as T_VideoPlayMode
+  }
+  return 'm3u8'
+}
 
 const handleConfirm = () => {
   if (noPromptChecked.value) {
     setPlayCloudCheckComplete();
   }
+  playCloud(dramaSeriesId.value, playCloudMode.value);
   if (callbackFunction.value) {
-    callbackFunction.value();
+    callbackFunction.value(playCloudMode.value);
   }
   dialogCommonRef.value?.close();
 };
@@ -67,13 +101,21 @@ const handleDownloadClick = async (event: Event) => {
   }
 };
 
-const open = (fn: () => void) => {
-  callbackFunction.value = fn;
+const open = (_dramaSeriesId: string, fn?: (mode: T_VideoPlayMode) => void) => {
+  init(_dramaSeriesId);
+  if (fn) {
+    callbackFunction.value = fn;
+  }
+  dialogCommonRef.value?.open();
+  /*
   if (!playCloudCheck()) {
     dialogCommonRef.value?.open();
   } else {
-    fn();
+    if (callbackFunction.value) {
+      callbackFunction.value(playCloudMode.value);
+    }
   }
+  */
 };
 
 defineExpose({
@@ -104,5 +146,11 @@ defineExpose({
     display: block;
     margin-top: 9px;
   }
+}
+
+.play-cloud-mode {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 </style>

@@ -4,11 +4,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"slices"
+	"strconv"
+	"strings"
 )
 
 // 支持的编解码器列表
 var (
 	CT_SupportedVideoCodecs = []string{"h264", "vp8", "vp9", "av1", "hevc"}
+	// 支持的封装格式列表
+	CT_SupportedFormats = []string{"mp4", "webm", "ogg", "matroska"}
 	// 特殊检测出的格式
 	CT_SupportedVideoCodecsTs = []string{"png", "mjpeg", "tiff", "ffv1", "prores", "dnxhd", "gif", "rawvideo"}
 	CT_SupportedAudioCodecs   = []string{"aac", "mp3", "vorbis", "opus", "pcm_s16le", "pcm_s24le"}
@@ -16,6 +20,7 @@ var (
 
 type VideoInfo struct {
 	supportedVideoCodecs []string
+	supportedFormats     []string
 	supportedAudioCodecs []string
 }
 
@@ -45,9 +50,11 @@ type VideoFormatInfo struct {
 		BitRate   string `json:"bit_rate,omitempty"`
 	} `json:"streams"`
 	Format struct {
-		Duration string `json:"duration,omitempty"`
-		Size     string `json:"size,omitempty"`
-		BitRate  string `json:"bit_rate,omitempty"`
+		Filename   string `json:"filename,omitempty"`
+		Duration   string `json:"duration,omitempty"`
+		Size       string `json:"size,omitempty"`
+		BitRate    string `json:"bit_rate,omitempty"`
+		FormatName string `json:"format_name,omitempty"`
 	} `json:"format"`
 }
 
@@ -69,6 +76,15 @@ func (v VideoInfo) GetSupportedVideoCodecs() []string {
 	}
 	return v.supportedVideoCodecs
 }
+func (v *VideoInfo) SetSupportedFormats(formats []string) {
+	v.supportedFormats = formats
+}
+func (v VideoInfo) GetSupportedFormats() []string {
+	if v.supportedFormats == nil || len(v.supportedFormats) == 0 {
+		return CT_SupportedFormats
+	}
+	return v.supportedFormats
+}
 func (v *VideoInfo) SetSupportedAudioCodecs(codecs []string) {
 	v.supportedAudioCodecs = codecs
 }
@@ -82,6 +98,35 @@ func (v VideoInfo) GetSupportedAudioCodecs() []string {
 // IsWebCompatible 检查视频是否与Web兼容
 func (v VideoInfo) IsWebCompatible(formatInfo VideoFormatInfo) bool {
 	webCompatible := true
+
+	// 检查容器格式是否为浏览器支持的格式
+	// 浏览器原生支持的容器格式: mp4, webm, ogg
+	// 注意：MPEG-TS (.ts) 文件即使编码格式兼容也不能直接在浏览器中播放
+	if formatInfo.Format.FormatName != "" {
+		supportedFormats := v.GetSupportedFormats()
+		formatName := formatInfo.Format.FormatName
+		formatSupported := false
+
+		fmt.Println("######################### 封装格式：", formatName)
+
+		// 检查格式是否受支持
+		for _, format := range supportedFormats {
+			// ffprobe返回的format_name可能包含多个格式，用逗号分隔
+			if formatName == format || strings.Contains(formatName, format) {
+				formatSupported = true
+				break
+			}
+		}
+
+		// 特殊处理：MPEG-TS格式即使编码兼容也不能直接播放
+		if strings.Contains(formatName, "mpeg") && !strings.Contains(formatName, "mp4") {
+			fmt.Println("######################### MPEG-TS格式不支持web播放：", formatInfo.Format.FormatName)
+			webCompatible = false
+		} else if !formatSupported {
+			fmt.Println("######################### 封装格式不支持web播放：", formatInfo.Format.FormatName)
+			webCompatible = false
+		}
+	}
 
 	for _, stream := range formatInfo.Streams {
 		// 对于视频流，检查编解码器是否为浏览器支持的格式
@@ -105,6 +150,7 @@ func (v VideoInfo) IsWebCompatible(formatInfo VideoFormatInfo) bool {
 			}
 		}
 	}
+
 	return webCompatible
 }
 
@@ -119,7 +165,7 @@ func (v VideoInfo) GetVideoFormatInfo(src string) (VideoFormatInfo, error) {
 	}
 
 	// 使用ffprobe获取视频信息
-	cmd := createCommand(ffprobePath, "-v", "quiet", "-print_format", "json", "-show_streams", src)
+	cmd := createCommand(ffprobePath, "-v", "quiet", "-print_format", "json", "-show_format", "-show_streams", src)
 	output, err := cmd.Output()
 	if err != nil {
 		return formatInfo, fmt.Errorf("无法获取视频信息: %v", err)
@@ -163,11 +209,26 @@ func (v VideoInfo) GetVideoBasicInfoByVideoFormatInfo(formatInfo VideoFormatInfo
 		basicInfo.Duration = formatInfo.Format.Duration
 	}
 
-	// 获取文件大小和总比特率
+	// 获取总比特率
+	if basicInfo.BitRate == "" {
+		basicInfo.BitRate = formatInfo.Format.BitRate
+	}
+
+	// 获取视频大小
 	basicInfo.Size = formatInfo.Format.Size
-	basicInfo.BitRate = formatInfo.Format.BitRate
 
 	return basicInfo
+}
+func (v VideoInfo) GetVideoDuration(formatInfo VideoFormatInfo) float64 {
+	videoBasicInfo := v.GetVideoBasicInfoByVideoFormatInfo(formatInfo)
+	if videoBasicInfo.Duration == "" {
+		return 0
+	}
+	duration, err := strconv.ParseFloat(videoBasicInfo.Duration, 64)
+	if err != nil {
+		return 0
+	}
+	return duration
 }
 
 // GetVideoDefinition 根据视频的宽度和高度确定视频清晰度

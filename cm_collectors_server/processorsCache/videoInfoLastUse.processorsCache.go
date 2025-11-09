@@ -7,10 +7,10 @@ import (
 )
 
 // 文件句柄释放时间
-const videoInfoHandleExpiration time.Duration = 10 * time.Second
+const videoInfoHandleExpiration time.Duration = 30 * time.Second
 
 // 文件句柄清理时间
-const videoInfoHandleCleanupInterval time.Duration = 30 * time.Second
+const videoInfoHandleCleanupInterval time.Duration = 60 * time.Second
 
 var videoInfoLastUseHandle = NewGenericLastUseCache[processorsffmpeg.VideoFormatInfo]("videoInfo", videoInfoHandleExpiration, videoInfoHandleCleanupInterval)
 
