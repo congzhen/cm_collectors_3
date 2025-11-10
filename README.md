@@ -98,11 +98,15 @@ cd cm_collectors_scraper_debugger && set GOOS=windows&& set GOARCH=amd64&& go bu
 
 
 # 构建docker *构建前需要先构建Linux可执行文件
-docker build -t cm_collectors_server .
+docker build -f Dockerfile.minimal -t cm_collectors_server:minimal .
+docker build -f Dockerfile.full -t cm_collectors_server:full .
 # 保存docker镜像
-docker save cm_collectors_server -o ./build/cm_collectors_server_docker.tar
+docker save cm_collectors_server:minimal -o ./build/cm_collectors_server_minimal.tar
+docker save cm_collectors_server:full -o ./build/cm_collectors_server_full.tar
 # 加载docker镜像
-docker load -i ./build/cm_collectors_server_docker.tar
+docker load -i ./build/cm_collectors_server:minimal.tar
+docker load -i ./build/cm_collectors_server:full.tar
 #  运行容器 *将/app/db文件夹映射到本地，防止数据丢失 *挂载数据库文件到容器内
-docker run -d  --name cm_collectors_server -p 12345:12345 -v E:\tg_test\db:/app/db -v  E:\tg_test\video:/tg  -e GIN_MODE=release  cm_collectors_server
+docker run -d  --name cm_collectors_server_minimal -p 12345:12345 -v E:\tg_test\db:/app/db -v  E:\tg_test\video:/tg  -e GIN_MODE=release  cm_collectors_server:minimal
+docker run -d  --name cm_collectors_server_full -p 12345:12345 -v E:\tg_test\db:/app/db -v  E:\tg_test\video:/tg  -e GIN_MODE=release  cm_collectors_server:full
 ```
