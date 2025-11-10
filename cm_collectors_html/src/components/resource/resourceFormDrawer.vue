@@ -85,11 +85,14 @@
               </el-form-item>
             </div>
             <div>
-              <el-form-item label="评分">
+              <el-form-item label="评星">
                 <selectStarSet v-model="formData.stars" />
               </el-form-item>
             </div>
           </div>
+          <el-form-item label="评分">
+            <el-slider v-model="formData.score" show-input :min="0" :max="10" :step="0.1" />
+          </el-form-item>
           <el-form-item :label="appLang.director()">
             <selectPerformer v-model="directors" :performerBasesIds="store.appStoreData.currentPerformerBasesIds"
               :careerType="E_performerCareerType.Director" multiple />
@@ -181,6 +184,7 @@ const defaultFormData: I_resource_base = {
   country: '',
   definition: '',
   stars: 0,
+  score: 0,
   abstract: '',
   status: true,
 }

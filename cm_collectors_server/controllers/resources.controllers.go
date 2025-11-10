@@ -42,7 +42,6 @@ func (Resource) ListIds(c *gin.Context) {
 	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {
 		return
 	}
-	println("--------------", par.Ids)
 	dataList, err := processors.Resources{}.DataListByIds(par.Ids)
 	if err := ResError(c, err); err != nil {
 		return

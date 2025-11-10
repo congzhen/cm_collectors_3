@@ -111,6 +111,8 @@ const getTagDataList = (type: E_tagType): I_tagData[] => {
         { id: 'issuingDateAsc', name: '', status: false },
         { id: 'issueNumberDesc', name: '', status: false },
         { id: 'issueNumberAsc', name: '', status: false },
+        { id: 'scoreDesc', name: '', status: false },
+        { id: 'scoreAsc', name: '', status: false },
         { id: 'starDesc', name: '', status: false },
         { id: 'starAsc', name: '', status: false },
         { id: 'titleDesc', name: '', status: false },

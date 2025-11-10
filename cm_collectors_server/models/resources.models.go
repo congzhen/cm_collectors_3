@@ -25,6 +25,7 @@ type Resources struct {
 	Country               string                  `json:"country" gorm:"type:varchar(50);"`
 	Definition            string                  `json:"definition" gorm:"type:varchar(50);"`
 	Stars                 int                     `json:"stars" gorm:"type:int;"`
+	Score                 float64                 `json:"score" gorm:"type:float64;"`
 	Hot                   int                     `json:"hot" gorm:"type:int;"`
 	LastPlayTime          *datatype.CustomTime    `json:"lastPlayTime" gorm:"column:lastPlayTime;type:datetime;"`
 	LastPlayFile          string                  `json:"lastPlayFile" gorm:"column:lastPlayFile;type:varchar(500);"`
@@ -278,6 +279,10 @@ func (Resources) setDbSearchDataOrder(db *gorm.DB, searchSort datatype.E_searchS
 		db = db.Order("issueNumber ASC,addTime DESC")
 	case datatype.E_searchSort_issueNumberDesc:
 		db = db.Order("issueNumber DESC,addTime DESC")
+	case datatype.E_searchSort_scoreAsc:
+		db = db.Order("score ASC,addTime DESC")
+	case datatype.E_searchSort_scoreDesc:
+		db = db.Order("score DESC,addTime DESC")
 	case datatype.E_searchSort_starAsc:
 		db = db.Order("stars ASC,addTime DESC")
 	case datatype.E_searchSort_starDesc:

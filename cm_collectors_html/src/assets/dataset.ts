@@ -33,6 +33,7 @@ export default {
     issueNumbers: ['id', 'num'],
     issuingDates: ['releasedate', 'premiered', 'year'],
     abstracts: ['outline', 'description', 'plot', 'originalplot'],
+    score: ['rating', 'score', 'star'],
     tags: ['tag', 'tags', 'genre', 'genres'],
     tagAutoCreate: true,
     performerNames: ['actor.name', 'actor.title', 'actors'],

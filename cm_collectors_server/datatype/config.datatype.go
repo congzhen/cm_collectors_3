@@ -169,6 +169,7 @@ type Config_ScanDisk_Nfo struct {
 	Titles                  []string `json:"titles"`
 	IssueNumbers            []string `json:"issueNumbers"`
 	IssuingDates            []string `json:"issuingDates"`
+	Score                   []string `json:"score"`
 	Abstracts               []string `json:"abstracts"`
 	Tags                    []string `json:"tags"`
 	TagAutoCreate           bool     `json:"tagAutoCreate"`

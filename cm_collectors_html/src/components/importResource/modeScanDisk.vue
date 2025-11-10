@@ -100,6 +100,11 @@
             <el-option v-for="item, index in dataset.nfo.issuingDates" :key="index" :label="item" :value="item" />
           </el-select>
         </el-form-item>
+        <el-form-item label="评分">
+          <el-select v-model="formData.nfo.score" multiple filterable allow-create default-first-option>
+            <el-option v-for="item, index in dataset.nfo.score" :key="index" :label="item" :value="item" />
+          </el-select>
+        </el-form-item>
         <el-form-item label="摘要简介">
           <el-select v-model="formData.nfo.abstracts" multiple filterable allow-create default-first-option>
             <el-option v-for="item, index in dataset.nfo.abstracts" :key="index" :label="item" :value="item" />

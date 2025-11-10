@@ -43,6 +43,10 @@
           <span class="label">收录时间:</span>
           <span class="value">{{ resourceInfo.addTime }}</span>
         </div>
+        <div class="info-item" v-if="resourceInfo.score > 0">
+          <span class="label">评分:</span>
+          <span class="value">{{ resourceInfo.score }}</span>
+        </div>
         <div class="info-item">
           <span class="label">评星:</span>
           <el-rate v-model="resourceInfo.stars" disabled size="small" />

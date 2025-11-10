@@ -22,6 +22,8 @@ const (
 	E_searchSort_addTimeAsc      E_searchSort = "addTimeAsc"
 	E_searchSort_issueNumberDesc E_searchSort = "issueNumberDesc"
 	E_searchSort_issueNumberAsc  E_searchSort = "issueNumberAsc"
+	E_searchSort_scoreDesc       E_searchSort = "scoreDesc"
+	E_searchSort_scoreAsc        E_searchSort = "scoreAsc"
 	E_searchSort_starDesc        E_searchSort = "starDesc"
 	E_searchSort_starAsc         E_searchSort = "starAsc"
 	E_searchSort_issuingDateDesc E_searchSort = "issuingDateDesc"

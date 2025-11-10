@@ -202,6 +202,7 @@ export interface I_config_scanDisk_nfo {
   titles: string[];
   issueNumbers: string[];
   issuingDates: string[];
+  score: string[];
   abstracts: string[];
   tags: string[];
   tagAutoCreate: boolean;
@@ -233,6 +234,7 @@ export const defualtConfigScanDisk: I_config_scanDisk = {
     titles: dataset.nfo.titles,
     issueNumbers: dataset.nfo.issueNumbers,
     issuingDates: dataset.nfo.issuingDates,
+    score: dataset.nfo.score,
     abstracts: dataset.nfo.abstracts,
     tags: dataset.nfo.tags,
     tagAutoCreate: dataset.nfo.tagAutoCreate,

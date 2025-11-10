@@ -21,7 +21,10 @@
               清晰度: {{ appLang.definition(resourceInfo.definition) }}
             </div>
             <div> 收录时间: {{ resourceInfo.addTime }}</div>
-            <el-rate v-model="resourceInfo.stars" disabled />
+            <div v-if="resourceInfo.score > 0">
+              评分: {{ resourceInfo.score }}
+            </div>
+            <el-rate v-model="resourceInfo.stars" disabled size="small" />
           </div>
           <el-alert class="tagAlert" :title="appLang.performer()" type="success" :closable="false" />
           <div class="performer-list">
@@ -202,10 +205,10 @@ onMounted(async () => {
         .info-base {
           display: flex;
           flex-wrap: wrap;
-          gap: 20px;
+          gap: 5px 10px;
           font-size: 14px;
           color: #909399;
-          line-height: 32px;
+          line-height: 24px;
         }
 
         .performer-list {

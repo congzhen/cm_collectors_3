@@ -21,7 +21,10 @@
             </el-breadcrumb-item>
           </el-breadcrumb>
         </div>
-        <div class="info-base-item">收录时间: {{ props.resource.addTime }}</div>
+        <div class="info-base-item-flex">
+          <div>收录时间: {{ props.resource.addTime }}</div>
+          <div>评分: {{ props.resource.score }}</div>
+        </div>
         <div class="info-base-rate">
           <el-rate v-model="localStars" disabled />
         </div>
@@ -122,11 +125,17 @@ const playResourceDramaSeriesHandle = (ds: I_resourceDramaSeries) => {
   line-height: 1.5em;
   padding: 5px 0;
 
+
   :deep(.el-breadcrumb) {
     .el-breadcrumb__inner {
       font-size: 12px;
       color: #a8abb2;
     }
+  }
+
+  .info-base-item-flex {
+    display: flex;
+    gap: 10px;
   }
 
   .info-base-rate {

@@ -10,9 +10,11 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
+	"math"
 	"os"
 	"path"
 	"path/filepath"
+	"strconv"
 	"strings"
 )
 
@@ -457,6 +459,35 @@ func (ImportData) NfoExecData(filesBasesId, nfoPath string, rootElement map[stri
 		for _, issuingDatePath := range nfoConfig.IssuingDates {
 			if value := utils.XML_getXMLValueByPath(xmlData, issuingDatePath); value != "" {
 				data.Resource.IssuingDate = value.(string)
+				break
+			}
+		}
+	}
+
+	// 提取评分
+	if len(nfoConfig.Score) > 0 {
+		for _, scorePath := range nfoConfig.Score {
+			if value := utils.XML_getXMLValueByPath(xmlData, scorePath); value != "" {
+				// 将字符串转换为浮点数
+				scoreStr := value.(string)
+				score, err := strconv.ParseFloat(scoreStr, 64)
+				if err != nil {
+					// 转换失败，跳过该评分
+					continue
+				}
+
+				// 规范化评分到0-10区间
+				if score >= 0 && score <= 10 {
+					// 0-10区间直接使用，保留一位小数
+					data.Resource.Score = math.Round(score*10) / 10
+				} else if score > 10 && score <= 100 {
+					// 10-100区间除以10，保留一位小数
+					normalizedScore := score / 10.0
+					data.Resource.Score = math.Round(normalizedScore*10) / 10
+				} else {
+					// 不在有效区间内，设为默认值0
+					data.Resource.Score = 0
+				}
 				break
 			}
 		}

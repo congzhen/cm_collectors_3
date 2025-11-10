@@ -345,6 +345,7 @@ func (t Resources) Create(tx *gorm.DB, par *datatype.ReqParam_Resource) (string,
 		Country:           par.Resource.Country,
 		Definition:        par.Resource.Definition,
 		Stars:             par.Resource.Stars,
+		Score:             par.Resource.Score,
 		Abstract:          par.Resource.Abstract,
 		CreatedAt:         &createdAt,
 		Status:            true,
@@ -384,6 +385,7 @@ func (t Resources) Update(db *gorm.DB, par *datatype.ReqParam_Resource) (string,
 		Country:           par.Resource.Country,
 		Definition:        par.Resource.Definition,
 		Stars:             par.Resource.Stars,
+		Score:             par.Resource.Score,
 		Abstract:          par.Resource.Abstract,
 	}
 	fieldsToUpdate := []string{
@@ -399,6 +401,7 @@ func (t Resources) Update(db *gorm.DB, par *datatype.ReqParam_Resource) (string,
 		"country",
 		"definition",
 		"stars",
+		"score",
 		"abstract",
 	}
 	if coverPoster != "" {

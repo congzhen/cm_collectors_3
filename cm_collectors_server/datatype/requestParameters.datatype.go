@@ -43,6 +43,7 @@ type ReqParam_ResourceBase struct {
 	Country               string         `json:"country"`
 	Definition            string         `json:"definition"`
 	Stars                 int            `json:"stars"`
+	Score                 float64        `json:"score"`
 	Abstract              string         `json:"abstract"`
 	LastScraperUpdateTime *CustomDate    `json:"lastScraperUpdateTime"`
 }

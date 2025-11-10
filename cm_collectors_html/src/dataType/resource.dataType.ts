@@ -16,6 +16,7 @@ export interface I_resource_base {
   country: string;
   definition: string;
   stars: number;
+  score: number;
   abstract: string;
   status: boolean;
 }

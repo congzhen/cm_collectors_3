@@ -22,7 +22,9 @@ export function AppLang() {
       }
       return stars + t(`stars`)
     },
-
+    score: (score: number): string => {
+      return score + t(`score`)
+    },
     year: (y: string): string => {
       if (y == 'before_2000') {
         return t(`before_2000`)
