@@ -1,6 +1,6 @@
 <template>
   <el-dialog v-model="dialogVisible" :width="dialogWidth_C" class="video-play-dialog" top="20px" :modal="false"
-    :show-close="false" :modal-penetrable="true" :draggable="true" :z-index="999" :fullscreen="fullScreenDisplay"
+    :show-close="false" :modal-penetrable="true" :draggable="true" :fullscreen="fullScreenDisplay"
     :close-on-click-modal="false" append-to-body @close="closeHandle">
     <template #header="{ close }">
       <div class="video-play-dialog-header">

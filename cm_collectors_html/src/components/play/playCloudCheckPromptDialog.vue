@@ -1,6 +1,6 @@
 <template>
   <dialogCommon ref="dialogCommonRef" title="云播提示" @submit="handleConfirm" width="500px" :footer="true"
-    btnSubmitTitle="确定" btnCloseTitle="取消" :z-index="9999">
+    btnSubmitTitle="确定" btnCloseTitle="取消">
     <div class="play-cloud-check-content">
       <p>即将进行云播，请确保已安装云播插件。</p>
       <p>云播插件下载地址：<a @click="handleDownloadClick">{{ downloadUrl }}</a></p>
