@@ -17,7 +17,8 @@ CM Collectors 3 是一个多媒体文件管理系统，用于收集、管理和�
 
 - **Windows 版**: [cm_collectors_3_windows.zip](https://objectstorageapi.ap-southeast-1.clawcloudrun.com/vj5i0ntw-cm-collectors-3/download/last/cm_collectors_3_windows.zip)
 - **Linux 版**: [cm_collectors_3_linux.zip](https://objectstorageapi.ap-southeast-1.clawcloudrun.com/vj5i0ntw-cm-collectors-3/download/last/cm_collectors_3_linux.zip)
-- **Docker 镜像**:由于刮削器依赖 Chrome 浏览器和特定操作系统环境导致打包的软件体积超过 1GB，所以暂不提供预构建的 Docker 镜像。请下载 Linux 版本并使用项目中的 Dockerfile 自行构建。
+- **Docker minimal 镜像**:[cm_collectors_server_docker_minimal.tar](https://objectstorageapi.ap-southeast-1.clawcloudrun.com/vj5i0ntw-cm-collectors-3/download/last/cm_collectors_server_docker_minimal.tar)
+- **Docker full 镜像**:[cm_collectors_server_docker_full.tar](https://objectstorageapi.ap-southeast-1.clawcloudrun.com/vj5i0ntw-cm-collectors-3/download/last/cm_collectors_server_docker_full.tar)
 - **云播插件**: [video_caller.zip](https://objectstorageapi.ap-southeast-1.clawcloudrun.com/vj5i0ntw-cm-collectors-3/download/last/video_caller.zip)
 - **刮削调试器**:[scraper_debugger.zip(支持并发设置)](https://objectstorageapi.ap-southeast-1.clawcloudrun.com/vj5i0ntw-cm-collectors-3/download/last/scraper_debugger.zip)
 - **刮削器配置包**:[scraper.zip(2025-10-20)](https://objectstorageapi.ap-southeast-1.clawcloudrun.com/vj5i0ntw-cm-collectors-3/download/last/scraper.zip)
@@ -101,8 +102,8 @@ cd cm_collectors_scraper_debugger && set GOOS=windows&& set GOARCH=amd64&& go bu
 docker build -f Dockerfile.minimal -t cm_collectors_server:minimal .
 docker build -f Dockerfile.full -t cm_collectors_server:full .
 # 保存docker镜像
-docker save cm_collectors_server:minimal -o ./build/cm_collectors_server_minimal.tar
-docker save cm_collectors_server:full -o ./build/cm_collectors_server_full.tar
+docker save cm_collectors_server:minimal -o ./build/cm_collectors_server_docker_minimal.tar
+docker save cm_collectors_server:full -o ./build/cm_collectors_server_docker_full.tar
 # 加载docker镜像
 docker load -i ./build/cm_collectors_server:minimal.tar
 docker load -i ./build/cm_collectors_server:full.tar
