@@ -16,6 +16,38 @@
         </div>
       </el-timeline-item>
       -->
+      <el-timeline-item center timestamp="2025/11/11" placement="top">
+        <h4 class="version-title">版本: v 3.0.5</h4>
+        <div class="rawContent">
+          <h5 class="section-title">新特性</h5>
+          <p class="logContent">优化视频播放页面背景图片加载及模糊遮罩效果</p>
+          <p class="logContent">新增资源评分功能</p>
+          <p class="logContent">新增 HLS 视频播放支持，包括 m3u8 视频播放、HLS 视频转码、自动切换播放类型及云播类型选择功能</p>
+          <p class="logContent">新增服务器文件管理挂载路径配置功能</p>
+          <p class="logContent">新增 Linux 视频调用器支持</p>
+          <p class="logContent">新增封面海报精简和精简扩展展示模式</p>
+          <p class="logContent">新增内容区域左右内边距设置功能</p>
+          <p class="logContent">新增 Windows 托盘菜单自定义功能，支持设置自定义浏览器打开</p>
+          <p class="logContent">新增清理已删除资源的功能</p>
+          <p class="logContent">优化配置合并逻辑，支持配置优先级控制</p>
+          <p class="logContent">新增刮削器自定义浏览器路径功能，支持其他 Chromium 内核浏览器</p>
+          <p class="logContent">新增导入方式"追加导入"和"覆盖导入"，并优化剧集导入逻辑</p>
+          <p class="logContent">新增粘贴图片自动将剪切板图片打开到裁剪器功能</p>
+          <p class="logContent">优化资源文件夹打开逻辑</p>
+          <p class="logContent">优化资源搜索逻辑</p>
+          <p class="logContent">支持点击详情中的标签设置搜索条件</p>
+          <p class="logContent">新增按发行日期排序功能</p>
+          <p class="logContent">重构标签列表为独立组件并优化标签排序逻辑</p>
+        </div>
+        <div class="rawContent">
+          <h5 class="section-title bug-fix">BUG修复</h5>
+          <p class="logContent">修复演员默认图片显示错误的问题</p>
+          <p class="logContent">修复对话框宽度计算逻辑</p>
+          <p class="logContent">修复资源文件夹打开逻辑问题</p>
+          <p class="logContent">修复封面标签排序功能异常的问题</p>
+          <p class="logContent">修复添加资源封面海报模式默认值设置问题</p>
+        </div>
+      </el-timeline-item>
       <el-timeline-item center timestamp="2025/10/27" placement="top">
         <h4 class="version-title">版本: v 3.0.4</h4>
         <div class="rawContent">

@@ -39,14 +39,18 @@
               <p v-if="updateInfo?.linuxDownloadUrl">{{ updateInfo.linuxDownloadUrl }}</p>
               <p v-else>暂无</p>
             </div>
-            <!--
             <div class="update-download">
               <p class="update-download-version">v{{ latestVersion }}</p>
-              <p>docker 下载地址:</p>
+              <p>docker:full 下载地址:</p>
               <p v-if="updateInfo?.dockerDownloadUrl">{{ updateInfo.dockerDownloadUrl }}</p>
               <p v-else>暂无</p>
             </div>
-            -->
+            <div class="update-download">
+              <p class="update-download-version">v{{ latestVersion }}</p>
+              <p>docker:minimal 下载地址:</p>
+              <p v-if="updateInfo?.dockerDownloadUrl">{{ updateInfo.dockerMinimalDownloadUrl }}</p>
+              <p v-else>暂无</p>
+            </div>
             <div class="update-download">
               <p class="update-download-version">v{{ latestVersion }}</p>
               <p>云播脚本 下载地址:</p>
@@ -88,10 +92,11 @@ interface UpdateInfo {
   windowsDownloadUrl?: string;
   linuxDownloadUrl?: string;
   dockerDownloadUrl?: string;
+  dockerMinimalDownloadUrl?: string;
   cloudPlayScriptUrl?: string;
 }
 
-const currentVersion = ref('3.0.4')
+const currentVersion = ref('3.0.5')
 const latestVersion = ref('')
 const updateInfo = ref<UpdateInfo | null>(null)
 const checking = ref(false)
