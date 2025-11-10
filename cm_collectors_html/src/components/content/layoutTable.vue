@@ -25,7 +25,7 @@
       </el-table-column>
       <el-table-column prop="title" label="名称" min-width="180" :show-overflow-tooltip="true"></el-table-column>
       <el-table-column prop="issueNumber" label="版号、番号、刊号" width="120" :show-overflow-tooltip="true" />
-      <el-table-column label="评分" width="80">
+      <el-table-column label="评星" width="80">
         <template #default="scope">
           <div v-if="scope.row.stars > 0">
             <el-icon v-for="s, key in scope.row.stars" :key="key" color="#F7BA2A">

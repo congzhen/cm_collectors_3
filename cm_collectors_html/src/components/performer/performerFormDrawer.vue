@@ -7,7 +7,7 @@
           <setImage ref="setImageRef" :src="getPerformerPhoto(formData)"></setImage>
         </div>
         <div class="performer-form-column performer-form-short-label" style="padding-top: 1em">
-          <el-form-item label="评分">
+          <el-form-item label="评星">
             <el-rate v-model="formData.stars" clearable />
           </el-form-item>
           <el-form-item label="息影">

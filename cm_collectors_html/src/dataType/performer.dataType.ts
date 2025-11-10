@@ -19,7 +19,7 @@ export interface I_performer extends I_performerBasic {
   bust: string; // 胸围
   waist: string; // 腰围
   hip: string; // 臀围
-  stars: number; // 评分
+  stars: number; // 评星
   retreatStatus: boolean; // 是否息影
   status: boolean;
 }

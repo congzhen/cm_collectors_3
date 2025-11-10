@@ -4,7 +4,7 @@ export interface I_searchData {
   country: I_searchGroup;  // 国家
   definition: I_searchGroup; // 清晰度
   year: I_searchGroup; // 年份
-  star: I_searchGroup; // 评分
+  star: I_searchGroup; // 评星
   performer: I_searchGroup; // 演员
   cup: I_searchGroup; // cup
   tag: Record<string, I_searchGroup>; // 标签
@@ -28,8 +28,8 @@ export enum E_searchSort {
   IssueNumberDesc = 'issueNumberDesc', //发行倒叙
   IssueNumberAsc = 'issueNumberAsc',  //发行正序
 
-  StarDesc = 'starDesc', //评分倒叙
-  StarAsc = 'starAsc', //评分正序
+  StarDesc = 'starDesc', //评星倒叙
+  StarAsc = 'starAsc', //评星正序
   TitleDesc = 'titleDesc', //标题倒叙
   TitleAsc = 'titleAsc',  //标题正序
 

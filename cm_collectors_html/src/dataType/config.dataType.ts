@@ -289,7 +289,7 @@ export interface I_config_nfo {
   performerThumb: string; // 演员-缩略图
   removedTag: string; // 删除的标签
   root: string; // 根节点名称
-  star: string; // 评分
+  star: string; // 评星
   suffix: string; // 导入的后缀名
   tag: string; // 标签
   title: string; // 标题
