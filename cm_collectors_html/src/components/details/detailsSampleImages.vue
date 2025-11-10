@@ -47,6 +47,7 @@ const props = defineProps({
     default: 3
   }
 })
+const emits = defineEmits(['loadImageComplete'])
 // 监听 props.resource 变化，重新初始化
 watch(() => props.resource, () => {
   init();
@@ -77,6 +78,9 @@ const getSampleImages = async () => {
         sampleImagesUrl.value.push(getSamplePhoto(props.resource, imagePath));
       }
     });
+    if (sampleImagesUrl.value.length > 0) {
+      emits('loadImageComplete', sampleImagesUrl.value);
+    }
   }
 }
 const openImageViewer = (index: number) => {

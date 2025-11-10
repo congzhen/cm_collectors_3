@@ -1,7 +1,9 @@
 <template>
-  <div class="play-movies-container">
+  <div class="play-movies-container" :style="mainContainerStyle_C">
+    <div class="main-container-overlay"></div>
     <HeaderView class="header" :mode="E_headerMode.GoBack" :title="resourceInfo?.title || ''"></HeaderView>
     <div class="main-container" v-loading="loading">
+
       <div class="main" v-if="resourceInfo">
         <div class="main-left">
           <div>
@@ -39,7 +41,8 @@
             <el-alert class="tagAlert" title="剧照" type="warning" :closable="false" />
           </div>
           <div v-if="store.appStoreData.currentFilesBasesAppConfig.sampleStatus">
-            <detailsSampleImages :resource="resourceInfo" :columns="8"></detailsSampleImages>
+            <detailsSampleImages :resource="resourceInfo" :columns="8"
+              @load-image-complete="detailsSampleImagesLoadCompleteHandle"></detailsSampleImages>
           </div>
 
           <el-alert class="tagAlert" title="标签" type="warning" :closable="false" />
@@ -56,7 +59,7 @@
         </div>
         <div class="main-right">
           <div class="cover">
-            <el-image :src="getResourceCoverPoster(resourceInfo)" fit="cover" />
+            <el-image :src="getResourceCoverPoster(resourceInfo)" fit="cover" @load="onImageLoad" />
           </div>
           <div class="title">{{ resourceInfo.title }}</div>
           <resourceDramaSeriesList :drama-series="resourceInfo.dramaSeries" :selected-id="selectedDramaSeriesId"
@@ -80,7 +83,7 @@ import { E_headerMode } from '@/dataType/app.dataType'
 import type { I_resource, I_resourceDramaSeries } from '@/dataType/resource.dataType';
 import { resourceServer } from '@/server/resource.server';
 import { ElMessage } from 'element-plus';
-import { ref, onMounted, nextTick } from "vue";
+import { ref, onMounted, nextTick, computed, type CSSProperties } from "vue";
 import { getResourceCoverPoster } from '@/common/photo';
 import { appStoreData } from '@/storeData/app.storeData';
 import { AppLang } from '@/language/app.lang'
@@ -104,6 +107,21 @@ const videoPlayRef = ref<InstanceType<typeof videoPlay>>();
 const resourceInfo = ref<I_resource>();
 const selectedDramaSeriesId = ref<string>('');
 const loading = ref(false);
+const backgroundImage = ref<string>('');
+let useSampleImage = false;
+
+const mainContainerStyle_C = computed<CSSProperties>(() => {
+  if (backgroundImage.value) {
+    return {
+      backgroundImage: `url(${backgroundImage.value})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat',
+      position: 'relative'
+    };
+  }
+  return {};
+});
 
 const init = async () => {
   await getResourceInfo();
@@ -120,6 +138,19 @@ const getResourceInfo = async () => {
   resourceInfo.value = result.data;
   loading.value = false;
 };
+
+const onImageLoad = (e: Event) => {
+  if (useSampleImage) return;
+  const imgElement = e.target as HTMLImageElement;
+  backgroundImage.value = imgElement.src;
+};
+
+const detailsSampleImagesLoadCompleteHandle = (imageSlc: string[]) => {
+  if (imageSlc.length > 0) {
+    backgroundImage.value = imageSlc[0];
+    useSampleImage = true;
+  }
+}
 
 const setVideoDramaSeries = () => {
   loading.value = true;
@@ -161,6 +192,7 @@ const noPlayList = () => {
   })
 }
 
+
 const playResourceDramaSeriesHandle = (ds: I_resourceDramaSeries) => {
   setVideoSource(ds.id)
   playUpdate(ds.resources_id, ds.id)
@@ -180,17 +212,43 @@ onMounted(async () => {
   flex-direction: column;
   overflow: hidden;
 
+  .main-container-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    height: 100%;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    background-color: rgba(0, 0, 0, 0.3);
+    z-index: 0;
+  }
+
+  .header {
+    display: flex;
+    z-index: 10;
+    background-color: #1f1f1f;
+  }
+
   .main-container {
     flex: 1;
     overflow: hidden;
+    overflow-y: auto;
+    position: relative;
 
     .main {
       width: calc(100% - 20px);
-      height: calc(100% - 20px);
+      min-height: calc(100% - 20px);
+      max-width: 1420px;
+      margin: 0 auto;
       padding: 10px;
       display: flex;
-      gap: 20px;
-      overflow-y: auto;
+      gap: 10px;
+      background-color: rgba(31, 31, 31, 0.8);
+      position: relative;
+      z-index: 1;
+
 
       .main-left {
         flex: 1;
