@@ -32,6 +32,12 @@ type TestJson struct {
 	BatchConcurrent        int    `json:"batchConcurrent"`        // 批量处理时并发数
 }
 
+type scraperData struct {
+	ID         string
+	FileName   string
+	SaveFolder string
+}
+
 func main() {
 	// 读取test.json
 	data, err := os.ReadFile("test.json")
@@ -75,7 +81,7 @@ func runCmscraper(testJson TestJson) {
 		return
 	}
 
-	var dataMap map[string]string = make(map[string]string)
+	var dataMap map[string]scraperData = make(map[string]scraperData)
 
 	if testJson.Batch && testJson.BatchFolderPath != "" {
 		batchExtensionsSlc := strings.Split(testJson.BatchExtensions, ",")
@@ -95,14 +101,23 @@ func runCmscraper(testJson TestJson) {
 					continue
 				}
 			}
-			dataMap[id] = saveFolder
+			dataMap[id] = scraperData{
+				ID:         id,
+				FileName:   filepath.Base(filePath),
+				SaveFolder: saveFolder,
+			}
 		}
 	} else {
 		// 解析文件名获取ID
 		filePath := testJson.ID
 		id := cmscraper.ParseID(filePath, config)
 		saveFolder := fmt.Sprintf("%s@%s", time.Now().Format("20060102150405"), id)
-		dataMap[id] = filepath.Join(testJson.SavePath, saveFolder)
+		saveFolder = path.Join(testJson.SavePath, saveFolder)
+		dataMap[id] = scraperData{
+			ID:         id,
+			FileName:   testJson.ID,
+			SaveFolder: saveFolder,
+		}
 	}
 
 	if len(dataMap) == 0 {
@@ -110,7 +125,7 @@ func runCmscraper(testJson TestJson) {
 	}
 	fmt.Println("等待刮削数据", dataMap)
 
-	for id, saveFolder := range dataMap {
+	for _, sd := range dataMap {
 		if testJson.BatchConcurrent > 1 {
 			// 创建信号量控制并发数量
 			semaphore := make(chan struct{}, testJson.BatchConcurrent)
@@ -118,12 +133,12 @@ func runCmscraper(testJson TestJson) {
 
 			// 并发执行
 			go func() {
-				for id, saveFolder := range dataMap {
+				for _, sd := range dataMap {
 					semaphore <- struct{}{}
-					go func(id, saveFolder string) {
+					go func(sd scraperData) {
 						defer func() { <-semaphore }()
-						execCmscraper(config, testJson, id, saveFolder)
-					}(id, saveFolder)
+						execCmscraper(config, testJson, sd)
+					}(sd)
 				}
 
 				// 等待所有goroutine完成
@@ -136,13 +151,13 @@ func runCmscraper(testJson TestJson) {
 			<-done
 			break
 		} else {
-			execCmscraper(config, testJson, id, saveFolder)
+			execCmscraper(config, testJson, sd)
 		}
 	}
 
 }
 
-func execCmscraper(config *cmscraper.ScraperConfig, testJson TestJson, id, saveFolder string) {
+func execCmscraper(config *cmscraper.ScraperConfig, testJson TestJson, sd scraperData) {
 	// 创建刮削器
 	s := cmscraper.NewScraper(config, testJson.BrowserPath, testJson.Headless, time.Duration(testJson.Timeout), testJson.RetryCount, true, "scraper.log")
 	// 关闭日志
@@ -150,7 +165,7 @@ func execCmscraper(config *cmscraper.ScraperConfig, testJson TestJson, id, saveF
 
 	// 刮削元数据
 	ctx := context.Background()
-	metadata, pageUrl, err := s.Scrape(ctx, id)
+	metadata, pageUrl, err := s.Scrape(ctx, sd.ID)
 	if err != nil {
 		fmt.Printf("刮削失败: %v\n", err)
 		return
@@ -183,7 +198,7 @@ func execCmscraper(config *cmscraper.ScraperConfig, testJson TestJson, id, saveF
 			fmt.Printf("Base64长度: %d 字符\n\n", len(base64Data))
 
 			// 保存图片到当前目录
-			savePath := filepath.Join(saveFolder, filename)
+			savePath := filepath.Join(sd.SaveFolder, filename)
 			err := cmscraper.SaveBase64AsImage(base64Data, savePath, true)
 			if err != nil {
 				fmt.Printf("保存图片失败: %v\n", err)
@@ -194,7 +209,7 @@ func execCmscraper(config *cmscraper.ScraperConfig, testJson TestJson, id, saveF
 	fmt.Println("NFO内容:")
 	fmt.Println(nfo)
 	//保存NFO
-	nfoFilePath := filepath.Join(saveFolder, fmt.Sprintf("%s.nfo", id))
+	nfoFilePath := filepath.Join(sd.SaveFolder, fmt.Sprintf("%s.nfo", trimSuffix(sd.FileName)))
 	err = cmscraper.SaveNfoFile(nfoFilePath, []byte(nfo))
 	if err != nil {
 		fmt.Printf("保存NFO文件失败: %v\n", err)
@@ -305,6 +320,20 @@ func getFileNameFromPath(path string, withExtension bool) string {
 		return filename
 	}
 
+	// 移除扩展名
+	ext := filepath.Ext(filename)
+	return strings.TrimSuffix(filename, ext)
+}
+
+// trimSuffix 移除文件名中的扩展名
+// 参数:
+//
+//	filename: 需要移除扩展名的文件名
+//
+// 返回值:
+//
+//	string: 移除扩展名后的文件名
+func trimSuffix(filename string) string {
 	// 移除扩展名
 	ext := filepath.Ext(filename)
 	return strings.TrimSuffix(filename, ext)
