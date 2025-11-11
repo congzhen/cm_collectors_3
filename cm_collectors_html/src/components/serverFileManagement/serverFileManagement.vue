@@ -359,11 +359,23 @@ const clFileHandle = async (row: I_sfm_FileEntry) => {
 
 // 获取路径
 const getPath = (): string => {
+  let path: string;
   if (pathSlc.value.length === 0) {
-    return "";
+    path = '';
+  } else if (pathSlc.value.length === 1 && pathSlc.value[0] === '/') {
+    // 如果只有一个元素且是根目录符号，则直接返回 "/"
+    path = "/";
+  } else if (pathSlc.value[0] === '/') {
+    // 如果第一个元素是 "/"，则保持它是路径的前缀
+    path = pathSlc.value.join("/").replace(/\/+/g, "/");
+  } else {
+    // 其他情况正常连接
+    path = pathSlc.value.join("/");
   }
-  return pathSlc.value[0] == '/' ? '/' : '' + pathSlc.value.join("/");
+  console.log('SFM Path:', path);
+  return path;
 }
+
 // 获取文件路径
 const getFilePath = (file: I_sfm_FileEntry): string => {
   return file.path;
