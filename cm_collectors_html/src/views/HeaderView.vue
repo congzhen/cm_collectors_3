@@ -3,6 +3,7 @@
     <div class="title">
       <img src="/public/icon32.png" />
       <label>{{ store.appStoreData.getLogoName }}</label>
+      <switchMobile></switchMobile>
     </div>
     <div class="right" v-if="props.mode === E_headerMode.Index">
       <div class="search">
@@ -123,6 +124,7 @@
 import { ref, type PropType } from 'vue'
 import { E_headerMode } from '@/dataType/app.dataType'
 import { useRouter } from 'vue-router'
+import switchMobile from '@/components/com/form/switchMobile.vue';
 import tagListDrawer from '@/components/tag/tagListDrawer.vue'
 import searchInputTagByStore from '@/components/com/form/searchInputTagByStore.vue'
 import resourceFormDrawer from '@/components/resource/resourceFormDrawer.vue'
@@ -201,17 +203,18 @@ const createResouceSuccessHandle = (data: I_resource) => {
     font-size: 1.5em;
     font-weight: 500;
     flex-shrink: 0;
-    max-width: 50%;
     padding: 0;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
+    gap: 5px;
 
 
     img {
       width: 1em;
       height: 1em;
-      margin-right: 0.3em;
     }
   }
 

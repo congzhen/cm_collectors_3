@@ -2,6 +2,7 @@
   <div class="mobile-view">
     <div class="header">
       <div class="database-selector">
+        <switchMobile></switchMobile>
         <select v-model="selectedDataBase" @change="changeDataBase">
           <option v-for="filesBases in store.filesBasesStoreData.filesBasesStatus" :key="filesBases.id"
             :value="filesBases.id">
@@ -25,6 +26,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import contentList from '@/components/content/contentList.vue'
+import switchMobile from '@/components/com/form/switchMobile.vue'
 import { appStoreData } from '@/storeData/app.storeData'
 import { filesBasesStoreData } from '@/storeData/filesBases.storeData'
 import { searchStoreData } from '@/storeData/search.storeData'
@@ -150,7 +152,15 @@ onMounted(async () => {
   margin-bottom: 5px;
 
   .database-selector {
+    display: flex;
+    gap: 10px;
+
+    .switch-mobile {
+      flex-shrink: 0;
+    }
+
     select {
+      flex: 1;
       background-color: #333;
       color: #f3f3f3;
       border: 1px solid #555;

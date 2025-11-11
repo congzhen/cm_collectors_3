@@ -229,7 +229,7 @@ onMounted(async () => {
 </script>
 <style lang="scss" scoped>
 .setting-data {
-  width: 960px;
+  max-width: 960px;
   height: 100%;
   display: flex;
   gap: 10px;

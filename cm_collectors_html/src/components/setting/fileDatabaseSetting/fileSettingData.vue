@@ -416,7 +416,7 @@ onMounted(() => {
 </script>
 <style lang="scss" scoped>
 .setting-data {
-  width: 960px;
+  max-width: 960px;
   height: 100%;
   display: flex;
   gap: 10px;
@@ -425,7 +425,8 @@ onMounted(() => {
   .el-form {
     flex: 1;
     padding: 0 20px;
-    overflow: auto;
+    overflow-y: auto;
+    overflow-x: hidden;
 
     .el-alert {
       margin-bottom: 10px;
