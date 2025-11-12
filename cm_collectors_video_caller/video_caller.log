@@ -1,0 +1,4 @@
+[2025-11-12 12:36:28] [INFO] 使用系统默认播放器:%!(EXTRA string=C:\Program Files\DAUM\PotPlayer\PotPlayerMini64.exe)
+[2025-11-12 12:36:28] [INFO] 播放视频:%!(EXTRA string=http://localhost:12345/api/video/m3u8/d3u49f6j1k7lid163nv0/v.m3u8?playCloud=true)
+[2025-11-12 12:36:28] [INFO] C:\Program Files\DAUM\PotPlayer\PotPlayerMini64.exe%!(EXTRA string= , string=http://localhost:12345/api/video/m3u8/d3u49f6j1k7lid163nv0/v.m3u8?playCloud=true)
+[2025-11-12 12:36:28] [INFO] 已启动播放器，请等待视频播放完成...

@@ -3,16 +3,24 @@ package main
 import (
 	"cm_collectors_video_caller/tool"
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 )
 
 func main() {
+	// 获取可执行文件的路径
+	execPath, _ := os.Executable()
+	// 获取可执行文件所在的目录
+	execDir := filepath.Dir(execPath)
+
+	// 构造配置文件的完整路径
+	configPath := filepath.Join(execDir, "config.json")
+
 	var playerPath string
 	// 读取同目录下的 config.json 文件
-	config, err := tool.ReadConfig("config.json")
+	config, err := tool.ReadConfig(configPath)
 
 	// 检查是否应该使用配置的播放器路径
 	useConfigPlayer := err == nil && config.PlayerPath != ""
@@ -29,14 +37,16 @@ func main() {
 	} else {
 		playerPath, err = tool.GetDefaultMediaPlayer()
 		if err != nil {
-			log.Fatalf("无法获取默认播放器路径: %v", err)
+			fmt.Println("无法获取默认播放器路径: %v", err)
+			return
 		}
 		fmt.Println("使用系统默认播放器:", playerPath)
 	}
 
 	// 最后检查playerPath是否存在
 	if _, err := os.Stat(playerPath); os.IsNotExist(err) {
-		log.Fatalf("播放器路径不存在: %v", err)
+		fmt.Println("播放器路径不存在: %v", err)
+		return
 	}
 
 	// 从命令行参数获取视频播放地址
@@ -55,14 +65,14 @@ func main() {
 		} else if strings.HasPrefix(videoPath, "https//") {
 			videoPath = "https://" + videoPath[len("https//"):]
 		}
-
 		fmt.Println("播放视频:", videoPath)
 		cmd := exec.Command(playerPath, videoPath)
 		err = cmd.Start()
 		if err != nil {
-			fmt.Printf("无法启动播放器: %v\n", err)
+			fmt.Println("无法启动播放器: %v\n", err)
 			return
 		}
+		fmt.Println(playerPath, " ", videoPath)
 		fmt.Println("已启动播放器，请等待视频播放完成...")
 	}
 }

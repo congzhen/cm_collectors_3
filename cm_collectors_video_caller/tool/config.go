@@ -9,7 +9,7 @@ import (
 
 // Config 配置结构体
 type Config struct {
-	PlayerPath string `json:"palyerPath"`
+	PlayerPath string `json:"playerPath"`
 }
 
 // readConfig 读取配置文件并解析到结构体
