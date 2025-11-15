@@ -1,33 +1,22 @@
 <template>
-  <div :class="['tag-item', props.status ? '' : 'disable']">
-    <label>{{ props.name }}</label>
-    <div class="tag-item-tool">
-      <div class="tag-item-tool-block">
-        <el-icon :size="12" color="#bdbcbc" @click="emits('edit')">
-          <Edit />
-        </el-icon>
-        <el-icon v-if="props.status" :size="12" color="#bdbcbc" @click="emits('delete')">
-          <Delete />
-        </el-icon>
-        <el-icon v-else :size="12" color="#bdbcbc" @click="emits('restore')">
-          <RefreshLeft />
-        </el-icon>
-      </div>
+  <tagRightClickMenu :tag="props.tag" @edit="() => emits('edit', props.tag)" @delete="() => emits('delete', props.tag)"
+    @disable="() => emits('disable', props.tag)" @enable="() => emits('enable', props.tag)">
+    <div :class="['tag-item', props.tag.status ? '' : 'disable']">
+      <label>{{ props.tag.name }}</label>
     </div>
-  </div>
+  </tagRightClickMenu>
 </template>
 <script lang="ts" setup>
+import tagRightClickMenu from './tagRightClickMenu.vue';
+import type { I_tag } from '@/dataType/tag.dataType';
+import type { PropType } from 'vue';
 const props = defineProps({
-  name: {
-    type: String,
+  tag: {
+    type: Object as PropType<I_tag>,
     required: true,
   },
-  status: {
-    type: Boolean,
-    default: true,
-  }
 })
-const emits = defineEmits(['edit', 'delete', 'restore'])
+const emits = defineEmits(['edit', 'delete', 'disable', 'enable'])
 </script>
 <style lang="scss" scoped>
 .disable {
@@ -68,25 +57,6 @@ const emits = defineEmits(['edit', 'delete', 'restore'])
     cursor: pointer;
   }
 
-  .tag-item-tool {
-    display: none;
-    position: absolute;
-    margin-top: -28px;
-    right: 2px;
 
-    .tag-item-tool-block {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-
-      .el-icon {
-        cursor: pointer;
-
-        &:hover {
-          color: #fff;
-        }
-      }
-    }
-  }
 }
 </style>

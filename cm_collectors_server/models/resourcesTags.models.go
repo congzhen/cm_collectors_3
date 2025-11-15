@@ -29,3 +29,6 @@ func (ResourcesTags) DeleteIDS(db *gorm.DB, ids []string) error {
 func (ResourcesTags) DeleteByResourcesID(db *gorm.DB, resourcesID string) error {
 	return db.Unscoped().Where("resources_id = ?", resourcesID).Delete(&ResourcesTags{}).Error
 }
+func (ResourcesTags) DeleteByTagID(db *gorm.DB, tagID string) error {
+	return db.Unscoped().Where("tag_id = ?", tagID).Delete(&ResourcesTags{}).Error
+}

@@ -65,6 +65,15 @@ func (Tag) UpdateTag(c *gin.Context) {
 	response.OkWithData(true, c)
 }
 
+func (Tag) DeleteTag(c *gin.Context) {
+	tagID := c.Param("tagId")
+	err := processors.Tag{}.DeleteTag(tagID)
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(true, c)
+}
+
 func (Tag) CreateTagClass(c *gin.Context) {
 	var par datatype.ReqParam_TagClass
 	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {

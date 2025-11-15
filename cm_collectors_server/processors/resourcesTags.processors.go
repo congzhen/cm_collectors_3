@@ -78,3 +78,6 @@ func (ResourcesTags) handleAdds(tx *gorm.DB, toAdd []string, resourceID string) 
 func (ResourcesTags) DeleteByResourcesID(tx *gorm.DB, resourceID string) error {
 	return models.ResourcesTags{}.DeleteByResourcesID(tx, resourceID)
 }
+func (ResourcesTags) DeleteByTagID(tx *gorm.DB, tagID string) error {
+	return models.ResourcesTags{}.DeleteByTagID(tx, tagID)
+}

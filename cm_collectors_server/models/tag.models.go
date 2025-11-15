@@ -68,3 +68,7 @@ func (Tag) UpdateHot(db *gorm.DB, ids []string) error {
 func (Tag) Create(db *gorm.DB, tag *Tag) error {
 	return db.Create(&tag).Error
 }
+
+func (Tag) DeleteById(db *gorm.DB, id string) error {
+	return db.Unscoped().Where("id = ? ", id).Delete(&Tag{}).Error
+}

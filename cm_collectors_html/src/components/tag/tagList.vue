@@ -23,8 +23,8 @@
         <div class="tag-list-body">
           <draggable class="tag-list-draggable" :list="tagObjectList[item.id]" item-key="id" @end="onDragEnd">
             <template #item="{ element, index }">
-              <tagItem :key="index" :name="element.name" :status="element.status" @edit="editTagHandle(element)"
-                @delete="deleteTagHandle(element)" @restore="restoreTagHandle(element)" />
+              <tagItem :key="index" :tag="element" @edit="editTagHandle(element)" @delete="deleteTagHandle(element)"
+                @enable="enableTagHandle(element)" @disable="disableTagHandle(element)" />
             </template>
           </draggable>
           <el-button icon="CirclePlus" @click="createTagHandle(item.id)" />
@@ -78,21 +78,25 @@ const init = async (fn: () => void = () => { }) => {
 
 // 获取标签数据
 const getTagData = async () => {
-  loading.value = true;
-  // 获取标签数据
-  const result = await tagServer.tagDataByFilesBasesId(props.id);
-  if (result && result.status) {
-    tagClass.value = result.data.tagClass;
-    result.data.tag.forEach(tag => {
-      if (!tagObjectList.value[tag.tagClass_id]) {
-        tagObjectList.value[tag.tagClass_id] = [];
-      }
-      tagObjectList.value[tag.tagClass_id].push(tag);
-    });
-  } else {
-    ElMessage.error(result.msg);
+  try {
+    loading.value = true;
+    // 获取标签数据
+    const result = await tagServer.tagDataByFilesBasesId(props.id);
+    if (result && result.status) {
+      tagClass.value = result.data.tagClass;
+      result.data.tag.forEach(tag => {
+        if (!tagObjectList.value[tag.tagClass_id]) {
+          tagObjectList.value[tag.tagClass_id] = [];
+        }
+        tagObjectList.value[tag.tagClass_id].push(tag);
+      });
+    } else {
+      ElMessage.error(result.msg);
+    }
+  } finally {
+    loading.value = false;
   }
-  loading.value = false;
+
 }
 
 // 保存标签排序
@@ -236,12 +240,12 @@ const editTagHandle = (tag: I_tag) => {
 }
 const deleteTagHandle = (tag: I_tag) => {
   messageBoxConfirm({
-    text: '确定要删除吗？',
+    text: `确定要删除标签 [ ${tag.name} ] 吗？ 删除后无法恢复！`,
     successCallBack: async () => {
-      tag.status = false;
-      const result = await tagServer.updateTag(tag);
+      const result = await tagServer.deleteTag(tag.id);
       if (result && result.status) {
         emits('updateTagDataCompleted')
+        init()
       } else {
         ElMessage.error(result.msg);
       }
@@ -251,22 +255,23 @@ const deleteTagHandle = (tag: I_tag) => {
     },
   })
 }
-const restoreTagHandle = async (tag: I_tag) => {
-  messageBoxConfirm({
-    text: '确定要恢复吗？',
-    successCallBack: async () => {
-      tag.status = true;
-      const result = await tagServer.updateTag(tag);
-      if (result && result.status) {
-        emits('updateTagDataCompleted')
-      } else {
-        ElMessage.error(result.msg);
-      }
-    },
-    failCallBack: () => {
-      //console.log('取消删除')
-    },
-  })
+const enableTagHandle = async (tag: I_tag) => {
+  tag.status = true;
+  const result = await tagServer.updateTag(tag);
+  if (result && result.status) {
+    emits('updateTagDataCompleted')
+  } else {
+    ElMessage.error(result.msg);
+  }
+}
+const disableTagHandle = async (tag: I_tag) => {
+  tag.status = false;
+  const result = await tagServer.updateTag(tag);
+  if (result && result.status) {
+    emits('updateTagDataCompleted')
+  } else {
+    ElMessage.error(result.msg);
+  }
 }
 
 

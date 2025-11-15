@@ -40,6 +40,12 @@ export const tagServer = {
       data: tag,
     });
   },
+  deleteTag: async (tagId: string) => {
+    return await request<boolean>({
+      url: `${routerGroupUri}/tag/delete/${tagId}`,
+      method: 'delete',
+    });
+  },
   createTagClass: async (tagClass: I_tagClass) => {
     return await request<boolean>({
       url: `${routerGroupUri}/tagClass/create`,

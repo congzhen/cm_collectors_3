@@ -146,6 +146,23 @@ func (Tag) Update(tag *datatype.ReqParam_Tag) error {
 	}, []string{"name", "keyWords", "tagClass_id", "sort", "status"})
 }
 
+func (Tag) DeleteTag(tagID string) error {
+	db := core.DBS()
+	return db.Transaction(func(tx *gorm.DB) error {
+		//删除tag
+		err := models.Tag{}.DeleteById(tx, tagID)
+		if err != nil {
+			return err
+		}
+		//删除tag关联
+		err = ResourcesTags{}.DeleteByTagID(tx, tagID)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+}
+
 func (Tag) UpdateHot(db *gorm.DB, ids []string) error {
 	return models.Tag{}.UpdateHot(db, ids)
 }
