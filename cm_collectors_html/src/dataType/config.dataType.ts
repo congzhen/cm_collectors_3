@@ -19,6 +19,7 @@ export interface I_config_app {
   coverDisplayTagColors: string[]; // 封面显示标签颜色
   coverDisplayTagRgba: string; // 封面显示标签颜色
   coverDisplayTagRgbas: string[]; // 封面显示标签颜色
+  coverDisplayTagFontSize: number; // 清晰度字体大小
   coverPosterData: I_coverPosterData[]; // 封面数据
   coverPosterDataDefaultSelect: number; // 封面数据默认选择
   coverPosterWidthBase: number; // 封面宽度
@@ -65,6 +66,7 @@ export interface I_config_app {
   coverPosterWaterfallColumn: number; // 资源-显示模式-封面海报瀑布流-列数
   coverImageFit: string;// 封面图片填充模式
   coverTitleAlign: string; // 封面海报盒子-标题对齐模式 left right center
+  resourceJustifyContent: string; // 资源-显示对齐模式- justify-content
   routeConversion: I_routeConversion[];// 路由转换
   shieldNoPerformerPhoto: boolean; // 屏蔽无照片演员
   showPreviewImage: boolean; // 显示预览图片
@@ -103,6 +105,7 @@ export const defualtConfigApp: I_config_app = {
   coverPosterWaterfallColumn: 8,
   coverImageFit: 'cover',
   coverTitleAlign: 'left',
+  resourceJustifyContent: 'flex-start',
   detailsDramaSeriesMode: E_detailsDramaSeriesMode.fileName,
   historyModule: true,
   hotModule: true,
@@ -145,6 +148,7 @@ export const defualtConfigApp: I_config_app = {
   coverDisplayTagRgbas: ['rgba(244, 54, 16, 0.75)'],
   coverDisplayTagColor: '#F3F3F3',
   coverDisplayTagColors: ['#F3F3F3'],
+  coverDisplayTagFontSize: 12,
   randomPosterStatus: false,
   randomPosterPath: '',
   randomPosterAutoSize: false,

@@ -76,6 +76,15 @@
           <el-option label="右对齐" value="right" />
         </el-select>
       </el-form-item>
+      <el-form-item label="资源对齐方式">
+        <el-select v-model="filesConfig.resourceJustifyContent">
+          <el-option label="start" value="flex-start" />
+          <el-option label="center " value="center" />
+          <el-option label="end" value="flex-end" />
+          <el-option label="between" value="space-between" />
+          <el-option label="around" value="space-around" />
+        </el-select>
+      </el-form-item>
       <el-form-item label="详情剧集显示模式">
         <selectDetailsDramaSeriesMode v-model="filesConfig.detailsDramaSeriesMode" />
       </el-form-item>
@@ -125,6 +134,9 @@
             <el-button icon="Minus" @click="filesConfig.coverDisplayTagColors.pop()" />
           </el-button-group>
         </div>
+      </el-form-item>
+      <el-form-item label="标签字体大小">
+        <el-input-number v-model="filesConfig.coverDisplayTagFontSize" :min="8" :max="24" />
       </el-form-item>
 
       <el-alert title="剧照设置" type="success" :closable="false" />

@@ -1,7 +1,7 @@
 <template>
   <div class="layout-cover-poster-simple">
     <el-scrollbar ref="scrollbarRef">
-      <ul class="list-ul" :class="{ 'mobile-layout': isMobileDevice }" :style="{ gap: gap_C }">
+      <ul class="list-ul" :class="{ 'mobile-layout': isMobileDevice }" :style="contentLayoutStyle_C">
         <li v-for="(item, key) in props.dataList" :key="key">
           <contentStyleSimple :resource="item" @click="selectResourcesHandle(item)"></contentStyleSimple>
         </li>
@@ -13,12 +13,10 @@
 import contentStyleSimple from './contentStyleSimple.vue';
 import type { I_resource } from '@/dataType/resource.dataType';
 import type { ElScrollbar } from 'element-plus';
-import { ref, computed, type PropType, onMounted } from 'vue';
+import { ref, type PropType, onMounted } from 'vue';
 import { isMobile } from '@/assets/mobile';
-import { appStoreData } from '@/storeData/app.storeData';
-const store = {
-  appStoreData: appStoreData(),
-}
+import { contentLayoutStyle_C } from '@/common/content'
+
 
 const props = defineProps({
   dataList: {
@@ -31,9 +29,7 @@ const emits = defineEmits(['selectResources']);
 const scrollbarRef = ref<InstanceType<typeof ElScrollbar>>();
 const isMobileDevice = ref(false);
 
-const gap_C = computed(() => {
-  return (store.appStoreData.currentConfigApp.coverPosterGap || 4.8) + 'px';
-});
+
 
 const selectResourcesHandle = (item: I_resource) => {
   emits('selectResources', item)

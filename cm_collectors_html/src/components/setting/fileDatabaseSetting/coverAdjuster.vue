@@ -16,19 +16,23 @@
             <div class="size-settings">
               <div class="setting-item">
                 <el-checkbox v-model="coverPosterWidthStatus" label="锁定宽度" />
-                <el-slider v-model="coverPosterWidthBase" :min="10" :max="1000" size="small" />
+                <el-slider v-model="coverPosterWidthBase" :min="10" :max="1000" size="small" show-input />
               </div>
               <div class="setting-item">
                 <el-checkbox v-model="coverPosterHeightStatus" label="锁定高度" />
-                <el-slider v-model="coverPosterHeightBase" :min="10" :max="1000" size="small" />
+                <el-slider v-model="coverPosterHeightBase" :min="10" :max="1000" size="small" show-input />
               </div>
               <div class="setting-item">
                 <span class="setting-label">资源间距</span>
-                <el-slider v-model="coverPosterGap" :min="0" :max="50" :step="0.1" size="small" />
+                <el-slider v-model="coverPosterGap" :min="0" :max="50" :step="0.1" size="small" show-input />
               </div>
               <div class="setting-item">
                 <span class="setting-label">左右空距</span>
-                <el-slider v-model="contentPadding" :min="0" :max="50" size="small" />
+                <el-slider v-model="contentPadding" :min="0" :max="50" size="small" show-input />
+              </div>
+              <div class="setting-item">
+                <span class="setting-label">封面标签大小</span>
+                <el-slider v-model="coverDisplayTagFontSize" :min="8" :max="24" size="small" show-input />
               </div>
               <div class="setting-item">
                 <span class="setting-label">封面图填充方式</span>
@@ -37,7 +41,16 @@
                     :value="item" />
                 </el-radio-group>
               </div>
-
+              <div class="setting-item">
+                <span class="setting-label">资源对齐方式</span>
+                <el-radio-group v-model="resourceJustifyContent" size="small">
+                  <el-radio-button label="start" value="flex-start" />
+                  <el-radio-button label="center " value="center" />
+                  <el-radio-button label="end" value="flex-end" />
+                  <el-radio-button label="between" value="space-between" />
+                  <el-radio-button label="around" value="space-around" />
+                </el-radio-group>
+              </div>
             </div>
             <div class="other-settings">
               <div class="setting-item">
@@ -60,6 +73,7 @@
                   <el-radio-button label="右对齐" value="right" />
                 </el-radio-group>
               </div>
+
             </div>
           </div>
         </div>
@@ -134,6 +148,12 @@ const contentPadding = computed({
     store.appStoreData.currentConfigApp.contentPadding = value;
   }
 });
+const coverDisplayTagFontSize = computed({
+  get: () => store.appStoreData.currentConfigApp.coverDisplayTagFontSize,
+  set: (value) => {
+    store.appStoreData.currentConfigApp.coverDisplayTagFontSize = value;
+  }
+});
 
 const coverImageFit = computed({
   get: () => {
@@ -158,6 +178,17 @@ const coverTitleAlign = computed({
   },
   set: (value) => {
     store.appStoreData.currentConfigApp.coverTitleAlign = value;
+  }
+});
+const resourceJustifyContent = computed({
+  get: () => {
+    if (store.appStoreData.currentConfigApp.resourceJustifyContent) {
+      return store.appStoreData.currentConfigApp.resourceJustifyContent;
+    }
+    return 'flex-start';
+  },
+  set: (value) => {
+    store.appStoreData.currentConfigApp.resourceJustifyContent = value;
   }
 });
 
@@ -200,7 +231,7 @@ const saveConfig = debounceNow(async () => {
   margin-bottom: 20px;
 
   .resources-mode-selector {
-    width: 26%;
+    width: 22%;
     flex-shrink: 0;
   }
 
@@ -209,28 +240,46 @@ const saveConfig = debounceNow(async () => {
     display: flex;
     gap: 20px;
 
-    .size-settings,
-    .other-settings {
-      width: 60%;
-      flex-shrink: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-    }
-
-    .setting-item {
+    .size-settings {
+      flex: 1;
       display: flex;
       flex-direction: column;
       gap: 5px;
     }
 
+    .other-settings {
+      width: 30%;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .setting-item {
+      display: flex;
+      flex-direction: column;
+
+      .el-checkbox {
+        height: 18px;
+      }
+    }
+
     .setting-label {
       font-size: 14px;
+      line-height: 24px;
     }
   }
 
   .el-slider {
     width: 100%;
+
+    :deep(.el-slider__runway.show-input) {
+      margin-right: 12px;
+    }
+
+    :deep(.el-input-number) {
+      width: 110px;
+    }
   }
 }
 

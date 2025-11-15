@@ -13,7 +13,7 @@
         <div class="block-two">
           <div class="issueNumber">{{ props.resource.issueNumber }}</div>
           <div class="tags">
-            <contentTagDisplay :resource="props.resource"></contentTagDisplay>
+            <contentTagDisplay :resource="props.resource" :font-size-disable="true"></contentTagDisplay>
           </div>
         </div>
         <div class="block-two">
@@ -80,6 +80,8 @@ const titleStyleObj_C = computed(() => {
     }
 
     .content-cover {
+      overflow: hidden;
+
       .el-image {
         scale: 1.05;
       }
@@ -117,6 +119,7 @@ const titleStyleObj_C = computed(() => {
       display: flex;
       gap: 10px;
       justify-content: space-between;
+      align-items: center;
       height: 24px;
       overflow: hidden;
     }
@@ -136,6 +139,11 @@ const titleStyleObj_C = computed(() => {
       flex: 1;
       overflow: hidden;
       display: flex;
+      justify-content: flex-end;
+
+      .content-tag-display {
+        justify-content: flex-end;
+      }
     }
 
     .title {

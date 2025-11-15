@@ -1,13 +1,11 @@
 <template>
-  <div
-    class="content-tag"
-    :style="{
-      backgroundColor: props.bgColor,
-      color: props.color,
-      border: '1px solid ' + props.bgColor,
-      borderRadius: props.borderRadius,
-    }"
-  >
+  <div class="content-tag" :style="{
+    backgroundColor: props.bgColor,
+    color: props.color,
+    border: '1px solid ' + props.bgColor,
+    borderRadius: props.borderRadius,
+    fontSize: props.fontSize,
+  }">
     {{ props.title }}
   </div>
 </template>
@@ -29,12 +27,16 @@ const props = defineProps({
     type: String,
     default: '0.3em',
   },
+  fontSize: {
+    type: String,
+    default: '12px',
+  },
 })
 </script>
 <style lang="scss" scoped>
 .content-tag {
   padding: 0 5px;
-  font-size: 1em;
+  font-size: 12px;
   line-height: 1.3em;
 }
 </style>

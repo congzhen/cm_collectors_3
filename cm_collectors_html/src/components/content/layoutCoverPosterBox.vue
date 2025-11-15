@@ -1,7 +1,7 @@
 <template>
   <div class="layout-cover-poster-box">
     <el-scrollbar ref="scrollbarRef">
-      <ul class="list-ul" :style="{ gap: gap_C }">
+      <ul class="list-ul" :style="contentLayoutStyle_C">
         <li v-for="(item, key) in props.dataList" :key="key">
           <contentStyle2 :resource="item" @click="selectResourcesHandle(item)"></contentStyle2>
         </li>
@@ -12,12 +12,10 @@
 <script lang="ts" setup>
 import contentStyle2 from '@/components/content/contentStyle2.vue';
 import type { I_resource } from '@/dataType/resource.dataType';
-import { appStoreData } from '@/storeData/app.storeData';
 import type { ElScrollbar } from 'element-plus';
-import { computed, ref, type PropType } from 'vue';
-const store = {
-  appStoreData: appStoreData(),
-}
+import { ref, type PropType } from 'vue';
+import { contentLayoutStyle_C } from '@/common/content'
+
 const props = defineProps({
   dataList: {
     type: Array as PropType<I_resource[]>,
@@ -27,9 +25,7 @@ const props = defineProps({
 const emits = defineEmits(['selectResources']);
 
 const scrollbarRef = ref<InstanceType<typeof ElScrollbar>>();
-const gap_C = computed(() => {
-  return (store.appStoreData.currentConfigApp.coverPosterGap || 4.8) + 'px';
-});
+
 const selectResourcesHandle = (item: I_resource) => {
   emits('selectResources', item)
 }

@@ -1,7 +1,7 @@
 <template>
-  <div class="content-tag-display">
+  <div class="content-tag-display" :style="style_C">
     <contentTag v-for="item, key in topTagList_C" :key="key" :title="item.name" :bg-color="item.bgColor"
-      :color="item.textColor"></contentTag>
+      :color="item.textColor" :fontSize="fontSize_C"></contentTag>
   </div>
 </template>
 <script setup lang="ts">
@@ -28,6 +28,32 @@ const props = defineProps({
     type: Object as PropType<I_resource>,
     required: true,
   },
+  fontSizeDisable: {
+    type: Boolean,
+    default: false,
+  }
+})
+const style_C = computed(() => {
+  const fontSize = store.appStoreData.currentConfigApp.coverDisplayTagFontSize;
+  let gap = 2;
+  if (!props.fontSizeDisable) {
+    if (fontSize > 12) {
+      gap = 2 + ((fontSize - 12) / 2);
+    }
+  }
+
+  return {
+    gap: gap + 'px',
+  }
+})
+
+const fontSize_C = computed(() => {
+  if (!props.fontSizeDisable) {
+    const fontSize = store.appStoreData.currentConfigApp.coverDisplayTagFontSize;
+    return fontSize ? fontSize + 'px' : '12px'
+  } else {
+    return '12px'
+  }
 })
 const topTagList_C = computed(() => {
   const slc: I_contentTagDisplay[] = [];

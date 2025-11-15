@@ -80,6 +80,7 @@ type Config_FilesBases struct {
 	CoverDisplayTagColors        []string                  `json:"coverDisplayTagColors"`        // 封面显示标签颜色
 	CoverDisplayTagRgba          string                    `json:"coverDisplayTagRgba"`          // 封面显示标签颜色
 	CoverDisplayTagRgbas         []string                  `json:"coverDisplayTagRgbas"`         // 封面显示标签颜色
+	CoverDisplayTagFontSize      int                       `json:"coverDisplayTagFontSize"`      // 封面显示标签字体大小
 	CoverPosterData              []ICoverPosterData        `json:"coverPosterData"`              // 封面数据
 	CoverPosterDataDefaultSelect int                       `json:"coverPosterDataDefaultSelect"` // 封面数据默认选择
 	CoverPosterWidthBase         int                       `json:"coverPosterWidthBase"`         // 封面宽度
@@ -126,6 +127,7 @@ type Config_FilesBases struct {
 	CoverPosterWaterfallColumn   int                       `json:"coverPosterWaterfallColumn"`   // 资源-显示模式-封面海报瀑布流-列数
 	CoverImageFit                string                    `json:"coverImageFit"`                // 封面图片填充方式
 	CoverTitleAlign              string                    `json:"coverTitleAlign"`              // 封面标题对齐 left right center
+	ResourceJustifyContent       string                    `json:"resourceJustifyContent"`       // 资源-显示对齐模式- justify-content   flex-start  center flex-end  space-between  space-around
 	RouteConversion              []IRouteConversion        `json:"routeConversion"`              // 路由转换
 	ShieldNoPerformerPhoto       bool                      `json:"shieldNoPerformerPhoto"`       // 屏蔽无照片演员
 	ShowPreviewImage             bool                      `json:"showPreviewImage"`             // 显示预览图片
