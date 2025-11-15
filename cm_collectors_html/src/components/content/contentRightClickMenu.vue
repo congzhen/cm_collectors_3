@@ -8,7 +8,7 @@
 <script lang="ts" setup>
 import { playOpenResourceFolder, playResource } from '@/common/play'
 import { resourceDelete } from '@/common/resource'
-import contentMenu from '@/components/com/tool/contentMenu/contentMenu.vue'
+import contentMenu from '@/components/com/tool/rightMenu/contentMenu.vue'
 import type { I_resource } from '@/dataType/resource.dataType'
 import { computed, type PropType } from 'vue'
 import { eventBus } from "@/main";

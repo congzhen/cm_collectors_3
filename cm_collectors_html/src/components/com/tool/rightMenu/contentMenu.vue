@@ -55,7 +55,7 @@
 
 <script lang="ts" setup>
 import { ref, computed, onMounted, onUnmounted, type Ref, type PropType, nextTick } from 'vue'
-import ContextMenuManager from './contentMenuManager'
+import menuManager from './menuManager'
 
 // 定义菜单项接口
 interface ContextMenuItem {
@@ -148,7 +148,7 @@ const handleContextMenu = (event: MouseEvent) => {
   emit('contextmenu', event)
 
   // 注册当前菜单到全局管理器
-  ContextMenuManager.registerMenu(hideMenu)
+  menuManager.registerMenu(hideMenu)
 
   // 初始位置
   const x = Math.min(event.clientX, window.innerWidth - parseInt(props.width))
@@ -248,7 +248,7 @@ const hideMenu = () => {
   isVisible.value = false
   activeSubmenu.value = null
   activeSubmenuIndex.value = null
-  ContextMenuManager.unregisterMenu()
+  menuManager.unregisterMenu()
 
   // 清除可能设置的滚动样式
   if (contextMenuRef.value) {
@@ -269,16 +269,16 @@ const handleClickOutside = (event: MouseEvent) => {
 
 // 组件挂载时添加事件监听器
 onMounted(() => {
-  document.addEventListener('click', handleClickOutside as EventListener)
+  document.addEventListener('click', handleClickOutside as EventListener, true)
   document.addEventListener('scroll', hideMenu)
 })
 
 // 组件卸载时移除事件监听器
 onUnmounted(() => {
-  document.removeEventListener('click', handleClickOutside as EventListener)
+  document.removeEventListener('click', handleClickOutside as EventListener, true)
   document.removeEventListener('scroll', hideMenu)
   // 确保在组件卸载时从管理器中移除
-  ContextMenuManager.unregisterMenu()
+  menuManager.unregisterMenu()
 })
 
 // 暴露方法给父组件
