@@ -370,7 +370,7 @@ const getPath = (): string => {
     path = pathSlc.value.join("/").replace(/\/+/g, "/");
   } else {
     // 其他情况正常连接
-    path = pathSlc.value.join("/");
+    path = pathSlc.value.join("/").replace(/\/+/g, "/");
   }
   console.log('SFM Path:', path);
   return path;

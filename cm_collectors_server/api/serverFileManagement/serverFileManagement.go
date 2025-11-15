@@ -69,7 +69,6 @@ func (s *ServerFileManagement) convertCleanRootToVirtualPath(cleanRoot string) s
 	if !strings.HasSuffix(cleanRoot, "/") {
 		cleanRoot += "/"
 	}
-
 	// 遍历所有预处理后的根路径，找到匹配的 cleanRoot
 	for _, root := range s.RootPath {
 		// 确保 cleanRoot 以 root.cleanRoot 开头
@@ -77,7 +76,8 @@ func (s *ServerFileManagement) convertCleanRootToVirtualPath(cleanRoot string) s
 		if strings.HasPrefix(cleanRoot, compareRoot) {
 			// 移除 cleanRoot 的公共前缀，得到 VirtualPath
 			virtualPath := strings.TrimPrefix(cleanRoot, compareRoot)
-			return filepath.ToSlash(path.Join(root.VirtualPath, virtualPath))
+			newPath := filepath.ToSlash(filepath.Clean(path.Join(root.VirtualPath, virtualPath)))
+			return newPath
 		}
 	}
 	return cleanRoot
