@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"path/filepath"
 
 	"gorm.io/gorm"
 )
@@ -98,7 +99,7 @@ func (Resources) SampleImages(id, imagePath string) ([]string, error) {
 	newImagePaths := make([]string, len(imagePaths))
 	for i, imagePath := range imagePaths {
 		//获取去掉folderPath的文件名
-		newImagePaths[i] = utils.TrimBasePath(imagePath, fullImagesPath)
+		newImagePaths[i] = utils.TrimBasePath(filepath.Clean(imagePath), filepath.Clean(fullImagesPath))
 	}
 	return newImagePaths, nil
 }
