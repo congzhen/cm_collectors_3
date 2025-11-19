@@ -154,66 +154,84 @@ func XML_getXMLValueByPath(data map[string]interface{}, path string) interface{}
 // 根据路径获取XML中的值数组，支持嵌套节点（如：movie.actors.actor）
 func XML_getXMLValuesByPath(data map[string]interface{}, path string) []string {
 	paths := strings.Split(path, ".")
-	current := data
 
-	// 遍历到倒数第二个路径
-	for i := 0; i < len(paths)-1; i++ {
-		p := paths[i]
-		if val, ok := current[p]; ok {
-			switch v := val.(type) {
-			case map[string]interface{}:
-				current = v
-			case []interface{}:
-				// 如果是数组，取第一个元素
-				if len(v) > 0 {
-					if next, ok := v[0].(map[string]interface{}); ok {
-						current = next
-					} else {
-						return []string{}
-					}
-				} else {
-					return []string{}
-				}
-			default:
-				return []string{}
-			}
-		} else {
-			return []string{}
-		}
+	// 使用递归方式处理嵌套结构
+	return getValuesRecursive([]map[string]interface{}{data}, paths)
+}
+
+// 递归获取值
+func getValuesRecursive(datas []map[string]interface{}, paths []string) []string {
+	if len(paths) == 0 {
+		return []string{}
 	}
 
-	// 获取最后一个路径的值
-	lastPath := paths[len(paths)-1]
-	if val, ok := current[lastPath]; ok {
-		// 如果是数组
-		if arr, ok := val.([]interface{}); ok {
-			var result []string
-			for _, item := range arr {
-				if str, ok := item.(string); ok {
-					result = append(result, str)
-				} else if mapped, ok := item.(map[string]interface{}); ok {
-					// 如果是map，尝试获取#text字段
-					if text, exists := mapped["#text"]; exists {
+	// 获取当前路径段
+	currentPath := paths[0]
+	var nextDatas []map[string]interface{}
+	var results []string
+
+	// 遍历当前层级的所有数据
+	for _, data := range datas {
+		if val, ok := data[currentPath]; ok {
+			// 如果是最后一段路径，直接提取值
+			if len(paths) == 1 {
+				// 处理不同类型的值
+				switch v := val.(type) {
+				case string:
+					results = append(results, v)
+				case []interface{}:
+					// 如果是数组，处理数组中的每个元素
+					for _, item := range v {
+						switch itemVal := item.(type) {
+						case string:
+							results = append(results, itemVal)
+						case map[string]interface{}:
+							// 尝试提取 #text 或 name 字段
+							if text, exists := itemVal["#text"]; exists && text != "" {
+								if str, ok := text.(string); ok {
+									results = append(results, str)
+								}
+							} else if name, exists := itemVal["name"]; exists && name != "" {
+								if str, ok := name.(string); ok {
+									results = append(results, str)
+								}
+							}
+						}
+					}
+				case map[string]interface{}:
+					// 如果是map，尝试提取 #text 或 name 字段
+					if text, exists := v["#text"]; exists && text != "" {
 						if str, ok := text.(string); ok {
-							result = append(result, str)
+							results = append(results, str)
+						}
+					} else if name, exists := v["name"]; exists && name != "" {
+						if str, ok := name.(string); ok {
+							results = append(results, str)
+						}
+					}
+				}
+			} else {
+				// 如果不是最后一段路径，收集下一级数据
+				switch v := val.(type) {
+				case map[string]interface{}:
+					nextDatas = append(nextDatas, v)
+				case []interface{}:
+					// 如果是数组，处理数组中的每个map元素
+					for _, item := range v {
+						if itemMap, ok := item.(map[string]interface{}); ok {
+							nextDatas = append(nextDatas, itemMap)
 						}
 					}
 				}
 			}
-			return result
-		}
-		// 如果是单个值
-		if str, ok := val.(string); ok {
-			return []string{str}
-		} else if mapped, ok := val.(map[string]interface{}); ok {
-			// 如果是map，尝试获取#text字段
-			if text, exists := mapped["#text"]; exists {
-				if str, ok := text.(string); ok {
-					return []string{str}
-				}
-			}
 		}
 	}
 
-	return []string{}
+	// 如果不是最后一段路径，继续递归处理
+	if len(paths) > 1 && len(nextDatas) > 0 {
+		subResults := getValuesRecursive(nextDatas, paths[1:])
+		results = append(results, subResults...)
+	}
+
+	return results
 }
