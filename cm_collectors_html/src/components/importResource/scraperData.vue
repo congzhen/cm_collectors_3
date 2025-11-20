@@ -150,12 +150,30 @@ const submit = debounceNow(async () => {
     loading.value = false;
   }
 });
+
+const saveConfig = debounceNow(async () => {
+  try {
+    loading.value = true;
+    const configData = formData.value;
+    const result = await scraperDataServer.updateConfig(store.appStoreData.currentFilesBases.id, configData);
+    if (!result.status) {
+      ElMessage.error(result.msg);
+      return;
+    } else {
+      ElMessage.success('保存成功');
+    }
+  } catch (error) {
+    ElMessage.error(String(error));
+  } finally {
+    loading.value = false;
+  }
+})
 const successHandle = () => {
   emits('success')
 }
 
 
-defineExpose({ init, submit })
+defineExpose({ init, submit, saveConfig })
 </script>
 <style lang="scss" scoped>
 .scraper-data {

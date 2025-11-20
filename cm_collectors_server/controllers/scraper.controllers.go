@@ -25,6 +25,18 @@ func (Scraper) ScraperConfigs(c *gin.Context) {
 	}
 	response.OkWithData(configs, c)
 }
+
+func (ImportData) UpdateScraperConfig(c *gin.Context) {
+	var par datatype.ReqParam_Scraper_UpdateConfig
+	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {
+		return
+	}
+	err := processors.Scraper{}.UpdateConfig(par.FilesBasesId, par.ConfigJson)
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(true, c)
+}
 func (Scraper) Pretreatment(c *gin.Context) {
 	var par datatype.ReqParam_Scraper
 	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {

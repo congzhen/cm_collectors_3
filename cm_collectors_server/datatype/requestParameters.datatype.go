@@ -236,6 +236,11 @@ const (
 	E_PerformerUpdateOperate_Cover  E_ScraperOperate = "cover"
 )
 
+type ReqParam_Scraper_UpdateConfig struct {
+	FilesBasesId string `json:"filesBases_id"`
+	ConfigJson   string `json:"configJson"`
+}
+
 type ReqParam_ScraperPerformerDataProcess struct {
 	PerformerBasesId string           `json:"performerBases_id"`
 	PerformerId      string           `json:"performerId"`

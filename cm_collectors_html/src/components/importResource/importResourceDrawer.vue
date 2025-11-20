@@ -14,7 +14,7 @@
       </div>
     </div>
     <template #footerBtn>
-      <el-button v-if="modeRadio === 'scanDisk'" @click="saveConfigHandle">保存配置</el-button>
+      <el-button @click="saveConfigHandle">{{ saveConfigText_C }}</el-button>
     </template>
   </drawerCommon>
 </template>
@@ -39,6 +39,16 @@ const submitTitle_C = computed(() => {
       return '刮削';
   }
   return '提交';
+});
+
+const saveConfigText_C = computed(() => {
+  switch (modeRadio.value) {
+    case 'scanDisk':
+      return '保存导入配置';
+    case 'scraper':
+      return '保存刮削配置';
+  }
+  return '保存配置';
 });
 
 const init = () => {
@@ -72,6 +82,9 @@ const saveConfigHandle = () => {
   switch (modeRadio.value) {
     case 'scanDisk':
       modeScanDiskRef.value?.saveConfig();
+      break;
+    case 'scraper':
+      scraperDataRef.value?.saveConfig();
       break;
   }
 }

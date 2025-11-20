@@ -134,7 +134,7 @@ func AdminRouter(router *gin.Engine) {
 	routerGroup.POST("importData/updateScanDiskConfig", controllers.ImportData{}.UpdateScanDiskConfig)
 
 	routerGroup.GET("scraper/configs", controllers.Scraper{}.ScraperConfigs)
-
+	routerGroup.POST("scraper/updateConfig", controllers.ImportData{}.UpdateScraperConfig)
 	routerGroup.POST("scraper/pretreatment", controllers.Scraper{}.Pretreatment)
 	routerGroup.POST("scraper/scraperDataProcess", controllers.Scraper{}.ScraperDataProcess)
 

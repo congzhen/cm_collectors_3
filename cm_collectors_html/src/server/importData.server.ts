@@ -28,7 +28,7 @@ export const importDataServer = {
       config = defualtConfigScanDisk;
     }
     const configJson = JSON.stringify(config);
-    return await request<I_config_scanDisk>({
+    return await request<boolean>({
       url: `${routerGroupUri}/importData/updateScanDiskConfig`,
       method: 'post',
       data: {

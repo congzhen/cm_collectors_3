@@ -14,9 +14,22 @@ import (
 	"path"
 	"strings"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type Scraper struct {
+}
+
+func (t Scraper) UpdateConfig(filesBasesId, defaultConfigJson string) error {
+	return t.UpdateConfig_DB(core.DBS(), filesBasesId, defaultConfigJson)
+}
+func (Scraper) UpdateConfig_DB(db *gorm.DB, filesBasesId, defaultConfigJson string) error {
+	settingModel := models.FilesBasesSetting{
+		ScraperJsonData: defaultConfigJson,
+	}
+	// 更新配置信息到数据库
+	return settingModel.Update(db, filesBasesId, &settingModel, []string{"scraper_json_data"})
 }
 
 func (Scraper) GetBrowserPath() string {
@@ -63,11 +76,8 @@ func (t Scraper) Pretreatment(filesBasesId string, config datatype.Config_Scrape
 	}
 	// 转换为字符串
 	configJsonString := string(jsonBytes)
-	settingModel := models.FilesBasesSetting{
-		ScraperJsonData: configJsonString,
-	}
 	// 更新配置信息到数据库
-	err = settingModel.Update(db, filesBasesId, &settingModel, []string{"scraper_json_data"})
+	err = t.UpdateConfig_DB(db, filesBasesId, configJsonString)
 	if err != nil {
 		return nil, err
 	}
