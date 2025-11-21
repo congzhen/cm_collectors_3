@@ -155,7 +155,7 @@ const saveConfig = debounceNow(async () => {
   try {
     loading.value = true;
     const configData = formData.value;
-    const result = await scraperDataServer.updateConfig(store.appStoreData.currentFilesBases.id, configData);
+    const result = await scraperDataServer.updateResScraperConfig(store.appStoreData.currentFilesBases.id, configData);
     if (!result.status) {
       ElMessage.error(result.msg);
       return;

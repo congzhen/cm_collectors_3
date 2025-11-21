@@ -31,7 +31,7 @@ func (ImportData) UpdateScraperConfig(c *gin.Context) {
 	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {
 		return
 	}
-	err := processors.Scraper{}.UpdateConfig(par.FilesBasesId, par.ConfigJson)
+	err := processors.Scraper{}.UpdateConfig(par.FilesBasesId, par.ConfigJson, par.Field)
 	if err := ResError(c, err); err != nil {
 		return
 	}
@@ -66,7 +66,12 @@ func (Scraper) SearchScraperPerformer(c *gin.Context) {
 	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {
 		return
 	}
-	datalist, err := processors.Performer{}.SearchLastScraperUpdateTime(par.PerformerBasesId, par.LastScraperUpdateTime)
+	err := processors.Scraper{}.UpdatePerformerConfigByDataType(par.FilesBasesId, par.Config)
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	datalist, err := processors.Performer{}.SearchLastScraperUpdateTime(par.PerformerBasesId, par.Config.LastScraperUpdateTime)
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return

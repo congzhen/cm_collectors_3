@@ -1,5 +1,5 @@
 import request from "@/assets/request";
-import { defualtConfigScraperData, type I_config_scraperData } from "@/dataType/config.dataType";
+import { defualtConfigScraperData, defualtConfigScraperPerformerData, type I_config_scraperData, type I_config_scraperPerformerData } from "@/dataType/config.dataType";
 import type { I_performer, I_performerBasic } from "@/dataType/performer.dataType";
 import type { I_resource } from "@/dataType/resource.dataType";
 const routerGroupUri = '';
@@ -10,7 +10,7 @@ export const scraperDataServer = {
       method: 'get',
     });
   },
-  updateConfig: async (filesBases_id: string, config: I_config_scraperData | null = null) => {
+  updateResScraperConfig: async (filesBases_id: string, config: I_config_scraperData | null = null) => {
     if (config == null) {
       config = defualtConfigScraperData;
     }
@@ -21,6 +21,22 @@ export const scraperDataServer = {
       data: {
         filesBases_id,
         configJson,
+        field: 'resource',
+      }
+    });
+  },
+  updatePerformerScraperConfig: async (filesBases_id: string, config: I_config_scraperPerformerData | null = null) => {
+    if (config == null) {
+      config = defualtConfigScraperPerformerData;
+    }
+    const configJson = JSON.stringify(config);
+    return await request<boolean>({
+      url: `${routerGroupUri}/scraper/updateConfig`,
+      method: 'post',
+      data: {
+        filesBases_id,
+        configJson,
+        field: 'performer',
       }
     });
   },
@@ -45,13 +61,14 @@ export const scraperDataServer = {
       }
     });
   },
-  searchScraperPerformerData: async (performerBases_id: string, lastScraperUpdateTime: string) => {
+  searchScraperPerformerData: async (filesBases_id: string, performerBases_id: string, config: object) => {
     return await request<I_performerBasic[]>({
       url: `${routerGroupUri}/scraper/searchScraperPerformer`,
       method: 'post',
       data: {
+        filesBases_id,
         performerBases_id,
-        lastScraperUpdateTime,
+        config,
       }
     });
   },

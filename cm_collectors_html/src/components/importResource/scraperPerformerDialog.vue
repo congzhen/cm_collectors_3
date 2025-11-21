@@ -6,7 +6,7 @@
         <el-form ref="ruleFormRef" :model="formData" label-width="160px" status-icon>
           <div class="form-main">
             <div class="form-item">
-              <selectScraperConfig v-model="formData.scraperConfig" width="260px" />
+              <selectScraperConfig v-model="formData.scraperConfig" width="220px" />
             </div>
             <div class="form-item">
               <el-radio-group v-model="formData.operate" fill="#4C4D4F">
@@ -23,7 +23,10 @@
               </el-select>
             </div>
             <div class="form-item">
-              <el-button type="success" icon="Search" plain @click="searchScraperDataHandle">检索数据</el-button>
+              <el-button-group>
+                <el-button type="success" plain @click="searchScraperDataHandle">检索数据</el-button>
+                <el-button type="success" plain @click="saveConfigHandle">保存配置</el-button>
+              </el-button-group>
             </div>
           </div>
         </el-form>
@@ -72,36 +75,66 @@ import { debounceNow } from '@/assets/debounce';
 import { scraperDataServer } from '@/server/scraper.server';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import type { I_performerBasic } from '@/dataType/performer.dataType';
+import { appStoreData } from '@/storeData/app.storeData';
+import { filesBasesServer } from '@/server/filesBases.server';
+import { defualtConfigScraperPerformerData, E_config_type, type I_config_scraperPerformerData } from '@/dataType/config.dataType';
 interface I_scraperPerformer {
   info: I_performerBasic;
   status: boolean;
   waiting: boolean;
   msg: string;
 }
+const store = {
+  appStoreData: appStoreData(),
+}
 const emits = defineEmits(['success'])
 const dialogCommonRef = ref<InstanceType<typeof dialogCommon>>();
-const formData = ref({
+const formData = ref<I_config_scraperPerformerData>({
   scraperConfig: '',
   operate: 'update',
   lastScraperUpdateTime: '',
   concurrency: 3,
+  timeout: 30,
 })
 const loading = ref(false);
 const dataList = ref<I_scraperPerformer[]>([]);
 let performerBasesId = '';
 let workStatus = true;
 
-const init = (_performerBasesId: string) => {
+const init = async (_performerBasesId: string) => {
+  await getConfig();
   performerBasesId = _performerBasesId;
   workStatus = true;
   dataList.value = [];
   dialogCommonRef.value?.disabledSubmit(true);
 }
 
+const getConfig = async () => {
+  try {
+    loading.value = true;
+    const result = await filesBasesServer.getConfigById(store.appStoreData.currentFilesBases.id, E_config_type.scraperPerformer);
+    if (!result.status) {
+      ElMessage.error(result.msg);
+      return;
+    }
+    const configStr = result.data;
+    if (configStr != '') {
+      const config = JSON.parse(configStr);
+      formData.value = { ...defualtConfigScraperPerformerData, ...config };
+    } else {
+      formData.value = { ...defualtConfigScraperPerformerData };
+    }
+  } catch (error) {
+    console.log(error);
+  } finally {
+    loading.value = false;
+  }
+}
+
 const searchScraperDataHandle = debounceNow(async () => {
   try {
     loading.value = true;
-    const result = await scraperDataServer.searchScraperPerformerData(performerBasesId, formData.value.lastScraperUpdateTime);
+    const result = await scraperDataServer.searchScraperPerformerData(store.appStoreData.currentFilesBases.id, performerBasesId, formData.value);
     if (result && result.status) {
       dataList.value = [];
       result.data.forEach(item => {
@@ -113,6 +146,22 @@ const searchScraperDataHandle = debounceNow(async () => {
         });
       })
       dialogCommonRef.value?.disabledSubmit(false);
+    } else if (result.msg) {
+      ElMessage.error(result.msg);
+    }
+  } catch (error) {
+    console.log(error);
+  } finally {
+    loading.value = false;
+  }
+})
+
+const saveConfigHandle = debounceNow(async () => {
+  try {
+    loading.value = true;
+    const result = await scraperDataServer.updatePerformerScraperConfig(store.appStoreData.currentFilesBases.id, formData.value);
+    if (result && result.status) {
+      ElMessage.success('保存成功');
     } else if (result.msg) {
       ElMessage.error(result.msg);
     }
@@ -198,6 +247,7 @@ defineExpose({ open })
 <style scoped lang="scss">
 .form-main {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
 }
 

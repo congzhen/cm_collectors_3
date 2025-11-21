@@ -21,15 +21,45 @@ import (
 type Scraper struct {
 }
 
-func (t Scraper) UpdateConfig(filesBasesId, defaultConfigJson string) error {
-	return t.UpdateConfig_DB(core.DBS(), filesBasesId, defaultConfigJson)
+func (t Scraper) UpdateConfig(filesBasesId, defaultConfigJson string, field datatype.Scraper_UpdateConfig_Field) error {
+	return t.UpdateConfig_DB(core.DBS(), filesBasesId, defaultConfigJson, field)
 }
-func (Scraper) UpdateConfig_DB(db *gorm.DB, filesBasesId, defaultConfigJson string) error {
+func (Scraper) UpdateConfig_DB(db *gorm.DB, filesBasesId, defaultConfigJson string, field datatype.Scraper_UpdateConfig_Field) error {
+	switch field {
+	case datatype.E_Scraper_UpdateConfig_Type_Resource:
+		settingModel := models.FilesBasesSetting{
+			ScraperJsonData: defaultConfigJson,
+		}
+		// 更新配置信息到数据库
+		return settingModel.Update(db, filesBasesId, &settingModel, []string{"scraper_json_data"})
+	case datatype.E_Scraper_UpdateConfig_Type_Performer:
+		settingModel := models.FilesBasesSetting{
+			ScraperPerformerJsonData: defaultConfigJson,
+		}
+		// 更新配置信息到数据库
+		return settingModel.Update(db, filesBasesId, &settingModel, []string{"scraper_performer_json_data"})
+	}
+	return errors.New("无效的配置类型")
+}
+
+func (t Scraper) UpdatePerformerConfigByDataType(filesBasesId string, config datatype.ReqParam_SearchScraperPerformerConfig) error {
+	jsonBytes, err := json.Marshal(config)
+	if err != nil {
+		return err
+	}
+	// 转换为字符串
+	configJsonString := string(jsonBytes)
+	return t.UpdatePerformerConfig(filesBasesId, configJsonString)
+}
+func (t Scraper) UpdatePerformerConfig(filesBasesId, defaultConfigJson string) error {
+	return t.UpdatePerformerConfig_DB(core.DBS(), filesBasesId, defaultConfigJson)
+}
+func (Scraper) UpdatePerformerConfig_DB(db *gorm.DB, filesBasesId, defaultConfigJson string) error {
 	settingModel := models.FilesBasesSetting{
-		ScraperJsonData: defaultConfigJson,
+		ScraperPerformerJsonData: defaultConfigJson,
 	}
 	// 更新配置信息到数据库
-	return settingModel.Update(db, filesBasesId, &settingModel, []string{"scraper_json_data"})
+	return settingModel.Update(db, filesBasesId, &settingModel, []string{"scraper_performer_json_data"})
 }
 
 func (Scraper) GetBrowserPath() string {
@@ -77,7 +107,7 @@ func (t Scraper) Pretreatment(filesBasesId string, config datatype.Config_Scrape
 	// 转换为字符串
 	configJsonString := string(jsonBytes)
 	// 更新配置信息到数据库
-	err = t.UpdateConfig_DB(db, filesBasesId, configJsonString)
+	err = t.UpdateConfig_DB(db, filesBasesId, configJsonString, datatype.E_Scraper_UpdateConfig_Type_Resource)
 	if err != nil {
 		return nil, err
 	}

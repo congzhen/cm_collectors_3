@@ -3,12 +3,13 @@ package models
 import "gorm.io/gorm"
 
 type FilesBasesSetting struct {
-	FilesBasesID     string `json:"filesBases_id" gorm:"column:filesBases_id;primaryKey;type:char(20);"`
-	ConfigJsonData   string `json:"config_json_data" gorm:"type:text;"`
-	NfoJsonData      string `json:"-" gorm:"type:text;"`
-	SimpleJsonData   string `json:"-" gorm:"type:text;"`
-	ScanDiskJsonData string `json:"-" gorm:"type:text;"`
-	ScraperJsonData  string `json:"-" gorm:"type:text;"`
+	FilesBasesID             string `json:"filesBases_id" gorm:"column:filesBases_id;primaryKey;type:char(20);"`
+	ConfigJsonData           string `json:"config_json_data" gorm:"type:text;"`
+	NfoJsonData              string `json:"-" gorm:"type:text;"`
+	SimpleJsonData           string `json:"-" gorm:"type:text;"`
+	ScanDiskJsonData         string `json:"-" gorm:"type:text;"`
+	ScraperJsonData          string `json:"-" gorm:"type:text;"`
+	ScraperPerformerJsonData string `json:"-" gorm:"type:text;"`
 }
 
 func (FilesBasesSetting) TableName() string {

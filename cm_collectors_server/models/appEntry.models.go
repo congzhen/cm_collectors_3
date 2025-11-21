@@ -272,6 +272,19 @@ func AutoDatabase(db *gorm.DB) error {
 				return nil
 			},
 		},
+		{
+			ID: "filesBasesSetting_add_ScraperPerformerJsonData",
+			Migrate: func(tx *gorm.DB) error {
+				err := tx.AutoMigrate(
+					&FilesBasesSetting{},
+				)
+				if err != nil {
+					core.LogErr(err)
+					return err
+				}
+				return nil
+			},
+		},
 	})
 	errMigrate := m.Migrate()
 	if errMigrate != nil {

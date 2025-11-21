@@ -8,6 +8,7 @@ export enum E_config_type {
   importNfo = 'importNfo',
   importSimple = 'importSimple',
   scraper = 'scraper',
+  scraperPerformer = 'scraperPerformer',
 }
 
 
@@ -278,6 +279,21 @@ export const defualtConfigScraperData: I_config_scraperData = {
   enableDownloadImages: true,
   useTagAsImageName: true,
   enableUserSimulation: false,
+}
+
+export interface I_config_scraperPerformerData {
+  scraperConfig: string;
+  operate: string;
+  lastScraperUpdateTime: string;
+  concurrency: number;
+  timeout: number;
+}
+export const defualtConfigScraperPerformerData: I_config_scraperPerformerData = {
+  scraperConfig: '',
+  operate: 'update',
+  lastScraperUpdateTime: '',
+  concurrency: 3,
+  timeout: 30,
 }
 
 export interface I_config_nfo {

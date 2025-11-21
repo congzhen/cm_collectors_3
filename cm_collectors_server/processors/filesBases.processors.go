@@ -88,6 +88,8 @@ func (t FilesBases) ConfigById(id, configType string) (string, error) {
 		return filesBasesSettingInfo.SimpleJsonData, nil
 	case "scraper":
 		return filesBasesSettingInfo.ScraperJsonData, nil
+	case "scraperPerformer":
+		return filesBasesSettingInfo.ScraperPerformerJsonData, nil
 	default:
 		return filesBasesSettingInfo.ConfigJsonData, nil
 	}

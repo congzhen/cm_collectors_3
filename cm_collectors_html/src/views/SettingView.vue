@@ -15,6 +15,9 @@
         <el-tab-pane label="标签数据集" name="tagDatabase">
           <tagSetting v-if="activeName === 'tagDatabase'"></tagSetting>
         </el-tab-pane>
+        <el-tab-pane label="计划任务" name="cronJobs">
+          <cronJobs v-if="activeName === 'cronJobs'"></cronJobs>
+        </el-tab-pane>
       </el-tabs>
     </div>
   </div>
@@ -27,6 +30,7 @@ import softSettings from '@/components/setting/softSettings/softSettings.vue';
 import fileDatabaseSetting from '@/components/setting/fileDatabaseSetting/fileDatabaseSetting.vue';
 import performerSetting from '@/components/setting/performerDatabaseSetting/performerDatabaseSetting.vue';
 import tagSetting from '@/components/setting/tagSetting/tagSetting.vue';
+import cronJobs from '@/components/setting/cronJobs/cronJobs.vue';
 const activeName = ref('softSettings');
 </script>
 <style lang="scss" scoped>

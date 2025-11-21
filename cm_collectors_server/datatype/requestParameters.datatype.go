@@ -219,16 +219,6 @@ type ReqParam_ScraperProcess struct {
 	FilePath string `json:"filePath"`
 }
 
-type ReqParam_SearchScraperPerformer struct {
-	PerformerBasesId      string `json:"performerBases_id"`
-	LastScraperUpdateTime string `json:"lastScraperUpdateTime"`
-}
-
-type ReqParam_ImportData_UpdateScanDiskConfig struct {
-	FilesBasesId string `json:"filesBases_id"`
-	ConfigJson   string `json:"configJson"`
-}
-
 type E_ScraperOperate string
 
 const (
@@ -236,9 +226,36 @@ const (
 	E_PerformerUpdateOperate_Cover  E_ScraperOperate = "cover"
 )
 
-type ReqParam_Scraper_UpdateConfig struct {
+type ReqParam_SearchScraperPerformer struct {
+	FilesBasesId     string                                `json:"filesBases_id"`
+	PerformerBasesId string                                `json:"performerBases_id"`
+	Config           ReqParam_SearchScraperPerformerConfig `json:"config"`
+}
+
+type ReqParam_SearchScraperPerformerConfig struct {
+	ScraperConfig         string           `json:"scraperConfig"`
+	Operate               E_ScraperOperate `json:"operate" binding:"required,oneof=update cover"`
+	LastScraperUpdateTime string           `json:"lastScraperUpdateTime"`
+	Concurrency           int              `json:"concurrency"`
+	Timeout               int              `json:"timeout"`
+}
+
+type ReqParam_ImportData_UpdateScanDiskConfig struct {
 	FilesBasesId string `json:"filesBases_id"`
 	ConfigJson   string `json:"configJson"`
+}
+
+type Scraper_UpdateConfig_Field string
+
+const (
+	E_Scraper_UpdateConfig_Type_Resource  Scraper_UpdateConfig_Field = "resource"
+	E_Scraper_UpdateConfig_Type_Performer Scraper_UpdateConfig_Field = "performer"
+)
+
+type ReqParam_Scraper_UpdateConfig struct {
+	FilesBasesId string                     `json:"filesBases_id"`
+	ConfigJson   string                     `json:"configJson"`
+	Field        Scraper_UpdateConfig_Field `json:"field"`
 }
 
 type ReqParam_ScraperPerformerDataProcess struct {
