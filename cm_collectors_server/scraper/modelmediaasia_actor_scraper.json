@@ -1,0 +1,75 @@
+{
+  "name": "modelmediaasia_actor_scraper",
+  "cache_enabled": true,
+  "file_patterns": ["([A-Z0-9]+-[0-9]+)", "([a-z0-9]+-[0-9]+)"],
+  "headers": {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+    "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Connection": "keep-alive",
+    "Upgrade-Insecure-Requests": "1"
+  },
+  "search": {
+    "url": "https://modelmediaasia.com/zh-CN/search?query={id}",
+    "selectors": {
+      "selector": ".pb-8 ul li:first-child a",
+      "type": "attribute",
+      "attribute": "href"
+    }
+  },
+  "sites": [
+    {
+      "name": "modelmediaasia_actor_detail",
+      "url": "https://modelmediaasia.com{id}",
+      "priority": 2,
+      "selectors": {
+        "avatar": {
+          "selector": ".container-fluid .flex .w-full img.w-full.aspect-\\[3\\/4\\]",
+          "type": "attribute",
+          "attribute": "src"
+        },
+        "name": {
+          "selector": "div.hidden.lg\\:block h4, div.lg\\:hidden h4",
+          "type": "text"
+        },
+        "height": {
+          "selector": ".container-fluid .flex .w-full .flex h6:contains('身高 :') + p",
+          "type": "text"
+        },
+        "cup": {
+          "selector": ".container-fluid .flex .w-full .flex h6:contains('身体特征') + p",
+          "type": "text",
+          "post_process": {
+            "type": "regexp",
+            "pattern": "\\d+([A-Z]?)\\s*/"
+          }
+        },
+        "bust": {
+          "selector": ".container-fluid .flex .w-full .flex h6:contains('身体特征') + p",
+          "type": "text",
+          "post_process": {
+            "type": "regexp",
+            "pattern": "(\\d+)[A-Z]?\\s*/"
+          }
+        },
+        "waist": {
+          "selector": ".container-fluid .flex .w-full .flex h6:contains('身体特征') + p",
+          "type": "text",
+          "post_process": {
+            "type": "regexp",
+            "pattern": "\\d+[A-Z]?\\s*/\\s*(\\d+)"
+          }
+        },
+        "hip": {
+          "selector": ".container-fluid .flex .w-full .flex h6:contains('身体特征') + p",
+          "type": "text",
+          "post_process": {
+            "type": "regexp",
+            "pattern": "\\d+[A-Z]?\\s*/\\s*\\d+\\s*/\\s*(\\d+)"
+          }
+        }
+      }
+    }
+  ]
+}
