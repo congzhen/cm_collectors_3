@@ -1,21 +1,23 @@
 <template>
   <div class="create-cron-jobs">
-    <drawerCommon ref="drawerCommonRef" width="680px" title="计划任务" @submit="submitHandle">
-      <div class="create-cron-jobs-main">
+    <drawerCommon ref="drawerCommonRef" width="720px" title="计划任务" @submit="submitHandle">
+      <div class="create-cron-jobs-main" :loading="loading">
         <el-form ref="ruleFormRef" :model="formData" label-width="160px" label-position="top" status-icon>
           <el-form-item label="执行文件库">
-            <selectFilesBases v-model="formData.filesBasesIds" multiple></selectFilesBases>
+            <selectFilesBases v-model="formData.filesBases_id"></selectFilesBases>
           </el-form-item>
           <el-form-item label="任务类型">
-            <el-radio-group v-model="formData.jobsType">
+            <el-radio-group v-model="formData.jobs_type">
               <el-radio-button label="导入" value="import" />
               <el-radio-button label="刮削资源" value="scraperResource" />
               <el-radio-button label="刮削演员" value="scraperPerformer" />
               <el-radio-button label="清理" value="clear" />
             </el-radio-group>
+            <el-text class="warning-text" type="warning" size="small">
+              每种任务类型都依赖于预先设定的功能配置，缺少相应配置将导致任务无法执行。
+            </el-text>
           </el-form-item>
-
-          <el-form-item label="计划任务设定 (Cron表达式)">
+          <el-form-item label="计划任务设定 (Cron表达式: 秒 分 时 日 月 周)">
             <div class="cron-expression-container">
               <div class="cron-expression-row">
                 <el-select v-model="cronParts.second" placeholder="秒">
@@ -37,14 +39,11 @@
                   <el-option v-for="item in weeksOptions" :key="item.value" :label="item.label" :value="item.value" />
                 </el-select>
               </div>
-              <div class="cron-help-text">
-                秒 分 时 日 月 周
-              </div>
             </div>
             <div class="cron-preview-container">
               <div class="cron-preview">
                 <div class="preview-title">表达式预览:</div>
-                <div class="preview-content">{{ generateCronExpression() }}</div>
+                <div class="preview-content">{{ generatecron_expression() }}</div>
               </div>
               <div class="cron-description">
                 <div class="preview-title">通俗描述:</div>
@@ -58,9 +57,13 @@
   </div>
 </template>
 <script setup lang="ts">
+import { debounceNow } from '@/assets/debounce';
+import { messageBoxAlert } from '@/common/messageBox';
 import drawerCommon from '@/components/com/dialog/drawer-common.vue';
 import selectFilesBases from '@/components/com/form/selectFilesBases.vue';
-import { ref, reactive } from 'vue';
+import type { I_cronJobs, I_cronJobs_info } from '@/dataType/cronJobs.dataType';
+import { cronJobsServer } from '@/server/cronJobs.server';
+import { ref, reactive, nextTick } from 'vue';
 
 // 定义各个字段的选项
 const secondsOptions = [
@@ -192,12 +195,17 @@ const weeksOptions = [
   { label: '每日', value: '*' }
 ];
 
+const emits = defineEmits(['success'])
+
 const drawerCommonRef = ref<InstanceType<typeof drawerCommon>>();
-const formData = ref({
-  jobsType: 'import',
-  filesBasesIds: [],
-  cronExpression: ''
+const formData = ref<I_cronJobs>({
+  id: '',
+  jobs_type: 'import',
+  filesBases_id: '',
+  cron_expression: ''
 })
+const loading = ref(false);
+let mode: 'add' | 'edit' = 'add';
 
 const cronParts = reactive({
   second: '0',
@@ -209,7 +217,7 @@ const cronParts = reactive({
 });
 
 // 生成完整的 cron 表达式
-const generateCronExpression = () => {
+const generatecron_expression = () => {
   return `${cronParts.second} ${cronParts.minute} ${cronParts.hour} ${cronParts.day} ${cronParts.month} ${cronParts.week}`;
 };
 
@@ -269,32 +277,92 @@ const generateHumanReadableDescription = () => {
   return desc;
 };
 
-// 监听 cronParts 的变化并更新 formData.cronExpression
+// 监听 cronParts 的变化并更新 formData.cron_expression
 import { watch } from 'vue';
 watch(cronParts, () => {
-  formData.value.cronExpression = generateCronExpression();
+  formData.value.cron_expression = generatecron_expression();
 }, { deep: true });
 
-const init = () => {
-  // 初始化 cronParts
-  cronParts.second = '0';
-  cronParts.minute = '0';
-  cronParts.hour = '2';
-  cronParts.day = '*';
-  cronParts.month = '*';
-  cronParts.week = '*';
+const init = (_mode: 'add' | 'edit' = 'add', _info: I_cronJobs_info | null = null) => {
+  mode = _mode;
+  if (_mode == 'edit' && _info != null) {
+    formData.value.id = _info.id;
+    formData.value.filesBases_id = _info.filesBases_id;
+    formData.value.jobs_type = _info.jobs_type;
 
-  // 初始化 formData.cronExpression
-  formData.value.cronExpression = generateCronExpression();
+    // 将传入的 cron 表达式拆分成 cronParts
+    const parts = _info.cron_expression.split(' ');
+    if (parts.length === 6) {
+      cronParts.second = parts[0];
+      cronParts.minute = parts[1];
+      cronParts.hour = parts[2];
+      cronParts.day = parts[3];
+      cronParts.month = parts[4];
+      cronParts.week = parts[5];
+    } else {
+      // 如果表达式格式不正确，使用默认值
+      cronParts.second = '0';
+      cronParts.minute = '0';
+      cronParts.hour = '2';
+      cronParts.day = '*';
+      cronParts.month = '*';
+      cronParts.week = '*';
+    }
+  } else {
+    formData.value.id = '';
+    formData.value.filesBases_id = '';
+    formData.value.jobs_type = 'import';
+    // 初始化 cronParts
+    cronParts.second = '0';
+    cronParts.minute = '0';
+    cronParts.hour = '2';
+    cronParts.day = '*';
+    cronParts.month = '*';
+    cronParts.week = '*';
+  }
+
+
+
+  // 初始化 formData.cron_expression
+  formData.value.cron_expression = generatecron_expression();
 }
 
-const submitHandle = () => {
+const submitHandle = debounceNow(async () => {
+  console.log(formData.value)
+  if (formData.value.filesBases_id === '') {
+    messageBoxAlert({ text: '请选择执行文件库', type: 'warning' });
+    return;
+  }
+  try {
+    loading.value = true;
+    let result;
+    let successText: string;
+    if (mode == 'add') {
+      result = await cronJobsServer.create(formData.value.filesBases_id, formData.value.jobs_type, formData.value.cron_expression)
+      successText = '创建成功'
+    } else {
+      result = await cronJobsServer.update(formData.value.id, formData.value.filesBases_id, formData.value.jobs_type, formData.value.cron_expression)
+      successText = '修改成功'
+    }
+    if (result && result.status) {
+      messageBoxAlert({ text: successText, type: 'success' });
+      emits('success')
+      colse();
+    } else {
+      messageBoxAlert({ text: result.msg, type: 'error' });
+    }
+  } catch (error) {
+    messageBoxAlert({ text: String(error), type: 'error' });
+  } finally {
+    loading.value = false;
+  }
+})
 
-}
-
-const open = async () => {
-  drawerCommonRef.value?.open();
-  init();
+const open = async (_mode: 'add' | 'edit' = 'add', _info: I_cronJobs_info | null = null) => {
+  init(_mode, _info);
+  nextTick(() => {
+    drawerCommonRef.value?.open();
+  })
 }
 
 const colse = () => {
@@ -306,12 +374,12 @@ defineExpose({ open })
 <style lang="scss" scoped>
 .cron-expression-row {
   display: flex;
-  gap: 10px;
+  gap: 5px;
   flex-wrap: wrap;
 
   .el-select {
     flex: 1;
-    min-width: 80px;
+    min-width: 105px;
   }
 }
 

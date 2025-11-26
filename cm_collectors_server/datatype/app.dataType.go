@@ -18,6 +18,15 @@ const (
 	E_resourceMode_NetDisk   E_resourceMode = "netDisk"
 )
 
+type E_cronJobsType string
+
+const (
+	E_cronJobsType_Import           E_cronJobsType = "import"
+	E_cronJobsType_ScraperResource  E_cronJobsType = "scraperResource"
+	E_cronJobsType_ScraperPerformer E_cronJobsType = "scraperPerformer"
+	E_cronJobsType_Clear            E_cronJobsType = "clear"
+)
+
 type App_Config struct {
 	LogoName     string `json:"logoName"`
 	IsAdminLogin bool   `json:"isAdminLogin"`

@@ -20,6 +20,12 @@ export const filesBasesStoreData = defineStore('filesBases', {
     add: function (data: I_filesBases) {
       this.filesBases.push(data);
     },
+    getFilesBasesById: function (id: string): I_filesBases | null {
+      return this.filesBases.find(item => item.id === id) || null;
+    },
+    getFilesBasesNameById: function (id: string): string {
+      return this.filesBases.find(item => item.id === id)?.name || '';
+    },
     getPerformerRelatedFilesBases: function (performerBasesId: string): I_filesBases[] {
       return this.filesBases.filter(item => item.filesRelatedPerformerBases.find(item => item.performerBases_id === performerBasesId))
     },

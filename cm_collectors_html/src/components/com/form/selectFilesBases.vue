@@ -1,5 +1,5 @@
 <template>
-  <el-select v-model="selectVal" clearable :style="{ width: props.width }" placeholder="全部数据库" @change="changeHandle"
+  <el-select v-model="selectVal" clearable :style="{ width: props.width }" placeholder="文件数据库" @change="changeHandle"
     @clear="handleClear" :multiple="props.multiple">
     <el-option v-for="item, index in store.filesBasesStoreData.filesBases" :key="index" :label="item.name"
       :value="item.id"></el-option>

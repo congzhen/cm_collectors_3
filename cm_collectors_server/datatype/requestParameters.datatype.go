@@ -288,3 +288,13 @@ type ReqParam_ScraperOnePerformerDataProcess struct {
 	Timeout           int              `json:"timeout"`
 	Operate           E_ScraperOperate `json:"operate" binding:"required,oneof=update cover"`
 }
+
+type ReqParam_CreateCronJobs struct {
+	FilesBasesId   string         `json:"filesBases_id" binding:"required"`
+	JobsType       E_cronJobsType `json:"jobs_type" binding:"required"`
+	CronExpression string         `json:"cron_expression" binding:"required"`
+}
+type ReqParam_UpdateCronJobs struct {
+	ID string
+	ReqParam_CreateCronJobs
+}

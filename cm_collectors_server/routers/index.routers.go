@@ -142,6 +142,11 @@ func AdminRouter(router *gin.Engine) {
 	routerGroup.POST("scraper/scraperPerformerDataProcess", controllers.Scraper{}.ScraperPerformerDataProcess)
 	routerGroup.POST("scraper/scraperOneResourceDataProcess", controllers.Scraper{}.ScraperOneResourceDataProcess)
 	routerGroup.POST("scraper/scraperOnePerformerDataProcess", controllers.Scraper{}.ScraperOnePerformerDataProcess)
+
+	routerGroup.GET("cronJobs/list", controllers.CronJobs{}.List)
+	routerGroup.POST("cronJobs/create", controllers.CronJobs{}.Create)
+	routerGroup.PUT("cronJobs/update", controllers.CronJobs{}.Update)
+	routerGroup.DELETE("cronJobs/delete/:cronJobsId", controllers.CronJobs{}.Delete)
 }
 func SFMRouter(router *gin.Engine) {
 	routerGroup := router.Group("/api", middleware.AdminLoginApiMiddleware())

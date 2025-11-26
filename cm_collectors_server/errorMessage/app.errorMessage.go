@@ -18,5 +18,7 @@ var (
 
 	Err_No_Config_ScanDisk = NewErrorData(5000, "请先创建导入配置")
 
+	Err_CronJobs_Not_Found = NewErrorData(7200, "计划任务不存在")
+
 	Err_Current_Server_Has_Been_Set_To_Disallow_This_Peration = NewErrorData(9000, "当前服务器已禁止此操作")
 )
