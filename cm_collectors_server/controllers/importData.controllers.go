@@ -16,7 +16,7 @@ func (ImportData) ScanDiskImportPaths(c *gin.Context) {
 	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {
 		return
 	}
-	nonExistingSrcPaths, err := processors.ImportData{}.ScanDiskImportPaths(par.FilesBasesId, par.Config)
+	nonExistingSrcPaths, err := processors.ImportData{}.ScanDiskImportPaths(par.FilesBasesId, par.Config, true)
 	if err := ResError(c, err); err != nil {
 		return
 	}

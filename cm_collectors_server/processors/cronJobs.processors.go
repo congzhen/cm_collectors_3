@@ -40,7 +40,25 @@ func (t CronJobs) Create(filesBasesID string, jobsType datatype.E_cronJobsType, 
 	if err != nil {
 		return nil, err
 	}
+	RestartCronjob()
 	return t.InfoByID_DB(db, id)
+}
+func (t CronJobs) UpdateExec(id string, execError error) error {
+	db := core.DBS()
+	lastExecStatus := true
+	lastExecError := ""
+	lastExecAt := datatype.CustomTime(core.TimeNow())
+	if execError != nil {
+		lastExecError = execError.Error()
+		lastExecStatus = false
+	}
+	cronJobsModels := models.CronJobs{
+		ID:             id,
+		LastExecError:  lastExecError,
+		LastExecStatus: lastExecStatus,
+		LastExecAt:     &lastExecAt,
+	}
+	return cronJobsModels.Update(db, &cronJobsModels, []string{"last_exec_error", "last_exec_status", "last_exec_at"})
 }
 func (t CronJobs) Update(id string, filesBasesID string, jobsType datatype.E_cronJobsType, cronExpression string) (*models.CronJobs, error) {
 	db := core.DBS()
@@ -55,9 +73,15 @@ func (t CronJobs) Update(id string, filesBasesID string, jobsType datatype.E_cro
 	if err != nil {
 		return nil, err
 	}
+	RestartCronjob()
 	return t.InfoByID_DB(db, id)
 }
 
 func (CronJobs) Delete(id string) error {
-	return models.CronJobs{}.DeleteById(core.DBS(), id)
+	err := models.CronJobs{}.DeleteById(core.DBS(), id)
+	if err != nil {
+		return err
+	}
+	RestartCronjob()
+	return nil
 }

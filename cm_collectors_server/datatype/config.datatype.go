@@ -193,3 +193,10 @@ type Config_Scraper struct {
 	UseTagAsImageName    bool     `json:"useTagAsImageName"`
 	EnableUserSimulation bool     `json:"enableUserSimulation"`
 }
+type Config_ScraperPerformer struct {
+	ScraperConfig         string           `json:"scraperConfig"`
+	Operate               E_ScraperOperate `json:"operate" binding:"required,oneof=update cover"`
+	LastScraperUpdateTime string           `json:"lastScraperUpdateTime"`
+	Concurrency           int              `json:"concurrency"`
+	Timeout               int              `json:"timeout"`
+}

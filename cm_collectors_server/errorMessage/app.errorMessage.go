@@ -16,7 +16,9 @@ var (
 	Err_Tag_Not_Found      = NewErrorData(4001, "标签不存在")
 	Err_TagClaSS_Not_Found = NewErrorData(4002, "标签分类不存在")
 
-	Err_No_Config_ScanDisk = NewErrorData(5000, "请先创建导入配置")
+	Err_No_Config_ScanDisk         = NewErrorData(5000, "请先创建导入配置")
+	Err_No_Config_Scraper          = NewErrorData(5001, "请先创建刮削配置")
+	Err_No_Config_ScraperPerformer = NewErrorData(5002, "请先创建演员刮削配置")
 
 	Err_CronJobs_Not_Found = NewErrorData(7200, "计划任务不存在")
 

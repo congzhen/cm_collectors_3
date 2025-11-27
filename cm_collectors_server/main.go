@@ -3,6 +3,7 @@ package main
 import (
 	"cm_collectors_server/core"
 	"cm_collectors_server/models"
+	"cm_collectors_server/processors"
 	"cm_collectors_server/routers"
 	"context"
 	"embed"
@@ -86,6 +87,9 @@ func serverInit(trayMode bool) {
 		fmt.Println(dbInitErr)
 		return
 	}
+
+	//计划任务
+	processors.InitCronjob()
 
 	// 禁用控制台颜色
 	// gin.DisableConsoleColor()

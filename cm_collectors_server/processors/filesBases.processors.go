@@ -127,6 +127,40 @@ func (t FilesBases) Config_ScanDisk(id string) (datatype.Config_ScanDisk, error)
 	return config, nil
 }
 
+// 获取FilesBases配置信息
+func (t FilesBases) Config_Scraper(id string) (datatype.Config_Scraper, error) {
+	var config datatype.Config_Scraper
+	jsonConfig, err := t.ConfigById(id, "scraper")
+	if err != nil {
+		return config, err
+	}
+	if jsonConfig == "" {
+		return config, errorMessage.Err_No_Config_Scraper
+	}
+	err = json.Unmarshal([]byte(jsonConfig), &config)
+	if err != nil {
+		return config, err
+	}
+	return config, nil
+}
+
+// 获取FilesBases配置信息
+func (t FilesBases) Config_ScraperPerformer(id string) (datatype.Config_ScraperPerformer, error) {
+	var config datatype.Config_ScraperPerformer
+	jsonConfig, err := t.ConfigById(id, "scraperPerformer")
+	if err != nil {
+		return config, err
+	}
+	if jsonConfig == "" {
+		return config, errorMessage.Err_No_Config_ScraperPerformer
+	}
+	err = json.Unmarshal([]byte(jsonConfig), &config)
+	if err != nil {
+		return config, err
+	}
+	return config, nil
+}
+
 // 设置FilesBases信息
 func (t FilesBases) SetFilesBases(par *datatype.ReqParam_SetFilesBases) error {
 	db := core.DBS()

@@ -42,7 +42,7 @@ func (Scraper) UpdateConfig_DB(db *gorm.DB, filesBasesId, defaultConfigJson stri
 	return errors.New("无效的配置类型")
 }
 
-func (t Scraper) UpdatePerformerConfigByDataType(filesBasesId string, config datatype.ReqParam_SearchScraperPerformerConfig) error {
+func (t Scraper) UpdatePerformerConfigByDataType(filesBasesId string, config datatype.Config_ScraperPerformer) error {
 	jsonBytes, err := json.Marshal(config)
 	if err != nil {
 		return err
@@ -91,7 +91,7 @@ func (Scraper) getSaveImagePath(filePath, imageName string) string {
 //   - []string: 待处理的文件路径列表
 //   - error: 错误信息，如果处理过程中发生错误则返回相应错误
 
-func (t Scraper) Pretreatment(filesBasesId string, config datatype.Config_Scraper) ([]string, error) {
+func (t Scraper) Pretreatment(filesBasesId string, config datatype.Config_Scraper, saveConfig bool) ([]string, error) {
 	// 获取待处理文件列表
 	filesPaths, err := utils.GetFilesByExtensions(config.ScanDiskPaths, config.VideoSuffixName, true)
 	if err != nil {
@@ -100,17 +100,22 @@ func (t Scraper) Pretreatment(filesBasesId string, config datatype.Config_Scrape
 	// 按时间排序
 	filesPaths = utils.SortFilesByOrder(filesPaths, utils.FileTimeAsc)
 	db := core.DBS()
-	jsonBytes, err := json.Marshal(config)
-	if err != nil {
-		return nil, err
+
+	if saveConfig {
+		jsonBytes, err := json.Marshal(config)
+		if err != nil {
+			return nil, err
+		}
+		// 转换为字符串
+		configJsonString := string(jsonBytes)
+		// 更新配置信息到数据库
+		err = t.UpdateConfig_DB(db, filesBasesId, configJsonString, datatype.E_Scraper_UpdateConfig_Type_Resource)
+		if err != nil {
+			return nil, err
+		}
+
 	}
-	// 转换为字符串
-	configJsonString := string(jsonBytes)
-	// 更新配置信息到数据库
-	err = t.UpdateConfig_DB(db, filesBasesId, configJsonString, datatype.E_Scraper_UpdateConfig_Type_Resource)
-	if err != nil {
-		return nil, err
-	}
+
 	// 如果设置为跳过已存在NFO的文件，则直接返回待处理文件列表
 	if !config.SkipIfNfoExists {
 		return filesPaths, nil

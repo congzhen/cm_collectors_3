@@ -36,30 +36,35 @@ func (ImportData) UpdateScanDiskConfig(filesBasesId, defaultConfigJson string) e
 // 参数:
 //   - filesBasesId: 文件库ID，用于关联扫描配置和过滤已存在的文件
 //   - config: 磁盘扫描配置，包含扫描路径和视频文件后缀等信息
+//   - saveConfig: 是否保存配置
 //
 // 返回值:
 //   - []string: 不存在于数据库中的新文件路径列表
 //   - error: 执行过程中可能出现的错误
-func (ImportData) ScanDiskImportPaths(filesBasesId string, config datatype.Config_ScanDisk) ([]string, error) {
+func (ImportData) ScanDiskImportPaths(filesBasesId string, config datatype.Config_ScanDisk, saveConfig bool) ([]string, error) {
 	filesPaths, err := utils.GetFilesByExtensions(config.ScanDiskPaths, config.VideoSuffixName, true)
 	if err != nil {
 		return nil, err
 	}
 	filesPaths = utils.SortFilesByOrder(filesPaths, utils.FileTimeAsc)
 	db := core.DBS()
-	jsonBytes, err := json.Marshal(config)
-	if err != nil {
-		return nil, err
+
+	if saveConfig {
+		jsonBytes, err := json.Marshal(config)
+		if err != nil {
+			return nil, err
+		}
+		// 转换为字符串
+		configJsonString := string(jsonBytes)
+		settingModel := models.FilesBasesSetting{
+			ScanDiskJsonData: configJsonString,
+		}
+		err = settingModel.Update(db, filesBasesId, &settingModel, []string{"scan_disk_json_data"})
+		if err != nil {
+			return nil, err
+		}
 	}
-	// 转换为字符串
-	configJsonString := string(jsonBytes)
-	settingModel := models.FilesBasesSetting{
-		ScanDiskJsonData: configJsonString,
-	}
-	err = settingModel.Update(db, filesBasesId, &settingModel, []string{"scan_disk_json_data"})
-	if err != nil {
-		return nil, err
-	}
+
 	if config.ImportMode == datatype.ImportMode_cover {
 		return filesPaths, nil
 	}

@@ -227,9 +227,9 @@ const generateHumanReadableDescription = () => {
 
   // 处理月份
   if (cronParts.month === '*') {
-    desc += "每个月的";
+    desc += "每个月";
   } else {
-    desc += `${cronParts.month}月的`;
+    desc += `${cronParts.month}月`;
   }
 
   // 处理日期和星期
@@ -252,14 +252,14 @@ const generateHumanReadableDescription = () => {
   if (cronParts.hour === '*') {
     desc += "每小时";
   } else {
-    desc += `的${cronParts.hour}点`;
+    desc += `${cronParts.hour}点`;
   }
 
   // 处理分钟
   if (cronParts.minute === '*') {
-    if (cronParts.hour !== '*') {
-      desc += "的每分钟";
-    }
+    //if (cronParts.hour !== '*') {
+    desc += "每分钟";
+    //}
   } else {
     desc += `${cronParts.minute}分`;
   }
@@ -267,7 +267,7 @@ const generateHumanReadableDescription = () => {
   // 处理秒钟
   if (cronParts.second === '*') {
     if (cronParts.minute !== '*' || cronParts.hour !== '*') {
-      desc += "的每一秒";
+      desc += "每一秒";
     }
   } else {
     desc += `${cronParts.second}秒`;

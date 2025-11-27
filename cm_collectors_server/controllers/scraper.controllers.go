@@ -42,7 +42,7 @@ func (Scraper) Pretreatment(c *gin.Context) {
 	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {
 		return
 	}
-	pendingFilePaths, err := processors.Scraper{}.Pretreatment(par.FilesBasesId, par.Config)
+	pendingFilePaths, err := processors.Scraper{}.Pretreatment(par.FilesBasesId, par.Config, true)
 	if err := ResError(c, err); err != nil {
 		return
 	}

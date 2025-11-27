@@ -227,17 +227,9 @@ const (
 )
 
 type ReqParam_SearchScraperPerformer struct {
-	FilesBasesId     string                                `json:"filesBases_id"`
-	PerformerBasesId string                                `json:"performerBases_id"`
-	Config           ReqParam_SearchScraperPerformerConfig `json:"config"`
-}
-
-type ReqParam_SearchScraperPerformerConfig struct {
-	ScraperConfig         string           `json:"scraperConfig"`
-	Operate               E_ScraperOperate `json:"operate" binding:"required,oneof=update cover"`
-	LastScraperUpdateTime string           `json:"lastScraperUpdateTime"`
-	Concurrency           int              `json:"concurrency"`
-	Timeout               int              `json:"timeout"`
+	FilesBasesId     string                  `json:"filesBases_id"`
+	PerformerBasesId string                  `json:"performerBases_id"`
+	Config           Config_ScraperPerformer `json:"config"`
 }
 
 type ReqParam_ImportData_UpdateScanDiskConfig struct {

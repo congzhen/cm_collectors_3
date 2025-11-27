@@ -9,6 +9,7 @@ import (
 type CronJobs struct {
 	ID             string                  `json:"id" gorm:"primaryKey;type:char(20);"`
 	FilesBasesId   string                  `json:"filesBases_id" gorm:"column:filesBases_id;type:char(20);"`
+	FilesBases     FilesBases              `json:"filesBases" gorm:"foreignKey:FilesBasesId;references:ID;"`
 	JobsType       datatype.E_cronJobsType `json:"jobs_type" gorm:"type:varchar(100);"`
 	CronExpression string                  `json:"cron_expression" gorm:"type:varchar(100);"`
 	CreatedAt      *datatype.CustomTime    `json:"created_at" gorm:"column:created_at;type:datetime"`
@@ -22,9 +23,13 @@ func (CronJobs) TableName() string {
 	return "cronJobs"
 }
 
+func (CronJobs) Preload(db *gorm.DB) *gorm.DB {
+	return db.Preload("FilesBases")
+}
+
 func (t CronJobs) DataList(db *gorm.DB) (*[]CronJobs, error) {
 	var cronJobs []CronJobs
-	err := db.Model(&CronJobs{}).Order("id desc").Find(&cronJobs).Error
+	err := t.Preload(db).Model(&CronJobs{}).Order("id desc").Find(&cronJobs).Error
 	return &cronJobs, err
 }
 
