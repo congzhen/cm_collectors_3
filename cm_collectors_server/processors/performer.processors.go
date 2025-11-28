@@ -29,6 +29,9 @@ func (Performer) ListTopPreferredPerformers(preferredIds []string, mainPerformer
 func (Performer) SearchLastScraperUpdateTime(performerBasesId, lastScraperUpdateTime string) (*[]models.PerformerBasic, error) {
 	return models.Performer{}.SearchLastScraperUpdateTime(core.DBS(), performerBasesId, lastScraperUpdateTime)
 }
+func (Performer) PhotosByPerformerBasesId_DB(db *gorm.DB, performerBasesId string) ([]string, error) {
+	return models.Performer{}.PhotosByPerformerBasesId_DB(db, performerBasesId)
+}
 
 func (Performer) InfoByName(performerBasesID, name string, searchAliasName bool) (*models.Performer, error) {
 	info, err := models.Performer{}.InfoByName(core.DBS(), performerBasesID, name, searchAliasName)
@@ -351,4 +354,8 @@ func (t Performer) UpdateScraperByModels(id string, dataModels models.Performer,
 	dataModels.LastScraperUpdateTime = &lastScraperUpdateTime
 	fieldsToUpdate = append(fieldsToUpdate, "lastScraperUpdateTime")
 	return dataModels.Update(core.DBS(), &dataModels, fieldsToUpdate)
+}
+
+func (t Performer) DeleteByPerformerBasesIds(db *gorm.DB, performerBasesIds []string) error {
+	return models.Performer{}.DeleteByPerformerBasesIds(db, performerBasesIds)
 }

@@ -72,3 +72,6 @@ func (Tag) Create(db *gorm.DB, tag *Tag) error {
 func (Tag) DeleteById(db *gorm.DB, id string) error {
 	return db.Unscoped().Where("id = ? ", id).Delete(&Tag{}).Error
 }
+func (Tag) DeleteTagByTagClassSlc(db *gorm.DB, tagClassSlc []string) error {
+	return db.Unscoped().Where("tagClass_id in (?) ", tagClassSlc).Delete(&Tag{}).Error
+}

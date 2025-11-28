@@ -17,7 +17,9 @@ type FilesBases struct{}
 func (FilesBases) DataList() (*[]models.FilesBases, error) {
 	return models.FilesBases{}.DataList(core.DBS())
 }
-
+func (FilesBases) DataListByIds(ids []string) (*[]models.FilesBases, error) {
+	return models.FilesBases{}.DataListByIds(core.DBS(), ids)
+}
 func (FilesBases) InfoById(id string) (*models.FilesBases, error) {
 	return models.FilesBases{}.Info(core.DBS(), id)
 }
@@ -195,6 +197,24 @@ func (FilesBases) updateFilesBasesSetting(tx *gorm.DB, filesBasesID, config stri
 		ConfigJsonData: config,
 	}
 	return settingModel.Update(tx, filesBasesID, &settingModel, []string{"config_json_data"})
+}
+func (FilesBases) ClearFilesBasesConfig(tx *gorm.DB, filesBasesID string, fields []datatype.Config_Field) error {
+	settingModel := models.FilesBasesSetting{}
+	updateFields := []string{}
+	for _, field := range fields {
+		switch field {
+		case datatype.Config_Field_FilesBases:
+			settingModel.ConfigJsonData = ""
+		case datatype.Config_Field_ScanDisk:
+			settingModel.ScanDiskJsonData = ""
+		case datatype.Config_Field_Scraper:
+			settingModel.ScraperJsonData = ""
+		case datatype.Config_Field_ScraperPerformer:
+			settingModel.ScraperPerformerJsonData = ""
+		}
+		updateFields = append(updateFields, string(field))
+	}
+	return settingModel.Update(tx, filesBasesID, &settingModel, updateFields)
 }
 
 // 同步演员集关联关系

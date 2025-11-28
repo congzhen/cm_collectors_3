@@ -60,3 +60,18 @@ const (
 	// 管理员用户
 	ENUM_UserType_Admin UserType = "admin"
 )
+
+type DatabaseCleanupClearItem string
+
+const (
+	ENUM_DatabaseCleanupClearItem_Resource               DatabaseCleanupClearItem = "resource"
+	ENUM_DatabaseCleanupClearItem_Performer              DatabaseCleanupClearItem = "performer"
+	ENUM_DatabaseCleanupClearItem_Tags                   DatabaseCleanupClearItem = "tags"
+	ENUM_DatabaseCleanupClearItem_TagClass               DatabaseCleanupClearItem = "tagClass"
+	ENUM_DatabaseCleanupClearItem_FileDatabaseConfig     DatabaseCleanupClearItem = "fileDatabaseConfig"
+	ENUM_DatabaseCleanupClearItem_ImportConfig           DatabaseCleanupClearItem = "importConfig"
+	ENUM_DatabaseCleanupClearItem_ResourceScraperConfig  DatabaseCleanupClearItem = "resourceScraperConfig"
+	ENUM_DatabaseCleanupClearItem_PerformerScraperConfig DatabaseCleanupClearItem = "performerScraperConfig"
+	ENUM_DatabaseCleanupClearItem_GeneralConfig          DatabaseCleanupClearItem = "generalConfig"
+	ENUM_DatabaseCleanupClearItem_CronJobs               DatabaseCleanupClearItem = "cronJobs"
+)

@@ -36,7 +36,11 @@ func (t FilesBases) DataList(db *gorm.DB) (*[]FilesBases, error) {
 	err := t.preloadTableBase(db).Model(&FilesBases{}).Order("sort").Find(&dataList).Error
 	return &dataList, err
 }
-
+func (t FilesBases) DataListByIds(db *gorm.DB, ids []string) (*[]FilesBases, error) {
+	var dataList []FilesBases
+	err := t.preloadTableBase(db).Model(&FilesBases{}).Where("id in (?)", ids).Order("sort").Find(&dataList).Error
+	return &dataList, err
+}
 func (t FilesBases) Info(db *gorm.DB, id string) (*FilesBases, error) {
 	var info FilesBases
 	err := t.preloadTableBase(db).First(&info, "id = ?", id).Error

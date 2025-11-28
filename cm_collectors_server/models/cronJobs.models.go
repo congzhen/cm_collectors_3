@@ -52,3 +52,6 @@ func (CronJobs) Create(db *gorm.DB, cronJobs *CronJobs) error {
 func (CronJobs) DeleteById(db *gorm.DB, id string) error {
 	return db.Unscoped().Where("id = ? ", id).Delete(&CronJobs{}).Error
 }
+func (CronJobs) DeleteByFilesBasesID(db *gorm.DB, filesBasesID string) error {
+	return db.Unscoped().Where("filesBases_id = ? ", filesBasesID).Delete(&CronJobs{}).Error
+}

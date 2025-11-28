@@ -29,6 +29,10 @@ func (Resources) DataListAll(page, limit int) (*[]models.Resources, error) {
 	return models.Resources{}.DataListAll(core.DBS(), page, limit)
 }
 
+func (Resources) CoverPosterSlcByFilesBasesID_DB(db *gorm.DB, filesBases_id string) ([]string, error) {
+	return models.Resources{}.CoverPosterSlcByFilesBasesID(db, filesBases_id)
+}
+
 // 获取所有删除所有文件的资源
 func (t Resources) DataListDeletedResource(filesBasesIds []string) (*[]models.Resources, error) {
 	// 根据文件库ID获取关联的剧集资源信息
@@ -244,6 +248,35 @@ func (t Resources) DeleteResource(resourceId string) error {
 	})
 }
 
+func (t Resources) DeleteByFilesBasesID(db *gorm.DB, filesBases_id string, coverPosterSlc []string) error {
+	return db.Transaction(func(tx *gorm.DB) error {
+		err := models.Resources{}.DeleteByFilesBasesID(tx, filesBases_id)
+		if err != nil {
+			return err
+		}
+		err = models.ResourcesPerformers{}.DeleteByFilesBasesID(tx, filesBases_id)
+		if err != nil {
+			return err
+		}
+		err = models.ResourcesDirectors{}.DeleteByFilesBasesID(tx, filesBases_id)
+		if err != nil {
+			return err
+		}
+		err = models.ResourcesTags{}.DeleteByFilesBasesID(tx, filesBases_id)
+		if err != nil {
+			return err
+		}
+		err = models.ResourcesDramaSeries{}.DeleteByFilesBasesID(tx, filesBases_id)
+		if err != nil {
+			return err
+		}
+		for _, coverPoster := range coverPosterSlc {
+			t.DeleteResourcePhoto(filesBases_id, coverPoster)
+		}
+		return nil
+	})
+}
+
 func (Resources) SetResources(db *gorm.DB, resourceID string, par *datatype.ReqParam_Resource, setResourcesDramaSeries bool) error {
 	return db.Transaction(func(tx *gorm.DB) error {
 		err := ResourcesPerformers{}.SetResourcesPerformers(tx, resourceID, par.Performers)
@@ -313,8 +346,8 @@ func (Resources) DeleteResourcePhoto(filesBasesID, photoName string) error {
 	if photoName == "" {
 		return nil // 如果没有旧图片，则不处理
 	}
-	oldFilePath := path.Join(core.Config.System.FilePath, "resCoverPoster", filesBasesID, photoName)
-	err := os.Remove(oldFilePath)
+	filePath := path.Join(core.Config.System.FilePath, "resCoverPoster", filesBasesID, photoName)
+	err := os.Remove(filePath)
 	if err != nil && !os.IsNotExist(err) {
 		return errorMessage.WrapError(errorMessage.Err_Resources_Delete_Photo_Failed, err)
 	}

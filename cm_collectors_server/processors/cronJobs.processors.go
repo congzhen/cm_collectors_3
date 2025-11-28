@@ -85,3 +85,11 @@ func (CronJobs) Delete(id string) error {
 	RestartCronjob()
 	return nil
 }
+func (CronJobs) DeleteByFilesBasesID(db *gorm.DB, filesBasesID string) error {
+	err := models.CronJobs{}.DeleteByFilesBasesID(db, filesBasesID)
+	if err != nil {
+		return err
+	}
+	RestartCronjob()
+	return nil
+}

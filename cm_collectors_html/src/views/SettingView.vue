@@ -18,6 +18,11 @@
         <el-tab-pane label="计划任务" name="cronJobs">
           <cronJobs v-if="activeName === 'cronJobs'"></cronJobs>
         </el-tab-pane>
+        <el-tab-pane label="数据库清理" name="databaseCleanup">
+          <databaseCleanup v-if="activeName === 'databaseCleanup'"></databaseCleanup>
+        </el-tab-pane>
+
+
       </el-tabs>
     </div>
   </div>
@@ -31,6 +36,7 @@ import fileDatabaseSetting from '@/components/setting/fileDatabaseSetting/fileDa
 import performerSetting from '@/components/setting/performerDatabaseSetting/performerDatabaseSetting.vue';
 import tagSetting from '@/components/setting/tagSetting/tagSetting.vue';
 import cronJobs from '@/components/setting/cronJobs/cronJobs.vue';
+import databaseCleanup from '@/components/setting/databaseCleanup/databaseCleanup.vue';
 const activeName = ref('softSettings');
 </script>
 <style lang="scss" scoped>

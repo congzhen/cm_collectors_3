@@ -81,3 +81,6 @@ func (ResourcesTags) DeleteByResourcesID(tx *gorm.DB, resourceID string) error {
 func (ResourcesTags) DeleteByTagID(tx *gorm.DB, tagID string) error {
 	return models.ResourcesTags{}.DeleteByTagID(tx, tagID)
 }
+func (ResourcesTags) DeleteByTagIDS(tx *gorm.DB, tagIDS []string) error {
+	return models.ResourcesTags{}.DeleteByTagIDS(tx, tagIDS)
+}

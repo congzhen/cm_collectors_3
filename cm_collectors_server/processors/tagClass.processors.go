@@ -91,3 +91,7 @@ func (TagClass) Update(tagClass *datatype.ReqParam_TagClass) error {
 		Status:   tagClass.Status,
 	}, []string{"name", "leftShow", "sort", "status"})
 }
+
+func (TagClass) DeleteByFilesBasesID_DB(db *gorm.DB, filesBasesID string) error {
+	return models.TagClass{}.DeleteByFilesBasesID(db, filesBasesID)
+}

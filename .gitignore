@@ -32,6 +32,7 @@
 /cm_collectors_html/test-results/
 /cm_collectors_html/playwright-report/
 cm_collectors_server/db/
+cm_collectors_server/db_backup/
 
 cm_collectors_server/err.log
 cm_collectors_server/gin.log

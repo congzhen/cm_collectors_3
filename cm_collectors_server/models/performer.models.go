@@ -60,6 +60,11 @@ func (Performer) BasicList(db *gorm.DB, performerBasesIds []string, careerPerfor
 	err := db.Order("addTime desc").Find(&list).Error
 	return &list, err
 }
+func (Performer) PhotosByPerformerBasesId_DB(db *gorm.DB, performerBasesId string) ([]string, error) {
+	var photos []string
+	err := db.Model(&Performer{}).Where("performerBases_id = ?", performerBasesId).Pluck("photo", &photos).Error
+	return photos, err
+}
 
 func (Performer) SearchLastScraperUpdateTime(db *gorm.DB, performerBasesId, lastScraperUpdateTime string) (*[]PerformerBasic, error) {
 	var list []PerformerBasic
@@ -192,4 +197,8 @@ func (Performer) Update(db *gorm.DB, performer *Performer, fields []string) erro
 }
 func (Performer) Create(db *gorm.DB, performer *Performer) error {
 	return db.Create(&performer).Error
+}
+
+func (Performer) DeleteByPerformerBasesIds(db *gorm.DB, performerBasesIds []string) error {
+	return db.Unscoped().Where("performerBases_id in (?)", performerBasesIds).Delete(&Performer{}).Error
 }

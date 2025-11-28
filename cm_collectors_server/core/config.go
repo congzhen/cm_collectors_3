@@ -237,6 +237,13 @@ func SaveConfig() error {
 	return nil
 }
 
+// 恢复config默认值
+func ResetConfig() {
+	defaultConfig := getDefaultConfig()
+	Config = defaultConfig
+	SaveConfig()
+}
+
 // GetConfig 获取全局配置实例
 func GetConfig() *config.Config {
 	return Config

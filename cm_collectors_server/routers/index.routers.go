@@ -103,6 +103,10 @@ func AdminRouter(router *gin.Engine) {
 	routerGroup.GET("/app/getConfig", controllers.App{}.GetConfig)
 	routerGroup.PUT("/app/setConfig", controllers.App{}.SetConfig)
 
+	routerGroup.POST("database/cleanup", controllers.App{}.DatabaseCleanup)
+	routerGroup.GET("database/dbBackupList", controllers.App{}.DBBackupList)
+	routerGroup.DELETE("database/deleteDbBackup/:fileName", controllers.App{}.DeleteDbBackup)
+
 	routerGroup.POST("resource/create", controllers.Resource{}.CreateResource)
 	routerGroup.PUT("resource/update", controllers.Resource{}.UpdateResource)
 	routerGroup.PUT("resource/update/tag", controllers.Resource{}.UpdateResourceTag)
@@ -147,6 +151,7 @@ func AdminRouter(router *gin.Engine) {
 	routerGroup.POST("cronJobs/create", controllers.CronJobs{}.Create)
 	routerGroup.PUT("cronJobs/update", controllers.CronJobs{}.Update)
 	routerGroup.DELETE("cronJobs/delete/:cronJobsId", controllers.CronJobs{}.Delete)
+
 }
 func SFMRouter(router *gin.Engine) {
 	routerGroup := router.Group("/api", middleware.AdminLoginApiMiddleware())

@@ -58,3 +58,29 @@ func (App) GetUpdateSoftConfig(c *gin.Context) {
 	// 直接返回JSON数据
 	response.OkWithData(string(body), c)
 }
+
+func (App) DatabaseCleanup(c *gin.Context) {
+	var par datatype.ReqParam_DatabaseCleanup
+	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {
+		return
+	}
+	err := processors.DatabaseTool{}.DatabaseCleanup(par.FilesBasesIds, par.ClearItems)
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(true, c)
+}
+func (App) DBBackupList(c *gin.Context) {
+	files, err := processors.DatabaseTool{}.GetDBBackupList()
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(files, c)
+}
+func (App) DeleteDbBackup(c *gin.Context) {
+	err := processors.DatabaseTool{}.DeleteDbBackup(c.Param("fileName"))
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(true, c)
+}

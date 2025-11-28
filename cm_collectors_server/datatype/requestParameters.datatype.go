@@ -290,3 +290,8 @@ type ReqParam_UpdateCronJobs struct {
 	ID string
 	ReqParam_CreateCronJobs
 }
+
+type ReqParam_DatabaseCleanup struct {
+	FilesBasesIds []string                   `json:"filesBases_ids"`
+	ClearItems    []DatabaseCleanupClearItem `json:"clear_items"`
+}

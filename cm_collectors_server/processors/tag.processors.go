@@ -163,6 +163,10 @@ func (Tag) DeleteTag(tagID string) error {
 	})
 }
 
+func (Tag) DeleteTagByTagClassSlc(db *gorm.DB, tagClassSlc []string) error {
+	return models.Tag{}.DeleteTagByTagClassSlc(db, tagClassSlc)
+}
+
 func (Tag) UpdateHot(db *gorm.DB, ids []string) error {
 	return models.Tag{}.UpdateHot(db, ids)
 }

@@ -305,6 +305,12 @@ func (Resources) setDbSearchDataOrder(db *gorm.DB, searchSort datatype.E_searchS
 	return db
 }
 
+func (Resources) CoverPosterSlcByFilesBasesID(db *gorm.DB, filesBasesID string) ([]string, error) {
+	var coverPosters []string
+	err := db.Model(&Resources{}).Where("filesBases_id = ?", filesBasesID).Pluck("coverPoster", &coverPosters).Error
+	return coverPosters, err
+}
+
 func (Resources) Update(db *gorm.DB, resources *Resources, fields []string) error {
 	result := db.Model(&resources).Select(fields).Updates(resources)
 	if result.RowsAffected == 0 {
@@ -318,4 +324,7 @@ func (Resources) Create(db *gorm.DB, resources *Resources) error {
 
 func (Resources) DeleteById(db *gorm.DB, id string) error {
 	return db.Unscoped().Where("id = ? ", id).Delete(&Resources{}).Error
+}
+func (Resources) DeleteByFilesBasesID(db *gorm.DB, filesBases_id string) error {
+	return db.Unscoped().Where("filesBases_id = ?", filesBases_id).Delete(&Resources{}).Error
 }

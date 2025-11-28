@@ -1,6 +1,10 @@
 package models
 
-import "gorm.io/gorm"
+import (
+	"fmt"
+
+	"gorm.io/gorm"
+)
 
 type ResourcesTags struct {
 	ID          string `json:"id" gorm:"primaryKey;type:char(20);"`
@@ -31,4 +35,11 @@ func (ResourcesTags) DeleteByResourcesID(db *gorm.DB, resourcesID string) error 
 }
 func (ResourcesTags) DeleteByTagID(db *gorm.DB, tagID string) error {
 	return db.Unscoped().Where("tag_id = ?", tagID).Delete(&ResourcesTags{}).Error
+}
+func (ResourcesTags) DeleteByTagIDS(db *gorm.DB, tagIDS []string) error {
+	return db.Unscoped().Where("tag_id in (?)", tagIDS).Delete(&ResourcesTags{}).Error
+}
+func (ResourcesTags) DeleteByFilesBasesID(db *gorm.DB, filesBases_id string) error {
+	sqlWhere := fmt.Sprintf("resources_id in (select id from %s where filesBases_id = ?)", Resources{}.TableName())
+	return db.Unscoped().Where(sqlWhere, filesBases_id).Delete(&ResourcesTags{}).Error
 }

@@ -71,6 +71,15 @@ type IRouteConversion struct {
 	To   string `json:"to"`
 }
 
+type Config_Field string
+
+const (
+	Config_Field_FilesBases       Config_Field = "config_json_data"
+	Config_Field_ScanDisk         Config_Field = "scan_disk_json_data"
+	Config_Field_Scraper          Config_Field = "scraper_json_data"
+	Config_Field_ScraperPerformer Config_Field = "scraper_performer_json_data"
+)
+
 // Config_FilesBases 文件库配置
 type Config_FilesBases struct {
 	Country                      []string                  `json:"country"`                      // 国家

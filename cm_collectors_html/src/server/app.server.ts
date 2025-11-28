@@ -1,5 +1,6 @@
 import request, { type IRequest } from "@/assets/request";
 import type { I_appSystemConfig, I_appData, I_playVideoInfo } from "@/dataType/app.dataType";
+import type { I_databaseCleanupForm } from "@/dataType/other.dataType";
 const routerGroupUri = '';
 export const appDataServer = {
   init: async () => {
@@ -62,6 +63,25 @@ export const appDataServer = {
       url: `${routerGroupUri}/app/setConfig`,
       method: 'put',
       data: config,
+    });
+  },
+  databaseCleanup: async (form: I_databaseCleanupForm) => {
+    return await request<boolean>({
+      url: `${routerGroupUri}/database/cleanup`,
+      method: 'post',
+      data: form,
+    });
+  },
+  dbBackupList: async () => {
+    return await request<string[]>({
+      url: `${routerGroupUri}/database/dbBackupList`,
+      method: 'get',
+    });
+  },
+  deleteDbBackup: async (fileName: string) => {
+    return await request<boolean>({
+      url: `${routerGroupUri}/database/deleteDbBackup/${fileName}`,
+      method: 'delete',
     });
   },
 }
