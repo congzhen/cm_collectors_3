@@ -37,3 +37,8 @@ export const formatDate = (date: string | number | Date | null, formatPar = 'Y-m
   // 使用 formatStr 避免与函数名冲突
   return format(now, formatPar, utcFormat);
 }
+
+// 当前时间格式化
+export const currentFormatDate = (formatPar = 'Y-m-d'): string => {
+  return formatDate(new Date(), formatPar);
+}

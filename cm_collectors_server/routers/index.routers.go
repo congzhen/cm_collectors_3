@@ -130,6 +130,7 @@ func AdminRouter(router *gin.Engine) {
 	routerGroup.POST("tagClass/create", controllers.Tag{}.CreateTagClass)
 	routerGroup.PUT("tagClass/update", controllers.Tag{}.UpdateTagClass)
 	routerGroup.PUT("tag/update/sort", controllers.Tag{}.UpdateSort)
+	routerGroup.POST("tag/import", controllers.Tag{}.ImportTag)
 
 	routerGroup.POST("FFmpeg/getVideoThumbnails", controllers.FFmpeg{}.GetVideoThumbnails)
 

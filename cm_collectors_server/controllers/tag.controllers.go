@@ -109,3 +109,14 @@ func (Tag) UpdateSort(c *gin.Context) {
 	}
 	response.OkWithData(true, c)
 }
+func (Tag) ImportTag(c *gin.Context) {
+	var par datatype.ReqParam_ImportTag
+	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {
+		return
+	}
+	err := processors.Tag{}.ImportTag(par.FilesBasesID, par.ImportData)
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(true, c)
+}

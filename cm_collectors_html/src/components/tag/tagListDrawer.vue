@@ -4,8 +4,12 @@
       @update-tag-data-completed="updateTagDataCompletedHandle">
     </tagList>
     <template #footerBtn>
-      <div>
+      <div class="footerBtn">
         <el-button @click="tagClassFormHandle">添加标签分类</el-button>
+        <el-button-group>
+          <el-button @click="exportHandle">导出</el-button>
+          <el-button @click="importHandle">导入</el-button>
+        </el-button-group>
       </div>
     </template>
   </drawerCommon>
@@ -18,6 +22,7 @@ import tagList from './tagList.vue';
 import tagFormClassDialog from './tagFormClassDialog.vue'
 import { appStoreData } from '@/storeData/app.storeData';
 import type { I_tagClass } from '@/dataType/tag.dataType';
+import { tagExport, tagImport } from '@/common/tag';
 const store = {
   appStoreData: appStoreData(),
 }
@@ -41,6 +46,13 @@ const updateTagDataCompletedHandle = () => {
   store.appStoreData.initTagData(store.appStoreData.currentFilesBases.id)
 }
 
+const exportHandle = async () => {
+  await tagExport(store.appStoreData.currentFilesBases.id)
+}
+const importHandle = async () => {
+  await tagImport(store.appStoreData.currentFilesBases.id)
+}
+
 const addTagClassSuccess = () => {
   updateTagDataCompletedHandle();
   tagListRef.value?.init(() => {
@@ -62,3 +74,9 @@ const close = () => {
 // eslint-disable-next-line no-undef
 defineExpose({ open, close })
 </script>
+<style scoped lang="scss">
+.footerBtn {
+  display: flex;
+  gap: 20px;
+}
+</style>

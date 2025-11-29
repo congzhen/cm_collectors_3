@@ -63,6 +63,9 @@ func (t TagClass) GetFirstTagClassByFilesBasesIDNotFoundCreate(filesBasesID stri
 }
 
 func (t TagClass) Create(par *datatype.ReqParam_TagClass) (string, error) {
+	return t.Create_DB(core.DBS(), par)
+}
+func (t TagClass) Create_DB(db *gorm.DB, par *datatype.ReqParam_TagClass) (string, error) {
 	tagClassTotal, err := t.GetTotalByFilesBasesId(par.FilesBasesID)
 	if err != nil {
 		return "", err
@@ -78,7 +81,7 @@ func (t TagClass) Create(par *datatype.ReqParam_TagClass) (string, error) {
 		CreatedAt:    &timeNow,
 		Status:       true,
 	}
-	return id, tagClassModels.Create(core.DBS(), &tagClassModels)
+	return id, tagClassModels.Create(db, &tagClassModels)
 }
 
 func (TagClass) Update(tagClass *datatype.ReqParam_TagClass) error {
@@ -90,6 +93,12 @@ func (TagClass) Update(tagClass *datatype.ReqParam_TagClass) error {
 		Sort:     tagClass.Sort,
 		Status:   tagClass.Status,
 	}, []string{"name", "leftShow", "sort", "status"})
+}
+func (TagClass) UpdateNameByID_DB(db *gorm.DB, id, name string) error {
+	return models.TagClass{}.Update(db, &models.TagClass{
+		ID:   id,
+		Name: name,
+	}, []string{"name"})
 }
 
 func (TagClass) DeleteByFilesBasesID_DB(db *gorm.DB, filesBasesID string) error {

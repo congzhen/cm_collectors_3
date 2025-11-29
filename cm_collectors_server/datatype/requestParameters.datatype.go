@@ -196,6 +196,11 @@ type TagSort struct {
 	Sort int    `json:"sort"`
 }
 
+type ReqParam_ImportTag struct {
+	FilesBasesID string              `json:"filesBases_id"`
+	ImportData   map[string][]string `json:"import_data"`
+}
+
 type ReqParam_FFmpeg_VideoKeyFramePosters struct {
 	VideoPath  string `json:"videoPath"`
 	FrameCount int    `json:"frameCount"`

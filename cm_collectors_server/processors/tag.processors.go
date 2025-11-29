@@ -6,6 +6,7 @@ import (
 	"cm_collectors_server/errorMessage"
 	"cm_collectors_server/models"
 	"cm_collectors_server/utils"
+	"strings"
 
 	"gorm.io/gorm"
 )
@@ -115,7 +116,98 @@ func (Tag) GetTotalByTagClassID(tagClassID string) (int64, error) {
 	return models.Tag{}.GetTotalByTagClassID(core.DBS(), tagClassID)
 }
 
+func (t Tag) ImportTag(filesBasesID string, importData map[string][]string) error {
+	db := core.DBS()
+	return db.Transaction(func(tx *gorm.DB) error {
+		tagData, err := t.TagData(filesBasesID)
+		if err != nil {
+			return err
+		}
+
+		// 创建映射以提高查找效率
+		tagClassMap := make(map[string]*models.TagClass)
+		tagMap := make(map[string]*models.Tag)
+
+		for _, tagClass := range *tagData.TagClass {
+			tagClassMap[tagClass.Name] = &tagClass
+		}
+
+		for _, tag := range *tagData.Tag {
+			tagMap[tag.Name] = &tag
+		}
+
+		for tagClassName, tagSlc := range importData {
+			oldNameTagClass, newNameTagClass := t.ParseTagName(tagClassName)
+
+			// 判断tagClassList中是否已有该旧名，如果有且新旧名字不同，则修改，若没有，则用新名称创建
+			var tagClassID string
+			if existingTagClass, exists := tagClassMap[oldNameTagClass]; exists {
+				tagClassID = existingTagClass.ID
+				if oldNameTagClass != newNameTagClass {
+					// 修改tagClassName
+					err := TagClass{}.UpdateNameByID_DB(tx, existingTagClass.ID, newNameTagClass)
+					if err != nil {
+						return err
+					}
+				}
+			} else {
+				// 如果不存在，则创建新的标签分类
+				tagClassID, err = TagClass{}.Create_DB(tx, &datatype.ReqParam_TagClass{
+					FilesBasesID: filesBasesID,
+					Name:         newNameTagClass,
+				})
+				if err != nil {
+					return err
+				}
+			}
+
+			// 处理标签
+			for _, tagName := range tagSlc {
+				oldNameTag, newNameTag := t.ParseTagName(tagName)
+
+				if existingTag, exists := tagMap[oldNameTag]; exists {
+					if oldNameTag != newNameTag || existingTag.TagClassID != tagClassID {
+						// 修改tagName
+						err := t.UpdateNameAndTagClassIDByID_DB(tx, existingTag.ID, newNameTag, tagClassID)
+						if err != nil {
+							return err
+						}
+					}
+				} else {
+					// 如果标签不存在，则创建新标签
+					_, err = t.Create_DB(tx, &datatype.ReqParam_Tag{
+						TagClassID: tagClassID,
+						Name:       newNameTag,
+					})
+					if err != nil {
+						return err
+					}
+				}
+			}
+		}
+		return nil
+	})
+}
+
+// ParseTagName 解析标签名称，如果含有 => 则分解为旧名称和新名称，否则两个名称相同
+func (t Tag) ParseTagName(tagName string) (oldName, newName string) {
+	index := strings.Index(tagName, "=>")
+	if index != -1 {
+		// 如果包含 =>，则分割为旧名称和新名称
+		oldName = strings.TrimSpace(tagName[:index])
+		newName = strings.TrimSpace(tagName[index+2:]) // +2 是为了跳过 "=>" 两个字符
+	} else {
+		// 如果不包含 =>，则新旧名称相同
+		oldName = strings.TrimSpace(tagName)
+		newName = oldName
+	}
+	return oldName, newName
+}
+
 func (t Tag) Create(par *datatype.ReqParam_Tag) (string, error) {
+	return t.Create_DB(core.DBS(), par)
+}
+func (t Tag) Create_DB(db *gorm.DB, par *datatype.ReqParam_Tag) (string, error) {
 	tagTotal, err := t.GetTotalByTagClassID(par.TagClassID)
 	if err != nil {
 		return "", err
@@ -131,7 +223,7 @@ func (t Tag) Create(par *datatype.ReqParam_Tag) (string, error) {
 		CreatedAt:  &timeNow,
 		Status:     true,
 	}
-	return id, tagModels.Create(core.DBS(), &tagModels)
+	return id, tagModels.Create(db, &tagModels)
 }
 
 func (Tag) Update(tag *datatype.ReqParam_Tag) error {
@@ -144,6 +236,14 @@ func (Tag) Update(tag *datatype.ReqParam_Tag) error {
 		Sort:       tag.Sort,
 		Status:     tag.Status,
 	}, []string{"name", "keyWords", "tagClass_id", "sort", "status"})
+}
+func (Tag) UpdateNameAndTagClassIDByID_DB(db *gorm.DB, id, name, tagClassID string) error {
+	return models.Tag{}.Update(db, &models.Tag{
+		ID:         id,
+		Name:       name,
+		TagClassID: tagClassID,
+		KeyWords:   utils.PinyinInitials(name),
+	}, []string{"name", "keyWords", "tagClass_id"})
 }
 
 func (Tag) DeleteTag(tagID string) error {

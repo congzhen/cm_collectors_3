@@ -69,5 +69,15 @@ export const tagServer = {
         tagSort,
       }
     });
-  }
+  },
+  import: async (filesBases_Id: string, import_data: Record<string, string[]>) => {
+    return await request<string>({
+      url: `${routerGroupUri}/tag/import`,
+      method: 'post',
+      data: {
+        filesBases_Id,
+        import_data,
+      }
+    });
+  },
 }
