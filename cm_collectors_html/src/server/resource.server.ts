@@ -77,6 +77,16 @@ export const resourceServer = {
       },
     });
   },
+  updatePerformer: async (resourceId: string, performers: string[]) => {
+    return await request<I_resource>({
+      url: `${routerGroupUri}/resource/update/performer`,
+      method: 'put',
+      data: {
+        resourceId,
+        performers
+      },
+    });
+  },
   updateTag: async (resourceId: string, tags: string[]) => {
     return await request<I_resource>({
       url: `${routerGroupUri}/resource/update/tag`,

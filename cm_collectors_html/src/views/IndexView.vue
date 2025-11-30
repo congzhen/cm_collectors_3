@@ -12,7 +12,9 @@
     </div>
     <videoPlayDialog ref="videoPlayDialogRef"></videoPlayDialog>
     <resourceFormDrawer ref="resourceFormDrawerRef" @success="updateResouceSuccessHandle"></resourceFormDrawer>
-    <ResourceSetTagDialog ref="resourceSetTagDialogRef" @success="updateResouceSuccessHandle"></ResourceSetTagDialog>
+    <resourceSetTagDialog ref="resourceSetTagDialogRef" @success="updateResouceSuccessHandle"></resourceSetTagDialog>
+    <resourceSetPerformerDialog ref="resourceSetPerformerDialogRef" @success="updateResouceSuccessHandle">
+    </resourceSetPerformerDialog>
     <playCloudCheckPromptDialog ref="playCloudCheckPromptDialogRef"></playCloudCheckPromptDialog>
   </div>
 </template>
@@ -31,7 +33,8 @@ import { appStoreData } from '@/storeData/app.storeData'
 import { searchStoreData } from '@/storeData/search.storeData'
 import { ElMessage } from 'element-plus'
 import { eventBus } from '@/main'
-import ResourceSetTagDialog from '@/components/resource/resourceSetTagDialog.vue'
+import resourceSetTagDialog from '@/components/resource/resourceSetTagDialog.vue'
+import resourceSetPerformerDialog from '@/components/resource/resourceSetPerformerDialog.vue'
 import playCloudCheckPromptDialog from '@/components/play/playCloudCheckPromptDialog.vue'
 const store = {
   appStoreData: appStoreData(),
@@ -42,7 +45,8 @@ const contentViewRef = ref<InstanceType<typeof ContentView>>();
 const detailsViewRef = ref<InstanceType<typeof DetailsView>>();
 const videoPlayDialogRef = ref<InstanceType<typeof videoPlayDialog>>();
 const resourceFormDrawerRef = ref<InstanceType<typeof resourceFormDrawer>>();
-const resourceSetTagDialogRef = ref<InstanceType<typeof ResourceSetTagDialog>>();
+const resourceSetTagDialogRef = ref<InstanceType<typeof resourceSetTagDialog>>();
+const resourceSetPerformerDialogRef = ref<InstanceType<typeof resourceSetPerformerDialog>>();
 const playCloudCheckPromptDialogRef = ref<InstanceType<typeof playCloudCheckPromptDialog>>();
 
 const loading = ref(false);
@@ -96,6 +100,10 @@ const editResourceTagHandle = (event: unknown) => {
   const typedEvent = event as { resource: I_resource; };
   resourceSetTagDialogRef.value?.open(typedEvent.resource)
 }
+const editResourcePerformerHandle = (event: unknown) => {
+  const typedEvent = event as { resource: I_resource; };
+  resourceSetPerformerDialogRef.value?.open(typedEvent.resource)
+}
 const deleteResouceSuccessOnHandle = () => {
   deleteResouceSuccessHandle()
 }
@@ -110,6 +118,7 @@ onMounted(() => {
   eventBus.on('resource-dialog-play-start', resourceDialogPlayStartHandle);
   eventBus.on('edit-resource', editResourceHandle);
   eventBus.on('edit-resource-tag', editResourceTagHandle);
+  eventBus.on('edit-resource-performer', editResourcePerformerHandle);
   eventBus.on('delete-resource-success', deleteResouceSuccessOnHandle);
   eventBus.on('playClound', playCloundHandle);
 })

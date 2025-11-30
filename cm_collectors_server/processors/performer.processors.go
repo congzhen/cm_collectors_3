@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"sort"
 
 	"gorm.io/gorm"
 )
@@ -21,6 +22,41 @@ func (Performer) BasicList(performerBasesIds []string, careerPerformer, careerDi
 
 func (Performer) DataList(performerBasesId string, fetchCount bool, page, limit int, search, star, cup, charIndex string) (*[]models.Performer, int64, error) {
 	return models.Performer{}.DataList(core.DBS(), performerBasesId, fetchCount, page, limit, search, star, cup, charIndex)
+}
+
+// DataListByIds 根据提供的演员ID列表获取演员数据列表
+//
+// 该函数通过调用模型层的DataListByIds方法从数据库中查询指定ID的演员信息，
+// 并可根据ordered参数决定是否按照传入的ID顺序对结果进行排序。
+//
+// 参数:
+//
+//	ids []string : 需要查询的演员ID列表
+//	ordered bool : 是否按照传入的ID顺序对结果进行排序，true表示需要排序，false表示不需要排序
+//
+// 返回值:
+//
+//	*[]models.Performer : 查询到的演员数据列表指针
+//	error : 查询过程中发生的错误信息，如果没有错误则为nil
+func (Performer) DataListByIds(ids []string, ordered bool) (*[]models.Performer, error) {
+	dataList, err := models.Performer{}.DataListByIds(core.DBS(), ids)
+	if err != nil {
+		return nil, err
+	}
+	if !ordered {
+		return dataList, nil
+	}
+	//根据ids的顺序排序
+	idToIndex := make(map[string]int)
+	for i, id := range ids {
+		idToIndex[id] = i
+	}
+
+	sort.Slice(*dataList, func(i, j int) bool {
+		return idToIndex[(*dataList)[i].ID] < idToIndex[(*dataList)[j].ID]
+	})
+
+	return dataList, nil
 }
 
 func (Performer) ListTopPreferredPerformers(preferredIds []string, mainPerformerBasesId string, shieldNoPerformerPhoto bool, limit int) (*[]models.Performer, error) {

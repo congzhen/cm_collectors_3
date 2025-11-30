@@ -71,6 +71,13 @@ const contentMenuItems_C = computed(() => {
         }
       },
       {
+        label: '添加演员',
+        icon: 'User',
+        handler: () => {
+          eventBus.emit('edit-resource-performer', { resource: props.resource });
+        }
+      },
+      {
         label: '删除',
         icon: 'Delete',
         handler: () => {

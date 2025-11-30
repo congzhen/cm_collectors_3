@@ -4,12 +4,21 @@ import (
 	"cm_collectors_server/datatype"
 	"cm_collectors_server/processors"
 	"cm_collectors_server/response"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
 
 type Performer struct{}
 
+func (Performer) Info(c *gin.Context) {
+	id := c.Param("id")
+	info, err := processors.Performer{}.InfoByID(id)
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(info, c)
+}
 func (Performer) BasicList(c *gin.Context) {
 	var par datatype.ReqParam_PerformersList
 	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {
@@ -21,7 +30,21 @@ func (Performer) BasicList(c *gin.Context) {
 	}
 	response.OkWithData(dataList, c)
 }
-
+func (Performer) DataListByIds(c *gin.Context) {
+	idsStr := c.Param("ids")
+	if idsStr == "" {
+		response.OkWithData([]any{}, c)
+	}
+	ids := strings.Split(idsStr, ",")
+	if len(ids) == 0 {
+		response.OkWithData([]any{}, c)
+	}
+	dataList, err := processors.Performer{}.DataListByIds(ids, true)
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(dataList, c)
+}
 func (Performer) DataList(c *gin.Context) {
 	performerBasesId := c.Param("performerBasesId")
 	var fetchCount bool

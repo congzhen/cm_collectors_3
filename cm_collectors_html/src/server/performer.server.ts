@@ -45,6 +45,17 @@ export const performerServer = {
       }
     });
   },
+  dataListByIds: async (ids: string[]) => {
+    return await request<I_performer[]>({
+      url: `${routerGroupUri}/performer/dataList/ids/${ids.join(',')}`,
+    });
+  },
+  infoById: async (id: string) => {
+    return await request<I_performer>({
+      url: `${routerGroupUri}/performer/info/${id}`,
+    });
+  },
+
   create: async (performer: I_performer, photoBase64: string) => {
     return await request<I_performer>({
       url: `${routerGroupUri}/performer/create`,

@@ -91,12 +91,20 @@ const filterMethod = debounce((query: string) => {
   loading.value = false
 }, 200)
 
+const resetOptionsData = async () => {
+  await getPerformerList();
+}
+
 
 onMounted(async () => {
   await init();
 })
 onActivated(async () => {
   await init();
+})
+
+defineExpose({
+  resetOptionsData
 })
 
 </script>

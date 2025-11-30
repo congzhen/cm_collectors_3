@@ -128,7 +128,7 @@ const submitHandle = async () => {
       : performerServer.update(formData.value, photoBase64);
     const result = await apiCall;
     if (result.status) {
-      success()
+      success(result.data)
     } else {
       ElMessage.error(result.msg);
     }
@@ -145,8 +145,8 @@ const scraperPerformerInfoHandle = () => {
   scraperOnePerformerDialogRef.value?.open(formData.value.id, performerBases_id, formData.value.name);
 }
 
-const success = () => {
-  emits('success', mode === 'add' ? true : false);
+const success = (performerInfo: I_performer) => {
+  emits('success', mode === 'add' ? true : false, performerInfo);
   drawerFormRef.value?.close();
 }
 

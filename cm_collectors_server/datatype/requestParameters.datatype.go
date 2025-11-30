@@ -60,7 +60,10 @@ type ReqParam_ResourceDramaSeries_ReplacePath struct {
 	ReqParam_ResourceDramaSeries_SearchPath
 	ReplacePath string `json:"replacePath"`
 }
-
+type ReqParam_ResourcePerformer struct {
+	ResourceID string   `json:"resourceId"`
+	Performers []string `json:"performers"`
+}
 type ReqParam_ResourceTag struct {
 	ResourceID string   `json:"resourceId"`
 	Tags       []string `json:"tags"`

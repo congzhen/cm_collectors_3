@@ -160,7 +160,14 @@ func (t Resources) UpdateResource(par *datatype.ReqParam_Resource, setResourcesD
 	}
 	return t.Info(id)
 }
-
+func (t Resources) UpdateResourcePerformer(resourceID string, performers []string) (*models.Resources, error) {
+	db := core.DBS()
+	err := ResourcesPerformers{}.SetResourcesPerformers(db, resourceID, performers)
+	if err != nil {
+		return nil, err
+	}
+	return t.Info(resourceID)
+}
 func (t Resources) UpdateResourceTag(resourceID string, tags []string) (*models.Resources, error) {
 	dbs := core.DBS()
 	err := ResourcesTags{}.SetResourcesTag(dbs, resourceID, tags)

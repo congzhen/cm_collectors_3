@@ -139,6 +139,11 @@ func (Performer) DataList(db *gorm.DB, performerBasesId string, fetchCount bool,
 	}
 	return &dataList, total, err
 }
+func (Performer) DataListByIds(db *gorm.DB, ids []string) (*[]Performer, error) {
+	var dataList []Performer
+	err := db.Model(Performer{}).Where("id in (?)", ids).Find(&dataList).Error
+	return &dataList, err
+}
 
 func (t Performer) ListTopPreferredPerformers(db *gorm.DB, preferredIds []string, mainPerformerBasesId string, shieldNoPerformerPhoto bool, limit int) (*[]Performer, error) {
 	var dataList []Performer
