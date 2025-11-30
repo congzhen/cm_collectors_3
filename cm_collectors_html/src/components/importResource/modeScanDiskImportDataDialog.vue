@@ -43,7 +43,7 @@ interface I_pathList {
   msg: string;
 }
 
-//const emits = defineEmits(['success'])
+const emits = defineEmits(['success'])
 
 const dialogCommonRef = ref<InstanceType<typeof dialogCommon>>();
 const pathList = ref<I_pathList[]>([]);
@@ -92,7 +92,7 @@ const success = () => {
   ElMessageBox.alert('导入成功', {
     confirmButtonText: 'OK',
   })
-
+  emits('success');
 }
 
 const open = (_pathList: string[], _config: I_config_scanDisk) => {

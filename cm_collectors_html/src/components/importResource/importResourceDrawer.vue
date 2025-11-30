@@ -90,7 +90,7 @@ const saveConfigHandle = () => {
 }
 
 const successHandle = () => {
-  colse();
+  //colse();
   emits('success')
 }
 
@@ -100,6 +100,7 @@ const open = async () => {
   init();
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const colse = () => {
   drawerCommonRef.value?.close();
 }

@@ -250,11 +250,7 @@ func (t Resources) DeleteResource(resourceId string) error {
 
 func (t Resources) DeleteByFilesBasesID(db *gorm.DB, filesBases_id string, coverPosterSlc []string) error {
 	return db.Transaction(func(tx *gorm.DB) error {
-		err := models.Resources{}.DeleteByFilesBasesID(tx, filesBases_id)
-		if err != nil {
-			return err
-		}
-		err = models.ResourcesPerformers{}.DeleteByFilesBasesID(tx, filesBases_id)
+		err := models.ResourcesPerformers{}.DeleteByFilesBasesID(tx, filesBases_id)
 		if err != nil {
 			return err
 		}
@@ -267,6 +263,10 @@ func (t Resources) DeleteByFilesBasesID(db *gorm.DB, filesBases_id string, cover
 			return err
 		}
 		err = models.ResourcesDramaSeries{}.DeleteByFilesBasesID(tx, filesBases_id)
+		if err != nil {
+			return err
+		}
+		err = models.Resources{}.DeleteByFilesBasesID(tx, filesBases_id)
 		if err != nil {
 			return err
 		}
