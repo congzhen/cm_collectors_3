@@ -54,6 +54,17 @@
       </div>
     </div>
 
+    <!-- 导演信息 -->
+    <div class="performer-section" v-if="resourceInfo && resourceInfo.directors.length > 0">
+      <div class="section-title">{{ appLang.director() }}</div>
+      <div class="performer-list">
+        <div class="performer-item" v-for="performer in resourceInfo.directors" :key="performer.id"
+          @click="goToPerformer(performer.id)">
+          <performerPhoto class="el-avatar" :performer="performer"></performerPhoto>
+          <div class="performer-name">{{ performer.name }}</div>
+        </div>
+      </div>
+    </div>
     <!-- 演员信息 -->
     <div class="performer-section" v-if="resourceInfo && resourceInfo.performers.length > 0">
       <div class="section-title">{{ appLang.performer() }}</div>

@@ -35,7 +35,7 @@ type Resources struct {
 	Status                bool                    `json:"status" gorm:"type:tinyint(1);default:1"`
 	Tags                  []Tag                   `json:"tags" gorm:"many2many:resourcesTags;joinForeignKey:ResourcesID;joinReferences:TagID"`
 	Performers            []Performer             `json:"performers" gorm:"many2many:resourcesPerformers;joinForeignKey:ResourcesID;joinReferences:PerformerID"`
-	Directors             []Performer             `json:"directors" gorm:"many2many:resourcesDirectors;joinForeignKey:ResourcesID;joinReferences:DirectorID"`
+	Directors             []Performer             `json:"directors" gorm:"many2many:resourcesDirectors;joinForeignKey:ResourcesID;joinReferences:PerformerID"`
 	ResourcesDramaSeries  []ResourcesDramaSeries  `json:"dramaSeries" gorm:"foreignKey:ResourcesID;references:ID"`
 }
 
@@ -44,7 +44,7 @@ func (Resources) TableName() string {
 }
 
 func (Resources) Preload(db *gorm.DB) *gorm.DB {
-	return db.Preload("Performers").
+	return db.Preload("Performers").Preload("Directors").
 		Preload("Tags", func(db *gorm.DB) *gorm.DB {
 			return db.Joins("LEFT JOIN tagClass ON tag.tagClass_id = tagClass.id").
 				Order("tagClass.sort asc, tag.sort asc")

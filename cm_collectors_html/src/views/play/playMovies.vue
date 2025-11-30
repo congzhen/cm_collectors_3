@@ -28,6 +28,17 @@
             </div>
             <el-rate v-model="resourceInfo.stars" disabled size="small" />
           </div>
+
+          <el-alert v-if="resourceInfo.directors.length > 0" class="tagAlert" :title="appLang.director()" type="success"
+            :closable="false" />
+          <div v-if="resourceInfo.directors.length > 0" class="performer-list">
+            <div class="performer-item" v-for="performer, key in resourceInfo.directors" :key="key">
+              <performerDetails :performer="performer" :issuing-date="resourceInfo.issuingDate" :performerBtn="false"
+                :roundAvatar="true">
+              </performerDetails>
+            </div>
+          </div>
+
           <el-alert class="tagAlert" :title="appLang.performer()" type="success" :closable="false" />
           <div class="performer-list">
             <div class="performer-item" v-for="performer, key in resourceInfo.performers" :key="key">

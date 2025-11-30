@@ -36,6 +36,15 @@
           @play-resource-drama-series="playResourceDramaSeriesHandle">
         </resourceDramaSeriesList>
       </div>
+      <div class="info-block" v-if="props.resource.directors.length > 0">
+        <el-alert class="tagAlert" :title="appLang.director()" type="success" :closable="false" />
+        <div class="performer-list">
+          <div class="performer-item" v-for="performer, key in props.resource.directors" :key="key">
+            <performerPopoverBlock :performer="performer" :issuing-date="props.resource.issuingDate">
+            </performerPopoverBlock>
+          </div>
+        </div>
+      </div>
       <div class="info-block">
         <el-alert class="tagAlert" :title="appLang.performer()" type="success" :closable="false" />
         <div class="performer-list">
