@@ -1,0 +1,32 @@
+{
+  "name": "cm-collectors-electron",
+  "version": "1.0.0",
+  "description": "CM Collectors Electron Application",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron .",
+    "build": "electron-builder"
+  },
+  "build": {
+    "appId": "com.cm.collectors",
+    "productName": "cm_collectors_electron",
+    "icon": "resources/icon.ico",
+    "win": {
+      "icon": "resources/icon.ico",
+      "target": [
+        "zip"
+      ]
+    }
+  },
+  "keywords": [
+    "electron",
+    "cm-collectors"
+  ],
+  "author": "cz",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "26.0.0",
+    "electron-builder": "24.0.0"
+  }
+}

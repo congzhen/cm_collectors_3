@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy"
+        content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src * 'unsafe-inline'; img-src * data: blob: 'unsafe-inline'; frame-src *; style-src * 'unsafe-inline';">
+    <title>cm_collectors_electron</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div id="app">
+        <div class="container">
+            <div class="titlebar">
+                <div class="titlebar-title">CM File Collectors</div>
+                <div class="titlebar-controls">
+                    <button class="titlebar-button" id="minimize-btn">─</button>
+                    <button class="titlebar-button" id="maximize-btn">□</button>
+                    <button class="titlebar-button close-button" id="close-btn">×</button>
+                </div>
+            </div>
+
+            <div class="content">
+                <iframe id="webview" src="about:blank"></iframe>
+                <div id="drag-overlay" class="drag-overlay" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="renderer.js"></script>
+</body>
+
+</html>

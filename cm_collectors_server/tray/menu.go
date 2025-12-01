@@ -108,11 +108,11 @@ func (tm *TrayMenu) OpenAppClicked() {
 
 	// 构建wails应用的路径（与当前程序在同一目录）
 	dir := filepath.Dir(execPath)
-	var wailsApp string
+	var appPath string
 	if runtime.GOOS == "windows" {
-		wailsApp = filepath.Join(dir, "cm_collectors_wails.exe")
+		appPath = tm.GetAppPath(dir)
 	} else {
-		wailsApp = filepath.Join(dir, "cm_collectors_wails")
+		appPath = filepath.Join(dir, "cm_collectors_wails")
 	}
 
 	// 将0.0.0.0转换为127.0.0.1
@@ -123,9 +123,9 @@ func (tm *TrayMenu) OpenAppClicked() {
 	}
 
 	// 启动wails应用并传递服务器地址参数
-	cmd := exec.Command(wailsApp, fmt.Sprintf("-url=%s", appServerAddr))
+	cmd := exec.Command(appPath, fmt.Sprintf("-url=%s", appServerAddr))
 	if err := cmd.Start(); err != nil {
-		core.LogErr(fmt.Errorf("无法启动应用程序:", wailsApp, fmt.Sprintf("-url=%s", appServerAddr), err))
+		core.LogErr(fmt.Errorf("无法启动应用程序:", appPath, fmt.Sprintf("-url=%s", appServerAddr), err))
 	} else {
 		fmt.Println("应用程序已启动，服务器地址:", appServerAddr)
 	}
@@ -134,4 +134,13 @@ func (tm *TrayMenu) OpenAppClicked() {
 // UpdateServerAddr 更新服务器地址
 func (tm *TrayMenu) UpdateServerAddr(serverAddr string) {
 	ServerAddr = serverAddr
+}
+
+func (tm *TrayMenu) GetAppPath(dir string) string {
+	//判断是否有cm_collectors_electron/cm_collectors_electron.exe,没有 则是cm_collectors_wails.exe
+	exePath := filepath.Join(dir, "cm_collectors_electron", "cm_collectors_electron.exe")
+	if _, err := os.Stat(exePath); err == nil {
+		return exePath
+	}
+	return filepath.Join(dir, "cm_collectors_wails.exe")
 }
