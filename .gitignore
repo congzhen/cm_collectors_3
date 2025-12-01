@@ -55,3 +55,4 @@ cm_collectors_electron/dist/*
 cm_collectors_electron/node_modules
 
 
+dockerPush.txt

@@ -17,8 +17,7 @@ CM Collectors 3 是一个多媒体文件管理系统，用于收集、管理和�
 
 - **Windows 版**: [cm_collectors_3_windows.zip](https://objectstorageapi.ap-southeast-1.clawcloudrun.com/vj5i0ntw-cm-collectors-3/download/last/cm_collectors_3_windows.zip)
 - **Linux 版**: [cm_collectors_3_linux.zip](https://objectstorageapi.ap-southeast-1.clawcloudrun.com/vj5i0ntw-cm-collectors-3/download/last/cm_collectors_3_linux.zip)
-- **Docker minimal 镜像**:[cm_collectors_server_docker_minimal.tar](https://objectstorageapi.ap-southeast-1.clawcloudrun.com/vj5i0ntw-cm-collectors-3/download/last/cm_collectors_server_docker_minimal.tar)
-- **Docker full 镜像**:[cm_collectors_server_docker_full.tar](https://objectstorageapi.ap-southeast-1.clawcloudrun.com/vj5i0ntw-cm-collectors-3/download/last/cm_collectors_server_docker_full.tar)
+- **Docker 镜像**: `docker pull congzhen/cm_collectors_3:latest`
 - **云播插件**: [video_caller.zip](https://objectstorageapi.ap-southeast-1.clawcloudrun.com/vj5i0ntw-cm-collectors-3/download/last/video_caller.zip)
 - **刮削调试器**:[scraper_debugger.zip(支持并发设置)](https://objectstorageapi.ap-southeast-1.clawcloudrun.com/vj5i0ntw-cm-collectors-3/download/last/scraper_debugger.zip)
 - **刮削器配置包**:[scraper.zip(2025-10-20)](https://objectstorageapi.ap-southeast-1.clawcloudrun.com/vj5i0ntw-cm-collectors-3/download/last/scraper.zip)
@@ -110,4 +109,9 @@ docker load -i ./build/cm_collectors_server:full.tar
 #  运行容器 *将/app/db文件夹映射到本地，防止数据丢失 *挂载数据库文件到容器内
 docker run -d  --name cm_collectors_server_minimal -p 12345:12345 -v E:\tg_test\db:/app/db -v  E:\tg_test\video:/tg  -e GIN_MODE=release  cm_collectors_server:minimal
 docker run -d  --name cm_collectors_server_full -p 12345:12345 -v E:\tg_test\db:/app/db -v  E:\tg_test\video:/tg  -e GIN_MODE=release  cm_collectors_server:full
+
+
+# dockerHub镜像
+docker pull congzhen/cm_collectors_3:latest
+docker run -d  --name cm_collectors_3 -p 12345:12345 -v E:\tg_test\db:/app/db -v E:\tg_test\video:/tg -e GIN_MODE=release  congzhen/cm_collectors_3:latest
 ```

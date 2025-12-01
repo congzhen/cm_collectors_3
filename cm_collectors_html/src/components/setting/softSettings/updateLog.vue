@@ -16,6 +16,29 @@
         </div>
       </el-timeline-item>
       -->
+      <el-timeline-item center timestamp="2025/12/01" placement="top">
+        <h4 class="version-title">版本: v 3.0.6</h4>
+        <div class="rawContent">
+          <h5 class="section-title">新特性</h5>
+          <p class="logContent">新增计划任务功能</p>
+          <p class="logContent">新增数据库清理功能</p>
+          <p class="logContent">新增标签导入导出功能</p>
+          <p class="logContent">新增资源右键添加演员功能</p>
+          <p class="logContent">新增文件数据库配置导入导出功能</p>
+          <p class="logContent">新增移动端与PC端切换控制</p>
+          <p class="logContent">新增导演信息展示</p>
+          <p class="logContent">新增标签右键以及真实删除功能</p>
+          <p class="logContent">新增封面标签字体大小与资源对齐方式控制</p>
+          <p class="logContent">新增资源与演员刮削配置保存功能</p>
+        </div>
+        <div class="rawContent">
+          <h5 class="section-title bug-fix">BUG修复</h5>
+          <p class="logContent">修复文件管理器路径拼接错误</p>
+          <p class="logContent">修复云播插件指定播放器路径错误</p>
+          <p class="logContent">修复资源清理资源路径问题以确保跨平台兼容性</p>
+          <p class="logContent">修复导入nfo值获取逻辑以支持更复杂的嵌套结构</p>
+        </div>
+      </el-timeline-item>
       <el-timeline-item center timestamp="2025/11/11" placement="top">
         <h4 class="version-title">版本: v 3.0.5</h4>
         <div class="rawContent">
