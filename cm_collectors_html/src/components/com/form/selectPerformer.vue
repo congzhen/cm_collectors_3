@@ -94,6 +94,9 @@ const filterMethod = debounce((query: string) => {
 const resetOptionsData = async () => {
   await getPerformerList();
 }
+const getOptionsData = (): I_performerBasic[] => {
+  return options.value
+}
 
 
 onMounted(async () => {
@@ -104,7 +107,8 @@ onActivated(async () => {
 })
 
 defineExpose({
-  resetOptionsData
+  resetOptionsData,
+  getOptionsData
 })
 
 </script>

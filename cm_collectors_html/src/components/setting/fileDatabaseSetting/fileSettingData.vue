@@ -51,7 +51,8 @@
         <el-input-number v-model="filesConfig.performerShowNum" />
       </el-form-item>
       <el-form-item label="优先显示演员">
-        <selectPerformer v-model="filesConfig.performerPreferred" multiple :careerType="E_performerCareerType.Performer"
+        <selectPerformer ref="selectPerformerRef" v-model="filesConfig.performerPreferred" multiple
+          :careerType="E_performerCareerType.Performer"
           :performer-bases-ids="[store.filesBasesStoreData.getMainPerformerBasesIdByFilesBasesId(filesBasesInfo.id)]" />
       </el-form-item>
 
@@ -110,8 +111,8 @@
         </el-select>
       </el-form-item>
       <el-form-item label="封面上显示标签(自定义)">
-        <selectTag v-model="filesConfig.coverDisplayTag" data-source="database" :filesBasesId="props.filesBasesId"
-          multiple reorder />
+        <selectTag ref="selectTagRef" v-model="filesConfig.coverDisplayTag" data-source="database"
+          :filesBasesId="props.filesBasesId" multiple reorder />
       </el-form-item>
       <el-form-item label="标签背景色">
         <div class="color-picker-block">
@@ -296,6 +297,10 @@
     </el-form>
     <!-- 保存按钮 -->
     <div class="save-button-container">
+      <el-button-group>
+        <el-button @click="importHandle">导入</el-button>
+        <el-button @click="exportHandle">导出</el-button>
+      </el-button-group>
       <el-button type="primary" @click="saveHandle" icon="Edit">保存</el-button>
     </div>
   </div>
@@ -327,7 +332,9 @@ import { performerBasesStoreData } from '@/storeData/performerBases.storeData';
 import { debounceNow } from '@/assets/debounce';
 import { getRandomColor } from '@/assets/tool';
 import { AppLang } from '@/language/app.lang'
+import { filesBasesConfigExport, filesBasesConfigImport } from '@/common/filesBasesConfig';
 const appLang = AppLang()
+
 
 const store = {
   filesBasesStoreData: filesBasesStoreData(),
@@ -340,6 +347,9 @@ const props = defineProps({
   },
 })
 const emit = defineEmits(['setSuccess']);
+
+const selectPerformerRef = ref<InstanceType<typeof selectPerformer>>()
+const selectTagRef = ref<InstanceType<typeof selectTag>>()
 
 const finish = ref(false);
 const loading = ref(false);
@@ -421,6 +431,53 @@ const saveHandle = debounceNow(async () => {
   emit('setSuccess', props.filesBasesId);
 })
 
+const exportHandle = debounceNow(async () => {
+  const newFilesConfig = JSON.parse(JSON.stringify(filesConfig.value)) as I_config_app;
+  const performers = selectPerformerRef.value?.getOptionsData()
+  if (performers) {
+    const performerPreferred = newFilesConfig.performerPreferred
+      .map(id => performers.find(item => item.id === id))
+      .filter(item => item !== undefined)
+      .map(item => item!.name);
+    newFilesConfig.performerPreferred = performerPreferred
+  }
+  const tags = selectTagRef.value?.getOptionsData()
+  if (tags) {
+    const tagPreferred = newFilesConfig.coverDisplayTag
+      .map(id => tags.find(item => item.id === id))
+      .filter(item => item !== undefined)
+      .map(item => item!.name);
+    newFilesConfig.coverDisplayTag = tagPreferred
+  }
+  await filesBasesConfigExport(props.filesBasesId, newFilesConfig)
+})
+const importHandle = debounceNow(async () => {
+  const data = await filesBasesConfigImport()
+  if (data == null) return
+
+  // 将名称转换回ID
+  const performers = selectPerformerRef.value?.getOptionsData()
+  if (performers && data.performerPreferred) {
+    const performerPreferredIds = data.performerPreferred
+      .map(name => performers.find(item => item.name === name))
+      .filter(item => item !== undefined)
+      .map(item => item!.id);
+    data.performerPreferred = performerPreferredIds
+  }
+
+  const tags = selectTagRef.value?.getOptionsData()
+  if (tags && data.coverDisplayTag) {
+    const coverDisplayTagIds = data.coverDisplayTag
+      .map(name => tags.find(item => item.name === name))
+      .filter(item => item !== undefined)
+      .map(item => item!.id);
+    data.coverDisplayTag = coverDisplayTagIds
+  }
+  console.log(data);
+  // 更新配置
+  filesConfig.value = data
+})
+
 onMounted(() => {
   init()
 })
@@ -464,7 +521,7 @@ onMounted(() => {
     padding: 5px 15px;
     background-color: #262727;
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
   }
 }
 </style>

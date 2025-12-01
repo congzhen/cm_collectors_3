@@ -135,6 +135,9 @@ const filterMethod = debounce((query: string) => {
   loading.value = false
 }, 200)
 
+const getOptionsData = (): I_tag[] => {
+  return options.value
+}
 
 onMounted(async () => {
   await init();
@@ -143,6 +146,9 @@ onActivated(async () => {
   await init();
 })
 
+defineExpose({
+  getOptionsData
+})
 </script>
 <style lang="scss" scoped>
 .select-tag {
