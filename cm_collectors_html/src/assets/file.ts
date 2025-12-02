@@ -1,10 +1,15 @@
+import { getTopWindow, canUseFilePickerAPI } from "./windows";
+
 export const saveFile = async (content: string, fileName: string, fileType: { description: string; accept: Record<string, string[]> } = { description: 'All Files', accept: { '*/*': ['.txt'] } }) => {
-  // 检查浏览器是否支持 showSaveFilePicker API
-  if ('showSaveFilePicker' in window) {
+  // 检查是否可以使用文件选择器API
+  if (canUseFilePickerAPI()) {
     try {
+      // 获取合适的窗口对象
+      const targetWindow = getTopWindow();
+
       // 使用现代文件系统API
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const fileHandle = await (window as any).showSaveFilePicker({
+      const fileHandle = await (targetWindow as any).showSaveFilePicker({
         suggestedName: fileName,
         types: [fileType]
       });
@@ -30,8 +35,11 @@ export const saveFile = async (content: string, fileName: string, fileType: { de
 
 export const loadFile = async (fileTypes: { description: string; accept: Record<string, string[]> }[] = []) => {
   try {
-    // 检查浏览器是否支持文件选择器 API
-    if ('showOpenFilePicker' in window) {
+    // 检查是否可以使用文件选择器API
+    if (canUseFilePickerAPI()) {
+      // 获取合适的窗口对象
+      const targetWindow = getTopWindow();
+
       // 使用现代文件系统 API
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const options: any = {
@@ -44,49 +52,51 @@ export const loadFile = async (fileTypes: { description: string; accept: Record<
       }
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const fileHandles = await (window as any).showOpenFilePicker(options);
+      const fileHandles = await (targetWindow as any).showOpenFilePicker(options);
 
       const file = await fileHandles[0].getFile();
       const content = await file.text();
       return content;
-    } else {
-      // 降级到传统 input 方法
-      return new Promise<string>((resolve, reject) => {
-        const input = document.createElement('input');
-        input.type = 'file';
-
-        // 设置accept属性
-        if (fileTypes.length > 0) {
-          const acceptExtensions = Object.values(fileTypes[0]?.accept || {}).flat();
-          if (acceptExtensions.length > 0) {
-            input.accept = acceptExtensions.join(',');
-          }
-        }
-
-        input.onchange = async (event: Event) => {
-          try {
-            const target = event.target as HTMLInputElement;
-            const file = target.files?.[0];
-            if (file) {
-              const content = await file.text();
-              resolve(content);
-            }
-          } catch (error) {
-            reject(error);
-          }
-        };
-
-        input.onerror = (error) => {
-          reject(error);
-        };
-
-        input.click();
-      });
     }
-  } catch (error) {
-    console.error('Error:', error);
-    throw error;
+  } catch (err) {
+    // 忽略错误，继续使用传统方法
+    console.warn('Failed to use showOpenFilePicker, falling back to traditional method.', err);
   }
+
+  // 降级到传统 input 方法
+  return new Promise<string>((resolve, reject) => {
+    const input = document.createElement('input');
+    input.type = 'file';
+
+    // 设置accept属性
+    if (fileTypes.length > 0) {
+      const acceptExtensions = Object.values(fileTypes[0]?.accept || {}).flat();
+      if (acceptExtensions.length > 0) {
+        input.accept = acceptExtensions.join(',');
+      }
+    }
+
+    input.onchange = async (event: Event) => {
+      try {
+        const target = event.target as HTMLInputElement;
+        const file = target.files?.[0];
+        if (file) {
+          const content = await file.text();
+          resolve(content);
+        }
+      } catch (error) {
+        reject(error);
+      }
+    };
+
+    input.onerror = (error) => {
+      reject(error);
+    };
+
+    document.body.appendChild(input);
+    input.click();
+    document.body.removeChild(input);
+  });
 }
 
 // 便捷函数：保存文本文件
