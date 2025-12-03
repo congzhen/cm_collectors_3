@@ -18,7 +18,14 @@ func (CronJobs) List(c *gin.Context) {
 	}
 	response.OkWithData(list, c)
 }
-
+func (CronJobs) Exec(c *gin.Context) {
+	id := c.Param("cronJobsId")
+	err := processors.CronJobs{}.Exec(id)
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(true, c)
+}
 func (CronJobs) Create(c *gin.Context) {
 	var par datatype.ReqParam_CreateCronJobs
 	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {

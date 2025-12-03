@@ -8,6 +8,12 @@ export const cronJobsServer = {
       method: 'get',
     })
   },
+  exec: async (id: string) => {
+    return await request<boolean>({
+      url: `${routerGroupUri}/exec/${id}`,
+      method: 'get',
+    })
+  },
   create: async (filesBases_id: string, jobs_type: string, cron_expression: string) => {
     return await request<I_cronJobs_info>({
       url: `${routerGroupUri}/create`,

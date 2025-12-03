@@ -51,18 +51,28 @@
             </div>
 
             <div class="job-card__footer">
-              <el-button type="primary" link size="small" @click="editJob(job)" class="action-btn">
-                <el-icon>
-                  <Edit />
-                </el-icon>
-                编辑
-              </el-button>
-              <el-button type="danger" link size="small" @click="deleteJob(job)" class="action-btn">
-                <el-icon>
-                  <Delete />
-                </el-icon>
-                删除
-              </el-button>
+              <div>
+                <el-button type="primary" size="small" @click="execJob(job)" class="action-btn">
+                  <el-icon>
+                    <Bell />
+                  </el-icon>
+                  立刻执行
+                </el-button>
+              </div>
+              <div class="action-btn">
+                <el-button type="primary" link size="small" @click="editJob(job)">
+                  <el-icon>
+                    <Edit />
+                  </el-icon>
+                  编辑
+                </el-button>
+                <el-button type="danger" link size="small" @click="deleteJob(job)">
+                  <el-icon>
+                    <Delete />
+                  </el-icon>
+                  删除
+                </el-button>
+              </div>
             </div>
           </div>
         </div>
@@ -79,7 +89,6 @@ import createCronJobsDrawer from './createCronJobsDrawer.vue';
 import { messageBox, messageBoxConfirm } from '@/common/messageBox';
 import { cronJobsServer } from '@/server/cronJobs.server';
 import type { I_cronJobs_info } from '@/dataType/cronJobs.dataType';
-import { Edit, Delete } from '@element-plus/icons-vue';
 import { filesBasesStoreData } from '@/storeData/filesBases.storeData'
 
 const store = {
@@ -117,6 +126,25 @@ const getCronJobsList = async () => {
 const createHandle = () => {
   createCronJobsDrawerRef.value?.open();
 };
+
+const execJob = (job: I_cronJobs_info) => {
+  messageBoxConfirm({
+    text: `确定要执行该任务吗？`,
+    type: 'warning',
+    successCallBack: async () => {
+      const result = await cronJobsServer.exec(job.id);
+      if (result && result.status) {
+        messageBox({ text: '执行成功', type: 'success' });
+        getCronJobsList();
+      } else {
+        messageBox({ text: result.msg, type: 'error' });
+      }
+    },
+    failCallBack: () => {
+      // 取消
+    }
+  })
+}
 
 // 编辑任务
 const editJob = (job: I_cronJobs_info) => {
@@ -327,7 +355,7 @@ onMounted(() => {
 
           .job-card__footer {
             display: flex;
-            justify-content: flex-end;
+            justify-content: space-between;
             padding: 16px 20px;
             border-top: 1px solid #f0f2f5;
             gap: 12px;

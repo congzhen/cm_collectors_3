@@ -24,6 +24,14 @@ func (CronJobs) InfoByID_DB(db *gorm.DB, id string) (*models.CronJobs, error) {
 	return info, nil
 }
 
+func (t CronJobs) Exec(id string) error {
+	info, err := t.InfoByID_DB(core.DBS(), id)
+	if err != nil {
+		return err
+	}
+	return CronJobsExec{}.ExecuteJob(*info)
+}
+
 func (t CronJobs) Create(filesBasesID string, jobsType datatype.E_cronJobsType, cronExpression string) (*models.CronJobs, error) {
 	db := core.DBS()
 	id := core.GenerateUniqueID()

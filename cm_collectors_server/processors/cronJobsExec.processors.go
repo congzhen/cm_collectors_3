@@ -50,38 +50,66 @@ func (t CronJobsExec) RegCronJobs() error {
 	if err != nil {
 		return err
 	}
-	for _, v := range *list {
-		_, err := cronScheduler.AddFunc(v.CronExpression, func() {
-			var cronJobsErr error
-			// 定时任务处理
-			switch v.JobsType {
-			case datatype.E_cronJobsType_Clear:
-				// 清理任务处理
-				cronJobsErr = t.cronJobs_Clear(v)
-			case datatype.E_cronJobsType_ScraperPerformer:
-				// 刮削演员任务处理
-				cronJobsErr = t.cronJobs_ScraperPerformer(v)
-			case datatype.E_cronJobsType_ScraperResource:
-				// 刮削资源任务处理
-				cronJobsErr = t.cronJobs_ScraperResource(v)
-			case datatype.E_cronJobsType_Import:
-				// 导入任务处理
-				cronJobsErr = t.cronJobs_Import(v)
-			default:
-				fmt.Println("未知任务，无法注册")
+
+	for _, job := range *list {
+		// 创建局部变量副本以避免闭包问题
+		jobCopy := job
+
+		// 将任务添加到调度器
+		_, err := cronScheduler.AddFunc(job.CronExpression, func() {
+			fmt.Printf("开始执行计划任务: %s (%s)\n", job.FilesBases.Name, job.JobsType)
+
+			// 执行任务
+			execErr := t.ExecuteJob(jobCopy)
+			if execErr != nil {
+				fmt.Printf("计划任务执行完成 [%s]: %v\n", job.JobsType, execErr)
+			} else {
+				fmt.Printf("计划任务执行完成 [%s]: 成功\n", job.JobsType)
 			}
-			if cronJobsErr != nil {
-				fmt.Println("计划任务处理失败:", cronJobsErr)
-			}
-			CronJobs{}.UpdateExec(v.ID, cronJobsErr)
 		})
+
 		if err != nil {
-			fmt.Println("注册计划任务失败:", err)
-			return err
+			fmt.Printf("注册计划任务失败 [%s] %s: %v\n", job.FilesBases.Name, job.CronExpression, err)
+			return fmt.Errorf("注册计划任务 '%s' 失败: %w", job.FilesBases.Name, err)
 		}
-		fmt.Println("注册计划任务:", v.FilesBases.Name, v.JobsType, v.CronExpression)
+
+		fmt.Printf("成功注册计划任务: %s (%s) - %s\n", job.FilesBases.Name, job.JobsType, job.CronExpression)
 	}
+
 	return nil
+}
+func (t CronJobsExec) ExecuteJob(data models.CronJobs) error {
+	// 执行任务核心逻辑
+	err := t.executeJobTask(data)
+
+	// 更新任务执行结果
+	CronJobs{}.UpdateExec(data.ID, err)
+
+	if err != nil {
+		fmt.Printf("计划任务执行失败 [%s]: %v\n", data.JobsType, err)
+		return err
+	}
+
+	fmt.Printf("计划任务执行成功 [%s]\n", data.JobsType)
+	return nil
+}
+func (t CronJobsExec) executeJobTask(data models.CronJobs) error {
+	switch data.JobsType {
+	case datatype.E_cronJobsType_Clear:
+		// 清理任务处理
+		return t.cronJobs_Clear(data)
+	case datatype.E_cronJobsType_ScraperPerformer:
+		// 刮削演员任务处理
+		return t.cronJobs_ScraperPerformer(data)
+	case datatype.E_cronJobsType_ScraperResource:
+		// 刮削资源任务处理
+		return t.cronJobs_ScraperResource(data)
+	case datatype.E_cronJobsType_Import:
+		// 导入任务处理
+		return t.cronJobs_Import(data)
+	default:
+		return fmt.Errorf("未知任务类型: %s", data.JobsType)
+	}
 }
 func (t CronJobsExec) Start() {
 	cronScheduler.Start()
@@ -111,7 +139,7 @@ func (t CronJobsExec) cronJobs_Clear(data models.CronJobs) error {
 	for _, v := range *delList {
 		err := Resources{}.DeleteResource(v.ID)
 		if err != nil {
-			return err
+			continue
 		}
 	}
 	return nil
@@ -144,7 +172,7 @@ func (t CronJobsExec) cronJobs_ScraperPerformer(data models.CronJobs) error {
 			}
 			err := Scraper{}.ScraperPerformerDataProcess(&par)
 			if err != nil {
-				return err
+				continue
 			}
 		}
 	}
@@ -165,7 +193,7 @@ func (t CronJobsExec) cronJobs_ScraperResource(data models.CronJobs) error {
 	for _, v := range pendingFilePaths {
 		err := Scraper{}.ScraperDataProcess(data.FilesBasesId, v, config)
 		if err != nil {
-			return err
+			continue
 		}
 		// 添加短暂延迟，避免处理过快导致系统负载过高
 		time.Sleep(10 * time.Millisecond)
@@ -187,7 +215,7 @@ func (t CronJobsExec) cronJobs_Import(data models.CronJobs) error {
 	for _, v := range nonExistingSrcPaths {
 		err := ImportData{}.ScanDiskImportData(data.FilesBasesId, v, config)
 		if err != nil {
-			return err
+			continue
 		}
 		// 添加短暂延迟，避免处理过快导致系统负载过高
 		time.Sleep(10 * time.Millisecond)

@@ -154,6 +154,7 @@ func AdminRouter(router *gin.Engine) {
 	routerGroup.POST("scraper/scraperOnePerformerDataProcess", controllers.Scraper{}.ScraperOnePerformerDataProcess)
 
 	routerGroup.GET("cronJobs/list", controllers.CronJobs{}.List)
+	routerGroup.GET("cronJobs/exec/:cronJobsId", controllers.CronJobs{}.Exec)
 	routerGroup.POST("cronJobs/create", controllers.CronJobs{}.Create)
 	routerGroup.PUT("cronJobs/update", controllers.CronJobs{}.Update)
 	routerGroup.DELETE("cronJobs/delete/:cronJobsId", controllers.CronJobs{}.Delete)
