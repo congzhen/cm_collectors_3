@@ -268,17 +268,34 @@ func (Resources) setDbSearchTags(db *gorm.DB, tagGroupMap *map[string]datatype.I
 	}
 	return db
 }
+func (Resources) getOrderClause(column string, descending bool) string {
+	var collation string
+	if core.DBS().Dialector.Name() == "mysql" {
+		collation = " COLLATE utf8mb4_general_ci"
+	} else if core.DBS().Dialector.Name() == "sqlite" {
+		collation = " COLLATE NOCASE"
+	} else {
+		collation = ""
+	}
 
-func (Resources) setDbSearchDataOrder(db *gorm.DB, searchSort datatype.E_searchSort) *gorm.DB {
+	order := " ASC"
+	if descending {
+		order = " DESC"
+	}
+
+	return column + collation + order
+}
+
+func (t Resources) setDbSearchDataOrder(db *gorm.DB, searchSort datatype.E_searchSort) *gorm.DB {
 	switch searchSort {
 	case datatype.E_searchSort_addTimeAsc:
 		db = db.Order("addTime ASC")
 	case datatype.E_searchSort_addTimeDesc:
 		db = db.Order("addTime DESC")
 	case datatype.E_searchSort_issueNumberAsc:
-		db = db.Order("issueNumber ASC,addTime DESC")
+		db = db.Order(t.getOrderClause("issueNumber", false) + ", addTime DESC")
 	case datatype.E_searchSort_issueNumberDesc:
-		db = db.Order("issueNumber DESC,addTime DESC")
+		db = db.Order(t.getOrderClause("issueNumber", true) + ", addTime DESC")
 	case datatype.E_searchSort_scoreAsc:
 		db = db.Order("score ASC,addTime DESC")
 	case datatype.E_searchSort_scoreDesc:
@@ -292,9 +309,9 @@ func (Resources) setDbSearchDataOrder(db *gorm.DB, searchSort datatype.E_searchS
 	case datatype.E_searchSort_issuingDateDesc:
 		db = db.Order("issuingDate DESC,addTime DESC")
 	case datatype.E_searchSort_titleAsc:
-		db = db.Order("title ASC,addTime DESC")
+		db = db.Order(t.getOrderClause("keyWords", false) + ", addTime DESC")
 	case datatype.E_searchSort_titleDesc:
-		db = db.Order("title DESC,addTime DESC")
+		db = db.Order(t.getOrderClause("keyWords", true) + ", addTime DESC")
 	case datatype.E_searchSort_history:
 		db = db.Order("lastPlayTime DESC,addTime DESC")
 	case datatype.E_searchSort_hot:
