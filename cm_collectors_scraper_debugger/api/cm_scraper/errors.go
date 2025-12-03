@@ -11,4 +11,5 @@ var (
 	ErrNoMetadataFound        = errors.New("无法从任何站点获取元数据")      // 所有配置的站点都无法获取到元数据
 	ErrInvalidSelectorConfig  = errors.New("无效的SelectorConfig") // CSS选择器配置不合法
 	ErrSearchScrapingFailed   = errors.New("搜索刮削失败")            // 在搜索页面抓取信息失败
+	ErrrSearchIDSame          = errors.New("因搜索结果中获取的ID与原始ID相同,停止刮削")
 )

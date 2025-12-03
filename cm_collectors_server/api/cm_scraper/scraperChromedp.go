@@ -111,9 +111,14 @@ func (s *ScraperChromeDp) Scrape(ctx context.Context, id string) (*map[string]an
 	var err error
 	// 如果配置了搜索功能，先执行搜索获取实际ID
 	if s.config.Search != nil {
+		originalID := id
 		id, err = s.scrapeSearch(ctx, s.config.Search, id)
 		if err != nil {
 			return nil, "", fmt.Errorf("%w: %v", ErrSearchScrapingFailed, err)
+		}
+		if id == originalID {
+			LogInfo("搜索结果中获取的ID与原始ID相同，系统可能未能找到正确的刮削目标ID，停止刮削操作。")
+			return nil, "", ErrrSearchIDSame
 		}
 		LogInfo("从搜索结果中获取的ID: %s", id)
 	}
