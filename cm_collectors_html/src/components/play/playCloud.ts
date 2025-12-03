@@ -1,10 +1,20 @@
+import { getFileNameFromPath } from "@/assets/path";
 import { getPlayVideoURL } from "@/common/play";
 import type { T_VideoPlayMode } from "@/dataType/app.dataType";
+import { resourcesDramaSeriesServer } from "@/server/resource.server";
 
-export const playCloud = (dramaSeriesId: string, mode: T_VideoPlayMode) => {
+export const playCloud = async (dramaSeriesId: string, mode: T_VideoPlayMode) => {
+
+  const result = await resourcesDramaSeriesServer.infoById(dramaSeriesId);
+  let fileName = 'v'
+  if (result && result.status && result.data && result.data.src != '') {
+    fileName = getFileNameFromPath(result.data.src, false)
+  }
+  console.log(fileName);
+
   // 获取当前服务器地址
   const serverAddress = window.location.origin;
-  const path = getPlayVideoURL(dramaSeriesId, mode);
+  const path = getPlayVideoURL(dramaSeriesId, mode, fileName);
   // 创建云播放协议链接
   const url = `cmcollectorsvideoplay://${serverAddress}${path}?playCloud=true`;
   console.log('尝试打开云播放协议链接:', url);

@@ -110,7 +110,7 @@ func (v M3U8) GenerateM3u8File(dramaSeriesId string, duration float64) ([]byte, 
 
 	for i, f := range fragments {
 		m3u8Data += fmt.Sprintf("#EXTINF:%.3f,\n", f.Duration)
-		m3u8Data += fmt.Sprintf("/api/video/m3u8/%s/%.3f/%.3f/%d.ts\n", dramaSeriesId, f.Start, f.Duration, i+1)
+		m3u8Data += fmt.Sprintf("/api/video/m3u8/stream/%s/%.3f/%.3f/%d.ts\n", dramaSeriesId, f.Start, f.Duration, i+1)
 	}
 
 	m3u8Data += "#EXT-X-ENDLIST\n"

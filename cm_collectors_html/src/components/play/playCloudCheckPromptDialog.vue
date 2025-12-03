@@ -59,11 +59,11 @@ const getPlayCloudMode = (): T_VideoPlayMode => {
   return 'm3u8'
 }
 
-const handleConfirm = () => {
+const handleConfirm = async () => {
   if (noPromptChecked.value) {
     setPlayCloudCheckComplete();
   }
-  playCloud(dramaSeriesId.value, playCloudMode.value);
+  await playCloud(dramaSeriesId.value, playCloudMode.value);
   if (callbackFunction.value) {
     callbackFunction.value(playCloudMode.value);
   }

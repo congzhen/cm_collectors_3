@@ -78,16 +78,18 @@ func publicRouter(router *gin.Engine) {
 	routerGroup.GET("/resource/sampleImages/:resourceId", controllers.Resource{}.SampleImages)
 	routerGroup.GET("/resource/sampleData/:resourceId", controllers.Resource{}.SampleImageData)
 
+	routerGroup.GET("/resourceDramaSeries/info/:dramaSeriesId", controllers.ResourceDramaSeries{}.Info)
+
 	routerGroup.GET("play/video/info/:dramaSeriesId", controllers.Play{}.PlayVideoInfo)
 	routerGroup.GET("play/open/resource/:resourceId", controllers.Play{}.PlayOpenResource)
 	routerGroup.GET("play/open/dramaSeries/:dramaSeriesId", controllers.Play{}.PlayOpenDramaSeries)
 	routerGroup.GET("play/open/resource/folder/:resourceId", controllers.Play{}.PlayOpenResourceFolder)
 	routerGroup.GET("/play/update/:resourceId", controllers.Play{}.PlayUpdate)
 
-	routerGroup.GET("/video/m3u8/:dramaSeriesId/v.m3u8", controllers.Play{}.VideoM3u8)
-	routerGroup.GET("/video/m3u8/:dramaSeriesId/:start/:duration/:ts", middleware.VideoStreamRateLimitMiddleware(), controllers.Play{}.VideoM3u8StreamHLS)
+	routerGroup.GET("/video/m3u8/:dramaSeriesId/:videoM3u8", controllers.Play{}.VideoM3u8)
+	routerGroup.GET("/video/m3u8/stream/:dramaSeriesId/:start/:duration/:ts", middleware.VideoStreamRateLimitMiddleware(), controllers.Play{}.VideoM3u8StreamHLS)
 
-	routerGroup.GET("/video/mp4/:dramaSeriesId/v.mp4", middleware.VideoStreamRateLimitMiddleware(), controllers.Play{}.PlayVideoMP4)
+	routerGroup.GET("/video/mp4/:dramaSeriesId/:videoMp4", middleware.VideoStreamRateLimitMiddleware(), controllers.Play{}.PlayVideoMP4)
 	routerGroup.GET("/video/mp4/:dramaSeriesId/v.srt", controllers.Play{}.VideoSubtitle)
 	routerGroup.GET("/video/mp4/:dramaSeriesId/v.ass", controllers.Play{}.VideoSubtitle)
 	routerGroup.GET("/video/subtitle/:dramaSeriesId", controllers.Play{}.VideoSubtitle)

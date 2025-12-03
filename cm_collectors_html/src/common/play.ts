@@ -130,11 +130,11 @@ export const getPlayVideoURLAndType = async (dramaSeriesId: string): Promise<I_p
   }
 }
 
-export const getPlayVideoURL = (dramaSeriesId: string, type: T_VideoPlayMode = 'mp4') => {
+export const getPlayVideoURL = (dramaSeriesId: string, type: T_VideoPlayMode = 'mp4', fileName: string = 'v') => {
   if (type == 'mp4') {
-    return `/api/video/mp4/${dramaSeriesId}/v.mp4`;
+    return `/api/video/mp4/${dramaSeriesId}/${fileName}.mp4`;
   } else {
-    return `/api/video/m3u8/${dramaSeriesId}/v.m3u8`;
+    return `/api/video/m3u8/${dramaSeriesId}/${fileName}.m3u8`;
   }
 }
 

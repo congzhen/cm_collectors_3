@@ -1,5 +1,5 @@
 import request, { type IRequest } from "@/assets/request";
-import type { I_dramaSeriesWithResource, I_resource, I_resource_base, I_resourceDramaSeries_base } from "@/dataType/resource.dataType";
+import type { I_dramaSeriesWithResource, I_resource, I_resource_base, I_resourceDramaSeries, I_resourceDramaSeries_base } from "@/dataType/resource.dataType";
 import type { I_searchData } from "@/dataType/search.dataType";
 const routerGroupUri = '';
 export const resourceServer = {
@@ -117,6 +117,12 @@ export const resourceServer = {
 }
 
 export const resourcesDramaSeriesServer = {
+  infoById: async (id: string) => {
+    return await request<I_resourceDramaSeries>({
+      url: `${routerGroupUri}/resourceDramaSeries/info/${id}`,
+      method: 'get',
+    })
+  },
   searchPath: async (filesBasesIds: string[], searchPath: string) => {
     return await request<I_dramaSeriesWithResource[]>({
       url: `${routerGroupUri}/resourceDramaSeries/searchPath`,

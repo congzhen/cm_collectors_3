@@ -167,6 +167,16 @@ func (Resource) DeleteResource(c *gin.Context) {
 
 type ResourceDramaSeries struct{}
 
+func (ResourceDramaSeries) Info(c *gin.Context) {
+	id := c.Param("dramaSeriesId")
+
+	info, err := processors.ResourcesDramaSeries{}.Info(id)
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(info, c)
+}
+
 func (ResourceDramaSeries) SearchPath(c *gin.Context) {
 	var par datatype.ReqParam_ResourceDramaSeries_SearchPath
 	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {
