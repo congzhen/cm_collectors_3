@@ -96,3 +96,9 @@ defineExpose({
   open,
 })
 </script>
+<style scoped lang="scss">
+.resource-set-tag {
+  height: 60vh;
+  overflow-y: auto;
+}
+</style>

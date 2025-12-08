@@ -24,9 +24,10 @@
         <div>
           <el-alert title="资源" type="info" :closable="false" />
           <ul class="resource-form-drama-series">
-            <draggable class="fileDatabase-list-draggable" :list="dramaSeries" item-key="id">
+            <draggable class="fileDatabase-list-draggable" :list="dramaSeries" item-key="id"
+              handle=".drama-series-index">
               <template #item="{ element, index }">
-                <li>
+                <li :title="element.src">
                   <label class="drama-series-index">{{ (index + 1) }}.</label>
                   <el-input v-model="element.src" size="small" />
                   <el-button-group class="drama-series-tool" size="small">
@@ -452,6 +453,15 @@ defineExpose({ open })
           font-size: 12px;
           font-weight: 500;
           font-style: italic;
+          cursor: move;
+        }
+
+        .drama-series-index:hover {
+          cursor: grab;
+        }
+
+        .drama-series-index:active {
+          cursor: grabbing;
         }
 
         .drama-series-tool {
