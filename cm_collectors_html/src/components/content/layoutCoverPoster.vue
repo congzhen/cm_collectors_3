@@ -6,6 +6,8 @@
           <contentStyle1 :resource="item" @click="selectResourcesHandle(item)"></contentStyle1>
         </li>
       </ul>
+      <el-backtop class="custom-backtop" target=".layout-cover-poster-style1 .el-scrollbar__wrap" :right="20"
+        :bottom="20" />
     </el-scrollbar>
   </div>
 </template>
@@ -65,6 +67,7 @@ defineExpose({ change });
     }
   }
 }
+
 
 .mobile-layout li {
   /*

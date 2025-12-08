@@ -6,6 +6,8 @@
           <contentStyleSimple :resource="item" @click="selectResourcesHandle(item)"></contentStyleSimple>
         </li>
       </ul>
+      <el-backtop class="custom-backtop" target=".layout-cover-poster-simple .el-scrollbar__wrap" :right="20"
+        :bottom="20" />
     </el-scrollbar>
   </div>
 </template>

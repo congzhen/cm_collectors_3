@@ -6,6 +6,8 @@
           <contentStyle3 :resource="item" @click="selectResourcesHandle(item)"></contentStyle3>
         </li>
       </ul>
+      <el-backtop class="custom-backtop" target=".layout-cover-poster-box-wide-separate .el-scrollbar__wrap" :right="20"
+        :bottom="20" />
     </el-scrollbar>
   </div>
 </template>

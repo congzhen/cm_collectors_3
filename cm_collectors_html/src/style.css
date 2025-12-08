@@ -163,3 +163,7 @@ a,
     /* 结束角度 */
   }
 }
+
+.custom-backtop {
+  position: absolute !important;
+}

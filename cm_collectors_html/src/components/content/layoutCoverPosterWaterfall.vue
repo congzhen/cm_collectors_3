@@ -17,6 +17,8 @@
             </contentRightClickMenu>
           </template>
         </Waterfall>
+        <el-backtop class="custom-backtop" target=".layout-cover-poster-waterfall .el-scrollbar__wrap" :right="20"
+          :bottom="20" />
       </el-scrollbar>
     </div>
     <div class="tool" v-if="!isMobile()">

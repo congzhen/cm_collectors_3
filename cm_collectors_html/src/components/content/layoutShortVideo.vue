@@ -22,6 +22,8 @@
               </contentRightClickMenu>
             </template>
           </Waterfall>
+          <el-backtop class="custom-backtop" target=".shortVideoListWaterfall .el-scrollbar__wrap" :right="20"
+            :bottom="20" />
         </el-scrollbar>
       </div>
       <div class="tool" v-if="!isMobile()">
