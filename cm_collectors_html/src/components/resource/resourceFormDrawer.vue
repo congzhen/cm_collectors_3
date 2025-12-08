@@ -121,7 +121,8 @@
       </div>
     </template>
   </drawerForm>
-  <serverFileManagementDialog ref="serverFileManagementDialogRef" @selectedFiles="selectedFilesHandle">
+  <serverFileManagementDialog ref="serverFileManagementDialogRef" :no-close-option="true"
+    @selectedFiles="selectedFilesHandle">
   </serverFileManagementDialog>
   <videoThumbnailPosterDialog ref="videoThumbnailPosterDialogRef" @selectImage="selectThumbnailPosterHandle" />
   <scraperOneResourceDialog ref="scraperOneResourceDialogRef" @success="success"></scraperOneResourceDialog>

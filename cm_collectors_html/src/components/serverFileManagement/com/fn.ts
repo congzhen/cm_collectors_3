@@ -43,6 +43,12 @@ export function getExtMimeType(ext: string) {
   }
 }
 
+export function getFileIco(path: string) {
+  const ext = getFileExtension(path);
+  // 使用Vite静态资源导入方式，以/src开头的绝对路径
+  return new URL(`/src/components/serverFileManagement/com/icon/${ext}.png`, import.meta.url).href;
+}
+
 
 
 export const format = (date: Date, format: string, isUTC = false): string => {

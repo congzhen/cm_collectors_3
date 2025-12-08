@@ -82,9 +82,11 @@
               <el-icon v-if="scope.row.is_dir">
                 <Folder />
               </el-icon>
-              <el-icon v-else>
-                <Document />
-              </el-icon>
+              <el-image class="file-ico" v-else :src="getFileIco(scope.row.path)">
+                <template #error>
+                  <Document />
+                </template>
+              </el-image>
               <label class="file-name">{{ scope.row.name }}</label>
             </div>
           </template>
@@ -155,7 +157,7 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, type PropType } from 'vue'
 import { E_sfm_ToolBar, E_sfm_FileOperate, type I_sfm_FileEntry, E_sfm_FileType, type I_sfm_FilesAction, imageExtensions, textExtensions, codeExtensions, E_sfm_Column, E_LangType } from './com/dataType'
-import { dateFormat, generateRandomNumber, getFileExtension, type IMessageBox, message, messageBoxAlert, messageBoxConfirm, messageBoxPrompt, pathToArray, sizeFormat } from './com/fn'
+import { dateFormat, generateRandomNumber, getFileExtension, getFileIco, type IMessageBox, message, messageBoxAlert, messageBoxConfirm, messageBoxPrompt, pathToArray, sizeFormat } from './com/fn'
 import { Back, Right, Top, Refresh, ArrowRight, HomeFilled, Folder, Document } from '@element-plus/icons-vue'
 import { sfm_GetPathDir, sfm_DownloadFile, sfm_PasteCopy, sfm_PasteMove, type IResponse, sfm_DeleteFile, sfm_CompressFile, sfm_UnCompressFile } from './com/request'
 import dialogFile from './com/dialog.file.vue'
@@ -739,6 +741,13 @@ defineExpose({ getSelectedFiles, clearSelectedFiles })
       }
 
       .el-icon {
+        margin-right: 5px;
+      }
+
+      .file-ico {
+        flex-shrink: 0;
+        width: 16px;
+        height: 16px;
         margin-right: 5px;
       }
 
