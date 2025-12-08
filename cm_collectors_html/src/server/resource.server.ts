@@ -36,6 +36,11 @@ export const resourceServer = {
       url: `${routerGroupUri}/resource/deleted/list?filesBasesIds=${filesBasesIds.join(',')}`,
     })
   },
+  dataCountByPerformerId: async (filesBasesId: string, performerId: string) => {
+    return await request<number>({
+      url: `${routerGroupUri}/resource/count/${filesBasesId}/${performerId}`,
+    })
+  },
   sampleImages: async (id: string, sampleFolder: string) => {
     const obj: IRequest = {
       url: `${routerGroupUri}/resource/sampleImages/${id}`,

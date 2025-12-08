@@ -68,7 +68,11 @@ func (t Resources) Info(db *gorm.DB, id string) (*Resources, error) {
 	}
 	return &info, err
 }
-
+func (t Resources) DataCountByPerformerId(db *gorm.DB, filesBasesId, performerId string) (int64, error) {
+	var total int64
+	err := db.Model(ResourcesPerformers{}).Where("performer_id = ? and resources_id in (select id from resources where filesBases_id = ?)", performerId, filesBasesId).Count(&total).Error
+	return total, err
+}
 func (t Resources) DataListAll(db *gorm.DB, page, limit int) (*[]Resources, error) {
 	offset := (page - 1) * limit
 	var dataList []Resources

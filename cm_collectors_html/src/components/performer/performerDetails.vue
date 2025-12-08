@@ -33,20 +33,22 @@
         </li>
       </ul>
       <div class="performer-btn" v-if="props.performerBtn">
-        <el-button icon="Search" size="small" round @click="showPerforemerResourceHandle"> 查看【{{ props.performer.name
-          }}】所有资源 </el-button>
+        <el-button icon="Search" size="small" round @click="showPerforemerResourceHandle">
+          查看【{{ props.performer.name }}】<label class="res-count" v-loading="resCountStatus">{{ resCount }}</label>部资源
+        </el-button>
       </div>
     </div>
   </div>
 </template>
 <script lang="ts" setup>
 import type { I_performer } from '@/dataType/performer.dataType';
-import { type PropType } from 'vue';
+import { type PropType, watch, ref } from 'vue';
 import { calculateAge } from '@/assets/calculate'
 import { appStoreData } from '@/storeData/app.storeData';
 import { searchStoreData } from '@/storeData/search.storeData';
 import { getPerformerPhoto, getPerformerEmptyPhoto } from '@/common/photo';
 import performerPhoto from './performerPhoto.vue'
+import { resourceServer } from '@/server/resource.server';
 const store = {
   appStoreData: appStoreData(),
   searchStoreData: searchStoreData(),
@@ -70,9 +72,35 @@ const props = defineProps({
   }
 })
 
+
+
+const resCount = ref(0)
+const resCountStatus = ref(true)
+
+const getPerformerResCount = async (performerId: string) => {
+  try {
+    console.log('performerId', performerId);
+    const result = await resourceServer.dataCountByPerformerId(store.appStoreData.currentFilesBases.id, performerId);
+    if (result && result.status) {
+      resCount.value = result.data
+    }
+  } finally {
+    resCountStatus.value = false
+  }
+}
+watch(
+  () => props.performer,
+  (newPerformer) => {
+    getPerformerResCount(newPerformer.id)
+    // 在这里可以添加你需要在每次显示时执行的逻辑
+  },
+  { immediate: true } // 立即触发一次
+)
+
 const showPerforemerResourceHandle = () => {
   store.searchStoreData.setQueryPerformer(props.performer.id, props.performer.name)
 }
+
 
 </script>
 <style lang="scss" scoped>
@@ -136,6 +164,15 @@ const showPerforemerResourceHandle = () => {
     .performer-btn {
       flex-shrink: 0;
       transform: scale(0.85);
+      display: flex;
+      align-items: center;
+
+      .res-count {
+        padding: 0 3px;
+        font-size: 12px;
+        font-weight: 700;
+        color: #ffaa47;
+      }
     }
   }
 }

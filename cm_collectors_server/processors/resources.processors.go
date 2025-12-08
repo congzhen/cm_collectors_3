@@ -29,6 +29,10 @@ func (Resources) DataListAll(page, limit int) (*[]models.Resources, error) {
 	return models.Resources{}.DataListAll(core.DBS(), page, limit)
 }
 
+func (Resources) DataCountByPerformerId(filesBasesId, performerId string) (int64, error) {
+	return models.Resources{}.DataCountByPerformerId(core.DBS(), filesBasesId, performerId)
+}
+
 func (Resources) CoverPosterSlcByFilesBasesID_DB(db *gorm.DB, filesBases_id string) ([]string, error) {
 	return models.Resources{}.CoverPosterSlcByFilesBasesID(db, filesBases_id)
 }

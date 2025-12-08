@@ -48,6 +48,16 @@ func (Resource) ListIds(c *gin.Context) {
 	}
 	response.OkWithData(dataList, c)
 }
+func (Resource) DataCountByPerformerId(c *gin.Context) {
+	filesBasesId := c.Param("filesBasesId")
+	performerId := c.Param("performerId")
+	count, err := processors.Resources{}.DataCountByPerformerId(filesBasesId, performerId)
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(count, c)
+
+}
 
 func (Resource) SampleImages(c *gin.Context) {
 	resourceId := c.Param("resourceId")
