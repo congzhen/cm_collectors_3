@@ -65,7 +65,6 @@ const sampleImagesUrls_C = computed(() => {
 const init = async () => {
   sampleImagesUrl.value = [];
   await getSampleImages();
-  console.log(props.resource?.id);
 }
 
 const getSampleImages = async () => {

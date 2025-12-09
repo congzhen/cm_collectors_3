@@ -157,7 +157,6 @@ const coverDisplayTagFontSize = computed({
 
 const coverImageFit = computed({
   get: () => {
-    console.log(store.appStoreData.currentConfigApp.coverImageFit);
     if (store.appStoreData.currentConfigApp.coverImageFit) {
       return store.appStoreData.currentConfigApp.coverImageFit;
     }

@@ -79,7 +79,6 @@ const resCountStatus = ref(true)
 
 const getPerformerResCount = async (performerId: string) => {
   try {
-    console.log('performerId', performerId);
     const result = await resourceServer.dataCountByPerformerId(store.appStoreData.currentFilesBases.id, performerId);
     if (result && result.status) {
       resCount.value = result.data
