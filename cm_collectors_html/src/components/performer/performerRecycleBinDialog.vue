@@ -1,10 +1,12 @@
 <template>
   <dialogTable ref="dialogTableRef" :dataList="dataList" :loading="loading" title="演员回收站">
     <el-table-column prop="name" label="姓名" width="200" show-overflow-tooltip></el-table-column>
-    <el-table-column prop="aliasName" label="别名" width="360" show-overflow-tooltip></el-table-column>
-    <el-table-column label="操作">
+    <el-table-column prop="aliasName" label="别名" show-overflow-tooltip></el-table-column>
+    <el-table-column label="操作" width="160">
       <template #default="scope">
-        <el-button type="warning" icon="RefreshLeft" size="small" @click="restoreHandle(scope.row)">恢复</el-button>
+        <el-button type="warning" icon="RefreshLeft" size="small" plain @click="restoreHandle(scope.row)">恢复</el-button>
+        <el-button type="danger" icon="Delete" size="small" plain
+          @click="deleteHandle(scope.row, scope.$index)">删除</el-button>
       </template>
     </el-table-column>
   </dialogTable>
@@ -12,6 +14,7 @@
 <script setup lang="ts">
 import { debounceNow } from '@/assets/debounce';
 import { LoadingService } from '@/assets/loading';
+import { messageBoxConfirm } from '@/common/messageBox';
 import dialogTable from '@/components/com/dialog/dialog-table.vue';
 import type { I_performer } from '@/dataType/performer.dataType';
 import { performerServer } from '@/server/performer.server';
@@ -64,6 +67,30 @@ const restoreHandle = debounceNow(async (data: I_performer) => {
     LoadingService.hide();
   }
 })
+
+const deleteHandle = (data: I_performer, index: number) => {
+  messageBoxConfirm({
+    text: `确定要彻底删除( ${data.name} )吗？`,
+    type: 'error',
+    successCallBack: debounceNow(async () => {
+      LoadingService.show();
+      try {
+        const result = await performerServer.delete(data.id);
+        if (result.status) {
+          ElMessage.success('删除成功');
+          dataList.value.splice(index, 1);
+        } else {
+          ElMessage.error(result.msg);
+        }
+      } catch (error) {
+        ElMessage.error('提交失败，请稍后再试');
+        console.log(error);
+      } finally {
+        LoadingService.hide();
+      }
+    }),
+  })
+}
 
 const open = async () => {
   await init();

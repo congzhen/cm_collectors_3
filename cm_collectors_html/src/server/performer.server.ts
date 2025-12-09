@@ -91,4 +91,10 @@ export const performerServer = {
       url: `${routerGroupUri}/performer/recycleBin/${performerBasesId}`,
     });
   },
+  delete: async (id: string) => {
+    return await request<boolean>({
+      url: `${routerGroupUri}/performer/delete/${id}`,
+      method: 'delete',
+    });
+  }
 }

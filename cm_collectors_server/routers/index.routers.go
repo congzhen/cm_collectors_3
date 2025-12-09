@@ -130,6 +130,7 @@ func AdminRouter(router *gin.Engine) {
 	routerGroup.POST("performer/create", controllers.Performer{}.CreatePerformer)
 	routerGroup.PUT("performer/update", controllers.Performer{}.UpdatePerformer)
 	routerGroup.PUT("performer/updateStatus", controllers.Performer{}.UpdatePerformerStatus)
+	routerGroup.DELETE("performer/delete/:id", controllers.Performer{}.Delete)
 	routerGroup.POST("tag/create", controllers.Tag{}.CreateTag)
 	routerGroup.PUT("tag/update", controllers.Tag{}.UpdateTag)
 	routerGroup.DELETE("tag/delete/:tagId", controllers.Tag{}.DeleteTag)

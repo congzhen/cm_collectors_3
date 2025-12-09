@@ -150,3 +150,11 @@ func (Performer) Create(c *gin.Context) {
 	}
 	response.OkWithData(info, c)
 }
+func (Performer) Delete(c *gin.Context) {
+	id := c.Param("id")
+	err := processors.Performer{}.DeleteByID(id)
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(true, c)
+}

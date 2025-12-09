@@ -33,6 +33,9 @@ func (ResourcesDirectors) DeleteIDS(db *gorm.DB, ids []string) error {
 func (ResourcesDirectors) DeleteByResourcesID(db *gorm.DB, resourcesID string) error {
 	return db.Unscoped().Where("resources_id = ?", resourcesID).Delete(&ResourcesDirectors{}).Error
 }
+func (ResourcesDirectors) DeleteByPerformerID(db *gorm.DB, performerID string) error {
+	return db.Unscoped().Where("performer_id = ?", performerID).Delete(&ResourcesDirectors{}).Error
+}
 func (ResourcesDirectors) DeleteByFilesBasesID(db *gorm.DB, filesBases_id string) error {
 	sqlWhere := fmt.Sprintf("resources_id in (select id from %s where filesBases_id = ?)", Resources{}.TableName())
 	return db.Unscoped().Where(sqlWhere, filesBases_id).Delete(&ResourcesDirectors{}).Error

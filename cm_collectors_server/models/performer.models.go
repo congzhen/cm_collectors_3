@@ -207,3 +207,6 @@ func (Performer) Create(db *gorm.DB, performer *Performer) error {
 func (Performer) DeleteByPerformerBasesIds(db *gorm.DB, performerBasesIds []string) error {
 	return db.Unscoped().Where("performerBases_id in (?)", performerBasesIds).Delete(&Performer{}).Error
 }
+func (Performer) DeleteById(db *gorm.DB, id string) error {
+	return db.Unscoped().Where("id = ?", id).Delete(&Performer{}).Error
+}

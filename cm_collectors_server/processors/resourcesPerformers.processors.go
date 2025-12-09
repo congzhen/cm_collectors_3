@@ -62,3 +62,6 @@ func (ResourcesPerformers) handleAdds(tx *gorm.DB, toAdd []string, resourceID st
 func (ResourcesPerformers) DeleteByResourcesID(tx *gorm.DB, resourceID string) error {
 	return models.ResourcesPerformers{}.DeleteByResourcesID(tx, resourceID)
 }
+func (ResourcesPerformers) DeleteByPerformerID(tx *gorm.DB, performerID string) error {
+	return models.ResourcesPerformers{}.DeleteByPerformerID(tx, performerID)
+}

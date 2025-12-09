@@ -76,8 +76,11 @@ func (Performer) InfoByName(performerBasesID, name string, searchAliasName bool)
 	}
 	return info, err
 }
-func (Performer) InfoByID(id string) (*models.Performer, error) {
-	info, err := models.Performer{}.InfoByID(core.DBS(), id)
+func (t Performer) InfoByID(id string) (*models.Performer, error) {
+	return t.InfoByID_DB(core.DBS(), id)
+}
+func (Performer) InfoByID_DB(db *gorm.DB, id string) (*models.Performer, error) {
+	info, err := models.Performer{}.InfoByID(db, id)
 	if err != nil && err == gorm.ErrRecordNotFound {
 		err = errorMessage.Err_performer_Not_Found
 	}
@@ -394,4 +397,30 @@ func (t Performer) UpdateScraperByModels(id string, dataModels models.Performer,
 
 func (t Performer) DeleteByPerformerBasesIds(db *gorm.DB, performerBasesIds []string) error {
 	return models.Performer{}.DeleteByPerformerBasesIds(db, performerBasesIds)
+}
+
+func (t Performer) DeleteByID(id string) error {
+	db := core.DBS()
+	return db.Transaction(func(tx *gorm.DB) error {
+		info, err := t.InfoByID_DB(tx, id)
+		if err != nil {
+			return err
+		}
+		//删除演员
+		err = models.Performer{}.DeleteById(tx, id)
+		if err != nil {
+			return err
+		}
+		//删除关联
+		err = ResourcesPerformers{}.DeleteByPerformerID(tx, id)
+		if err != nil {
+			return err
+		}
+		err = ResourcesDirectors{}.DeleteByPerformerID(tx, id)
+		if err != nil {
+			return err
+		}
+		t.DeletePerformerPhoto(info.PerformerBasesID, info.Photo)
+		return nil
+	})
 }
