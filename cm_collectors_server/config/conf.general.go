@@ -7,6 +7,7 @@ type General struct {
 	IsAutoCreateM3u8       bool           `yaml:"isAutoCreateM3u8"`
 	Language               string         `yaml:"language"`
 	NotAllowServerOpenFile bool           `yaml:"notAllowServerOpenFile"`
+	Theme                  string         `yaml:"theme"`
 	VideoRateLimit         VideoRateLimit `yaml:"videoRateLimit"`
 }
 type VideoRateLimit struct {

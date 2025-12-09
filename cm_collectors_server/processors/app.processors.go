@@ -25,6 +25,7 @@ func (App) InitData() (*App, error) {
 		AppConfig: datatype.App_Config{
 			LogoName:     core.Config.General.LogoName,
 			IsAdminLogin: core.Config.General.IsAdminLogin,
+			Theme:        core.Config.General.Theme,
 		},
 		FilesBases:     filesBases,
 		PerformerBases: performerBases,
@@ -41,6 +42,7 @@ func (App) GetConfig() datatype.App_SystemConfig {
 		IsAutoCreateM3u8:       core.Config.General.IsAutoCreateM3u8,
 		Language:               core.Config.General.Language,
 		NotAllowServerOpenFile: core.Config.General.NotAllowServerOpenFile,
+		Theme:                  core.Config.General.Theme,
 		PlayVideoFormats:       core.Config.Play.PlayVideoFormats,
 		PlayAudioFormats:       core.Config.Play.PlayAudioFormats,
 		VideoRateLimit:         core.Config.General.VideoRateLimit,
@@ -63,6 +65,7 @@ func (App) SetConfig(config datatype.App_SystemConfig) error {
 	core.Config.General.IsAutoCreateM3u8 = config.IsAutoCreateM3u8
 	core.Config.General.Language = config.Language
 	core.Config.General.NotAllowServerOpenFile = config.NotAllowServerOpenFile
+	core.Config.General.Theme = config.Theme
 	core.Config.Play.PlayVideoFormats = config.PlayVideoFormats
 	core.Config.Play.PlayAudioFormats = config.PlayAudioFormats
 	core.Config.General.VideoRateLimit = config.VideoRateLimit

@@ -85,6 +85,7 @@ export interface I_appData {
 export interface I_appConfig {
   logoName: string;
   isAdminLogin: boolean;
+  theme: string;
 }
 
 export interface I_appConfig_scraper {

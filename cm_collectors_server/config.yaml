@@ -5,6 +5,7 @@ general:
     isAutoCreateM3u8: true
     language: zhCn
     notAllowServerOpenFile: false
+    theme: bright
     videoRateLimit:
         enabled: false
         requestsPerSecond: 5

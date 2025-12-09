@@ -1,0 +1,181 @@
+.bright {
+  color: #606266;
+}
+.bright body {
+  color: #606266;
+}
+.bright .app-container {
+  background-color: #ffffff !important;
+}
+/** 头部 */
+.bright .app-container .header-container .title label {
+  color: #606266;
+}
+.bright .app-container .header-container .right .el-icon {
+  color: #606266;
+}
+/** 菜单 */
+.bright .app-container .database-menu .el-menu-item.is-active {
+  color: #409eff !important;
+  border-bottom-color: #409eff;
+}
+.bright .app-container .database-menu .el-menu-item {
+  color: #303133 !important;
+  border-bottom-color: transparent;
+}
+/** 内容 */
+.bright .app-container .content-list .title-bg + .title {
+  color: #ffffff;
+}
+/** 标签 */
+.bright .app-container .main .tag-container {
+  background-color: transparent;
+  border-right-color: #dcdfe6;
+}
+
+.bright .app-container .main .tag-container .tag-content .tag-span {
+  background-color: #f3f3f3;
+  color: #606266;
+}
+.bright .app-container .main .tag-container .tag-content .check {
+  background-color: #ffaa47;
+  color: #ffffff;
+}
+.bright .app-container .main .tag-container .tag-block-stars .tag-span li {
+  background-color: transparent;
+}
+.bright .app-container .main .tag-container .tag-block-stars .tag-content .check {
+  background-color: #ffaa47 !important;
+}
+.bright .app-container .main .tag-container .tag-block-stars .tag-stars li {
+  background-color: transparent;
+}
+.bright .app-container .main .tag-container .tag-block-stars .tag-stars .check {
+  background-color: #ffaa47 !important;
+}
+.bright .app-container .main .tag-container .tag-block-performer .tag-content .tag-span {
+  background-color: #f3f3f3;
+}
+.bright .app-container .main .tag-container .tag-block-performer .tag-content .check {
+  background-color: #ffaa47 !important;
+  color: #ffffff !important;
+}
+
+/** 详情 */
+.bright .app-container .details-view .details-container .title {
+  color: #606266;
+}
+.bright .details-dialog-container .title {
+  color: #606266;
+}
+/** 抽屉 */
+.bright .el-drawer__header {
+  color: #606266 !important;
+  margin-bottom: 0px !important;
+}
+/** 抽屉标签列表 */
+.bright .el-drawer__body .tag-list .tag-list-block .tag-list-header {
+  background-color: #d9ecff;
+  color: #606266;
+  border-color: #d4d7de;
+}
+.bright .el-drawer__body .tag-list .tag-list-block .tag-list-body {
+  border-color: #d4d7de;
+}
+.bright .el-drawer__body .tag-list .tag-list-block .tag-list-body .tag-item {
+  border-color: #d4d7de;
+  color: #606266;
+}
+/** 系统设置标签列表 */
+.bright .el-tab-pane .tag-list .tag-list-block .tag-list-header {
+  background-color: #d9ecff;
+  color: #606266;
+  border-color: #d4d7de;
+}
+.bright .el-tab-pane .tag-list .tag-list-block .tag-list-body {
+  border-color: #d4d7de;
+}
+.bright .el-tab-pane .tag-list .tag-list-block .tag-list-body .tag-item {
+  border-color: #d4d7de;
+  color: #606266;
+}
+/* 演员块 */
+.bright .app-container .performer-block {
+  background-color: #fcecae;
+}
+.bright .details-dialog-container .performer-block {
+  background-color: #fcecae;
+}
+.bright .app-container .performer-block.check {
+  background-color: #ffaa47 !important;
+}
+.bright .app-container .performer-block .performer-block-name {
+  color: #606266;
+}
+.bright .app-container .performer-block .performer-block-tool {
+  border-color: #cdd0d6;
+}
+.bright .app-container .performer-block .performer-block-tool .performer-block-tool-btn:hover {
+  background-color: #ffaa47 !important;
+}
+/** 演员信息 */
+.bright .performer-info .performer-info-data .performer-info-ul {
+  color: #606266 !important;
+}
+.bright .performer-data-list .performer-container .performer-index span {
+  background-color: #f2f3f5 !important;
+}
+.bright .performer-data-list .performer-container .performer-index .select-index {
+  background-color: #ffaa47 !important;
+}
+/** 更新日志 */
+.bright .el-dialog__body .updateSoftView {
+  background-color: transparent;
+}
+.bright .el-dialog__body .updateSoftView .version-number {
+  color: #606266;
+}
+.bright .el-dialog__body .updateSoftView .btn-refresh {
+  color: #606266;
+}
+/** 设置 */
+.bright .save-button-container {
+  background-color: #f2f3f5 !important;
+}
+/** 更新日志时间线 */
+.bright .update-log-timeline .version-title {
+  color: #606266 !important;
+  background-color: transparent !important;
+}
+.bright .update-log-timeline .rawContent {
+  color: #606266 !important;
+  background-color: transparent !important;
+}
+.bright .update-log-timeline .logContent {
+  color: #606266 !important;
+  background-color: transparent !important;
+}
+/** 关于软件 */
+.bright .about-software {
+  background-color: transparent !important;
+}
+.bright .about-software .content-text {
+  color: #606266 !important;
+}
+.bright .about-software .contact-info {
+  color: #606266 !important;
+  background-color: transparent !important;
+}
+/** 备份 */
+.bright .backup-section {
+  background-color: transparent !important;
+}
+.bright .backup-section h3 {
+  color: #606266 !important;
+}
+.bright .backup-section .backup-item {
+  background-color: #d4d4d4 !important;
+}
+.bright .backup-section .backup-item .backup-name {
+  color: #606266 !important;
+}

@@ -30,6 +30,7 @@ const (
 type App_Config struct {
 	LogoName     string `json:"logoName"`
 	IsAdminLogin bool   `json:"isAdminLogin"`
+	Theme        string `json:"theme"`
 }
 
 type App_Config_Scraper struct {
@@ -43,6 +44,7 @@ type App_SystemConfig struct {
 	IsAutoCreateM3u8             bool                  `json:"isAutoCreateM3u8"`
 	Language                     string                `json:"language"`
 	NotAllowServerOpenFile       bool                  `json:"notAllowServerOpenFile"`
+	Theme                        string                `json:"theme"`
 	PlayVideoFormats             []string              `json:"playVideoFormats"`
 	PlayAudioFormats             []string              `json:"playAudioFormats"`
 	VideoRateLimit               config.VideoRateLimit `json:"videoRateLimit"`

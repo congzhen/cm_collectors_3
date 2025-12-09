@@ -5,6 +5,13 @@
         <el-input v-model="formData.logoName" />
         <el-text class="warning-text" type="warning" size="small">重新加载后生效</el-text>
       </el-form-item>
+      <el-form-item label="主题">
+        <el-select v-model="formData.theme">
+          <el-option label="暗黑" value="default" />
+          <el-option label="明亮" value="bright" />
+        </el-select>
+        <el-text class="warning-text" type="warning" size="small"> 重新加载后生效</el-text>
+      </el-form-item>
       <el-form-item label="管理需登录">
         <el-switch v-model="formData.isAdminLogin" />
       </el-form-item>
@@ -136,6 +143,7 @@ const formData = ref<I_appSystemConfig>({
   isAutoCreateM3u8: false,
   language: 'zhCn',
   notAllowServerOpenFile: false,
+  theme: 'default',
   playVideoFormats: dataset.playVideoFormats,
   playAudioFormats: dataset.playAudioFormats,
   serverFileManagementRootPath: dataset.serverFileManagementRootPath,

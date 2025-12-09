@@ -30,6 +30,7 @@ func getDefaultConfig() *config.Config {
 			IsAutoCreateM3u8:       true,
 			Language:               "zhCn",
 			NotAllowServerOpenFile: false,
+			Theme:                  "default",
 			VideoRateLimit: config.VideoRateLimit{
 				Enabled:           false,
 				RequestsPerSecond: 5,  // 每秒5个请求
