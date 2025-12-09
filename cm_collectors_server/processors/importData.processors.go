@@ -155,7 +155,25 @@ func (t ImportData) ScanDiskImportData(filesBasesId, filePath string, config dat
 		resourceDataParam.Resource.Definition = t.VideoDefinition(filePath, config)
 	}
 
-	t.Nfo(filesBasesId, path.Join(fileDir, fileName+".nfo"), config.Nfo, &resourceDataParam)
+	nfoPath := path.Join(fileDir, fileName+".nfo")
+	// 如果nfo文件不存在，则从文件夹下所有nfo文件中查找
+	if !utils.FileExists(nfoPath) {
+		//读取文件夹下所有nfo文件
+		nfos, err := utils.GetFilesByExtensions([]string{fileDir}, []string{"nfo"}, false)
+		if err != nil {
+			return err
+		}
+		// 遍历所有nfo文件，判断文件名是否包含fileName
+		for _, nfo := range nfos {
+			tmpFileName := utils.GetFileNameFromPath(nfo, false)
+			if strings.Contains(tmpFileName, fileName) {
+				nfoPath = path.Join(fileDir, tmpFileName+".nfo")
+				break
+			}
+		}
+	}
+
+	t.Nfo(filesBasesId, nfoPath, config.Nfo, &resourceDataParam)
 
 	//根据filePath地址，查询资源是否已经存在
 	resourcesDramaSeriesScl, err := ResourcesDramaSeries{}.ListBySrc(filePath)
