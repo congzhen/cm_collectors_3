@@ -181,7 +181,7 @@ const openPlayListHandle = () => {
 
 const goToPerformer = () => {
   if (store.appStoreData.currentPerformerBasesIds.length > 1) {
-    router.push(`/performer/basesList`)
+    router.push(`/performer/basesList/${store.appStoreData.currentFilesBases.id}`)
   } else {
     router.push(`/performer/${store.appStoreData.currentMainPerformerBasesId}`)
   }

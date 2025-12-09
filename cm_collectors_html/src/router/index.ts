@@ -43,8 +43,9 @@ const router = createRouter({
       meta: { mobileAccess: false },
     },
     {
-      path: '/performer/basesList',
+      path: '/performer/basesList/:filesBasesId',
       name: 'performerBasesList',
+      props: route => ({ filesBasesId: route.params.filesBasesId }),
       component: PerformerBasesListView,
       meta: { mobileAccess: false },
     },

@@ -3,7 +3,7 @@
     <HeaderView class="header" :mode="E_headerMode.GoBack"></HeaderView>
     <div class="main">
       <el-tabs v-model="activeName">
-        <el-tab-pane v-for="item, key in store.appStoreData.currentPerformerBasesIds" :key="key"
+        <el-tab-pane v-for="item, key in performerBasesIDS_C" :key="key"
           :label="store.performerBasesStoreData.getNameById(item)" :name="item">
           <performerDataList :performerBasesId="item"></performerDataList>
         </el-tab-pane>
@@ -17,16 +17,26 @@ import HeaderView from './HeaderView.vue'
 import performerDataList from '@/components/performer/performerDataList.vue'
 import { E_headerMode } from '@/dataType/app.dataType'
 import { appStoreData } from '@/storeData/app.storeData'
+import { filesBasesStoreData } from '@/storeData/filesBases.storeData'
 import { performerBasesStoreData } from '@/storeData/performerBases.storeData'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 
 const store = {
   appStoreData: appStoreData(),
   performerBasesStoreData: performerBasesStoreData(),
+  filesBasesStoreData: filesBasesStoreData(),
 }
+const props = defineProps({
+  filesBasesId: {
+    type: String,
+    required: true,
+  },
+})
+const activeName = ref(store.filesBasesStoreData.getMainPerformerBasesIdByFilesBasesId(props.filesBasesId))
 
-const activeName = ref(store.appStoreData.currentMainPerformerBasesId)
-
+const performerBasesIDS_C = computed(() => {
+  return store.filesBasesStoreData.getPerformerBasesIdsByFilesBasesId(props.filesBasesId)
+})
 
 
 </script>
