@@ -157,7 +157,7 @@ func (t ImportData) ScanDiskImportData(filesBasesId, filePath string, config dat
 
 	nfoPath := path.Join(fileDir, fileName+".nfo")
 	// 如果nfo文件不存在，则从文件夹下所有nfo文件中查找
-	if !utils.FileExists(nfoPath) {
+	if !utils.FileExists(nfoPath) && config.EnableNfoFuzzyMatch {
 		//读取文件夹下所有nfo文件
 		nfos, err := utils.GetFilesByExtensions([]string{fileDir}, []string{"nfo"}, false)
 		if err != nil {
@@ -170,6 +170,16 @@ func (t ImportData) ScanDiskImportData(filesBasesId, filePath string, config dat
 				nfoPath = path.Join(fileDir, tmpFileName+".nfo")
 				break
 			}
+		}
+	}
+	// 如果nfo文件不存在，则使用随机nfo文件
+	if !utils.FileExists(nfoPath) && config.UseRandomNfoIfNoneMatch {
+		nfos, err := utils.GetFilesByExtensions([]string{fileDir}, []string{"nfo"}, false)
+		if err != nil {
+			return err
+		}
+		if len(nfos) > 0 {
+			nfoPath = nfos[0]
 		}
 	}
 

@@ -171,6 +171,8 @@ type Config_ScanDisk struct {
 	AutoCreatePoster                   bool                `json:"autoCreatePoster"`
 	FolderToSeries                     bool                `json:"folderToSeries"`
 	FolderToSeriesSort                 bool                `json:"folderToSeriesSort"`
+	EnableNfoFuzzyMatch                bool                `json:"enableNfoFuzzyMatch"`
+	UseRandomNfoIfNoneMatch            bool                `json:"useRandomNfoIfNoneMatch"`
 	Nfo                                Config_ScanDisk_Nfo `json:"nfo"`
 }
 

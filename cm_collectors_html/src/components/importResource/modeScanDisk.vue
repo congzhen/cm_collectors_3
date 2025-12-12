@@ -70,6 +70,17 @@
         <el-form-item>
           <el-checkbox v-model="formData.folderToSeriesSort" label="合并剧集时，是否按名称重新排序" />
         </el-form-item>
+        <el-form-item>
+          <div class="form-column-list"><el-checkbox v-model="formData.enableNfoFuzzyMatch" label="开启nfo模糊匹配" />
+            <div><el-text type="warning">例如：abc.mp4 可以匹配到：abc-C.nfo</el-text></div>
+          </div>
+        </el-form-item>
+        <el-form-item>
+          <div class="form-column-list"><el-checkbox v-model="formData.useRandomNfoIfNoneMatch"
+              label="开启nfo无法匹配时，使用目录下随机nfo文件" />
+            <div><el-text type="warning">如果找不到与视频名称相同的nfo，自动使用视频目录下的一个nfo文件</el-text></div>
+          </div>
+        </el-form-item>
       </div>
       <div class="block">
         <el-alert title="nfo配置" type="success" :closable="false" />
