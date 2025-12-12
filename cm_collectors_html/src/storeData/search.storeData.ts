@@ -2,6 +2,7 @@ import { cacheData } from "@/cache/index.cache";
 import { E_tagType } from "@/dataType/app.dataType";
 import { E_searchLogic, E_searchSort, type I_searchData, type I_searchGroup } from "@/dataType/search.dataType";
 import { defineStore } from "pinia";
+import { appStoreData } from "./app.storeData";
 export const searchStoreData = defineStore('search', {
   state: () => ({
     allId: 'all',
@@ -50,6 +51,12 @@ export const searchStoreData = defineStore('search', {
   actions: {
     init: function () {
       this.clear();
+      const currentConfigApp = appStoreData().currentConfigApp
+      if (currentConfigApp.resourceSort.length > 0) {
+        this.searchData.sort = currentConfigApp.resourceSort[0];
+      } else {
+        this.searchData.sort = E_searchSort.AddTimeDesc;
+      }
     },
     clear: function () {
       this.searchData.searchTextSlc = [];

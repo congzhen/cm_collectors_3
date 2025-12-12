@@ -25,14 +25,16 @@ export enum E_searchLogic {
 export enum E_searchSort {
   AddTimeDesc = 'addTimeDesc', //时间倒叙
   AddTimeAsc = 'addTimeAsc', //时间正序
+  IssuingDateDesc = 'issuingDateDesc', //发行时间倒叙
+  IssuingDateAsc = 'issuingDateAsc', //发行时间正序
   IssueNumberDesc = 'issueNumberDesc', //发行倒叙
   IssueNumberAsc = 'issueNumberAsc',  //发行正序
-
+  ScoreDesc = 'scoreDesc', //评分倒叙
+  ScoreAsc = 'scoreAsc', //评分正序
   StarDesc = 'starDesc', //评星倒叙
   StarAsc = 'starAsc', //评星正序
   TitleDesc = 'titleDesc', //标题倒叙
   TitleAsc = 'titleAsc',  //标题正序
-
   History = 'history', //历史记录
   Hot = 'hot', //当前热度
   YouLike = 'youLike', //猜你喜欢

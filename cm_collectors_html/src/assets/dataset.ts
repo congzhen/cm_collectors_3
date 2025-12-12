@@ -8,6 +8,7 @@ export default {
     OtherCountry: ['OtherCountry'],
   },
   definition: ['8K', '4K', '2K', '1080P', '720P', 'HighDefinition', 'StandardDefinition'],
+  resourceSort: ['addTimeDesc', 'addTimeAsc', 'issuingDateDesc', 'issuingDateAsc', 'issueNumberDesc', 'issueNumberAsc', 'scoreDesc', 'scoreAsc', 'starDesc', 'starAsc', 'titleDesc', 'titleAsc', 'history', 'hot'],
   leftDisplay: ['sort', 'country', 'definition', 'year', 'starRating', 'performer', 'diyTag'],
   leftColumnMode: ['fixed', 'float'],
   tagMode: ['fixed', 'auto'],

@@ -104,6 +104,7 @@ const init = () => {
 const getTagDataList = (type: E_tagType): I_tagData[] => {
   switch (type) {
     case E_tagType.Sort:
+      /*
       const sortSlc: I_tagData[] = [
         { id: 'addTimeDesc', name: '', status: false },
         { id: 'addTimeAsc', name: '', status: false },
@@ -121,10 +122,14 @@ const getTagDataList = (type: E_tagType): I_tagData[] => {
         { id: 'hot', name: '', status: false },
         //   { id: 'youLike', name: '猜你喜欢', status: false },
       ]
-      for (let i = 0; i < sortSlc.length; i++) {
-        sortSlc[i].name = appLang.sort(sortSlc[i].id)
-        sortSlc[i].status = store.searchStoreData.checkSelected(type, sortSlc[i].id)
-      }
+      */
+      const sortSlc: I_tagData[] = store.appStoreData.currentConfigApp.resourceSort.map(item => {
+        return {
+          id: item as string,
+          name: appLang.sort(item),
+          status: store.searchStoreData.checkSelected(type, item)
+        } as I_tagData
+      })
       return sortSlc
     case E_tagType.Country:
       const resultCountryArr: I_tagData[] = [

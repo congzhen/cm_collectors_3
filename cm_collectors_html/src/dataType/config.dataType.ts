@@ -1,6 +1,7 @@
 import { E_detailsDramaSeriesMode, E_resourceOpenMode, E_resourceOpenMode_SoftType, type E_tagType } from "./app.dataType";
 
 import dataset from "@/assets/dataset";
+import type { E_searchSort } from "./search.dataType";
 
 export enum E_config_type {
   app = 'app',
@@ -14,6 +15,7 @@ export enum E_config_type {
 
 export interface I_config_app {
   country: string[]; // 国家
+  resourceSort: E_searchSort[];//资源排序
   coverDisplayTagAttribute: string[]; // 封面显示标签属性
   coverDisplayTag: string[]; // 封面显示标签
   coverDisplayTagColor: string; // 封面显示标签颜色
@@ -93,6 +95,7 @@ export const defualtConfigApp: I_config_app = {
   leftColumnWidth: 319,
   leftColumnMode: 'fixed',
   country: ['China', 'Japan', 'SouthKorea', 'America', 'England', 'France', 'OtherCountry'],
+  resourceSort: dataset.resourceSort as E_searchSort[],
   definition: ['8K', '4K', '2K', '1080P', '720P', 'HighDefinition', 'StandardDefinition'],
   tagMode: 'fixed',
   performerPhoto: true,

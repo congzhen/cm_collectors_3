@@ -83,6 +83,7 @@ const (
 // Config_FilesBases 文件库配置
 type Config_FilesBases struct {
 	Country                      []string                  `json:"country"`                      // 国家
+	ResourceSort                 []string                  `json:"resourceSort"`                 // 资源排序
 	CoverDisplayTagAttribute     []string                  `json:"coverDisplayTagAttribute"`     // 封面显示标签属性
 	CoverDisplayTag              []string                  `json:"coverDisplayTag"`              // 封面显示标签
 	CoverDisplayTagColor         string                    `json:"coverDisplayTagColor"`         // 封面显示标签颜色

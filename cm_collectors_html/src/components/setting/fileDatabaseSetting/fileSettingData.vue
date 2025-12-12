@@ -28,6 +28,9 @@
       <el-form-item label="清晰度">
         <selectDefinition v-model="filesConfig.definition" multiple />
       </el-form-item>
+      <el-form-item label="资源排序">
+        <selectResourceSort v-model="filesConfig.resourceSort" multiple />
+      </el-form-item>
 
       <el-alert title="左侧边栏" type="success" :closable="false" />
 
@@ -310,6 +313,7 @@ import { onMounted, ref } from 'vue';
 import { E_performerCareerType, E_resourceOpenMode, E_resourceOpenMode_SoftType } from '@/dataType/app.dataType';
 import selectCountry from '@/components/com/form/selectCountry.vue';
 import selectDefinition from '@/components/com/form/selectDefinition.vue';
+import selectResourceSort from '@/components/com/form/selectResourceSort.vue';
 import selectLeftDisplay from '@/components/com/form/selectLeftDisplay.vue';
 import selectLeftColumnMode from '@/components/com/form/selectLeftColumnMode.vue';
 import selectTagMode from '@/components/com/form/selectTagMode.vue';
