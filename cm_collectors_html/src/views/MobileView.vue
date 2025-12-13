@@ -122,7 +122,9 @@ const changeDataBase = async (event: Event) => {
 
   if (selectedFilesBases) {
     await store.appStoreData.initCurrentFilesBases(selectedFilesBases.id)
+    fetchCount = true;
     currentPage.value = 1
+    pageSize.value = store.appStoreData.currentConfigApp.pageLimit;
     await getDataList()
   }
 }

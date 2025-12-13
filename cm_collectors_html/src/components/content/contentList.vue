@@ -1,25 +1,10 @@
 <template>
   <div class="content-list" :style="contentListStyleObj_C">
     <layoutCoverPoster ref="layoutCoverPosterRef"
-      v-if="store.appStoreData.currentConfigApp.resourcesShowMode == 'coverPoster'" :data-list="props.dataList"
+      v-if="isLayoutCoverPoster(store.appStoreData.currentConfigApp.resourcesShowMode)"
+      :resourcesShowMode="store.appStoreData.currentConfigApp.resourcesShowMode" :data-list="props.dataList"
       @select-resources="selectResourcesHandle">
     </layoutCoverPoster>
-    <layoutCoverPosterBox ref="layoutCoverPosterBoxRef"
-      v-else-if="store.appStoreData.currentConfigApp.resourcesShowMode == 'coverPosterBox'" :data-list="props.dataList"
-      @select-resources="selectResourcesHandle">
-    </layoutCoverPosterBox>
-    <layoutCoverPosterBoxWideSeparate ref="layoutCoverPosterBoxWideSeparateRef"
-      v-else-if="store.appStoreData.currentConfigApp.resourcesShowMode == 'coverPosterBoxWideSeparate'"
-      :data-list="props.dataList" @select-resources="selectResourcesHandle">
-    </layoutCoverPosterBoxWideSeparate>
-    <layoutCoverPosterSimple ref="layoutCoverPosterSimpleRef"
-      v-else-if="store.appStoreData.currentConfigApp.resourcesShowMode == 'coverPosterSimple'"
-      :data-list="props.dataList" @select-resources="selectResourcesHandle">
-    </layoutCoverPosterSimple>
-    <layoutCoverPosterSimpleExpand ref="layoutCoverPosterSimpleExpandRef"
-      v-else-if="store.appStoreData.currentConfigApp.resourcesShowMode == 'coverPosterSimpleExpand'"
-      :data-list="props.dataList" @select-resources="selectResourcesHandle">
-    </layoutCoverPosterSimpleExpand>
     <layoutCoverPosterWaterfall ref="layoutCoverPosterWaterfallRef"
       v-else-if="store.appStoreData.currentConfigApp.resourcesShowMode == 'coverPosterWaterfall'"
       :data-list="props.dataList" @select-resources="selectResourcesHandle">
@@ -35,16 +20,14 @@
 </template>
 <script lang="ts" setup>
 import layoutCoverPoster from './layoutCoverPoster.vue';
-import layoutCoverPosterBox from './layoutCoverPosterBox.vue';
-import layoutCoverPosterBoxWideSeparate from './layoutCoverPosterBoxWideSeparate.vue';
-import layoutCoverPosterSimple from './layoutCoverPosterSimple.vue';
-import layoutCoverPosterSimpleExpand from './layoutCoverPosterSimpleExpand.vue';
 import layoutCoverPosterWaterfall from './layoutCoverPosterWaterfall.vue';
 import layoutShortVideo from './layoutShortVideo.vue';
 import layoutTable from './layoutTable.vue';
 import type { I_resource } from '@/dataType/resource.dataType';
 import { ref, computed, type PropType } from 'vue';
 import { appStoreData } from '@/storeData/app.storeData';
+import { A_layoutCoverPosterSlc, type T_resourcesShowMode } from '@/dataType/app.dataType';
+
 const store = {
   appStoreData: appStoreData(),
 }
@@ -57,11 +40,7 @@ const props = defineProps({
 const emits = defineEmits(['selectResources']);
 
 const layoutCoverPosterRef = ref<typeof layoutCoverPoster>();
-const layoutCoverPosterBoxRef = ref<typeof layoutCoverPosterBox>();
-const layoutCoverPosterBoxWideSeparateRef = ref<typeof layoutCoverPosterBoxWideSeparate>();
 const layoutCoverPosterWaterfallRef = ref<typeof layoutCoverPosterWaterfall>();
-const layoutCoverPosterSimpleRef = ref<typeof layoutCoverPosterSimple>();
-const layoutCoverPosterSimpleExpandRef = ref<typeof layoutCoverPosterSimpleExpand>();
 const layoutShortVideoRef = ref<typeof layoutShortVideo>();
 const layoutTableRef = ref<typeof layoutTable>();
 
@@ -79,22 +58,14 @@ const selectResourcesHandle = (item: I_resource) => {
   emits('selectResources', item)
 }
 
+const isLayoutCoverPoster = (resourcesShowMode: T_resourcesShowMode) => {
+  return A_layoutCoverPosterSlc.includes(resourcesShowMode)
+}
+
 const change = () => {
   switch (store.appStoreData.currentConfigApp.resourcesShowMode) {
     case 'coverPoster':
       layoutCoverPosterRef.value?.change();
-      break;
-    case 'coverPosterBox':
-      layoutCoverPosterBoxRef.value?.change();
-      break;
-    case 'coverPosterBoxWideSeparate':
-      layoutCoverPosterBoxWideSeparateRef.value?.change();
-      break;
-    case 'coverPosterSimple':
-      layoutCoverPosterSimpleRef.value?.change();
-      break;
-    case 'coverPosterSimpleExpand':
-      layoutCoverPosterSimpleExpandRef.value?.change();
       break;
     case 'coverPosterWaterfall':
       layoutCoverPosterWaterfallRef.value?.change();

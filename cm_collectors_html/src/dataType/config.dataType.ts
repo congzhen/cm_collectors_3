@@ -1,4 +1,4 @@
-import { E_detailsDramaSeriesMode, E_resourceOpenMode, E_resourceOpenMode_SoftType, type E_tagType } from "./app.dataType";
+import { E_detailsDramaSeriesMode, E_resourceOpenMode, E_resourceOpenMode_SoftType, type E_tagType, type T_resourcesShowMode } from "./app.dataType";
 
 import dataset from "@/assets/dataset";
 import type { E_searchSort } from "./search.dataType";
@@ -64,7 +64,7 @@ export interface I_config_app {
   randomPosterPath: string; // 随机海报-路径
   randomPosterStatus: boolean; // 随机海报-状态
   resourceDetailsShowMode: string; // 资源详情-显示模式
-  resourcesShowMode: string; // 资源-显示模式
+  resourcesShowMode: T_resourcesShowMode; // 资源-显示模式
   coverPosterBoxInfoWidth: number; // 资源-显示模式-封面海报盒子-信息宽度
   coverPosterWaterfallColumn: number; // 资源-显示模式-封面海报瀑布流-列数
   coverImageFit: string;// 封面图片填充模式

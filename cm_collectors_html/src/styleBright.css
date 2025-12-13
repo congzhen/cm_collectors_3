@@ -7,6 +7,7 @@
 .bright .app-container {
   background-color: #ffffff !important;
 }
+
 /** 头部 */
 .bright .app-container .header-container .title label {
   color: #606266;
@@ -178,4 +179,61 @@
 }
 .bright .backup-section .backup-item .backup-name {
   color: #606266 !important;
+}
+/** 手机模式 */
+.bright .mobile-view {
+  background-color: transparent !important;
+}
+.bright .mobile-view .el-switch {
+  --el-switch-on-color: #444444 !important;
+  --el-switch-off-color: #606266 !important;
+}
+.bright .mobile-view .header select {
+  background-color: transparent !important;
+  color: #606266 !important;
+}
+.bright .mobile-view .header select:focus {
+  border-color: #606266;
+  box-shadow: none !important;
+}
+.bright .mobile-view .header select option {
+  background-color: transparent !important;
+  color: #606266 !important;
+}
+.bright .mobile-view .pagination button {
+  background-color: #606266 !important;
+  color: #ffffff !important;
+  border-color: #606266;
+}
+.bright .mobile-view .pagination button:focus {
+  box-shadow: none !important;
+}
+
+.bright .play-movies-mobile {
+  background-color: transparent !important;
+  color: #606266 !important;
+}
+.bright .mobile-header {
+  background-color: transparent !important;
+  color: #606266 !important;
+}
+.bright .mobile-header .title {
+  color: #606266 !important;
+}
+.bright .play-comic-mobile-container {
+  background-color: transparent !important;
+}
+.bright .play-comic-mobile-container .bottom-controls {
+  background-color: transparent !important;
+}
+.bright .play-movies-mobile .section-title {
+  border-color: #909399 !important;
+  color: #606266 !important;
+}
+.bright .play-movies-mobile .info-grid .info-item .label {
+  color: #606266 !important;
+}
+
+.bright .play-movies-mobile .info-grid .info-item .value {
+  color: #909399 !important;
 }

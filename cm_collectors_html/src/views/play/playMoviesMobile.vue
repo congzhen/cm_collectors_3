@@ -244,6 +244,7 @@ onMounted(async () => {
     font-size: 18px;
     font-weight: 500;
     padding: 15px 15px 10px;
+    margin-bottom: 6px;
     border-bottom: 1px solid #444;
   }
 

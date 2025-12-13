@@ -1,6 +1,6 @@
 <template>
   <contentRightClickMenu :resource="props.resource">
-    <div class="content-style2">
+    <div class="content-style content-style2">
       <div class="content-cover"
         :style="{ width: coverPosterSize_C.width + 'px', height: coverPosterSize_C.height + 'px' }">
         <contentCoverImage :resource="props.resource"></contentCoverImage>

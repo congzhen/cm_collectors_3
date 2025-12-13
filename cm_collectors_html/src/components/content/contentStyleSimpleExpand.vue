@@ -1,6 +1,6 @@
 <template>
   <contentRightClickMenu :resource="props.resource">
-    <div class="content-style-simple" :style="simpleStyle_C">
+    <div class="content-style content-style-simple" :style="simpleStyle_C">
       <div class="top-bar">
         <contentTagDisplay :resource="props.resource"></contentTagDisplay>
       </div>

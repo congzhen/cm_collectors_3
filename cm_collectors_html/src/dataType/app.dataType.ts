@@ -132,3 +132,13 @@ export interface I_playVideoData {
   playUrl: string;
   playType: T_VideoPlayMode;
 }
+
+
+export type T_resourcesShowMode = 'coverPoster' | 'coverPosterBox' | 'coverPosterBoxWideSeparate' | 'coverPosterSimple' | 'coverPosterSimpleExpand' | 'coverPosterWaterfall' | 'shortVideo' | 'table';
+export const A_layoutCoverPosterSlc: T_resourcesShowMode[] = [
+  'coverPoster',
+  'coverPosterBox',
+  'coverPosterBoxWideSeparate',
+  'coverPosterSimple',
+  'coverPosterSimpleExpand',
+];
