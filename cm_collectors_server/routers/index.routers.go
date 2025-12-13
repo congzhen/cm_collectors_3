@@ -74,6 +74,9 @@ func publicRouter(router *gin.Engine) {
 
 	routerGroup.GET("/resource/info/:resourceId", controllers.Resource{}.Info)
 	routerGroup.POST("/resource/dataList", controllers.Resource{}.DataList)
+	routerGroup.GET("/resource/dataListCasualView/:filesBasesId/:quantity", controllers.Resource{}.DataListCasualView)
+	routerGroup.GET("/resource/dataListHistory/:filesBasesId/:quantity", controllers.Resource{}.DataListHistory)
+	routerGroup.GET("/resource/dataListHot/:filesBasesId/:quantity", controllers.Resource{}.DataListHot)
 	routerGroup.POST("/resource/list/ids", controllers.Resource{}.ListIds)
 	routerGroup.GET("/resource/count/:filesBasesId/:performerId", controllers.Resource{}.DataCountByPerformerId)
 	routerGroup.GET("/resource/sampleImages/:resourceId", controllers.Resource{}.SampleImages)

@@ -36,6 +36,36 @@ func (Resource) DataList(c *gin.Context) {
 	}
 	response.OkWithData(resDataList, c)
 }
+func (Resource) DataListCasualView(c *gin.Context) {
+	filesBasesId := c.Param("filesBasesId")
+	var quantity int
+	GetUrlParameter_Param(c, "quantity", &quantity)
+	dataList, err := processors.Resources{}.DataListCasualView(filesBasesId, quantity)
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(dataList, c)
+}
+func (Resource) DataListHistory(c *gin.Context) {
+	filesBasesId := c.Param("filesBasesId")
+	var quantity int
+	GetUrlParameter_Param(c, "quantity", &quantity)
+	dataList, err := processors.Resources{}.DataListHistory(filesBasesId, quantity)
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(dataList, c)
+}
+func (Resource) DataListHot(c *gin.Context) {
+	filesBasesId := c.Param("filesBasesId")
+	var quantity int
+	GetUrlParameter_Param(c, "quantity", &quantity)
+	dataList, err := processors.Resources{}.DataListHot(filesBasesId, quantity)
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(dataList, c)
+}
 
 func (Resource) ListIds(c *gin.Context) {
 	var par datatype.ReqParam_ResourcesListIds

@@ -22,6 +22,27 @@ export const resourceServer = {
       }
     })
   },
+  // 获取随便看看
+  dataListCasualView: async (filesBasesId: string, quantity: number) => {
+    return await request<I_resource[]>({
+      url: `${routerGroupUri}/resource/dataListCasualView/${filesBasesId}/${quantity}`,
+      method: 'get',
+    })
+  },
+  //获取历史记录
+  dataListHistory: async (filesBasesId: string, quantity: number) => {
+    return await request<I_resource[]>({
+      url: `${routerGroupUri}/resource/dataListHistory/${filesBasesId}/${quantity}`,
+      method: 'get',
+    })
+  },
+  //获取热门资源
+  dataListHot: async (filesBasesId: string, quantity: number) => {
+    return await request<I_resource[]>({
+      url: `${routerGroupUri}/resource/dataListHot/${filesBasesId}/${quantity}`,
+      method: 'get',
+    })
+  },
   dataListByIds: async (ids: string[]) => {
     return await request<I_resource[]>({
       url: `${routerGroupUri}/resource/list/ids`,

@@ -28,6 +28,9 @@
 .bright .app-container .content-list .title-bg + .title {
   color: #ffffff;
 }
+.bright .app-container .content-list .module-content .el-divider__text {
+  background-color: #ffffff;
+}
 /** 标签 */
 .bright .app-container .main .tag-container {
   background-color: transparent;

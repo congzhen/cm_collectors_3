@@ -143,6 +143,32 @@
         <el-input-number v-model="filesConfig.coverDisplayTagFontSize" :min="8" :max="24" />
       </el-form-item>
 
+      <el-form-item label="开启显示模块">
+        <div class="module-block-group">
+          <div class="module-block">
+            <el-checkbox class="module-block-checkbox" v-model="filesConfig.casualViewModule" label="随便看看" border />
+            <div class="module-block-value-k">
+              <label class="module-block-label">显示数量</label>
+              <el-input-number v-model="filesConfig.casualViewNumber" />
+            </div>
+          </div>
+          <div class="module-block">
+            <el-checkbox class="module-block-checkbox" v-model="filesConfig.historyModule" label="历史记录" border />
+            <div class="module-block-value-k">
+              <label>显示数量</label>
+              <el-input-number v-model="filesConfig.historyNumber" />
+            </div>
+          </div>
+          <div class="module-block">
+            <el-checkbox class="module-block-checkbox" v-model="filesConfig.hotModule" label="热门资源" border />
+            <div class="module-block-value-k">
+              <label>显示数量</label>
+              <el-input-number v-model="filesConfig.hotNumber" />
+            </div>
+          </div>
+        </div>
+      </el-form-item>
+
       <el-alert title="剧照设置" type="success" :closable="false" />
       <el-form-item label="显示剧照">
         <el-switch v-model="filesConfig.sampleStatus" inline-prompt active-text="显示" inactive-text="关闭" />
@@ -517,6 +543,29 @@ onMounted(() => {
     .color-picker-btn {
       display: flex;
       align-items: center;
+    }
+  }
+
+  .module-block-group {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    .module-block {
+      display: flex;
+      gap: 10px;
+
+      .module-block-checkbox {
+        width: 120px;
+      }
+
+      .module-block-value-k {
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
     }
   }
 

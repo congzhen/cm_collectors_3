@@ -36,6 +36,8 @@ export interface I_config_app {
   definitionRgba: string; // 清晰度颜色
   detailsDramaSeriesMode: E_detailsDramaSeriesMode; // 剧集显示模式
   director_Text: string; // 导演显示文字
+  casualViewModule: boolean; //随便看看模块
+  casualViewNumber: number; // 随便看看数量
   historyModule: boolean; // 历史记录是否开启
   historyNumber: number; // 历史记录数量
   hotModule: boolean; // 热门资源是否开启
@@ -111,11 +113,13 @@ export const defualtConfigApp: I_config_app = {
   coverTitleAlign: 'left',
   resourceJustifyContent: 'flex-start',
   detailsDramaSeriesMode: E_detailsDramaSeriesMode.fileName,
-  historyModule: true,
-  hotModule: true,
-  youLikeModule: true,
+  casualViewModule: false,
+  casualViewNumber: 10,
+  historyModule: false,
   historyNumber: 10,
+  hotModule: false,
   hotNumber: 10,
+  youLikeModule: false,
   youLikeNumber: 10,
   youLikeWordNumber: 3,
   youLikeTagClass: [],

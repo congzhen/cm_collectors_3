@@ -85,6 +85,44 @@ func (t Resources) DataListByIds(db *gorm.DB, ids []string) (*[]Resources, error
 	return &dataList, err
 }
 
+// 获取随机的指定数量的记录
+func (t Resources) DataListCasualView(db *gorm.DB, filesBasesId string, quantity int) (*[]Resources, error) {
+	var dataList []Resources
+	if quantity <= 0 {
+		return &dataList, nil
+	}
+	// 获取满足条件的记录总数
+	var total int64
+	err := db.Model(&Resources{}).Where("filesBases_id = ?", filesBasesId).Count(&total).Error
+	if err != nil {
+		return nil, err
+	}
+	if total == 0 {
+		return &dataList, nil // 没有数据时返回空列表
+	}
+	db = t.Preload(db).Model(&Resources{}).Where("filesBases_id = ?", filesBasesId)
+	// 根据数据库类型使用相应的随机函数进行排序
+	if db.Dialector.Name() == "mysql" {
+		db = db.Order("RAND()")
+	} else {
+		db = db.Order("RANDOM()")
+	}
+	err = db.Limit(quantity).Find(&dataList).Error
+
+	return &dataList, err
+}
+
+func (t Resources) DataListHistory(db *gorm.DB, filesBasesId string, quantity int) (*[]Resources, error) {
+	var dataList []Resources
+	err := t.Preload(db).Model(&Resources{}).Where("filesBases_id = ?", filesBasesId).Order("lastPlayTime desc").Limit(quantity).Find(&dataList).Error
+	return &dataList, err
+}
+func (t Resources) DataListHot(db *gorm.DB, filesBasesId string, quantity int) (*[]Resources, error) {
+	var dataList []Resources
+	err := t.Preload(db).Model(&Resources{}).Where("filesBases_id = ?", filesBasesId).Order("hot desc").Limit(quantity).Find(&dataList).Error
+	return &dataList, err
+}
+
 func (t Resources) DataList(db *gorm.DB, par *datatype.ReqParam_ResourcesList) (*[]Resources, int64, error) {
 	var dataList []Resources
 	var total int64

@@ -73,7 +73,11 @@
                   <el-radio-button label="右对齐" value="right" />
                 </el-radio-group>
               </div>
-
+              <div class="setting-item">
+                <el-checkbox label="随便看看" v-model="casualViewModuleStatus" />
+                <el-checkbox label="历史记录" v-model="historyModuleStatus" />
+                <el-checkbox label="热门资源" v-model="hotModuleStatus" />
+              </div>
             </div>
           </div>
         </div>
@@ -210,7 +214,24 @@ const resourceDetailsShowMode = computed({
   }
 });
 
-
+const casualViewModuleStatus = computed({
+  get: () => store.appStoreData.currentConfigApp.casualViewModule,
+  set: (value) => {
+    store.appStoreData.currentConfigApp.casualViewModule = value;
+  }
+});
+const historyModuleStatus = computed({
+  get: () => store.appStoreData.currentConfigApp.historyModule,
+  set: (value) => {
+    store.appStoreData.currentConfigApp.historyModule = value;
+  }
+});
+const hotModuleStatus = computed({
+  get: () => store.appStoreData.currentConfigApp.hotModule,
+  set: (value) => {
+    store.appStoreData.currentConfigApp.hotModule = value;
+  }
+});
 
 const saveConfig = debounceNow(async () => {
   const result = await filesBasesServer.setFilesBasesConfigById(store.appStoreData.currentFilesBases.id, store.appStoreData.currentConfigApp);

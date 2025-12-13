@@ -21,6 +21,20 @@ func (Resources) DataList(par *datatype.ReqParam_ResourcesList) (*[]models.Resou
 	return models.Resources{}.DataList(core.DBS(), par)
 }
 
+// 获取随机的指定数量的记录
+func (Resources) DataListCasualView(filesBasesId string, quantity int) (*[]models.Resources, error) {
+	return models.Resources{}.DataListCasualView(core.DBS(), filesBasesId, quantity)
+}
+
+// 获取指定数量的历史记录
+func (Resources) DataListHistory(filesBasesId string, quantity int) (*[]models.Resources, error) {
+	return models.Resources{}.DataListHistory(core.DBS(), filesBasesId, quantity)
+}
+
+// 获取指定数量的最热记录
+func (Resources) DataListHot(filesBasesId string, quantity int) (*[]models.Resources, error) {
+	return models.Resources{}.DataListHot(core.DBS(), filesBasesId, quantity)
+}
 func (Resources) DataListByIds(ids []string) (*[]models.Resources, error) {
 	return models.Resources{}.DataListByIds(core.DBS(), ids)
 }
