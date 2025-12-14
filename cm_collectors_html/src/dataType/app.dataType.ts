@@ -86,6 +86,9 @@ export interface I_appConfig {
   logoName: string;
   isAdminLogin: boolean;
   theme: string;
+  playCloud: boolean;
+  playCloudDialog: boolean;
+  playCloudMode: T_VideoPlayMode;
 }
 
 export interface I_appConfig_scraper {

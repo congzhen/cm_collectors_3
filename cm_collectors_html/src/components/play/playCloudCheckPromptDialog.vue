@@ -3,7 +3,7 @@
     btnSubmitTitle="确定" btnCloseTitle="取消">
     <div class="play-cloud-check-content">
       <p>即将进行云播，请确保已安装云播插件。</p>
-      <p>云播插件下载地址：<a @click="handleDownloadClick">{{ downloadUrl }}</a></p>
+      <p>云播插件下载地址：<a @click="handleDownloadClick">{{ playCloudPluginDownloadUrl }}</a></p>
 
       <div class="play-cloud-mode">
         <label>云播方式：</label>
@@ -27,15 +27,17 @@ import { ref } from 'vue';
 import dialogCommon from '../com/dialog/dialog-common.vue';
 import { setPlayCloudCheckComplete } from '../../common/play';
 import type { T_VideoPlayMode } from '@/dataType/app.dataType';
-import { playCloud } from './playCloud';
-
+import { playCloud, playCloudPluginDownload, playCloudPluginDownloadUrl } from './playCloud';
+import { appStoreData } from '@/storeData/app.storeData';
+import { ElMessage } from 'element-plus';
+const store = {
+  appStoreData: appStoreData(),
+}
 // 定义本地存储的键名
 const CLOUD_PLAYER_MODE_KEY = 'cloud-player-mode';
 
 const dialogCommonRef = ref<InstanceType<typeof dialogCommon>>();
 const noPromptChecked = ref(false);
-
-const downloadUrl = window.location.origin + '/video_caller.zip';
 
 const dramaSeriesId = ref('');
 const callbackFunction = ref<((mode: T_VideoPlayMode) => void) | null>(null);
@@ -73,40 +75,26 @@ const handleConfirm = async () => {
 const handleDownloadClick = async (event: Event) => {
   // 阻止默认行为，我们自己处理下载
   event.preventDefault();
-
-  try {
-    // 检查是否有访问父窗口的权限（即是否在 iframe 中）
-    let hasParentAccess = false;
-    try {
-      hasParentAccess = !!(window.top && window.top !== window.self);
-    } catch {
-      // 如果访问被拒绝（安全错误），则认为在 iframe 中但无访问权限
-      hasParentAccess = false;
-    }
-
-    if (hasParentAccess) {
-      // 在 iframe 中且可以访问父窗口，通过父窗口打开下载
-      if (window.top) {
-        window.top.location.href = downloadUrl;
-      } else {
-        window.location.href = downloadUrl;
-      }
-    } else {
-      // 不在 iframe 中或无法访问父窗口，直接打开下载
-      window.location.href = downloadUrl;
-    }
-  } catch (error) {
-    console.error('下载插件失败:', error);
-    alert('无法下载插件，请检查网络连接或手动下载。');
-  }
+  playCloudPluginDownload();
 };
 
 const open = (_dramaSeriesId: string, fn?: (mode: T_VideoPlayMode) => void) => {
+  if (!store.appStoreData.appConfig.playCloud) {
+    ElMessage.warning('云播功能未启用');
+    return;
+  }
   init(_dramaSeriesId);
   if (fn) {
     callbackFunction.value = fn;
   }
-  dialogCommonRef.value?.open();
+  if (store.appStoreData.appConfig.playCloudDialog) {
+    dialogCommonRef.value?.open();
+  } else {
+    playCloudMode.value = store.appStoreData.appConfig.playCloudMode
+    handleConfirm();
+  }
+
+
   /*
   if (!playCloudCheck()) {
     dialogCommonRef.value?.open();

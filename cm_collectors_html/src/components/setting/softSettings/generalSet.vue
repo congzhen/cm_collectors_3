@@ -3,14 +3,12 @@
     <el-form v-model="formData" label-width="260px">
       <el-form-item label="软件logo名称">
         <el-input v-model="formData.logoName" />
-        <el-text class="warning-text" type="warning" size="small">重新加载后生效</el-text>
       </el-form-item>
       <el-form-item label="主题">
         <el-select v-model="formData.theme">
           <el-option label="暗黑" value="default" />
           <el-option label="明亮" value="bright" />
         </el-select>
-        <el-text class="warning-text" type="warning" size="small"> 重新加载后生效</el-text>
       </el-form-item>
       <el-form-item label="管理需登录">
         <el-switch v-model="formData.isAdminLogin" />
@@ -33,6 +31,23 @@
             例如: http://192.168.1.51:12345/api/tvbox/home
           </el-text>
         </div>
+      </el-form-item>
+      <el-form-item label="开启云播功能">
+        <div>
+          <div>
+            <el-switch v-model="formData.playCloud" />
+          </div>
+          <p>云播插件下载地址：<a @click="playCloudPluginDownload">{{ playCloudPluginDownloadUrl }}</a></p>
+        </div>
+      </el-form-item>
+      <el-form-item label="开启云播询问弹窗">
+        <el-switch v-model="formData.playCloudDialog" />
+      </el-form-item>
+      <el-form-item label="默认云播播放方式">
+        <el-radio-group v-model="formData.playCloudMode">
+          <el-radio-button value="m3u8">m3u8</el-radio-button>
+          <el-radio-button label="mp4">mp4</el-radio-button>
+        </el-radio-group>
       </el-form-item>
       <el-form-item label="不允许服务器打开文件或文件夹">
         <el-switch v-model="formData.notAllowServerOpenFile" />
@@ -115,6 +130,9 @@
       </el-form-item>
     </el-form>
     <div class="save-button-container">
+      <el-text class="warning-text" type="warning" size="small">
+        当前配置需要重新加载后生效
+      </el-text>
       <el-button type="primary" @click="saveHandle" icon="Edit">保存</el-button>
     </div>
   </div>
@@ -133,6 +151,7 @@ import { ElMessage } from 'element-plus';
 import { debounceNow } from '@/assets/debounce';
 import type { I_sfm_FileEntry } from '@/components/serverFileManagement/com/dataType';
 import dataset from '@/assets/dataset';
+import { playCloudPluginDownload, playCloudPluginDownloadUrl } from '@/components/play/playCloud'
 
 const serverFileManagementDialogRef = ref<InstanceType<typeof serverFileManagementDialog>>();
 
@@ -144,6 +163,9 @@ const formData = ref<I_appSystemConfig>({
   language: 'zhCn',
   notAllowServerOpenFile: false,
   theme: 'default',
+  playCloud: true,
+  playCloudDialog: true,
+  playCloudMode: 'm3u8',
   playVideoFormats: dataset.playVideoFormats,
   playAudioFormats: dataset.playAudioFormats,
   serverFileManagementRootPath: dataset.serverFileManagementRootPath,
@@ -278,6 +300,7 @@ onMounted(async () => {
     background-color: #262727;
     display: flex;
     justify-content: flex-end;
+    gap: 10px;
   }
 
   .tary-menu-container {

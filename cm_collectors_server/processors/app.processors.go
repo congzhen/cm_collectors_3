@@ -23,9 +23,12 @@ func (App) InitData() (*App, error) {
 	}
 	return &App{
 		AppConfig: datatype.App_Config{
-			LogoName:     core.Config.General.LogoName,
-			IsAdminLogin: core.Config.General.IsAdminLogin,
-			Theme:        core.Config.General.Theme,
+			LogoName:        core.Config.General.LogoName,
+			IsAdminLogin:    core.Config.General.IsAdminLogin,
+			Theme:           core.Config.General.Theme,
+			PlayCloud:       core.Config.General.PlayCloud,
+			PlayCloudDialog: core.Config.General.PlayCloudDialog,
+			PlayCloudMode:   core.Config.General.PlayCloudMode,
 		},
 		FilesBases:     filesBases,
 		PerformerBases: performerBases,
@@ -35,8 +38,11 @@ func (App) InitData() (*App, error) {
 func (App) GetConfig() datatype.App_SystemConfig {
 	config := datatype.App_SystemConfig{
 		App_Config: datatype.App_Config{
-			LogoName:     core.Config.General.LogoName,
-			IsAdminLogin: core.Config.General.IsAdminLogin,
+			LogoName:        core.Config.General.LogoName,
+			IsAdminLogin:    core.Config.General.IsAdminLogin,
+			PlayCloud:       core.Config.General.PlayCloud,
+			PlayCloudDialog: core.Config.General.PlayCloudDialog,
+			PlayCloudMode:   core.Config.General.PlayCloudMode,
 		},
 		AdminPassword:          "",
 		IsAutoCreateM3u8:       core.Config.General.IsAutoCreateM3u8,
@@ -66,6 +72,9 @@ func (App) SetConfig(config datatype.App_SystemConfig) error {
 	core.Config.General.Language = config.Language
 	core.Config.General.NotAllowServerOpenFile = config.NotAllowServerOpenFile
 	core.Config.General.Theme = config.Theme
+	core.Config.General.PlayCloud = config.PlayCloud
+	core.Config.General.PlayCloudDialog = config.PlayCloudDialog
+	core.Config.General.PlayCloudMode = config.PlayCloudMode
 	core.Config.Play.PlayVideoFormats = config.PlayVideoFormats
 	core.Config.Play.PlayAudioFormats = config.PlayAudioFormats
 	core.Config.General.VideoRateLimit = config.VideoRateLimit

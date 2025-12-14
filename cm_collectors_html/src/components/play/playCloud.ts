@@ -3,6 +3,8 @@ import { getPlayVideoURL } from "@/common/play";
 import type { T_VideoPlayMode } from "@/dataType/app.dataType";
 import { resourcesDramaSeriesServer } from "@/server/resource.server";
 
+export const playCloudPluginDownloadUrl = window.location.origin + '/video_caller.zip';
+
 export const playCloud = async (dramaSeriesId: string, mode: T_VideoPlayMode) => {
 
   const result = await resourcesDramaSeriesServer.infoById(dramaSeriesId);
@@ -45,3 +47,31 @@ export const playCloud = async (dramaSeriesId: string, mode: T_VideoPlayMode) =>
     alert('无法打开云播放器，请确保已正确安装并配置了相关组件。');
   }
 };
+
+export const playCloudPluginDownload = async () => {
+  try {
+    // 检查是否有访问父窗口的权限（即是否在 iframe 中）
+    let hasParentAccess = false;
+    try {
+      hasParentAccess = !!(window.top && window.top !== window.self);
+    } catch {
+      // 如果访问被拒绝（安全错误），则认为在 iframe 中但无访问权限
+      hasParentAccess = false;
+    }
+
+    if (hasParentAccess) {
+      // 在 iframe 中且可以访问父窗口，通过父窗口打开下载
+      if (window.top) {
+        window.top.location.href = playCloudPluginDownloadUrl;
+      } else {
+        window.location.href = playCloudPluginDownloadUrl;
+      }
+    } else {
+      // 不在 iframe 中或无法访问父窗口，直接打开下载
+      window.location.href = playCloudPluginDownloadUrl;
+    }
+  } catch (error) {
+    console.error('下载插件失败:', error);
+    alert('无法下载插件，请检查网络连接或手动下载。');
+  }
+}

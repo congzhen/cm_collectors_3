@@ -8,6 +8,9 @@ type General struct {
 	Language               string         `yaml:"language"`
 	NotAllowServerOpenFile bool           `yaml:"notAllowServerOpenFile"`
 	Theme                  string         `yaml:"theme"`
+	PlayCloud              bool           `yaml:"playCloud"`
+	PlayCloudDialog        bool           `yaml:"playCloudDialog"`
+	PlayCloudMode          string         `yaml:"playCloudMode"`
 	VideoRateLimit         VideoRateLimit `yaml:"videoRateLimit"`
 }
 type VideoRateLimit struct {

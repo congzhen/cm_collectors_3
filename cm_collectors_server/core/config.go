@@ -31,6 +31,9 @@ func getDefaultConfig() *config.Config {
 			Language:               "zhCn",
 			NotAllowServerOpenFile: false,
 			Theme:                  "default",
+			PlayCloud:              true,
+			PlayCloudDialog:        true,
+			PlayCloudMode:          "m3u8",
 			VideoRateLimit: config.VideoRateLimit{
 				Enabled:           false,
 				RequestsPerSecond: 5,  // 每秒5个请求
