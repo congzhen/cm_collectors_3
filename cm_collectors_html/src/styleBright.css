@@ -72,6 +72,23 @@
 .bright .details-dialog-container .title {
   color: #606266;
 }
+
+/** play */
+.bright .app-container .main-container-overlay {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+}
+.bright .app-container .header {
+  background-color: #ffffff !important;
+}
+.bright .app-container .play-movies-container .main-container .main .main-left .info-base {
+  color: #ffffff !important;
+}
+.bright .app-container .play-movies-container .main-container .main .main-right .title {
+  color: #ffffff;
+}
+.bright .app-container .play-movies-container .performer-list .performer-item {
+  background-color: #fcecae !important;
+}
 /** 抽屉 */
 .bright .el-drawer__header {
   color: #606266 !important;
