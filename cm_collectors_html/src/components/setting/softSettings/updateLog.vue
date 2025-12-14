@@ -16,6 +16,31 @@
         </div>
       </el-timeline-item>
       -->
+      <el-timeline-item center timestamp="2025/12/15" placement="top">
+        <h4 class="version-title">版本: v 3.0.7</h4>
+        <div class="rawContent">
+          <h5 class="section-title">新特性</h5>
+          <p class="logContent">云播功能优化：默认使用文件名作为播放标题</p>
+          <p class="logContent">定时任务增强：支持立即执行已设定的定时任务</p>
+          <p class="logContent">刮削功能改进：增加未搜索到ID时的错误处理机制</p>
+          <p class="logContent">资源管理界面升级：新增文件图标及优化对话框交互体验</p>
+          <p class="logContent">用户体验优化：新增一键返回页面顶部功能</p>
+          <p class="logContent">演员模块增强：演员卡片显示该演员关联的资源数量</p>
+          <p class="logContent">演员管理完善：新增彻底删除演员数据的功能</p>
+          <p class="logContent">NFO导入智能匹配：支持模糊匹配和随机匹配模式</p>
+          <p class="logContent">界面个性化：新增明亮主题模式，支持深色/明亮主题自由切换</p>
+          <p class="logContent">标题提取强化：字母提取支持日文假名</p>
+          <p class="logContent">资源排序自定义：支持配置资源排序</p>
+          <p class="logContent">资源推荐功能："随便看看"、"历史记录"、"热门资源" 模块</p>
+          <p class="logContent">云播配置细化：新增云播功能相关配置选项</p>
+        </div>
+        <div class="rawContent">
+          <h5 class="section-title bug-fix">BUG修复</h5>
+          <p class="logContent">修复导入导出功能在软件端无法正常打开文件的问题</p>
+          <p class="logContent">修复资源排序逻辑错误导致排序结果不正确的问题</p>
+          <p class="logContent">修复移动端部分页面元素显示样式异常的问题</p>
+        </div>
+      </el-timeline-item>
       <el-timeline-item center timestamp="2025/12/01" placement="top">
         <h4 class="version-title">版本: v 3.0.6</h4>
         <div class="rawContent">
