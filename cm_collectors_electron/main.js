@@ -67,6 +67,19 @@ function createWindow() {
     ipcMain.handle('window-is-maximized', () => {
         return mainWindow.isMaximized();
     });
+
+    // 监听缩放控制事件
+    ipcMain.on('zoom-in', () => {
+        mainWindow.webContents.setZoomFactor(mainWindow.webContents.getZoomFactor() + 0.1);
+    });
+
+    ipcMain.on('zoom-out', () => {
+        mainWindow.webContents.setZoomFactor(mainWindow.webContents.getZoomFactor() - 0.1);
+    });
+
+    ipcMain.on('zoom-reset', () => {
+        mainWindow.webContents.setZoomFactor(1);
+    });
 }
 
 app.whenReady().then(createWindow);

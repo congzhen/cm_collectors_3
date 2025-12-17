@@ -47,6 +47,26 @@ ipcRenderer.on('set-url', (event, url) => {
     }
 });
 
+// 添加键盘事件监听器实现缩放功能
+document.addEventListener('keydown', (event) => {
+    // 检查是否按下了 Ctrl 键和 +/- 键
+    if (event.ctrlKey) {
+        if (event.key === '+' || event.key === '=') {
+            // 发送放大消息到主进程
+            ipcRenderer.send('zoom-in');
+            event.preventDefault();
+        } else if (event.key === '-' || event.key === '_') {
+            // 发送缩小消息到主进程
+            ipcRenderer.send('zoom-out');
+            event.preventDefault();
+        } else if (event.key === '0') {
+            // 发送重置缩放消息到主进程
+            ipcRenderer.send('zoom-reset');
+            event.preventDefault();
+        }
+    }
+});
+
 // 更新最大化按钮图标
 async function updateMaximizeButton() {
     isMaximized = await ipcRenderer.invoke('window-is-maximized');
