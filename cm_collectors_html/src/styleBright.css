@@ -200,6 +200,24 @@
 .bright .backup-section .backup-item .backup-name {
   color: #606266 !important;
 }
+
+/** 管理员登录 */
+.bright .login-container {
+  background: transparent !important;
+}
+.bright .login-container .login-box {
+  background-color: transparent !important;
+}
+.bright .login-container .login-box .login-header h2 {
+  color: #606266;
+}
+.bright .login-container .login-box .el-input__wrapper {
+  background: transparent !important;
+  border-color: #dcdfe6 !important;
+}
+.bright .login-container .login-box .el-input__inner {
+  color: #606266 !important;
+}
 /** 手机模式 */
 .bright .mobile-view {
   background-color: transparent !important;

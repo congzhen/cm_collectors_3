@@ -84,7 +84,7 @@
            -->
         </div>
         <div class="menu-item" v-if="store.appStoreData.isAdminLogin && !store.appStoreData.isAdminLoginStatus">
-          <el-link type="primary" href="/adminLogin">登录</el-link>
+          <el-link type="primary" @click="goToAdminLogin">登录</el-link>
         </div>
       </div>
     </div>
@@ -185,6 +185,9 @@ const goToPerformer = () => {
   } else {
     router.push(`/performer/${store.appStoreData.currentMainPerformerBasesId}`)
   }
+}
+const goToAdminLogin = () => {
+  router.push('/adminLogin')
 }
 const goToSetting = () => {
   router.push('/setting')

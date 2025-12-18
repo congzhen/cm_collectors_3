@@ -23,6 +23,10 @@ axios.interceptors.request.use(
     if (token) {
       config.headers.token = token;
     }
+    const adminToken = sessionStorage.getItem('adminToken');
+    if (adminToken) {
+      config.headers.adminToken = adminToken;
+    }
     return config;
   }
 );

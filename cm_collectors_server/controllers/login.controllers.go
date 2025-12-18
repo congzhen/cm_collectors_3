@@ -24,5 +24,5 @@ func (t Login) Admin(c *gin.Context) {
 		return
 	}
 	t.setCookie(c, "adminToken", token)
-	response.OkWithData(true, c)
+	response.OkWithData(token, c)
 }
