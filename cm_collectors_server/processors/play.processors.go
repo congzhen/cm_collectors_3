@@ -6,11 +6,13 @@ import (
 	"cm_collectors_server/models"
 	processorsFFmpeg "cm_collectors_server/processorsFFmpeg"
 	"cm_collectors_server/utils"
+	"context"
 	"errors"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"time"
 
 	"github.com/skratchdot/open-golang/open"
 )
@@ -58,7 +60,7 @@ func (p Play) PlayUpdate(resourceId, dramaSeriesId string) error {
 	}
 	var dramaSeries = models.ResourcesDramaSeries{}
 	if dramaSeriesId != "" {
-		for _, v := range *&resourceInfo.ResourcesDramaSeries {
+		for _, v := range resourceInfo.ResourcesDramaSeries {
 			if v.ID == dramaSeriesId {
 				dramaSeries = v
 			}
@@ -164,6 +166,11 @@ func (p Play) openFolderAndSelectFile(filePath string) error {
 		cmd = exec.Command("xdg-open", folderPath)
 	}
 
+	// 添加超时控制，防止进程挂起
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	cmd = exec.CommandContext(ctx, cmd.Path, cmd.Args[1:]...)
+
 	// 执行命令
 	err := cmd.Run()
 
@@ -175,6 +182,23 @@ func (p Play) openFolderAndSelectFile(filePath string) error {
 			if exitError.ExitCode() == 1 {
 				return nil
 			}
+		}
+	}
+
+	// 确保命令执行完成后资源得到释放
+	if cmd != nil && cmd.Process != nil {
+		// 等待一段时间确保进程完全退出
+		done := make(chan error, 1)
+		go func() {
+			done <- cmd.Wait()
+		}()
+
+		select {
+		case <-done:
+			// 正常完成
+		case <-time.After(1 * time.Second):
+			// 超时，强制杀死进程
+			cmd.Process.Kill()
 		}
 	}
 
