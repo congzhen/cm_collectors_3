@@ -5,9 +5,10 @@ general:
     language: zhCn
     notAllowServerOpenFile: false
     theme: bright
-    playCloud: true
-    playCloudDialog: true
+    closePlayCloud: false
+    closePlayCloudDialog: false
     playCloudMode: m3u8
+    windowsStartNotRunApp: false
     videoRateLimit:
         enabled: false
         requestsPerSecond: 5

@@ -86,8 +86,8 @@ export interface I_appConfig {
   logoName: string;
   isAdminLogin: boolean;
   theme: string;
-  playCloud: boolean;
-  playCloudDialog: boolean;
+  closePlayCloud: boolean;
+  closePlayCloudDialog: boolean;
   playCloudMode: T_VideoPlayMode;
 }
 

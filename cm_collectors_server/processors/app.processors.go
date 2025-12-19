@@ -23,12 +23,12 @@ func (App) InitData() (*App, error) {
 	}
 	return &App{
 		AppConfig: datatype.App_Config{
-			LogoName:        core.Config.General.LogoName,
-			IsAdminLogin:    core.Config.General.IsAdminLogin,
-			Theme:           core.Config.General.Theme,
-			PlayCloud:       core.Config.General.PlayCloud,
-			PlayCloudDialog: core.Config.General.PlayCloudDialog,
-			PlayCloudMode:   core.Config.General.PlayCloudMode,
+			LogoName:             core.Config.General.LogoName,
+			IsAdminLogin:         core.Config.General.IsAdminLogin,
+			Theme:                core.Config.General.Theme,
+			ClosePlayCloud:       core.Config.General.ClosePlayCloud,
+			ClosePlayCloudDialog: core.Config.General.ClosePlayCloudDialog,
+			PlayCloudMode:        core.Config.General.PlayCloudMode,
 		},
 		FilesBases:     filesBases,
 		PerformerBases: performerBases,
@@ -38,11 +38,11 @@ func (App) InitData() (*App, error) {
 func (App) GetConfig() datatype.App_SystemConfig {
 	config := datatype.App_SystemConfig{
 		App_Config: datatype.App_Config{
-			LogoName:        core.Config.General.LogoName,
-			IsAdminLogin:    core.Config.General.IsAdminLogin,
-			PlayCloud:       core.Config.General.PlayCloud,
-			PlayCloudDialog: core.Config.General.PlayCloudDialog,
-			PlayCloudMode:   core.Config.General.PlayCloudMode,
+			LogoName:             core.Config.General.LogoName,
+			IsAdminLogin:         core.Config.General.IsAdminLogin,
+			ClosePlayCloud:       core.Config.General.ClosePlayCloud,
+			ClosePlayCloudDialog: core.Config.General.ClosePlayCloudDialog,
+			PlayCloudMode:        core.Config.General.PlayCloudMode,
 		},
 		AdminPassword:          "",
 		Language:               core.Config.General.Language,
@@ -71,8 +71,8 @@ func (App) SetConfig(config datatype.App_SystemConfig) error {
 	core.Config.General.Language = config.Language
 	core.Config.General.NotAllowServerOpenFile = config.NotAllowServerOpenFile
 	core.Config.General.Theme = config.Theme
-	core.Config.General.PlayCloud = config.PlayCloud
-	core.Config.General.PlayCloudDialog = config.PlayCloudDialog
+	core.Config.General.ClosePlayCloud = config.ClosePlayCloud
+	core.Config.General.ClosePlayCloudDialog = config.ClosePlayCloudDialog
 	core.Config.General.PlayCloudMode = config.PlayCloudMode
 	core.Config.General.WindowsStartNotRunApp = config.WindowsStartNotRunApp
 	core.Config.Play.PlayVideoFormats = config.PlayVideoFormats

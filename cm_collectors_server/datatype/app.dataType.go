@@ -28,12 +28,12 @@ const (
 )
 
 type App_Config struct {
-	LogoName        string `json:"logoName"`
-	IsAdminLogin    bool   `json:"isAdminLogin"`
-	Theme           string `json:"theme"`
-	PlayCloud       bool   `json:"playCloud"`
-	PlayCloudDialog bool   `json:"playCloudDialog"`
-	PlayCloudMode   string `json:"playCloudMode"`
+	LogoName             string `json:"logoName"`
+	IsAdminLogin         bool   `json:"isAdminLogin"`
+	Theme                string `json:"theme"`
+	ClosePlayCloud       bool   `json:"closePlayCloud"`
+	ClosePlayCloudDialog bool   `json:"closePlayCloudDialog"`
+	PlayCloudMode        string `json:"playCloudMode"`
 }
 
 type App_Config_Scraper struct {

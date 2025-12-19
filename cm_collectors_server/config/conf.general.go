@@ -7,8 +7,8 @@ type General struct {
 	Language               string         `yaml:"language"`
 	NotAllowServerOpenFile bool           `yaml:"notAllowServerOpenFile"`
 	Theme                  string         `yaml:"theme"`
-	PlayCloud              bool           `yaml:"playCloud"`
-	PlayCloudDialog        bool           `yaml:"playCloudDialog"`
+	ClosePlayCloud         bool           `yaml:"closePlayCloud"`
+	ClosePlayCloudDialog   bool           `yaml:"closePlayCloudDialog"`
 	PlayCloudMode          string         `yaml:"playCloudMode"`
 	WindowsStartNotRunApp  bool           `yaml:"windowsStartNotRunApp"`
 	VideoRateLimit         VideoRateLimit `yaml:"videoRateLimit"`

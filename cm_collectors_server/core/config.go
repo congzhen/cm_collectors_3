@@ -29,8 +29,8 @@ func getDefaultConfig() *config.Config {
 			Language:               "zhCn",
 			NotAllowServerOpenFile: false,
 			Theme:                  "default",
-			PlayCloud:              true,
-			PlayCloudDialog:        true,
+			ClosePlayCloud:         false,
+			ClosePlayCloudDialog:   false,
 			PlayCloudMode:          "m3u8",
 			WindowsStartNotRunApp:  false,
 			VideoRateLimit: config.VideoRateLimit{
@@ -217,9 +217,6 @@ func initConf() *config.Config {
 	if err != nil {
 		log.Fatalf("config Init Unmarshal: %v", err)
 	}
-
-	fmt.Printf("%#v\n", c)
-	return c
 	// 使用默认配置填充未设置的字段
 	mergeWithDefaults(defaultConfig, c)
 

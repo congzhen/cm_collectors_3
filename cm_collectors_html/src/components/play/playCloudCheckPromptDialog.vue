@@ -79,7 +79,7 @@ const handleDownloadClick = async (event: Event) => {
 };
 
 const open = (_dramaSeriesId: string, fn?: (mode: T_VideoPlayMode) => void) => {
-  if (!store.appStoreData.appConfig.playCloud) {
+  if (store.appStoreData.appConfig.closePlayCloud) {
     ElMessage.warning('云播功能未启用');
     return;
   }
@@ -87,11 +87,11 @@ const open = (_dramaSeriesId: string, fn?: (mode: T_VideoPlayMode) => void) => {
   if (fn) {
     callbackFunction.value = fn;
   }
-  if (store.appStoreData.appConfig.playCloudDialog) {
-    dialogCommonRef.value?.open();
-  } else {
+  if (store.appStoreData.appConfig.closePlayCloudDialog) {
     playCloudMode.value = store.appStoreData.appConfig.playCloudMode
     handleConfirm();
+  } else {
+    dialogCommonRef.value?.open();
   }
 
 

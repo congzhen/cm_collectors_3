@@ -32,16 +32,16 @@
           </el-text>
         </div>
       </el-form-item>
-      <el-form-item label="开启云播功能">
+      <el-form-item label="关闭云播功能">
         <div>
           <div>
-            <el-switch v-model="formData.playCloud" />
+            <el-switch v-model="formData.closePlayCloud" />
           </div>
           <p>云播插件下载地址：<a @click="playCloudPluginDownload">{{ playCloudPluginDownloadUrl }}</a></p>
         </div>
       </el-form-item>
-      <el-form-item label="开启云播询问弹窗">
-        <el-switch v-model="formData.playCloudDialog" />
+      <el-form-item label="关闭云播询问弹窗">
+        <el-switch v-model="formData.closePlayCloudDialog" />
       </el-form-item>
       <el-form-item label="默认云播播放方式">
         <el-radio-group v-model="formData.playCloudMode">
@@ -162,8 +162,8 @@ const formData = ref<I_appSystemConfig>({
   language: 'zhCn',
   notAllowServerOpenFile: false,
   theme: 'default',
-  playCloud: true,
-  playCloudDialog: true,
+  closePlayCloud: true,
+  closePlayCloudDialog: true,
   playCloudMode: 'm3u8',
   playVideoFormats: dataset.playVideoFormats,
   playAudioFormats: dataset.playAudioFormats,
