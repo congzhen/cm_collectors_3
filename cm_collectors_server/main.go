@@ -40,7 +40,7 @@ func main() {
 			break
 		}
 	}
-
+	appInit()
 	if trayMode {
 		fmt.Println("以系统托盘模式运行")
 		// 以系统托盘模式运行
@@ -50,6 +50,20 @@ func main() {
 		// 正常模式运行
 		serverInit(false)
 	}
+}
+
+func appInit() {
+	//初始化核心
+	core.Init()
+	//初始化项目数据库数据库
+	dbInitErr := models.DB_Init(core.DBS())
+	if dbInitErr != nil {
+		fmt.Println(dbInitErr)
+		return
+	}
+
+	//计划任务
+	processors.InitCronjob()
 }
 
 // startTrayMode 根据构建标签决定是否启用系统托盘
@@ -79,17 +93,6 @@ func startServerInBackground() string {
 // serverInit 初始化服务器配置和组件
 // 该函数负责初始化核心配置、数据库、路由等服务器运行所需组件
 func serverInit(trayMode bool) {
-	//初始化核心
-	core.Init()
-	//初始化项目数据库数据库
-	dbInitErr := models.DB_Init(core.DBS())
-	if dbInitErr != nil {
-		fmt.Println(dbInitErr)
-		return
-	}
-
-	//计划任务
-	processors.InitCronjob()
 
 	// 禁用控制台颜色
 	// gin.DisableConsoleColor()

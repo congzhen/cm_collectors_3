@@ -2,7 +2,6 @@ general:
     logoName: CM File Collectors
     isAdminLogin: false
     adminPassword: ""
-    isAutoCreateM3u8: true
     language: zhCn
     notAllowServerOpenFile: false
     theme: bright

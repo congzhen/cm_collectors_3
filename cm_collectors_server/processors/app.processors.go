@@ -45,12 +45,12 @@ func (App) GetConfig() datatype.App_SystemConfig {
 			PlayCloudMode:   core.Config.General.PlayCloudMode,
 		},
 		AdminPassword:          "",
-		IsAutoCreateM3u8:       core.Config.General.IsAutoCreateM3u8,
 		Language:               core.Config.General.Language,
 		NotAllowServerOpenFile: core.Config.General.NotAllowServerOpenFile,
 		Theme:                  core.Config.General.Theme,
 		PlayVideoFormats:       core.Config.Play.PlayVideoFormats,
 		PlayAudioFormats:       core.Config.Play.PlayAudioFormats,
+		WindowsStartNotRunApp:  core.Config.General.WindowsStartNotRunApp,
 		VideoRateLimit:         core.Config.General.VideoRateLimit,
 		Scraper: datatype.App_Config_Scraper{
 			BrowserPath:    core.Config.Scraper.BrowserPath,
@@ -68,13 +68,13 @@ func (App) SetConfig(config datatype.App_SystemConfig) error {
 	if config.AdminPassword != "" {
 		core.Config.General.AdminPassword = config.AdminPassword
 	}
-	core.Config.General.IsAutoCreateM3u8 = config.IsAutoCreateM3u8
 	core.Config.General.Language = config.Language
 	core.Config.General.NotAllowServerOpenFile = config.NotAllowServerOpenFile
 	core.Config.General.Theme = config.Theme
 	core.Config.General.PlayCloud = config.PlayCloud
 	core.Config.General.PlayCloudDialog = config.PlayCloudDialog
 	core.Config.General.PlayCloudMode = config.PlayCloudMode
+	core.Config.General.WindowsStartNotRunApp = config.WindowsStartNotRunApp
 	core.Config.Play.PlayVideoFormats = config.PlayVideoFormats
 	core.Config.Play.PlayAudioFormats = config.PlayAudioFormats
 	core.Config.General.VideoRateLimit = config.VideoRateLimit

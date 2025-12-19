@@ -109,11 +109,11 @@ export interface I_taryMenu {
 
 export interface I_appSystemConfig extends I_appConfig {
   adminPassword: string;
-  isAutoCreateM3u8: boolean;
   language: string;
   notAllowServerOpenFile: boolean;
   playVideoFormats: string[];
   playAudioFormats: string[];
+  windowsStartNotRunApp: boolean;
   serverFileManagementRootPath: string[];
   videoRateLimit: I_appSystemVideoRateLimit;
   scraper: I_appConfig_scraper;

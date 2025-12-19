@@ -4,13 +4,13 @@ type General struct {
 	LogoName               string         `yaml:"logoName"`
 	IsAdminLogin           bool           `yaml:"isAdminLogin"`
 	AdminPassword          string         `yaml:"adminPassword"`
-	IsAutoCreateM3u8       bool           `yaml:"isAutoCreateM3u8"`
 	Language               string         `yaml:"language"`
 	NotAllowServerOpenFile bool           `yaml:"notAllowServerOpenFile"`
 	Theme                  string         `yaml:"theme"`
 	PlayCloud              bool           `yaml:"playCloud"`
 	PlayCloudDialog        bool           `yaml:"playCloudDialog"`
 	PlayCloudMode          string         `yaml:"playCloudMode"`
+	WindowsStartNotRunApp  bool           `yaml:"windowsStartNotRunApp"`
 	VideoRateLimit         VideoRateLimit `yaml:"videoRateLimit"`
 }
 type VideoRateLimit struct {

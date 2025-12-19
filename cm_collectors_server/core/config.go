@@ -14,10 +14,9 @@ const configFile = "config.yaml"
 
 // 定义始终优先使用配置文件值的字段列表（即使为零值也不使用默认值覆盖）
 var configFilePriorityFields = map[string]bool{
-	"General.IsAutoCreateM3u8": true,
-	"Scraper.LogStatus":        true,
-	"Scraper.Headless":         true,
-	"Scraper.VisitHome":        true,
+	"Scraper.LogStatus": true,
+	"Scraper.Headless":  true,
+	"Scraper.VisitHome": true,
 }
 
 // getDefaultConfig 返回默认配置
@@ -27,13 +26,13 @@ func getDefaultConfig() *config.Config {
 			LogoName:               "CM File Collectors",
 			IsAdminLogin:           false,
 			AdminPassword:          "",
-			IsAutoCreateM3u8:       true,
 			Language:               "zhCn",
 			NotAllowServerOpenFile: false,
 			Theme:                  "default",
 			PlayCloud:              true,
 			PlayCloudDialog:        true,
 			PlayCloudMode:          "m3u8",
+			WindowsStartNotRunApp:  false,
 			VideoRateLimit: config.VideoRateLimit{
 				Enabled:           false,
 				RequestsPerSecond: 5,  // 每秒5个请求
@@ -219,6 +218,8 @@ func initConf() *config.Config {
 		log.Fatalf("config Init Unmarshal: %v", err)
 	}
 
+	fmt.Printf("%#v\n", c)
+	return c
 	// 使用默认配置填充未设置的字段
 	mergeWithDefaults(defaultConfig, c)
 

@@ -19,11 +19,11 @@
           留空表示不修改密码。如果对外开放访问，请务必设置强密码。忘记密码可在服务器配置文件config.yaml中查看或修改
         </el-text>
       </el-form-item>
-      <!--
-        <el-form-item label="自动创建视频m3u8文件">
-          <el-switch v-model="formData.isAutoCreateM3u8" />
-        </el-form-item>
-        -->
+
+      <el-form-item label="Windows版启动，不打开应用程序">
+        <el-switch v-model="formData.windowsStartNotRunApp" />
+      </el-form-item>
+
       <el-form-item label="TV Box 地址">
         <div>
           <p>[域名]或[IP:端口号]/api/tvbox/home</p>
@@ -159,7 +159,6 @@ const formData = ref<I_appSystemConfig>({
   logoName: 'CM File Collectors',
   isAdminLogin: false,
   adminPassword: '',
-  isAutoCreateM3u8: false,
   language: 'zhCn',
   notAllowServerOpenFile: false,
   theme: 'default',
@@ -169,6 +168,7 @@ const formData = ref<I_appSystemConfig>({
   playVideoFormats: dataset.playVideoFormats,
   playAudioFormats: dataset.playAudioFormats,
   serverFileManagementRootPath: dataset.serverFileManagementRootPath,
+  windowsStartNotRunApp: false,
   videoRateLimit: {
     enabled: false,
     requestsPerSecond: 5,

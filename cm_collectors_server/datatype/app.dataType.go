@@ -44,12 +44,12 @@ type App_Config_Scraper struct {
 type App_SystemConfig struct {
 	App_Config
 	AdminPassword                string                `json:"adminPassword"`
-	IsAutoCreateM3u8             bool                  `json:"isAutoCreateM3u8"`
 	Language                     string                `json:"language"`
 	NotAllowServerOpenFile       bool                  `json:"notAllowServerOpenFile"`
 	Theme                        string                `json:"theme"`
 	PlayVideoFormats             []string              `json:"playVideoFormats"`
 	PlayAudioFormats             []string              `json:"playAudioFormats"`
+	WindowsStartNotRunApp        bool                  `json:"windowsStartNotRunApp"`
 	VideoRateLimit               config.VideoRateLimit `json:"videoRateLimit"`
 	Scraper                      App_Config_Scraper    `json:"scraper"`
 	TaryMenu                     []config.TaryMenu     `json:"taryMenu"`

@@ -9,6 +9,7 @@ import (
 	"os"
 	"time"
 
+	"cm_collectors_server/core"
 	"cm_collectors_server/tray"
 
 	"github.com/getlantern/systray"
@@ -39,9 +40,8 @@ func onTrayReady() {
 			break
 		}
 	}
-
 	// 如果需要自动打开应用程序，则在服务器启动后执行
-	if autoOpenApp {
+	if autoOpenApp && !core.Config.General.WindowsStartNotRunApp {
 		go func() {
 			// 等待服务器准备好接受连接
 			waitForServerReady(serverAddr)
