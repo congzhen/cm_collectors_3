@@ -10,6 +10,10 @@ import (
 
 type ResourcesPerformers struct{}
 
+func (ResourcesPerformers) ListByResourceID_DB(tx *gorm.DB, resourceID string) (*[]models.ResourcesPerformers, error) {
+	return models.ResourcesPerformers{}.ListByResourceID(tx, resourceID)
+}
+
 func (t ResourcesPerformers) SetResourcesPerformers(tx *gorm.DB, resourceID string, performerSlc []string) error {
 	list, err := models.ResourcesPerformers{}.ListByResourceID(tx, resourceID)
 	if err != nil {

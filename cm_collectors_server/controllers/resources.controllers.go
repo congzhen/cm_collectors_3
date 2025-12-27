@@ -173,6 +173,17 @@ func (Resource) UpdateResourceTag(c *gin.Context) {
 	}
 	response.OkWithData(info, c)
 }
+func (Resource) BatchSetPerformer(c *gin.Context) {
+	var par datatype.ReqParam_BatchSetPerformer
+	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {
+		return
+	}
+	err := processors.Resources{}.BatchSetPerformer(par.ResourceIDS, par.PerformersIds)
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(true, c)
+}
 func (Resource) BatchSetTag(c *gin.Context) {
 	var par datatype.ReqParam_BatchSetTag
 	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {

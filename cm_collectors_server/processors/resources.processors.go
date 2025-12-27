@@ -195,6 +195,50 @@ func (t Resources) UpdateResourceTag(resourceID string, tags []string) (*models.
 	return t.Info(resourceID)
 }
 
+// BatchSetPerformer 批量设置资源的演员
+// 该方法会为多个资源批量更新演员，保留已存在的表演者关系，仅添加新的表演者关系
+// 参数:
+//   - resourceIds: 资源ID列表，指定需要更新表演者关系的资源
+//   - performersIds: 表演者ID列表，指定要关联到资源的表演者
+//
+// 返回值:
+//   - error: 操作成功时返回nil，失败时返回错误信息
+func (t Resources) BatchSetPerformer(resourceIds, performersIds []string) error {
+	db := core.DBS()
+	return db.Transaction(func(tx *gorm.DB) error {
+		// 遍历每个资源ID，处理其表演者关系
+		for _, resourceId := range resourceIds {
+			rpList, err := ResourcesPerformers{}.ListByResourceID_DB(tx, resourceId)
+			if err != nil {
+				return err
+			}
+			// 计算需要新增的表演者ID列表
+			newPerformersIds := []string{}
+			for _, performerId := range performersIds {
+				has := false
+				// 检查当前演员是否已经存在
+				for _, rp := range *rpList {
+					if rp.PerformerID == performerId {
+						has = true
+						break
+					}
+				}
+				// 如果当前演员不存在，则将其添加到新演员列表中
+				if !has {
+					newPerformersIds = append(newPerformersIds, performerId)
+				}
+			}
+			// 如果有需要新增的表演者关系，则执行添加操作
+			if len(newPerformersIds) > 0 {
+				err := ResourcesPerformers{}.handleAdds(tx, newPerformersIds, resourceId)
+				if err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	})
+}
 func (t Resources) BatchSetTag(mode string, resourceIDS, tags []string) error {
 	db := core.DBS()
 	return db.Transaction(func(tx *gorm.DB) error {

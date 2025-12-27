@@ -113,6 +113,16 @@ export const resourceServer = {
       },
     });
   },
+  batchSetPerformer: async (resourceIds: string[], performersIds: string[]) => {
+    return await request<I_resource[]>({
+      url: `${routerGroupUri}/resource/batchSetPerformer`,
+      method: 'post',
+      data: {
+        resourceIds,
+        performersIds
+      },
+    });
+  },
   updateTag: async (resourceId: string, tags: string[]) => {
     return await request<I_resource>({
       url: `${routerGroupUri}/resource/update/tag`,

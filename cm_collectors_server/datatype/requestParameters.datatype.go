@@ -68,6 +68,12 @@ type ReqParam_ResourceTag struct {
 	ResourceID string   `json:"resourceId"`
 	Tags       []string `json:"tags"`
 }
+
+type ReqParam_BatchSetPerformer struct {
+	ResourceIDS   []string `json:"resourceIds"`
+	PerformersIds []string `json:"performersIds"`
+}
+
 type ReqParam_BatchSetTag struct {
 	Mode        string   `json:"mode" binding:"required,oneof=add remove"`
 	ResourceIDS []string `json:"resourceIds"`

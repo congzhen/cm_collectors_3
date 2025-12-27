@@ -121,8 +121,8 @@
   color: #606266;
 }
 /* 演员块 */
-.bright .app-container .performer-block {
-  background-color: #fcecae;
+.bright .performer-block {
+  background-color: #fcecae !important;
 }
 .bright .details-dialog-container .performer-block {
   background-color: #fcecae;
