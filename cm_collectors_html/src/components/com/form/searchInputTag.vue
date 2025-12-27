@@ -15,7 +15,7 @@
       </div>
     </div>
     <div class="el-input-tag__suffix">
-      <el-icon>
+      <el-icon @click="addTag">
         <Search />
       </el-icon>
       <el-icon v-if="props.clearable" @click="clearTags">
@@ -26,9 +26,8 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref, defineProps, defineEmits, watch } from 'vue'
+import { ref, watch } from 'vue'
 import { Search } from '@element-plus/icons-vue'
-import { te } from 'element-plus/es/locales.mjs';
 
 const props = defineProps<{
   modelValue: string[]
