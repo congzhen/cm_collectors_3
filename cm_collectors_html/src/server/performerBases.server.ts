@@ -17,5 +17,11 @@ export const performerBasesServer = {
       method: 'put',
       data: obj
     });
+  },
+  export: async (id: string) => {
+    return await request<string>({
+      url: `${routerGroupUri}/performerBases/export/${id}`,
+      method: 'get',
+    });
   }
 }

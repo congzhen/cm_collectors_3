@@ -135,6 +135,15 @@ func (Performer) PerformerBasesUpdate(c *gin.Context) {
 	response.OkWithData(true, c)
 }
 
+func (Performer) ExportPerformerBases(c *gin.Context) {
+	id := c.Param("id")
+	jsonData, err := processors.PerformerBases{}.Export(id)
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(jsonData, c)
+}
+
 func (Performer) Create(c *gin.Context) {
 	var par datatype.ReqParam_CreatePerformerBases
 	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {

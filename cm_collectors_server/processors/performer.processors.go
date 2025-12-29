@@ -6,6 +6,7 @@ import (
 	"cm_collectors_server/errorMessage"
 	"cm_collectors_server/models"
 	"cm_collectors_server/utils"
+	"encoding/base64"
 	"fmt"
 	"os"
 	"path"
@@ -15,6 +16,11 @@ import (
 )
 
 type Performer struct{}
+
+type PerformerExpand struct {
+	PerformerInfo models.Performer `json:"performerInfo"`
+	PhotoBase64   string           `json:"photoBase64"`
+}
 
 func (Performer) BasicList(performerBasesIds []string, careerPerformer, careerDirector bool) (*[]models.PerformerBasic, error) {
 	return models.Performer{}.BasicList(core.DBS(), performerBasesIds, careerPerformer, careerDirector)
@@ -117,6 +123,32 @@ func (Performer) PerformerPhotoExists(performerBasesID, photoName string) bool {
 	filePath := path.Join(core.Config.System.FilePath, "performerFace", performerBasesID, photoName)
 	_, err := os.Stat(filePath)
 	return err == nil
+}
+
+// getPerformerPhoto 获取演员图片 base64
+func (Performer) GetPerformerPhoto(performerBasesID, photoName string) (string, error) {
+	if photoName == "" {
+		return "", nil // 如果没有图片名称，则返回空
+	}
+	filePath := path.Join(core.Config.System.FilePath, "performerFace", performerBasesID, photoName)
+	file, err := os.Open(filePath)
+	defer file.Close()
+	if err != nil {
+		return "", err
+	}
+	// 读取文件内容
+	fileInfo, err := file.Stat()
+	if err != nil {
+		return "", err
+	}
+
+	buffer := make([]byte, fileInfo.Size())
+	_, err = file.Read(buffer)
+	if err != nil {
+		return "", err
+	}
+	base64Str := base64.StdEncoding.EncodeToString(buffer)
+	return "data:image/jpeg;base64," + base64Str, nil
 }
 
 // SavePerformerPhoto 保存或更新表演者的图片
@@ -423,4 +455,24 @@ func (t Performer) DeleteByID(id string) error {
 		t.DeletePerformerPhoto(info.PerformerBasesID, info.Photo)
 		return nil
 	})
+}
+
+func (t Performer) GetDataListPerformerExpand(performerBasesId string) (*[]PerformerExpand, error) {
+	db := core.DBS()
+	list, err := models.Performer{}.DataListByPerformerBasesId(db, performerBasesId)
+	if err != nil {
+		return nil, err
+	}
+	dataList := make([]PerformerExpand, len(*list))
+	for i := range *list {
+		photoBase64 := ""
+		if (*list)[i].Photo != "" {
+			photoBase64, err = t.GetPerformerPhoto((*list)[i].PerformerBasesID, (*list)[i].Photo)
+			if err != nil {
+				photoBase64 = ""
+			}
+		}
+		dataList[i] = PerformerExpand{PerformerInfo: (*list)[i], PhotoBase64: photoBase64}
+	}
+	return &dataList, nil
 }

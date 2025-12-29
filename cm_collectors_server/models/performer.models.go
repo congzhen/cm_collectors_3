@@ -101,6 +101,12 @@ func (Performer) InfoByID(db *gorm.DB, id string) (*Performer, error) {
 	return &performer, err
 }
 
+func (Performer) DataListByPerformerBasesId(db *gorm.DB, performerBasesId string) (*[]Performer, error) {
+	var dataList []Performer
+	err := db.Model(Performer{}).Where("performerBases_id = ?", performerBasesId).Find(&dataList).Error
+	return &dataList, err
+}
+
 func (Performer) DataList(db *gorm.DB, performerBasesId string, fetchCount bool, page, limit int, search, star, cup, charIndex string) (*[]Performer, int64, error) {
 	var dataList []Performer
 	var total int64

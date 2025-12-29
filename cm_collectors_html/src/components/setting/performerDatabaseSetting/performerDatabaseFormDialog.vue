@@ -37,7 +37,7 @@ const submitHandle = async () => {
     } else {
       ElMessage.error(result.msg);
     }
-  } catch (error) {
+  } catch {
     ElMessage.error('提交失败，请稍后再试');
   } finally {
     LoadingService.hide();

@@ -4,6 +4,7 @@ import (
 	"cm_collectors_server/core"
 	"cm_collectors_server/datatype"
 	"cm_collectors_server/models"
+	"encoding/json"
 )
 
 type PerformerBases struct{}
@@ -46,4 +47,16 @@ func (t PerformerBases) Create(name string) (string, error) {
 		Status:    true,
 	}
 	return id, performerBasesModels.Create(db, &performerBasesModels)
+}
+
+func (PerformerBases) Export(id string) (string, error) {
+	dataList, err := Performer{}.GetDataListPerformerExpand(id)
+	if err != nil {
+		return "", err
+	}
+	b, err := json.Marshal(dataList)
+	if err != nil {
+		return "", err
+	}
+	return string(b), nil
 }

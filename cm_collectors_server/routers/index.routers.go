@@ -131,6 +131,7 @@ func AdminRouter(router *gin.Engine) {
 	routerGroup.PUT("filesBases/setConfig/filesBases", controllers.FilesBases{}.SetConfig_FilesBases)
 	routerGroup.POST("performerBases/create", controllers.Performer{}.Create)
 	routerGroup.PUT("performerBases/update", controllers.Performer{}.PerformerBasesUpdate)
+	routerGroup.GET("performerBases/export/:id", controllers.Performer{}.ExportPerformerBases)
 	routerGroup.POST("performer/create", controllers.Performer{}.CreatePerformer)
 	routerGroup.PUT("performer/update", controllers.Performer{}.UpdatePerformer)
 	routerGroup.PUT("performer/updateStatus", controllers.Performer{}.UpdatePerformerStatus)
