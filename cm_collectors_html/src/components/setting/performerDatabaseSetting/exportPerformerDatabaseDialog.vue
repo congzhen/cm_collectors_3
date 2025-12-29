@@ -1,7 +1,7 @@
 <template>
   <dialogForm ref="dialogFormRef" title="导出演员集" width="400px" labelPosition="top" :modelValue="formData"
     :rules="formRules" @submit="submitHandle">
-    <el-form-item prop="performerDatabase">
+    <el-form-item prop="performerDatabaseId">
       <selectDatabasePerformer v-model="formData.performerDatabaseId" />
     </el-form-item>
   </dialogForm>

@@ -29,8 +29,15 @@ export const tagExport = async (filesBasesId: string) => {
 }
 
 export const tagImport = async (filesBasesId: string) => {
-  const content = await loadTextFile()
-  const slc = content.split('\n')
+  const fileData = await loadTextFile()
+  if (!fileData) {
+    messageBoxAlert({
+      text: '未选择文件',
+      type: 'error'
+    })
+    return
+  }
+  const slc = fileData.content.split('\n')
 
   // 创建一个对象来存储结果
   const import_data: Record<string, string[]> = {}

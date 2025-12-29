@@ -23,5 +23,17 @@ export const performerBasesServer = {
       url: `${routerGroupUri}/performerBases/export/${id}`,
       method: 'get',
     });
-  }
+  },
+  import: async (performerDatabaseId: string, fileName: string, content: string, reconstructId: boolean) => {
+    return await request<boolean>({
+      url: `${routerGroupUri}/performerBases/import`,
+      method: 'post',
+      data: {
+        performerDatabaseId,
+        fileName,
+        content,
+        reconstructId,
+      }
+    });
+  },
 }

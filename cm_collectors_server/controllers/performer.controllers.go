@@ -143,6 +143,17 @@ func (Performer) ExportPerformerBases(c *gin.Context) {
 	}
 	response.OkWithData(jsonData, c)
 }
+func (Performer) ImportPerformerBases(c *gin.Context) {
+	var par datatype.ReqParam_ImportPerformerBases
+	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {
+		return
+	}
+	importNum, err := processors.PerformerBases{}.Import(par.PerformerDatabaseId, par.Content, par.ReconstructId)
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(importNum, c)
+}
 
 func (Performer) Create(c *gin.Context) {
 	var par datatype.ReqParam_CreatePerformerBases

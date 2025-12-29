@@ -26,7 +26,7 @@ const store = {
 const props = defineProps({
   performerBases: {
     type: Object as PropType<I_performerBases>,
-    default: true,
+    required: true,
   },
 })
 

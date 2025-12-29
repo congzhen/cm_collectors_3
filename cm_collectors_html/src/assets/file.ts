@@ -33,7 +33,7 @@ export const saveFile = async (content: string, fileName: string, fileType: { de
   URL.revokeObjectURL(a.href);
 }
 
-export const loadFile = async (fileTypes: { description: string; accept: Record<string, string[]> }[] = []) => {
+export const loadFile = async (fileTypes: { description: string; accept: Record<string, string[]> }[] = []): Promise<{ content: string; file: File } | null> => {
   try {
     // 检查是否可以使用文件选择器API
     if (canUseFilePickerAPI()) {
@@ -55,8 +55,12 @@ export const loadFile = async (fileTypes: { description: string; accept: Record<
       const fileHandles = await (targetWindow as any).showOpenFilePicker(options);
 
       const file = await fileHandles[0].getFile();
+      console.log('file', file);
       const content = await file.text();
-      return content;
+      return {
+        content,
+        file
+      };
     }
   } catch (err) {
     // 忽略错误，继续使用传统方法
@@ -64,7 +68,7 @@ export const loadFile = async (fileTypes: { description: string; accept: Record<
   }
 
   // 降级到传统 input 方法
-  return new Promise<string>((resolve, reject) => {
+  return new Promise<{ content: string; file: File } | null>((resolve, reject) => {
     const input = document.createElement('input');
     input.type = 'file';
 
@@ -82,7 +86,12 @@ export const loadFile = async (fileTypes: { description: string; accept: Record<
         const file = target.files?.[0];
         if (file) {
           const content = await file.text();
-          resolve(content);
+          resolve({
+            content,
+            file
+          });
+        } else {
+          resolve(null);
         }
       } catch (error) {
         reject(error);
@@ -110,7 +119,7 @@ export const saveTextFile = async (content: string, fileName: string) => {
 };
 
 // 便捷函数：加载文本文件
-export const loadTextFile = async () => {
+export const loadTextFile = async (): Promise<{ content: string; file: File } | null> => {
   return loadFile([{
     description: 'Text File',
     accept: {
@@ -130,7 +139,7 @@ export const saveJsonFile = async (content: string, fileName: string) => {
 };
 
 // 便捷函数：加载JSON文件
-export const loadJsonFile = async () => {
+export const loadJsonFile = async (): Promise<{ content: string; file: File } | null> => {
   return loadFile([{
     description: 'JSON File',
     accept: {

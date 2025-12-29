@@ -20,8 +20,13 @@ export const filesBasesConfigImport = (): Promise<I_config_app | null> => {
       type: 'warning',
       successCallBack: async () => {
         try {
-          const content = await loadJsonFile()
-          const configObj = JSON.parse(content) as I_config_app
+          const fileData = await loadJsonFile()
+          if (!fileData) {
+            ElMessage.error('未选择文件');
+            resolve(null)
+            return
+          }
+          const configObj = JSON.parse(fileData.content) as I_config_app
           resolve(configObj)
         } catch (error) {
           ElMessage.error((error as Error).message || '导入配置失败');

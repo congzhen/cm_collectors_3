@@ -5,6 +5,8 @@ import (
 	"cm_collectors_server/datatype"
 	"cm_collectors_server/models"
 	"encoding/json"
+
+	"gorm.io/gorm"
 )
 
 type PerformerBases struct{}
@@ -59,4 +61,33 @@ func (PerformerBases) Export(id string) (string, error) {
 		return "", err
 	}
 	return string(b), nil
+}
+func (PerformerBases) Import(performerDatabaseId, content string, reconstructId bool) (int, error) {
+	var dataList []PerformerExpand
+	err := json.Unmarshal([]byte(content), &dataList)
+	if err != nil {
+		return 0, err
+	}
+	db := core.DBS()
+	var importNum int
+	err = db.Transaction(func(tx *gorm.DB) error {
+		for _, data := range dataList {
+			data.PerformerInfo.PerformerBasesID = performerDatabaseId
+			performerInfo, _ := Performer{}.InfoByID_DB(tx, data.PerformerInfo.ID)
+			if performerInfo.ID != "" {
+				if reconstructId {
+					data.PerformerInfo.ID = core.GenerateUniqueID()
+				} else {
+					continue
+				}
+			}
+			err := Performer{}.CreateByModelsPerformer_DB(tx, &data.PerformerInfo, data.PhotoBase64)
+			if err != nil {
+				return err
+			}
+			importNum++
+		}
+		return nil
+	})
+	return importNum, err
 }

@@ -153,12 +153,12 @@ func (Performer) GetPerformerPhoto(performerBasesID, photoName string) (string, 
 
 // SavePerformerPhoto 保存或更新表演者的图片
 func (t Performer) SavePerformerPhoto(par *datatype.ReqParam_PerformerData) (string, error) {
-	if par.PhotoBase64 == "" || par.Performer.PerformerBasesID == "" {
-		return "", nil // 如果没有图片数据或PerformerBasesID，则不处理
-	}
 	return t._savePerformerPhoto(par.Performer.PerformerBasesID, par.PhotoBase64)
 }
 func (Performer) _savePerformerPhoto(performerBasesID, photoBase64 string) (string, error) {
+	if photoBase64 == "" || performerBasesID == "" {
+		return "", nil // 如果没有图片数据或PerformerBasesID，则不处理
+	}
 	// 生成唯一的图片名称
 	photoName := fmt.Sprintf("%s.jpg", core.GenerateUniqueID())
 	filePath := path.Join(core.Config.System.FilePath, "performerFace", performerBasesID, photoName)
@@ -221,6 +221,22 @@ func (t Performer) Create(par *datatype.ReqParam_PerformerData) (*models.Perform
 		return nil, err
 	}
 	return &performerModels, nil
+}
+
+func (t Performer) CreateByModelsPerformer_DB(db *gorm.DB, info *models.Performer, PhotoBase64 string) error {
+	// 保存图片
+	photoName, err := t._savePerformerPhoto(info.PerformerBasesID, PhotoBase64)
+	if err != nil {
+		return err
+	}
+	createdAt := datatype.CustomTime(core.TimeNow())
+	info.CreatedAt = &createdAt
+	info.Photo = photoName
+	err = info.Create(db, info)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (t Performer) UpdatePerformerStatus(id string, status bool) error {

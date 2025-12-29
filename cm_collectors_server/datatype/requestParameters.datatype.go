@@ -175,6 +175,12 @@ type ReqParam_UpdatePerformerBases struct {
 	Sort   int    `json:"sort"`
 	Status bool   `json:"status"`
 }
+type ReqParam_ImportPerformerBases struct {
+	PerformerDatabaseId string `json:"performerDatabaseId"`
+	FileName            string `json:"fileName"`
+	Content             string `json:"content"`
+	ReconstructId       bool   `json:"reconstructId"`
+}
 
 // 请求参数 - 修改TagClass
 type ReqParam_TagClass struct {
