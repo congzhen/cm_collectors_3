@@ -4,6 +4,10 @@ export const sfm_languages = {
     submit: 'Submit',
     cancel: 'Cancel',
     close: 'Close',
+    confirm: 'Confirm',
+    warning: 'Warning',
+    selectFilesBtn: 'Select Files',
+    clearBtn: 'Clear',
 
     createFile: 'Create File',
     createFolder: 'Create Folder',
@@ -71,6 +75,8 @@ export const sfm_languages = {
     close: '关闭',
     confirm: '确认',
     warning: '警告',
+    selectFilesBtn: '选择文件',
+    clearBtn: '清空',
 
     createFile: '创建文件',
     createFolder: '创建文件夹',

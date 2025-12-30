@@ -151,7 +151,9 @@
     <dialogUpload ref="dialogUploadRef" :lang="props.lang" :timeout="props.uploadTimeout" @success="refresh" />
     <dialogPermissions ref="dialogPermissionsRef" :lang="props.lang" @success="refresh" />
     <dialogRename ref="dialogRenameRef" :lang="props.lang" @success="refresh" />
-    <drawerSearch ref="drawerSearchRef" :lang="props.lang" @location="location"></drawerSearch>
+    <drawerSearch ref="drawerSearchRef" :lang="props.lang" @location="location"
+      @selected-rows="searchSelectedRowsHandle">
+    </drawerSearch>
   </div>
 </template>
 <script setup lang="ts">
@@ -160,12 +162,12 @@ import { E_sfm_ToolBar, E_sfm_FileOperate, type I_sfm_FileEntry, E_sfm_FileType,
 import { dateFormat, generateRandomNumber, getFileExtension, getFileIco, type IMessageBox, message, messageBoxAlert, messageBoxConfirm, messageBoxPrompt, pathToArray, sizeFormat } from './com/fn'
 import { Back, Right, Top, Refresh, ArrowRight, HomeFilled, Folder, Document } from '@element-plus/icons-vue'
 import { sfm_GetPathDir, sfm_DownloadFile, sfm_PasteCopy, sfm_PasteMove, type IResponse, sfm_DeleteFile, sfm_CompressFile, sfm_UnCompressFile } from './com/request'
-import dialogFile from './com/dialog.file.vue'
-import dialogFolder from './com/dialog.folder.vue'
-import dialogUpload from './com/dialog.upload.vue'
-import dialogPermissions from './com/dialog.permissions.vue'
-import dialogRename from './com/dialog.rename.vue'
-import drawerSearch from './com/drawer.search.vue'
+import dialogFile from './com/dialogFile.vue'
+import dialogFolder from './com/dialogFolder.vue'
+import dialogUpload from './com/dialogUpload.vue'
+import dialogPermissions from './com/dialogPermissions.vue'
+import dialogRename from './com/dialogRename.vue'
+import drawerSearch from './com/drawerSearch.vue'
 
 import { sfm_languages } from './com/lang'
 import { ElTable } from 'element-plus'
@@ -237,7 +239,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['openFile', 'selectFile'])
+const emit = defineEmits(['openFile', 'selectFile', 'selectedFileRows'])
 
 const dialogFileRef = ref<InstanceType<typeof dialogFile>>()
 const dialogFolderRef = ref<InstanceType<typeof dialogFolder>>()
@@ -682,6 +684,10 @@ const sortByModifiedAt = (a: I_sfm_FileEntry, b: I_sfm_FileEntry) => {
 // 没有选择文件
 const noSelectFilesMessageAlert = () => {
   message(sfmLang('selectFiles'), 'error')
+}
+
+const searchSelectedRowsHandle = (list: I_sfm_FileEntry[]) => {
+  emit('selectedFileRows', list);
 }
 
 onMounted(() => {

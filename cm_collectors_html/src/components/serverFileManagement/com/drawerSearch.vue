@@ -1,7 +1,7 @@
 <template>
   <div class="drawer-search">
     <el-drawer v-model="drawerVisible" :size="props.width">
-      <template #header="{ close, titleId, titleClass }">
+      <template #header="{ titleId, titleClass }">
         <h5 :id="titleId" :class="titleClass">{{ path }}</h5>
       </template>
       <div class="search-body">
@@ -14,6 +14,7 @@
         </div>
         <div class="search-result">
           <el-table ref="fileTableRef" :data="fileEntryDataList" v-loading="loading" height="100%">
+            <el-table-column type="selection" width="55" />
             <el-table-column prop="name" :label="sfmLang('name')" min-width="260">
               <template #default="scope">
                 <div class="file-name-block">
@@ -40,6 +41,12 @@
           </el-table>
         </div>
       </div>
+      <template #footer>
+        <div class="drawer-footer">
+          <el-button plain @click="clearFilesHandle">{{ sfmLang('clearBtn') }}</el-button>
+          <el-button type="primary" plain @click="selectFilesHandle">{{ sfmLang('selectFilesBtn') }}</el-button>
+        </div>
+      </template>
     </el-drawer>
   </div>
 </template>
@@ -50,6 +57,7 @@ import { sfm_languages } from './lang';
 import { sfm_SearchFiles } from './request';
 import { message, messageBoxAlert } from './fn';
 import { E_LangType, type I_sfm_FileEntry } from './dataType';
+import type { ElTable } from 'element-plus';
 const sfmLang = (key: string) => (sfm_languages[props.lang] as Record<string, string>)[key];
 const props = defineProps({
   width: {
@@ -61,8 +69,10 @@ const props = defineProps({
     required: true,
   },
 })
-const emit = defineEmits(['location'])
+const fileTableRef = ref<InstanceType<typeof ElTable> | null>(null)
+const emit = defineEmits(['location', 'selectedRows'])
 const drawerVisible = ref(false);
+
 const searchQuery = ref('');
 const path = ref('');
 const loading = ref(false)
@@ -98,6 +108,22 @@ const searchHandle = async () => {
 
 const locationHandle = (obj: I_sfm_FileEntry) => {
   emit('location', obj)
+}
+
+const selectFilesHandle = () => {
+  if (fileTableRef.value) {
+    const selectedRows = fileTableRef.value.getSelectionRows() as I_sfm_FileEntry[]
+    if (selectedRows.length > 0) {
+      emit('selectedRows', selectedRows)
+      close()
+    } else {
+      message(sfmLang('selectFiles'), 'error');
+    }
+  }
+}
+const clearFilesHandle = () => {
+  searchQuery.value = '';
+  fileEntryDataList.value = []
 }
 
 const open = (_path: string) => {

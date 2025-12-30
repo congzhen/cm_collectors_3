@@ -3,8 +3,8 @@
     body-class="dialog-sfm-body" footer-class="dialog-sfm-footer">
     <serverFileManagement ref="serverFileManagementRef" class="serverFileManagement"
       :fileOperate="[E_sfm_FileOperate.Rename, E_sfm_FileOperate.Delete]"
-      :column="[E_sfm_Column.Name, E_sfm_Column.Size, E_sfm_Column.ModifiedAt, E_sfm_Column.Operate]"
-      :show="props.show">
+      :column="[E_sfm_Column.Name, E_sfm_Column.Size, E_sfm_Column.ModifiedAt, E_sfm_Column.Operate]" :show="props.show"
+      @selectedFileRows="selectedFileRowsHandle">
     </serverFileManagement>
     <template #footer>
       <div class="dialog-footer">
@@ -16,7 +16,7 @@
 </template>
 <script lang="ts" setup>
 import { ref, watch } from 'vue';
-import { E_sfm_FileOperate, E_sfm_Column, E_sfm_FileType } from './com/dataType.ts';
+import { E_sfm_FileOperate, E_sfm_Column, E_sfm_FileType, type I_sfm_FileEntry } from './com/dataType.ts';
 import serverFileManagement from './serverFileManagement.vue';
 import { ElMessage, ElNotification } from 'element-plus';
 const props = defineProps({
@@ -50,6 +50,14 @@ const selectedFilesHandle = () => {
     ElMessage.warning('请选择文件');
     return;
   }
+  selectedFilesFn(slc)
+}
+
+const selectedFileRowsHandle = (slc: I_sfm_FileEntry[]) => {
+  selectedFilesFn(slc)
+}
+
+const selectedFilesFn = (slc: I_sfm_FileEntry[]) => {
   emit('selectedFiles', slc)
   if (!noClose.value) {
     dialogVisible.value = false;
