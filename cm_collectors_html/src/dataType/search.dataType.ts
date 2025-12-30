@@ -38,4 +38,5 @@ export enum E_searchSort {
   History = 'history', //历史记录
   Hot = 'hot', //当前热度
   YouLike = 'youLike', //猜你喜欢
+  Random = 'random', //随机
 }

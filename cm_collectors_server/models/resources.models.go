@@ -102,11 +102,7 @@ func (t Resources) DataListCasualView(db *gorm.DB, filesBasesId string, quantity
 	}
 	db = t.Preload(db).Model(&Resources{}).Where("filesBases_id = ?", filesBasesId)
 	// 根据数据库类型使用相应的随机函数进行排序
-	if db.Dialector.Name() == "mysql" {
-		db = db.Order("RAND()")
-	} else {
-		db = db.Order("RANDOM()")
-	}
+	db = t.db_random(db)
 	err = db.Limit(quantity).Find(&dataList).Error
 
 	return &dataList, err
@@ -358,8 +354,21 @@ func (t Resources) setDbSearchDataOrder(db *gorm.DB, searchSort datatype.E_searc
 		db = db.Order("lastPlayTime DESC,addTime DESC")
 	case datatype.E_searchSort_hot:
 		db = db.Order("hot DESC,addTime DESC")
+	case datatype.E_searchSort_random:
+		db = t.db_random(db)
 	default:
 		db = db.Order("addTime DESC")
+	}
+	return db
+}
+
+func (Resources) db_random(db *gorm.DB) *gorm.DB {
+	if db.Dialector.Name() == "mysql" {
+		db = db.Order("RAND()")
+	} else if db.Dialector.Name() == "postgres" {
+		db = db.Order("RANDOM()")
+	} else {
+		db = db.Order("RANDOM()")
 	}
 	return db
 }

@@ -33,6 +33,7 @@ const (
 	E_searchSort_history         E_searchSort = "history"
 	E_searchSort_hot             E_searchSort = "hot"
 	E_searchSort_youLike         E_searchSort = "youLike"
+	E_searchSort_random          E_searchSort = "random"
 )
 
 type I_searchGroup struct {

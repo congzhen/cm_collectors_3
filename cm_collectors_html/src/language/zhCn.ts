@@ -47,6 +47,7 @@ export default {
     starAsc: '评星正序',
     history: '历史记录',
     hot: '当前热度',
+    random: '随机展示',
   },
   attributeTags: {
     sort: '排序',
