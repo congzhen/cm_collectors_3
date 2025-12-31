@@ -1,6 +1,6 @@
-docker build -f Dockerfile.full -t congzhen/cm_collectors_3:v3.0.7 -t congzhen/cm_collectors_3:latest .
+docker build -f Dockerfile.full -t congzhen/cm_collectors_3:v3.0.8 -t congzhen/cm_collectors_3:latest .
 docker login
-docker push congzhen/cm_collectors_3:v3.0.7
+docker push congzhen/cm_collectors_3:v3.0.8
 docker push congzhen/cm_collectors_3:latest
-docker pull congzhen/cm_collectors_3:v3.0.7
+docker pull congzhen/cm_collectors_3:v3.0.8
 docker pull congzhen/cm_collectors_3:latest

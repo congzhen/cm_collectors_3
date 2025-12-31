@@ -16,6 +16,26 @@
         </div>
       </el-timeline-item>
       -->
+      <el-timeline-item center timestamp="2026/1/1" placement="top">
+        <h4 class="version-title">版本: v 3.0.8</h4>
+        <div class="rawContent">
+          <h5 class="section-title">新特性</h5>
+          <p class="logContent">新增应用界面缩放功能</p>
+          <p class="logContent">优化 Windows 资源管理器打开功能</p>
+          <p class="logContent">新增 Windows 端启动配置项，支持设置启动默认是否打开应用界面</p>
+          <p class="logContent">新增资源批量关联演员功能</p>
+          <p class="logContent">新增演员数据集导入导出功能</p>
+          <p class="logContent">新增文件管理器搜索结果中文件选择功能，增强操作便捷性</p>
+          <p class="logContent">新增资源随机排序展示选项</p>
+          <p class="logContent">优化演员管理功能，将编辑、删除等操作迁移至右键菜单</p>
+          <p class="logContent">新增演员数据集迁移功能，支持数据在不同集合间转移</p>
+        </div>
+        <div class="rawContent">
+          <h5 class="section-title bug-fix">BUG修复</h5>
+          <p class="logContent">修复应用端管理员登录功能异常问题</p>
+          <p class="logContent">修复云播设置中应用参数配置错误</p>
+        </div>
+      </el-timeline-item>
       <el-timeline-item center timestamp="2025/12/15" placement="top">
         <h4 class="version-title">版本: v 3.0.7</h4>
         <div class="rawContent">
