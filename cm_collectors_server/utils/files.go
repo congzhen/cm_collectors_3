@@ -223,6 +223,24 @@ func FileExists(path string) bool {
 	return false
 }
 
+// MoveFile 移动文件从源路径到目标路径
+//
+// 参数:
+//   - srcPath: 源文件路径
+//   - dstPath: 目标文件路径
+//
+// 返回值:
+//   - error: 如果移动过程中出现错误则返回错误信息，否则返回 nil
+func MoveFile(srcPath, dstPath string) error {
+	// 确保目标目录存在
+	dstDir := filepath.Dir(dstPath)
+	if err := os.MkdirAll(dstDir, 0755); err != nil {
+		return err
+	}
+	// 执行文件移动操作
+	return os.Rename(srcPath, dstPath)
+}
+
 // GetDirNameFromFilePath 根据文件路径获取文件所在的文件夹名称
 // 参数:
 // filePath: 文件的完整路径

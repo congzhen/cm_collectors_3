@@ -96,5 +96,15 @@ export const performerServer = {
       url: `${routerGroupUri}/performer/delete/${id}`,
       method: 'delete',
     });
+  },
+  migrate: async (performerId: string, performerBasesId: string) => {
+    return await request<boolean>({
+      url: `${routerGroupUri}/performer/migrate`,
+      method: 'post',
+      data: {
+        performerId,
+        performerBasesId,
+      },
+    });
   }
 }

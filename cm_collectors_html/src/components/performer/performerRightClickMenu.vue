@@ -19,7 +19,7 @@ const props = defineProps({
     required: true,
   },
 })
-const emits = defineEmits(['search', 'edit', 'delete'])
+const emits = defineEmits(['search', 'edit', 'migrate', 'delete'])
 
 const contentMenuItems_C = computed(() => {
   // 基本菜单项
@@ -40,6 +40,13 @@ const contentMenuItems_C = computed(() => {
         icon: 'Edit',
         handler: () => {
           emits('edit', props.performer)
+        }
+      },
+      {
+        label: '迁移数据集',
+        icon: 'Switch',
+        handler: () => {
+          emits('migrate', props.performer)
         }
       },
       {

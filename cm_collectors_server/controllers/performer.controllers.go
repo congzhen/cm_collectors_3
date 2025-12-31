@@ -178,3 +178,14 @@ func (Performer) Delete(c *gin.Context) {
 	}
 	response.OkWithData(true, c)
 }
+func (Performer) MigratePerformer(c *gin.Context) {
+	var par datatype.ReqParam_MigratePerformer
+	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {
+		return
+	}
+	err := processors.Performer{}.MigratePerformer(par.PerformerId, par.PerformerBasesId)
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(true, c)
+}

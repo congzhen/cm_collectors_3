@@ -18,7 +18,7 @@
             <ul class="performer-list">
               <li v-for="(performer, index) in dataList" :key="index">
                 <performerRightClickMenu :performer="performer" @search="searchPerformerHandle"
-                  @edit="editPerformerHandle" @delete="deletePerformerHandle">
+                  @edit="editPerformerHandle" @migrate="migratePerformerHanadle" @delete="deletePerformerHandle">
                   <performerBlock :performer="performer" :tool="true" :admin="true" :attrAge="true"
                     :attrNationality="true" @search="searchPerformerHandle"
                     @click.stop="clickPerformerHandle(performer)" @edit="editPerformerHandle(performer)"
@@ -43,6 +43,7 @@
   </performerRecycleBinDialog>
   <scraperPerformerDialog ref="scraperPerformerDialogRef" @success="getDataListAndCount">
   </scraperPerformerDialog>
+  <performerMigrateDialog ref="performerMigrateDialogRef" @success="getDataListAndCount" />
 </template>
 <script lang="ts" setup>
 import { ref, onMounted } from 'vue';
@@ -59,6 +60,7 @@ import { messageBoxConfirm } from '../../common/messageBox';
 import { searchStoreData } from '@/storeData/search.storeData';
 import { useRouter } from 'vue-router';
 import performerRightClickMenu from './performerRightClickMenu.vue';
+import performerMigrateDialog from './performerMigrateDialog.vue';
 const router = useRouter()
 const store = {
   searchStoreData: searchStoreData(),
@@ -77,6 +79,7 @@ const props = defineProps({
 const performerFormDrawerRef = ref<InstanceType<typeof performerFormDrawer>>();
 const performerRecycleBinDialogRef = ref<InstanceType<typeof performerRecycleBinDialog>>();
 const scraperPerformerDialogRef = ref<InstanceType<typeof scraperPerformerDialog>>();
+const performerMigrateDialogRef = ref<InstanceType<typeof performerMigrateDialog>>();
 const loading = ref(false);
 const dataList = ref<I_performer[]>([]);
 const dataCount = ref(0);
@@ -139,6 +142,10 @@ const addPerformerHandle = () => {
 }
 const editPerformerHandle = (data: I_performer) => {
   performerFormDrawerRef.value?.open('edit', data)
+}
+
+const migratePerformerHanadle = (data: I_performer) => {
+  performerMigrateDialogRef.value?.open(data)
 }
 
 const deletePerformerHandle = (performer: I_performer) => {

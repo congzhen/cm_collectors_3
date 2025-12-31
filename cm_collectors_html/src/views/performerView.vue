@@ -2,7 +2,7 @@
   <div class="performer-view">
     <HeaderView class="header" :mode="E_headerMode.GoBack"></HeaderView>
     <div class="main">
-      <performerDataList :performerBasesId="props.mainPerformerBasesId"></performerDataList>
+      <performerDataList :key="key" :performerBasesId="props.mainPerformerBasesId"></performerDataList>
     </div>
   </div>
 </template>
@@ -10,13 +10,19 @@
 import HeaderView from './HeaderView.vue'
 import performerDataList from '@/components/performer/performerDataList.vue'
 import { E_headerMode } from '@/dataType/app.dataType'
-
+import { onActivated, ref } from 'vue'
 const props = defineProps({
   mainPerformerBasesId: {
     type: String,
     required: true,
   },
 })
+
+const key = ref(0);
+onActivated(() => {
+  key.value++;
+})
+
 
 
 </script>

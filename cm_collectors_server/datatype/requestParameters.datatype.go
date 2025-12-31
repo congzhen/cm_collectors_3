@@ -182,6 +182,12 @@ type ReqParam_ImportPerformerBases struct {
 	ReconstructId       bool   `json:"reconstructId"`
 }
 
+// 请求参数 - 演员迁移
+type ReqParam_MigratePerformer struct {
+	PerformerId      string `json:"performerId"`
+	PerformerBasesId string `json:"performerBasesId"`
+}
+
 // 请求参数 - 修改TagClass
 type ReqParam_TagClass struct {
 	ID           string `json:"id"`

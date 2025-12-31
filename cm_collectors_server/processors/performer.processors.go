@@ -170,6 +170,16 @@ func (Performer) _savePerformerPhoto(performerBasesID, photoBase64 string) (stri
 	return photoName, nil
 }
 
+// MovePerformerPhoto 迁移表演者图片到新的目录
+func (Performer) MovePerformerPhoto(oldPerformerBasesID, newPerformerBasesID, photoName string) error {
+	if photoName == "" {
+		return nil // 如果没有图片名称，则不处理
+	}
+	oldPath := path.Join(core.Config.System.FilePath, "performerFace", oldPerformerBasesID, photoName)
+	newPath := path.Join(core.Config.System.FilePath, "performerFace", newPerformerBasesID, photoName)
+	return utils.MoveFile(oldPath, newPath)
+}
+
 // DeletePerformerPhoto 删除旧的表演者图片
 func (Performer) DeletePerformerPhoto(performerBasesID, photoName string) error {
 	if photoName == "" {
@@ -491,4 +501,30 @@ func (t Performer) GetDataListPerformerExpand(performerBasesId string) (*[]Perfo
 		dataList[i] = PerformerExpand{PerformerInfo: (*list)[i], PhotoBase64: photoBase64}
 	}
 	return &dataList, nil
+}
+
+func (t Performer) MigratePerformer(performerId string, performerBasesId string) error {
+	db := core.DBS()
+	return db.Transaction(func(tx *gorm.DB) error {
+		// 获取演员信息
+		info, err := t.InfoByID_DB(tx, performerId)
+		if err != nil {
+			return err
+		}
+		// 更新演员的PerformerBasesID
+		createdAt := datatype.CustomTime(core.TimeNow())
+		performerModels := models.Performer{ID: performerId, PerformerBasesID: performerBasesId, CreatedAt: &createdAt}
+		err = performerModels.Update(tx, &performerModels, []string{"performerBases_id", "addTime"})
+		if err != nil {
+			return err
+		}
+		// 迁移演员图片
+		if info.Photo != "" {
+			err = t.MovePerformerPhoto(info.PerformerBasesID, performerBasesId, info.Photo)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
 }
