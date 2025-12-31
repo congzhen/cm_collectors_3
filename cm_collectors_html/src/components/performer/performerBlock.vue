@@ -8,7 +8,13 @@
         ({{ calculateAge(props.performer.birthday) }}岁)
       </label>
     </div>
+    <!--
     <div class="performer-block-tool" v-if="props.tool" @click.stop="emits('search', props.performer)">
+      <div class="performer-block-tool-btn">
+        <el-icon>
+          <Search />
+        </el-icon>
+      </div>
       <div class="performer-block-tool-btn">
         <el-icon>
           <VideoCameraFilled />
@@ -25,6 +31,7 @@
         </el-icon>
       </div>
     </div>
+     -->
   </div>
 </template>
 <script lang="ts" setup>
@@ -50,6 +57,7 @@ const props = defineProps({
     default: false,
   },
 })
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const emits = defineEmits(['search', 'edit', 'delete'])
 const attr_C = computed(() => {
   return props.attrAge || props.attrNationality

@@ -17,10 +17,14 @@
           <el-scrollbar>
             <ul class="performer-list">
               <li v-for="(performer, index) in dataList" :key="index">
-                <performerBlock :performer="performer" :tool="true" :admin="true" :attrAge="true"
-                  :attrNationality="true" @search="searchPerformerHandle" @click.stop="clickPerformerHandle(performer)"
-                  @edit="editPerformerHandle(performer)" @delete="deletePerformerHandle(performer)">
-                </performerBlock>
+                <performerRightClickMenu :performer="performer" @search="searchPerformerHandle"
+                  @edit="editPerformerHandle" @delete="deletePerformerHandle">
+                  <performerBlock :performer="performer" :tool="true" :admin="true" :attrAge="true"
+                    :attrNationality="true" @search="searchPerformerHandle"
+                    @click.stop="clickPerformerHandle(performer)" @edit="editPerformerHandle(performer)"
+                    @delete="deletePerformerHandle(performer)">
+                  </performerBlock>
+                </performerRightClickMenu>
               </li>
             </ul>
           </el-scrollbar>
@@ -54,7 +58,7 @@ import { ElMessage } from 'element-plus';
 import { messageBoxConfirm } from '../../common/messageBox';
 import { searchStoreData } from '@/storeData/search.storeData';
 import { useRouter } from 'vue-router';
-
+import performerRightClickMenu from './performerRightClickMenu.vue';
 const router = useRouter()
 const store = {
   searchStoreData: searchStoreData(),
@@ -78,7 +82,7 @@ const dataList = ref<I_performer[]>([]);
 const dataCount = ref(0);
 let fetchCount = true;
 const currentPage = ref(1);
-const pageSize = ref(75);
+const pageSize = ref(90);
 const indexChars = ref(['ALL', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'])
 const selectIndex = ref('ALL');
 let searchCondition: I_search_performer = {
