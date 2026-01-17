@@ -155,7 +155,7 @@ func (Performer) ImportPerformerBases(c *gin.Context) {
 	response.OkWithData(importNum, c)
 }
 
-func (Performer) Create(c *gin.Context) {
+func (Performer) CreatePerformerBases(c *gin.Context) {
 	var par datatype.ReqParam_CreatePerformerBases
 	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {
 		return
@@ -170,7 +170,7 @@ func (Performer) Create(c *gin.Context) {
 	}
 	response.OkWithData(info, c)
 }
-func (Performer) Delete(c *gin.Context) {
+func (Performer) DeletePerformer(c *gin.Context) {
 	id := c.Param("id")
 	err := processors.Performer{}.DeleteByID(id)
 	if err := ResError(c, err); err != nil {

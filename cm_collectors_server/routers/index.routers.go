@@ -36,6 +36,7 @@ func InitRouter(router *gin.Engine, htmlFS *embed.FS) *gin.Engine {
 	SFMRouter(router)
 	publicRouter(router)
 	AdminRouter(router)
+	healthRoute(router)
 	router.NoRoute(handleNoRoute)
 	return router
 }
@@ -48,6 +49,18 @@ func handleNoRoute(c *gin.Context) {
 	}
 	// API路由返回404错误
 	c.JSON(http.StatusNotFound, gin.H{"error": "404 Not Found"})
+}
+
+func healthRoute(router *gin.Engine) {
+	router.GET("/health", handleHealth)
+	router.GET("/api/health", handleHealth)
+}
+func handleHealth(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{"status": "ok"})
+}
+
+func HealthCheck(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
 func publicRouter(router *gin.Engine) {
@@ -129,14 +142,14 @@ func AdminRouter(router *gin.Engine) {
 	routerGroup.PUT("filesBases/setData", controllers.FilesBases{}.SetFilesBases)
 	routerGroup.PUT("filesBases/sort", controllers.FilesBases{}.Sort)
 	routerGroup.PUT("filesBases/setConfig/filesBases", controllers.FilesBases{}.SetConfig_FilesBases)
-	routerGroup.POST("performerBases/create", controllers.Performer{}.Create)
+	routerGroup.POST("performerBases/create", controllers.Performer{}.CreatePerformerBases)
 	routerGroup.PUT("performerBases/update", controllers.Performer{}.PerformerBasesUpdate)
 	routerGroup.GET("performerBases/export/:id", controllers.Performer{}.ExportPerformerBases)
 	routerGroup.POST("performerBases/import", controllers.Performer{}.ImportPerformerBases)
 	routerGroup.POST("performer/create", controllers.Performer{}.CreatePerformer)
 	routerGroup.PUT("performer/update", controllers.Performer{}.UpdatePerformer)
 	routerGroup.PUT("performer/updateStatus", controllers.Performer{}.UpdatePerformerStatus)
-	routerGroup.DELETE("performer/delete/:id", controllers.Performer{}.Delete)
+	routerGroup.DELETE("performer/delete/:id", controllers.Performer{}.DeletePerformer)
 	routerGroup.POST("performer/migrate", controllers.Performer{}.MigratePerformer)
 	routerGroup.POST("tag/create", controllers.Tag{}.CreateTag)
 	routerGroup.PUT("tag/update", controllers.Tag{}.UpdateTag)
