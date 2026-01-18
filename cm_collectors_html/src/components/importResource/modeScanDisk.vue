@@ -56,7 +56,11 @@
           </el-select>
           <el-switch v-model="formData.coverPosterFuzzyMatch" active-text="模糊匹配" inactive-text="严格匹配" />
           <el-checkbox v-model="formData.coverPosterUseRandomImageIfNoMatch" label="匹配的封面失败时，使用目录下随机图片" />
+          <div><el-text type="warning">
+              以regex:开头，可以使用正则表达式匹配。例如：regex:^@fileName-poster$ 其中@fileName代表文件名</el-text>
+          </div>
         </el-form-item>
+
         <el-form-item label="封面海报后缀名">
           <selectImageSuffixName v-model="formData.coverPosterSuffixName" multiple filterable allow-create
             default-first-option />

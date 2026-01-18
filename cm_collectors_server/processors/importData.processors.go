@@ -14,6 +14,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -280,7 +281,6 @@ func (t ImportData) GetCoverPosterBase64(filePath string, config datatype.Config
 	var coverPosterBase64 string
 	var coverPosterWidth int
 	var coverPosterHeight int
-
 	// 如果未找到相似图片，则尝试自动创建海报
 	if coverPosterPath == "" && config.AutoCreatePoster {
 		// 自动创建海报
@@ -361,6 +361,18 @@ func (ImportData) findCoverPoster(imagePaths []string, targetFileName string, co
 			for _, imagePath := range imagePaths {
 				imageName := utils.GetFileNameFromPath(imagePath, false)
 				matchName := string(_matchName)
+
+				//如果以regex:开头，代表使用这则表达式匹配，后面是正则表达式，其中@filename或者@fileName要被替换成文件名targetFileName
+				if strings.HasPrefix(matchName, "regex:") {
+					regexPattern := strings.TrimPrefix(matchName, "regex:")
+					regex := strings.ReplaceAll(regexPattern, "@fileName", targetFileName)
+					regex = strings.ReplaceAll(regex, "@filename", targetFileName)
+					match, _ := regexp.MatchString(regex, imageName)
+					if match {
+						return imagePath
+					}
+				}
+				// 如果是fileName，则将matchName替换成targetFileName，用以匹配文件名
 				if _matchName == datatype.CoverPosterMatchName_fileName {
 					matchName = targetFileName
 				}
