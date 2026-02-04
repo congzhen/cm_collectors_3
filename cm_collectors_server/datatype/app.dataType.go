@@ -50,6 +50,7 @@ type App_SystemConfig struct {
 	PlayVideoFormats             []string              `json:"playVideoFormats"`
 	PlayAudioFormats             []string              `json:"playAudioFormats"`
 	WindowsStartNotRunApp        bool                  `json:"windowsStartNotRunApp"`
+	TvBoxEnabled                 bool                  `json:"tvBoxEnabled"`
 	VideoRateLimit               config.VideoRateLimit `json:"videoRateLimit"`
 	Scraper                      App_Config_Scraper    `json:"scraper"`
 	TaryMenu                     []config.TaryMenu     `json:"taryMenu"`

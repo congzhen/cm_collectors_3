@@ -9,6 +9,7 @@ general:
     closePlayCloudDialog: false
     playCloudMode: m3u8
     windowsStartNotRunApp: false
+    tvBoxEnabled: true
     videoRateLimit:
         enabled: false
         requestsPerSecond: 5

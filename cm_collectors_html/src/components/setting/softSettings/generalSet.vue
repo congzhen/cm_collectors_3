@@ -32,6 +32,9 @@
           </el-text>
         </div>
       </el-form-item>
+      <el-form-item label="TV Box 开启">
+        <el-switch v-model="formData.tvBoxEnabled" />
+      </el-form-item>
       <el-form-item label="关闭云播功能">
         <div>
           <div>
@@ -169,6 +172,7 @@ const formData = ref<I_appSystemConfig>({
   playAudioFormats: dataset.playAudioFormats,
   serverFileManagementRootPath: dataset.serverFileManagementRootPath,
   windowsStartNotRunApp: false,
+  tvBoxEnabled: true,
   videoRateLimit: {
     enabled: false,
     requestsPerSecond: 5,

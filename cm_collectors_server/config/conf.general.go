@@ -11,6 +11,7 @@ type General struct {
 	ClosePlayCloudDialog   bool           `yaml:"closePlayCloudDialog"`
 	PlayCloudMode          string         `yaml:"playCloudMode"`
 	WindowsStartNotRunApp  bool           `yaml:"windowsStartNotRunApp"`
+	TvBoxEnabled           bool           `yaml:"tvBoxEnabled"`
 	VideoRateLimit         VideoRateLimit `yaml:"videoRateLimit"`
 }
 type VideoRateLimit struct {

@@ -33,6 +33,7 @@ func getDefaultConfig() *config.Config {
 			ClosePlayCloudDialog:   false,
 			PlayCloudMode:          "m3u8",
 			WindowsStartNotRunApp:  false,
+			TvBoxEnabled:           true,
 			VideoRateLimit: config.VideoRateLimit{
 				Enabled:           false,
 				RequestsPerSecond: 5,  // 每秒5个请求

@@ -51,6 +51,7 @@ func (App) GetConfig() datatype.App_SystemConfig {
 		PlayVideoFormats:       core.Config.Play.PlayVideoFormats,
 		PlayAudioFormats:       core.Config.Play.PlayAudioFormats,
 		WindowsStartNotRunApp:  core.Config.General.WindowsStartNotRunApp,
+		TvBoxEnabled:           core.Config.General.TvBoxEnabled,
 		VideoRateLimit:         core.Config.General.VideoRateLimit,
 		Scraper: datatype.App_Config_Scraper{
 			BrowserPath:    core.Config.Scraper.BrowserPath,
@@ -75,6 +76,7 @@ func (App) SetConfig(config datatype.App_SystemConfig) error {
 	core.Config.General.ClosePlayCloudDialog = config.ClosePlayCloudDialog
 	core.Config.General.PlayCloudMode = config.PlayCloudMode
 	core.Config.General.WindowsStartNotRunApp = config.WindowsStartNotRunApp
+	core.Config.General.TvBoxEnabled = config.TvBoxEnabled
 	core.Config.Play.PlayVideoFormats = config.PlayVideoFormats
 	core.Config.Play.PlayAudioFormats = config.PlayAudioFormats
 	core.Config.General.VideoRateLimit = config.VideoRateLimit

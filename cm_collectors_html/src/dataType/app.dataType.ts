@@ -114,6 +114,7 @@ export interface I_appSystemConfig extends I_appConfig {
   playVideoFormats: string[];
   playAudioFormats: string[];
   windowsStartNotRunApp: boolean;
+  tvBoxEnabled: boolean;
   serverFileManagementRootPath: string[];
   videoRateLimit: I_appSystemVideoRateLimit;
   scraper: I_appConfig_scraper;

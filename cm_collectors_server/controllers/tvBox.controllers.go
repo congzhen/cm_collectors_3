@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"cm_collectors_server/core"
 	"cm_collectors_server/processors"
 	"net/http"
 	"strconv"
@@ -11,8 +12,21 @@ import (
 
 type TVBox struct{}
 
+func (TVBox) CheckTvBoxEnabled() bool {
+	return core.Config.General.TvBoxEnabled
+}
+
 // Home TVBox主页配置接口
-func (TVBox) Home(c *gin.Context) {
+func (t TVBox) Home(c *gin.Context) {
+
+	if !t.CheckTvBoxEnabled() {
+		c.JSON(http.StatusServiceUnavailable, gin.H{
+			"error":   "服务未开启",
+			"message": "TVBox服务当前未启用，请在系统设置中开启TVBox功能",
+		})
+		return
+	}
+
 	// 获取推荐内容
 	recommendVideos := processors.TVBox{}.RecommendVideos(c.Request.Host, 30) // 获取30个推荐视频
 
@@ -47,6 +61,14 @@ func (TVBox) Home(c *gin.Context) {
 
 // Videos 提供视频分类和列表
 func (t TVBox) Videos(c *gin.Context) {
+
+	if !t.CheckTvBoxEnabled() {
+		c.JSON(http.StatusServiceUnavailable, gin.H{
+			"error":   "服务未开启",
+			"message": "TVBox服务当前未启用，请在系统设置中开启TVBox功能",
+		})
+		return
+	}
 
 	id := c.Query("ids")
 	if id != "" {
