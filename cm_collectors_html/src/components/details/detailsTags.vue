@@ -42,6 +42,13 @@ const setSearchHandle = (tag: I_tag) => {
   .el-tag {
     cursor: pointer;
     user-select: none;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background-color: var(--el-color-info-light-9) !important;
+      color: var(--el-color-info) !important;
+      border-color: var(--el-color-info) !important;
+    }
   }
 }
 </style>
