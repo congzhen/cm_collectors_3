@@ -143,6 +143,7 @@ type Config_FilesBases struct {
 	ShowPreviewImage             bool                      `json:"showPreviewImage"`             // 显示预览图片
 	SortMode                     string                    `json:"sortMode"`                     // 排序模式
 	TagMode                      string                    `json:"tagMode"`                      // 标签模式
+	TagFixedModeRowShowNum       int                       `json:"tagFixedModeRowShowNum"`       // 固定模式-每行显示标签数量
 	YouLikeModule                bool                      `json:"youLikeModule"`                // 猜你喜欢-模块
 	YouLikeNumber                int                       `json:"youLikeNumber"`                // 猜你喜欢-数量
 	YouLikeTagClass              []string                  `json:"youLikeTagClass"`              // 猜你喜欢-标签类

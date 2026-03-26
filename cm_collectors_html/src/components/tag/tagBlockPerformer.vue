@@ -12,7 +12,8 @@
     <div class="tag-performer" v-if="store.appStoreData.currentConfigApp.performerPhoto">
       <performerBlock class="tag-performer-item"
         v-for="performer, key in store.appStoreData.currentTopPreferredPerformers" :key="key" :performer="performer"
-        :class="[checkStatus(performer.id) ? 'check' : '']" @click="performerObjectClickHandle(performer)">
+        :class="[checkStatus(performer.id) ? 'check' : '']" @click="performerObjectClickHandle(performer)"
+        :style="{ width: width_C }">
       </performerBlock>
     </div>
     <div class="tag-performer" v-else>
@@ -31,12 +32,25 @@ import { searchStoreData } from '@/storeData/search.storeData'
 import { E_tagType } from '@/dataType/app.dataType'
 import type { I_performer } from '@/dataType/performer.dataType';
 import { cacheData } from '@/cache/index.cache'
+import { computed } from 'vue';
 
 const store = {
   appStoreData: appStoreData(),
   searchStoreData: searchStoreData()
 }
 const emits = defineEmits(['performerClick'])
+
+
+const width_C = computed(() => {
+  let rowNumRatio = 25;
+  try {
+    rowNumRatio = 100 / store.appStoreData.currentConfigApp.tagFixedModeRowShowNum;
+  } catch {
+    rowNumRatio = 25;
+  }
+  return `calc(${rowNumRatio}% - 0.9em)`
+})
+
 
 const performerItemClickHandle = (data: string) => {
   emits('performerClick', data)

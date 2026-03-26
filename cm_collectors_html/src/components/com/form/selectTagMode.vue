@@ -7,10 +7,8 @@
 </template>
 <script setup lang="ts">
 import dataset from '@/assets/dataset';
-import { appStoreData } from '@/storeData/app.storeData';
-const store = {
-  appStoreData: appStoreData(),
-}
+
+
 const selectVal = defineModel({ type: String, default: '' })
 const props = defineProps({
   width: {

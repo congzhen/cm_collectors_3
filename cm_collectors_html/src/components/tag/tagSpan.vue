@@ -22,7 +22,13 @@ const width_C = computed(() => {
   if (props.tagModeFixed) {
     return '4.8em';
   }
-  return store.appStoreData.currentConfigApp.tagMode === 'fixed' ? 'calc(25% - 1.8em)' : 'auto';
+  let rowNumRatio = 25;
+  try {
+    rowNumRatio = 100 / store.appStoreData.currentConfigApp.tagFixedModeRowShowNum;
+  } catch {
+    rowNumRatio = 25;
+  }
+  return store.appStoreData.currentConfigApp.tagMode === 'fixed' ? `calc(${rowNumRatio}% - 1.8em)` : 'auto';
 })
 
 
