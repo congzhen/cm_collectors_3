@@ -64,6 +64,13 @@ const contentMenuItems_C = computed(() => {
         }
       },
       {
+        label: props.resource.pinToTop == 0 ? '置顶' : '取消置顶',
+        icon: 'Top',
+        handler: () => {
+          eventBus.emit('edit-resource-pinToTop', { resource: props.resource });
+        }
+      },
+      {
         label: '打标签',
         icon: 'PriceTag',
         handler: () => {

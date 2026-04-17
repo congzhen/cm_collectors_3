@@ -19,6 +19,7 @@ export interface I_resource_base {
   score: number;
   abstract: string;
   status: boolean;
+  pinToTop: number;
 }
 
 export interface I_resource extends I_resource_base {

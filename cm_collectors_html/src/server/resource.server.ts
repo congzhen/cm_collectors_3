@@ -144,6 +144,16 @@ export const resourceServer = {
       },
     });
   },
+  pinToTop: async (id: string, pinToTopStatus: boolean) => {
+    return await request<boolean>({
+      url: `${routerGroupUri}/resource/pinToTop`,
+      method: 'put',
+      data: {
+        id,
+        pinToTopStatus
+      },
+    });
+  },
   delete: async (id: string) => {
     return await request<boolean>({
       url: `${routerGroupUri}/resource/delete/${id}`,

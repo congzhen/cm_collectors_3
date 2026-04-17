@@ -80,6 +80,11 @@ type ReqParam_BatchSetTag struct {
 	Tags        []string `json:"tags"`
 }
 
+type ReqParam_ResourcePinToTop struct {
+	ID             string `json:"id"`
+	PinToTopStatus bool   `json:"pinToTopStatus"`
+}
+
 // 请求参数 - 创建filesBases
 type ReqParam_CreateFilesBases struct {
 	Name                     string   `json:"name" binding:"required"`

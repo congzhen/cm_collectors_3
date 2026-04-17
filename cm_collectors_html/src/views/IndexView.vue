@@ -36,6 +36,7 @@ import { eventBus } from '@/main'
 import resourceSetTagDialog from '@/components/resource/resourceSetTagDialog.vue'
 import resourceSetPerformerDialog from '@/components/resource/resourceSetPerformerDialog.vue'
 import playCloudCheckPromptDialog from '@/components/play/playCloudCheckPromptDialog.vue'
+import { resourcePinToTop } from '@/common/resource'
 const store = {
   appStoreData: appStoreData(),
   searchStoreData: searchStoreData(),
@@ -96,6 +97,12 @@ const editResourceHandle = (event: unknown) => {
   const typedEvent = event as { resource: I_resource; };
   resourceFormDrawerRef.value?.open('edit', typedEvent.resource)
 }
+const editResourcePinToTopHandle = (event: unknown) => {
+  const typedEvent = event as { resource: I_resource; };
+  resourcePinToTop(typedEvent.resource, () => {
+    contentViewRef.value?.init_DataList(() => { }, true);
+  })
+}
 const editResourceTagHandle = (event: unknown) => {
   const typedEvent = event as { resource: I_resource; };
   resourceSetTagDialogRef.value?.open(typedEvent.resource)
@@ -117,6 +124,7 @@ const playCloundHandle = (event: unknown) => {
 onMounted(() => {
   eventBus.on('resource-dialog-play-start', resourceDialogPlayStartHandle);
   eventBus.on('edit-resource', editResourceHandle);
+  eventBus.on('edit-resource-pinToTop', editResourcePinToTopHandle);
   eventBus.on('edit-resource-tag', editResourceTagHandle);
   eventBus.on('edit-resource-performer', editResourcePerformerHandle);
   eventBus.on('delete-resource-success', deleteResouceSuccessOnHandle);

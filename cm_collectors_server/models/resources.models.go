@@ -30,6 +30,7 @@ type Resources struct {
 	LastPlayTime          *datatype.CustomTime    `json:"lastPlayTime" gorm:"column:lastPlayTime;type:datetime;"`
 	LastPlayFile          string                  `json:"lastPlayFile" gorm:"column:lastPlayFile;type:varchar(500);"`
 	Abstract              string                  `json:"abstract" gorm:"type:text;"`
+	PinToTop              int64                   `json:"pinToTop" gorm:"type:int;default:0"`
 	LastScraperUpdateTime *datatype.CustomDate    `json:"lastScraperUpdateTime" gorm:"column:lastScraperUpdateTime;type:date;default:NULL"`
 	CreatedAt             *datatype.CustomTime    `json:"addTime" gorm:"column:addTime;type:datetime"`
 	Status                bool                    `json:"status" gorm:"type:tinyint(1);default:1"`
@@ -327,37 +328,37 @@ func (Resources) getOrderClause(column string, descending bool) string {
 func (t Resources) setDbSearchDataOrder(db *gorm.DB, searchSort datatype.E_searchSort) *gorm.DB {
 	switch searchSort {
 	case datatype.E_searchSort_addTimeAsc:
-		db = db.Order("addTime ASC")
+		db = db.Order("pin_to_top DESC, addTime ASC")
 	case datatype.E_searchSort_addTimeDesc:
-		db = db.Order("addTime DESC")
+		db = db.Order("pin_to_top DESC, addTime DESC")
 	case datatype.E_searchSort_issueNumberAsc:
-		db = db.Order(t.getOrderClause("issueNumber", false) + ", addTime DESC")
+		db = db.Order("pin_to_top DESC, " + t.getOrderClause("issueNumber", false) + ", addTime DESC")
 	case datatype.E_searchSort_issueNumberDesc:
-		db = db.Order(t.getOrderClause("issueNumber", true) + ", addTime DESC")
+		db = db.Order("pin_to_top DESC, " + t.getOrderClause("issueNumber", true) + ", addTime DESC")
 	case datatype.E_searchSort_scoreAsc:
-		db = db.Order("score ASC,addTime DESC")
+		db = db.Order("pin_to_top DESC, score ASC, addTime DESC")
 	case datatype.E_searchSort_scoreDesc:
-		db = db.Order("score DESC,addTime DESC")
+		db = db.Order("pin_to_top DESC, score DESC, addTime DESC")
 	case datatype.E_searchSort_starAsc:
-		db = db.Order("stars ASC,addTime DESC")
+		db = db.Order("pin_to_top DESC, stars ASC, addTime DESC")
 	case datatype.E_searchSort_starDesc:
-		db = db.Order("stars DESC,addTime DESC")
+		db = db.Order("pin_to_top DESC, stars DESC, addTime DESC")
 	case datatype.E_searchSort_issuingDateAsc:
-		db = db.Order("issuingDate ASC,addTime DESC")
+		db = db.Order("pin_to_top DESC, issuingDate ASC, addTime DESC")
 	case datatype.E_searchSort_issuingDateDesc:
-		db = db.Order("issuingDate DESC,addTime DESC")
+		db = db.Order("pin_to_top DESC, issuingDate DESC, addTime DESC")
 	case datatype.E_searchSort_titleAsc:
-		db = db.Order(t.getOrderClause("keyWords", false) + ", addTime DESC")
+		db = db.Order("pin_to_top DESC, " + t.getOrderClause("keyWords", false) + ", addTime DESC")
 	case datatype.E_searchSort_titleDesc:
-		db = db.Order(t.getOrderClause("keyWords", true) + ", addTime DESC")
+		db = db.Order("pin_to_top DESC, " + t.getOrderClause("keyWords", true) + ", addTime DESC")
 	case datatype.E_searchSort_history:
-		db = db.Order("lastPlayTime DESC,addTime DESC")
+		db = db.Order("pin_to_top DESC, lastPlayTime DESC, addTime DESC")
 	case datatype.E_searchSort_hot:
-		db = db.Order("hot DESC,addTime DESC")
+		db = db.Order("pin_to_top DESC, hot DESC, addTime DESC")
 	case datatype.E_searchSort_random:
 		db = t.db_random(db)
 	default:
-		db = db.Order("addTime DESC")
+		db = db.Order("pin_to_top DESC, addTime DESC")
 	}
 	return db
 }

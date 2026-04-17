@@ -37,6 +37,21 @@ func TimeNowSecond() time.Time {
 	return time.Now().Truncate(time.Second)
 }
 
+// 返回当前时间戳
+func NowTimeStamp() int64 {
+	return time.Now().Unix()
+}
+
+// 返回当前时间的毫秒级时间戳
+func NowTimeStampMilli() int64 {
+	return time.Now().UnixMilli()
+}
+
+// 返回当日时间戳，即当天00:00:00的时间戳
+func NowDayTimeStamp() int64 {
+	return time.Now().Truncate(24 * time.Hour).Unix()
+}
+
 // TimeParse 根据指定的布局和时间值解析时间
 // 该函数旨在简化时间解析过程，通过封装 time.ParseInLocation 函数的调用，
 // 使其更易于使用和阅读。它总是使用本地时间进行解析。

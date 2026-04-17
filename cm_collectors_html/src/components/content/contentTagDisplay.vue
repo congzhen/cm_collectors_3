@@ -1,5 +1,7 @@
 <template>
   <div class="content-tag-display" :style="style_C">
+    <contentTag v-if="props.resource.pinToTop > 0" title="置顶" bg-color="rgba(255, 193, 7, 0.85)" color="#FFFFFF">
+    </contentTag>
     <contentTag v-for="item, key in topTagList_C" :key="key" :title="item.name" :bg-color="item.bgColor"
       :color="item.textColor" :fontSize="fontSize_C"></contentTag>
   </div>

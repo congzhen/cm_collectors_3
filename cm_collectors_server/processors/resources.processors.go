@@ -284,7 +284,18 @@ func (t Resources) BatchSetTag(mode string, resourceIDS, tags []string) error {
 		return nil
 	})
 }
-
+func (t Resources) PinToTop(resourceId string, pinToTopStatus bool) error {
+	var pinToTopValue int64
+	if pinToTopStatus {
+		pinToTopValue = core.NowTimeStampMilli()
+	}
+	db := core.DBS()
+	resourceModels := models.Resources{
+		ID:       resourceId,
+		PinToTop: pinToTopValue,
+	}
+	return models.Resources{}.Update(db, &resourceModels, []string{"PinToTop"})
+}
 func (t Resources) DeleteResource(resourceId string) error {
 	info, err := t.Info(resourceId)
 	if err != nil {
