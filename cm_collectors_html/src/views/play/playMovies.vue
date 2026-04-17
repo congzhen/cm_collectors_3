@@ -63,9 +63,7 @@
             </el-tag>
           </div>
           <el-alert class="tagAlert" title="摘要" type="info" :closable="false" />
-          <div class="abstract">
-            {{ resourceInfo.abstract }}
-          </div>
+          <div class="abstract" v-html="abstract_C"></div>
           <div class="c-height"></div>
         </div>
         <div class="main-right">
@@ -133,6 +131,11 @@ const mainContainerStyle_C = computed<CSSProperties>(() => {
   }
   return {};
 });
+const abstract_C = computed(() => {
+  if (!resourceInfo.value) return ''
+  //将props.resource.abstract中的换行符号转换为html的换行符号
+  return resourceInfo.value.abstract.replace(/\n/g, '<br>')
+})
 
 const init = async () => {
   await getResourceInfo();

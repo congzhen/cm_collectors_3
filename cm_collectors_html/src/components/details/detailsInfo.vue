@@ -67,16 +67,14 @@
       </div>
       <div class="info-block">
         <el-alert class="tagAlert" title="摘要" type="info" :closable="false" />
-        <div class="abstract">
-          {{ props.resource.abstract }}
-        </div>
+        <div class="abstract" v-html="abstract_C"></div>
       </div>
     </el-scrollbar>
   </div>
 </template>
 <script lang="ts" setup>
 import type { I_resource, I_resourceDramaSeries } from '@/dataType/resource.dataType';
-import { ref, watch, type PropType } from 'vue';
+import { ref, watch, computed, type PropType } from 'vue';
 import { appStoreData } from '@/storeData/app.storeData';
 import { playResource } from '@/common/play';
 import resourceDramaSeriesList from '@/components/resource/resourceDramaSeriesList.vue'
@@ -108,6 +106,12 @@ watch(
   },
   { immediate: true }
 );
+
+const abstract_C = computed(() => {
+  if (!props.resource) return ''
+  //将props.resource.abstract中的换行符号转换为html的换行符号
+  return props.resource.abstract.replace(/\n/g, '<br>')
+})
 
 const playResourceDramaSeriesHandle = (ds: I_resourceDramaSeries) => {
   if (!props.resource) return

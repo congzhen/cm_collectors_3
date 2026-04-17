@@ -98,13 +98,13 @@
     <!-- 摘要 -->
     <div class="abstract-section" v-if="resourceInfo && resourceInfo.abstract">
       <div class="section-title">摘要</div>
-      <div class="abstract-content">{{ resourceInfo.abstract }}</div>
+      <div class="abstract-content" v-html="abstract_C"></div>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, nextTick } from "vue";
+import { ref, onMounted, nextTick, computed } from "vue";
 import { useRouter } from 'vue-router';
 import videoPlay from "@/components/play/videoPlay.vue";
 import type { I_resource, I_resourceDramaSeries } from '@/dataType/resource.dataType';
@@ -139,6 +139,11 @@ const props = defineProps({
     default: '',
   },
 });
+const abstract_C = computed(() => {
+  if (!resourceInfo.value) return ''
+  //将props.resource.abstract中的换行符号转换为html的换行符号
+  return resourceInfo.value.abstract.replace(/\n/g, '<br>')
+})
 
 // 跳转到演员页面
 const goToPerformer = (performerId: string) => {
