@@ -247,23 +247,23 @@ func (Resources) setDbSearchPerformer(db *gorm.DB, searchPerformerGroup *datatyp
 		if searchPerformerGroup.Options[0] == datatype.V_Search_Not {
 			db = db.Where("(select count(*) from resourcesPerformers where resources_id = resources.id) = 0")
 		} else {
-			db = db.Where("id in (select resources_id from resourcesPerformers where performer_id = ?)", searchPerformerGroup.Options[0])
+			db = db.Where("id IN (SELECT resources_id FROM resourcesPerformers WHERE performer_id = ? UNION SELECT resources_id FROM resourcesDirectors WHERE performer_id = ?)", searchPerformerGroup.Options[0], searchPerformerGroup.Options[0])
 		}
 	case datatype.E_searchLogic_multiOr:
 		// 多个 OR 查询
 		// 构建 IN 查询，实现 OR 逻辑
-		db = db.Where("id IN (SELECT resources_id FROM resourcesPerformers WHERE performer_id IN (?))", searchPerformerGroup.Options)
+		db = db.Where("id IN (SELECT resources_id FROM resourcesPerformers WHERE performer_id IN (?)) OR id IN (SELECT resources_id FROM resourcesDirectors WHERE performer_id IN (?))", searchPerformerGroup.Options, searchPerformerGroup.Options)
 
 	case datatype.E_searchLogic_multiAnd:
 		// 多个 AND 查询（例如 tag=1 AND tag=2）
 		// 构建多个 EXISTS 子句，每个对应一个 performer_id
 		for _, option := range searchPerformerGroup.Options {
-			db = db.Where("EXISTS (SELECT 1 FROM resourcesPerformers WHERE performer_id = ? AND resources_id = resources.id)", option)
+			db = db.Where("EXISTS (SELECT 1 FROM resourcesPerformers WHERE performer_id = ? AND resources_id = resources.id) OR EXISTS (SELECT 1 FROM resourcesDirectors WHERE performer_id = ? AND resources_id = resources.id)", option, option)
 		}
 	case datatype.E_searchLogic_not:
 		// NOT IN 查询
 		// NOT IN 查询，排除具有特定 performer_id 的资源
-		db = db.Where("NOT EXISTS (SELECT 1 FROM resourcesPerformers WHERE performer_id IN (?) AND resources_id = resources.id)", searchPerformerGroup.Options)
+		db = db.Where("NOT EXISTS (SELECT 1 FROM resourcesPerformers WHERE performer_id IN (?) AND resources_id = resources.id) AND NOT EXISTS (SELECT 1 FROM resourcesDirectors WHERE performer_id IN (?) AND resources_id = resources.id)", searchPerformerGroup.Options, searchPerformerGroup.Options)
 	}
 	return db
 }
