@@ -32,22 +32,23 @@
         </el-form>
       </div>
       <div class="data-list">
-        <el-table :data="dataList" height="100%" border size="small" style="width: 100%">
+        <el-table ref="tableRef" :data="dataList" height="100%" border size="small" style="width: 100%">
+          <el-table-column type="selection" width="55" />
           <el-table-column type="index" width="80" />
           <el-table-column width="80">
             <template #default="scope">
               <div class="table-icon">
-                <el-icon v-if="scope.row.status" size="14">
-                  <Select />
+                <el-icon v-if="scope.row.importing" class="element-rotating" size="14">
+                  <Loading />
                 </el-icon>
-                <el-icon v-else-if="scope.row.waiting">
-                  <Paperclip />
+                <el-icon v-else-if="scope.row.status" size="14">
+                  <Select />
                 </el-icon>
                 <el-icon v-else-if="scope.row.msg != ''">
                   <CloseBold />
                 </el-icon>
-                <el-icon v-else class="element-rotating" size="14">
-                  <Loading />
+                <el-icon v-else>
+                  <Paperclip />
                 </el-icon>
               </div>
             </template>
@@ -67,28 +68,32 @@
   </dialogCommon>
 </template>
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, nextTick } from 'vue';
 import dialogCommon from '../com/dialog/dialog-common.vue';
 import selectScraperConfig from '../com/form/selectScraperConfig.vue';
 import datePicker from '../com/form/datePicker.vue';
 import { debounceNow } from '@/assets/debounce';
 import { scraperDataServer } from '@/server/scraper.server';
-import { ElMessage, ElMessageBox } from 'element-plus';
+import { ElMessage, ElMessageBox, ElTable } from 'element-plus';
 import type { I_performerBasic } from '@/dataType/performer.dataType';
 import { appStoreData } from '@/storeData/app.storeData';
 import { filesBasesServer } from '@/server/filesBases.server';
 import { defualtConfigScraperPerformerData, E_config_type, type I_config_scraperPerformerData } from '@/dataType/config.dataType';
+
 interface I_scraperPerformer {
   info: I_performerBasic;
   status: boolean;
   waiting: boolean;
   msg: string;
+  importing?: boolean; //  importing 标记
 }
+
 const store = {
   appStoreData: appStoreData(),
 }
 const emits = defineEmits(['success'])
 const dialogCommonRef = ref<InstanceType<typeof dialogCommon>>();
+const tableRef = ref<InstanceType<typeof ElTable>>();
 const formData = ref<I_config_scraperPerformerData>({
   scraperConfig: '',
   operate: 'update',
@@ -143,9 +148,17 @@ const searchScraperDataHandle = debounceNow(async () => {
           status: false,
           waiting: true,
           msg: '',
+          importing: false, // 初始化 importing
         });
       })
       dialogCommonRef.value?.disabledSubmit(false);
+
+      // 默认全选：在数据加载完成后，确保表格渲染完成再执行全选
+      nextTick(() => {
+        nextTick(() => {
+          tableRef.value?.toggleAllSelection();
+        });
+      });
     } else if (result.msg) {
       ElMessage.error(result.msg);
     }
@@ -179,9 +192,29 @@ const submitHandle = debounceNow(async () => {
   }
   dialogCommonRef.value?.disabledSubmit(true);
 
+  // 获取选中的行
+  const selectedRows = tableRef.value?.getSelectionRows() || [];
+
+  // 确定要刮削的数据列表：如果用户没选，则刮削全部；否则刮削选中的
+  const rowsToProcess = selectedRows.length > 0 ? selectedRows : dataList.value;
+
+  // 标记所有待处理行的状态为 importing
+  dataList.value.forEach(row => {
+    const shouldProcess = rowsToProcess.some(r => r.info.id === row.info.id);
+    if (shouldProcess) {
+      row.importing = true;
+    }
+  });
+
   // 使用信号量控制并发数
   const concurrency = formData.value.concurrency;
-  const total = dataList.value.length;
+  const total = rowsToProcess.length;
+
+  if (total === 0) {
+    success();
+    return;
+  }
+
   let index = 0;
 
   const processItem = async () => {
@@ -190,7 +223,7 @@ const submitHandle = debounceNow(async () => {
       return;
     }
 
-    const item = dataList.value[currentIndex];
+    const item = rowsToProcess[currentIndex];
     item.waiting = false;
 
     // 添加随机延迟（0-2秒）
@@ -214,6 +247,9 @@ const submitHandle = debounceNow(async () => {
     } catch (error: any) {
       item.msg = error.message || '请求失败';
       item.status = false;
+    } finally {
+      // 处理完成后取消 importing 状态
+      item.importing = false;
     }
 
     // 继续处理下一个
