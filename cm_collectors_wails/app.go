@@ -4,7 +4,10 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
+
+	wailsRuntime "github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 // App struct
@@ -59,4 +62,26 @@ func parseURLFromArgs() string {
 // GetURL returns the URL to be used in iframe
 func (a *App) GetURL() string {
 	return a.url
+}
+
+// OpenMultipleFilesDialog 打开文件选择对话框
+// 前端通过 window.__WAILS__.Go.Main.OpenMultipleFilesDialog(options) 调用
+func (a *App) OpenMultipleFilesDialog(title, name, pattern string) ([]string, error) {
+	options := wailsRuntime.OpenDialogOptions{
+		Title:   title,
+		Filters: []wailsRuntime.FileFilter{{DisplayName: name, Pattern: pattern}},
+	}
+	paths, err := wailsRuntime.OpenMultipleFilesDialog(a.ctx, options)
+	if err != nil {
+		return nil, err
+	}
+	// 如果用户取消，paths 可能为空切片，返回空切片表示用户取消
+	if len(paths) == 0 {
+		return []string{}, nil
+	}
+	for i, path := range paths {
+		// 标准化路径，文件夹使用/分割
+		paths[i] = filepath.ToSlash(filepath.Clean(path))
+	}
+	return paths, nil
 }

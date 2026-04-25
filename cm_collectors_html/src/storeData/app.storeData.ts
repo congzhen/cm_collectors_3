@@ -15,6 +15,7 @@ import type { I_appConfig } from "@/dataType/app.dataType";
 
 export const appStoreData = defineStore('app', {
   state: () => ({
+    runtimeBridgeStatus: false, // runtimeBridge是否可用
     adminResourceStatus: false,
     adminLoginStatus: false, // 管理员是否已登录
     appConfig: {} as I_appConfig,

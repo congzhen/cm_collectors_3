@@ -15,6 +15,8 @@ import { performerBasesStoreData } from '@/storeData/performerBases.storeData';
 import { searchStoreData } from './storeData/search.storeData';
 import { LoadingService } from '@/assets/loading'
 import { ElMessage } from 'element-plus'
+import { runRuntimeBridge } from "@/common/runtimeBridge"
+
 const initStatus = ref(false)
 
 const store = {
@@ -65,6 +67,10 @@ const init = async () => {
 
 onMounted(async () => {
   await init()
+  const runtimeBridgeStatus = await runRuntimeBridge();
+  if (runtimeBridgeStatus) {
+    store.appStoreData.runtimeBridgeStatus = runtimeBridgeStatus;
+  }
 })
 </script>
 <style lang="scss" scoped>

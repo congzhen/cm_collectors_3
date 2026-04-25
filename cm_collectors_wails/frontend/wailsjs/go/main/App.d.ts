@@ -4,3 +4,5 @@
 export function GetURL():Promise<string>;
 
 export function Greet(arg1:string):Promise<string>;
+
+export function OpenMultipleFilesDialog(arg1:string,arg2:string,arg3:string):Promise<Array<string>>;

@@ -39,6 +39,8 @@
           </ul>
           <div class="resource-form-browse">
             <el-button icon="MostlyCloudy" type="primary" plain @click="selectServerFilesHandle">选择资源</el-button>
+            <el-button v-if="store.appStoreData.runtimeBridgeStatus" icon="Folder" type="primary" plain
+              @click="selectLocalFilesHandle">选择本地文件</el-button>
           </div>
         </div>
       </div>
@@ -156,6 +158,7 @@ const appLang = AppLang()
 
 import { base64ToFile, getImageDimensions, scaleImage } from '@/assets/image';
 import type { I_scraperOneResource } from '@/dataType/other.dataType';
+import { openMultipleFilesDialog } from '@/common/runtimeBridge';
 const store = {
   appStoreData: appStoreData(),
 }
@@ -189,6 +192,7 @@ const defaultFormData: I_resource_base = {
   score: 0,
   abstract: '',
   status: true,
+  pinToTop: 0
 }
 
 const formData = ref<I_resource_base>({ ...defaultFormData })
@@ -274,7 +278,16 @@ const init = (_mode: 'add' | 'edit', res: I_resource | null = null) => {
     }
   }
 }
-
+const selectLocalFilesHandle = async () => {
+  const selectedFiles = await openMultipleFilesDialog();
+  selectedFiles.forEach((path: string) => {
+    dramaSeries.value.push({
+      id: "",
+      src: path
+    })
+  })
+  console.log("Selected files: ", selectedFiles);
+}
 const selectServerFilesHandle = () => {
   serverFileManagementDialogRef.value?.open();
 }

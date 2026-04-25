@@ -6,7 +6,7 @@
     Quit,
     WindowIsMaximised,
   } from "../wailsjs/runtime";
-  import { GetURL } from "../wailsjs/go/main/App";
+  import { GetURL, OpenMultipleFilesDialog } from "../wailsjs/go/main/App";
 
   let isMaximised = false;
   let title = "CM File Collectors";
@@ -39,6 +39,9 @@
 
     // 监听鼠标按下事件，当在标题栏按下时显示覆盖层
     document.addEventListener("mousedown", handleMouseDown);
+
+    // 确保在应用启动时调用代理设置
+    setupIframeProxy();
   });
 
   function handleMouseDown(e: MouseEvent) {
@@ -101,6 +104,88 @@
   onDestroy(() => {
     document.removeEventListener("mousedown", handleMouseDown);
   });
+
+  /**
+   * 监听来自 iframe 的消息并代理执行 Wails 原生功能
+   */
+  function setupIframeProxy() {
+    console.log("[Host] Setting up iframe proxy listener...");
+    window.addEventListener("message", async (event: MessageEvent) => {
+      // 安全建议：在生产环境中验证 event.origin
+      // if (event.origin !== "your-iframe-origin") return;
+
+      const data = event.data;
+
+      // 检查消息来源标识
+      if (data && typeof data === "object" && data.source === "iframe-client") {
+        const { action, payload, requestId } = data;
+        console.log(`[Host] Received message from iframe: action=${action}, requestId=${requestId}`);
+
+        try {
+          let result: unknown;
+
+          if (action === "handshake") {
+            console.log("[Host] Handshake received, responding...");
+            // 处理握手请求，简单返回 true 表示代理可用
+            event.source?.postMessage(
+              {
+                source: "host-main-window",
+                requestId,
+                success: true,
+                result: true,
+              },
+              { targetOrigin: "*" },
+            );
+            return; // 握手请求直接返回，不进入后续通用响应逻辑
+          } else if (action === "wails.dialog.openMultipleFiles") {
+            console.log("[Host] Opening multiple files dialog...");
+            
+            // 确保参数为字符串，避免 undefined 导致 Go 端类型断言失败或 panic
+            const title = typeof payload.title === 'string' ? payload.title : "Select Files";
+            const name = typeof payload.name === 'string' ? payload.name : "Files";
+            const pattern = typeof payload.pattern === 'string' ? payload.pattern : "*.*";
+
+            try {
+              // 调用 Wails Go 方法
+              // 请确保 app.go 中 OpenMultipleFilesDialog 的签名与此处一致
+              // 例如: func (a *App) OpenMultipleFilesDialog(title, name, pattern string) ([]string, error)
+              result = await OpenMultipleFilesDialog(title, name, pattern);
+              console.log("[Host] Files selected:", result);
+            } catch (goError) {
+              console.error("[Host] Go method call failed:", goError);
+              throw new Error(`Failed to open file dialog: ${goError}`);
+            }
+          } else {
+            throw new Error(`Unknown action: ${action}`);
+          }
+
+          // 发送成功响应
+          event.source?.postMessage(
+            {
+              source: "host-main-window",
+              requestId,
+              success: true,
+              result,
+            },
+            { targetOrigin: "*" },
+          ); // 生产环境请替换为具体的 iframe origin
+        } catch (error: any) {
+          console.error("[Host] Error handling iframe request:", error);
+          // 发送错误响应
+          event.source?.postMessage(
+            {
+              source: "host-main-window",
+              requestId,
+              success: false,
+              error: error.message || "Internal Host Error",
+            },
+            { targetOrigin: "*" },
+          );
+        }
+      }
+    });
+  }
+
 </script>
 
 <main>
@@ -260,3 +345,4 @@
     z-index: 1000;
   }
 </style>
+
