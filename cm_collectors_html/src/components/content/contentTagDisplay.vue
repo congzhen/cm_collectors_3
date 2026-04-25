@@ -3,7 +3,7 @@
     <contentTag v-if="props.resource.pinToTop > 0" title="置顶" bg-color="rgba(255, 193, 7, 0.85)" color="#FFFFFF">
     </contentTag>
     <contentTag v-for="item, key in topTagList_C" :key="key" :title="item.name" :bg-color="item.bgColor"
-      :color="item.textColor" :fontSize="fontSize_C"></contentTag>
+      :color="item.textColor" :fontSize="fontSize_C" @click="setSearchTagHandle(item)"></contentTag>
   </div>
 </template>
 <script setup lang="ts">
@@ -13,6 +13,8 @@ import { appStoreData } from '@/storeData/app.storeData';
 import contentTag from './contentTag.vue';
 import { formatDate } from '@/assets/timer'
 import { AppLang } from '@/language/app.lang'
+import { searchStoreData } from '@/storeData/search.storeData';
+import { E_tagType } from '@/dataType/app.dataType';
 const appLang = AppLang()
 
 
@@ -20,10 +22,14 @@ interface I_contentTagDisplay {
   name: string;
   textColor: string;
   bgColor: string;
+  val1: string;
+  val2: string;
+  type: E_tagType | undefined;
 }
 
 const store = {
   appStoreData: appStoreData(),
+  searchStoreData: searchStoreData(),
 }
 const props = defineProps({
   resource: {
@@ -78,18 +84,28 @@ const topTagList_C = computed(() => {
       const textColor = colorList.length > 0 ? colorList[colorIndex] : "#F3F3F3";
       const bgColor = rgbaList.length > 0 ? rgbaList[rgbaIndex] : "rgba(244, 54, 16, 0.75)";
       let name;
+      let type: E_tagType | undefined;
+      let value = '';
       switch (resAttrKey) {
         case 'definition':
           name = appLang.definition(attrData);
+          type = E_tagType.Definition
+          value = attrData;
           break;
         case 'issuingDate':
           name = formatDate(attrData, 'Y')
+          type = E_tagType.Year
+          value = name;
           break;
         case 'country':
           name = appLang.country(attrData);
+          type = E_tagType.Country
+          value = attrData;
           break;
         case 'stars':
           name = appLang.stars(attrData);
+          type = E_tagType.Star
+          value = attrData.toString();
           break;
         case 'score':
           name = appLang.score(attrData);
@@ -105,6 +121,9 @@ const topTagList_C = computed(() => {
         name: name,
         textColor,
         bgColor,
+        val1: value,
+        val2: "",
+        type: type
       });
     }
     index++;
@@ -126,6 +145,9 @@ const topTagList_C = computed(() => {
           name: resTag.name,
           textColor,
           bgColor,
+          val1: resTag.id,
+          val2: resTag.tagClass_id,
+          type: E_tagType.DiyTag,
         });
       }
     }
@@ -133,6 +155,12 @@ const topTagList_C = computed(() => {
   }
   return slc;
 });
+
+const setSearchTagHandle = (tag: I_contentTagDisplay) => {
+  if (!tag.type) return;
+  store.searchStoreData.setQuery(tag.type, tag.val1, tag.val2);
+}
+
 </script>
 <style lang="scss" scoped>
 .content-tag-display {
