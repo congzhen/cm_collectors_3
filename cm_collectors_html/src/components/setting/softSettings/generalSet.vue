@@ -55,6 +55,9 @@
       <el-form-item label="不允许服务器打开文件或文件夹">
         <el-switch v-model="formData.notAllowServerOpenFile" />
       </el-form-item>
+      <el-form-item label="允许应用程序关闭服务器">
+        <el-switch v-model="formData.allowAppCloseServer" />
+      </el-form-item>
       <el-form-item label="语言">
         <el-select v-model="formData.language">
           <el-option label="简体中文" value="zhCn" />
@@ -164,6 +167,7 @@ const formData = ref<I_appSystemConfig>({
   adminPassword: '',
   language: 'zhCn',
   notAllowServerOpenFile: false,
+  allowAppCloseServer: false,
   theme: 'default',
   closePlayCloud: true,
   closePlayCloudDialog: true,

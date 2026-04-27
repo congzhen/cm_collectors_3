@@ -6,6 +6,7 @@ type General struct {
 	AdminPassword          string         `yaml:"adminPassword"`
 	Language               string         `yaml:"language"`
 	NotAllowServerOpenFile bool           `yaml:"notAllowServerOpenFile"`
+	AllowAppCloseServer    bool           `yaml:"allowAppCloseServer"`
 	Theme                  string         `yaml:"theme"`
 	ClosePlayCloud         bool           `yaml:"closePlayCloud"`
 	ClosePlayCloudDialog   bool           `yaml:"closePlayCloudDialog"`

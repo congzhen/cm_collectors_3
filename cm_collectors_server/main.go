@@ -41,6 +41,8 @@ func main() {
 		}
 	}
 	appInit()
+	// 注册服务器关闭函数
+	core.RegisterShutdownHandler(shutdownServer)
 	if trayMode {
 		fmt.Println("以系统托盘模式运行")
 		// 以系统托盘模式运行
@@ -245,8 +247,8 @@ func runServer(serverAddr string, router *gin.Engine, trayMode bool) {
 // shutdownServer 优雅关闭服务器
 func shutdownServer() {
 	if server != nil {
-		// 创建一个5秒的超时上下文
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		// 创建一个1秒的超时上下文
+		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 		defer cancel()
 
 		// 关闭服务器
@@ -254,8 +256,11 @@ func shutdownServer() {
 			fmt.Printf("服务器关闭错误: %v\n", err)
 		} else {
 			fmt.Println("服务器已关闭")
+			// 确保进程退出
+			os.Exit(0)
 		}
 	}
+
 }
 
 // gracefulShutdown 处理优雅重启逻辑

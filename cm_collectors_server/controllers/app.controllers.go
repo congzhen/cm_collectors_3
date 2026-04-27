@@ -3,10 +3,12 @@ package controllers
 import (
 	"cm_collectors_server/core"
 	"cm_collectors_server/datatype"
+	"cm_collectors_server/errorMessage"
 	"cm_collectors_server/processors"
 	"cm_collectors_server/response"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -36,6 +38,23 @@ func (App) SetConfig(c *gin.Context) {
 		return
 	}
 	response.OkWithData(true, c)
+}
+
+func (App) Shutdown(c *gin.Context) {
+	if !(processors.App{}).ShutdownAllowed() {
+		errData, _ := errorMessage.GetErrorData(errorMessage.Err_Current_Server_Has_Been_Set_To_Disallow_This_Peration)
+		response.FailWithCodeMsg(
+			errData.Code,
+			errData.Msg,
+			c,
+		)
+		return
+	}
+	response.OkWithData(true, c)
+	go func() {
+		time.Sleep(100 * time.Millisecond)
+		core.InvokeShutdownHandler()
+	}()
 }
 
 func (App) GetUpdateSoftConfig(c *gin.Context) {

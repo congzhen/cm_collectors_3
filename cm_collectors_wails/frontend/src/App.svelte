@@ -6,7 +6,7 @@
     Quit,
     WindowIsMaximised,
   } from "../wailsjs/runtime";
-  import { GetURL, OpenMultipleFilesDialog } from "../wailsjs/go/main/App";
+  import { GetURL, OpenMultipleFilesDialog, RequestServerShutdown } from "../wailsjs/go/main/App";
 
   let isMaximised = false;
   let title = "CM File Collectors";
@@ -98,6 +98,16 @@
   function toggleMaximize() {
     WindowToggleMaximise();
     WindowIsMaximised().then((result) => (isMaximised = result));
+  }
+
+  async function handleQuit() {
+    try {
+      await RequestServerShutdown();
+    } catch (e) {
+      console.error("Failed to request server shutdown:", e);
+    } finally {
+      Quit();
+    }
   }
 
   // 清理事件监听器
@@ -199,7 +209,7 @@
         </button>
         <!-- 添加缩放控制切换按钮，使用符号保持一致性 -->
         <button class="titlebar-button" on:click={toggleZoomControls}>±</button>
-        <button class="titlebar-button close-button" on:click={Quit}>×</button>
+        <button class="titlebar-button close-button" on:click={handleQuit}>×</button>
       </div>
     </div>
 
@@ -345,4 +355,3 @@
     z-index: 1000;
   }
 </style>
-

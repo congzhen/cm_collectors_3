@@ -47,6 +47,7 @@ func (App) GetConfig() datatype.App_SystemConfig {
 		AdminPassword:          "",
 		Language:               core.Config.General.Language,
 		NotAllowServerOpenFile: core.Config.General.NotAllowServerOpenFile,
+		AllowAppCloseServer:    core.Config.General.AllowAppCloseServer,
 		Theme:                  core.Config.General.Theme,
 		PlayVideoFormats:       core.Config.Play.PlayVideoFormats,
 		PlayAudioFormats:       core.Config.Play.PlayAudioFormats,
@@ -71,6 +72,7 @@ func (App) SetConfig(config datatype.App_SystemConfig) error {
 	}
 	core.Config.General.Language = config.Language
 	core.Config.General.NotAllowServerOpenFile = config.NotAllowServerOpenFile
+	core.Config.General.AllowAppCloseServer = config.AllowAppCloseServer
 	core.Config.General.Theme = config.Theme
 	core.Config.General.ClosePlayCloud = config.ClosePlayCloud
 	core.Config.General.ClosePlayCloudDialog = config.ClosePlayCloudDialog
@@ -85,4 +87,8 @@ func (App) SetConfig(config datatype.App_SystemConfig) error {
 	core.Config.TaryMenu = config.TaryMenu
 	core.Config.ServerFileManagement.RootPath = config.ServerFileManagementRootPath
 	return core.SaveConfig()
+}
+
+func (App) ShutdownAllowed() bool {
+	return core.Config.General.AllowAppCloseServer
 }

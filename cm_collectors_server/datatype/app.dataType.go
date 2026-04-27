@@ -46,6 +46,7 @@ type App_SystemConfig struct {
 	AdminPassword                string                `json:"adminPassword"`
 	Language                     string                `json:"language"`
 	NotAllowServerOpenFile       bool                  `json:"notAllowServerOpenFile"`
+	AllowAppCloseServer          bool                  `json:"allowAppCloseServer"`
 	Theme                        string                `json:"theme"`
 	PlayVideoFormats             []string              `json:"playVideoFormats"`
 	PlayAudioFormats             []string              `json:"playAudioFormats"`

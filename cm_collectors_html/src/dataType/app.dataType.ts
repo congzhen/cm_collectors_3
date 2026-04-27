@@ -111,6 +111,7 @@ export interface I_appSystemConfig extends I_appConfig {
   adminPassword: string;
   language: string;
   notAllowServerOpenFile: boolean;
+  allowAppCloseServer: boolean;
   playVideoFormats: string[];
   playAudioFormats: string[];
   windowsStartNotRunApp: boolean;

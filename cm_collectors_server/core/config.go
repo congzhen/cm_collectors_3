@@ -28,6 +28,7 @@ func getDefaultConfig() *config.Config {
 			AdminPassword:          "",
 			Language:               "zhCn",
 			NotAllowServerOpenFile: false,
+			AllowAppCloseServer:    false,
 			Theme:                  "default",
 			ClosePlayCloud:         false,
 			ClosePlayCloudDialog:   false,

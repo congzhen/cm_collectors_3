@@ -2,10 +2,13 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	wailsRuntime "github.com/wailsapp/wails/v2/pkg/runtime"
 )
@@ -62,6 +65,32 @@ func parseURLFromArgs() string {
 // GetURL returns the URL to be used in iframe
 func (a *App) GetURL() string {
 	return a.url
+}
+
+// RequestServerShutdown 向服务器请求关闭服务器
+func (a *App) RequestServerShutdown() (bool, error) {
+	client := &http.Client{Timeout: 3 * time.Second}
+	req, err := http.NewRequest(http.MethodGet, strings.TrimRight(a.url, "/")+"/api/app/shutdown", nil)
+	if err != nil {
+		return false, err
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		return false, err
+	}
+	defer resp.Body.Close()
+
+	var result struct {
+		Status bool   `json:"status"`
+		Msg    string `json:"msg"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return false, err
+	}
+	if !result.Status {
+		return false, fmt.Errorf(result.Msg)
+	}
+	return true, nil
 }
 
 // OpenMultipleFilesDialog 打开文件选择对话框

@@ -54,6 +54,7 @@ func handleNoRoute(c *gin.Context) {
 func healthRoute(router *gin.Engine) {
 	router.GET("/health", handleHealth)
 	router.GET("/api/health", handleHealth)
+	router.GET("/api/app/shutdown", controllers.App{}.Shutdown)
 }
 func handleHealth(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
