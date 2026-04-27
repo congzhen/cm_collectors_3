@@ -16,8 +16,8 @@ type Performer struct {
 	KeyWords              string               `json:"keyWords" gorm:"column:keyWords;type:varchar(500);"`
 	Birthday              string               `json:"birthday" gorm:"column:birthday;type:varchar(10);"`
 	Nationality           string               `json:"nationality" gorm:"type:varchar(200);"`
-	CareerPerformer       bool                 `json:"careerPerformer" gorm:"column:careerPerformer;type:tinyint(1);default:1"`
-	CareerDirector        bool                 `json:"careerDirector" gorm:"column:careerDirector;type:tinyint(1);default:0"`
+	CareerPerformer       *bool                `json:"careerPerformer" gorm:"column:careerPerformer;type:tinyint(1);default:1"`
+	CareerDirector        *bool                `json:"careerDirector" gorm:"column:careerDirector;type:tinyint(1);default:0"`
 	Photo                 string               `json:"photo" gorm:"type:varchar(100);"`
 	Introduction          string               `json:"introduction" gorm:"type:text;"`
 	Cup                   string               `json:"cup" gorm:"type:varchar(10);index:idx_performer_cup;"`
