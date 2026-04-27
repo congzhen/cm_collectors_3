@@ -22,15 +22,16 @@ const loading = ref(false);
 const base64Images = ref<string[]>([]);
 const selectedIndex = ref<number>(0);
 
-const init = async (_videoPath: string) => {
+const init = async (_videoPath: string, frameCount: number) => {
   base64Images.value = [];
-  await getVKeyFramePosters(_videoPath)
+  selectedIndex.value = 0;
+  await getVKeyFramePosters(_videoPath, frameCount)
 }
 
-const getVKeyFramePosters = async (_videoPath: string) => {
+const getVKeyFramePosters = async (_videoPath: string, frameCount: number) => {
   try {
     loading.value = true;
-    const result = await ffmpegServer.getVideoThumbnails(_videoPath, 32);
+    const result = await ffmpegServer.getVideoThumbnails(_videoPath, frameCount);
     if (!result.status) {
       ElMessage.error(result.msg);
       return;
@@ -52,10 +53,10 @@ const submitHandle = debounceNow(() => {
   emits('selectImage', base64Images.value[selectedIndex.value])
 })
 
-const open = (_videoPath: string) => {
+const open = (_videoPath: string, frameCount: number) => {
   dialogCommonRef.value?.open();
   nextTick(() => {
-    init(_videoPath);
+    init(_videoPath, frameCount);
   });
 }
 const close = () => {

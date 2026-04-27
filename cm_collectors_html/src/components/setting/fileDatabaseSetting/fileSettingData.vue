@@ -224,6 +224,9 @@
           <el-option label="系统" :value="E_resourceOpenMode.System" />
         </el-select>
       </el-form-item>
+      <el-form-item label="获取视频预览图关键帧数量">
+        <el-input-number v-model="filesConfig.videoPreviewImageCount" :min="1" :max="200" />
+      </el-form-item>
       <!--
       <el-form-item label="开启记录模块">
         <el-checkbox v-model="filesConfig.historyModule" label="历史记录" border />

@@ -57,6 +57,7 @@ export interface I_config_app {
   playAtlasThumbnail: boolean; // 图集-缩略图
   playComicMode: string; // 漫画-模式
   playComicrReadingMode: boolean; // 漫画-阅读模式
+  videoPreviewImageCount: number; // 获取视频预览图关键帧数量
   plugInUnit_Cup: boolean; // 插件单元-cup
   plugInUnit_Cup_Text: string; // 插件单元-cup-文字
   previewImageFolder: string; // 预览-图片文件夹
@@ -128,6 +129,7 @@ export const defualtConfigApp: I_config_app = {
   resourceDetailsShowMode: 'right',
   showPreviewImage: false,
   previewImageFolder: '/',
+  videoPreviewImageCount: 32,
   plugInUnit_Cup: false,
   plugInUnit_Cup_Text: 'Cup',
   coverPosterData: [
@@ -189,6 +191,8 @@ export interface I_routeConversion {
   from: string;
   to: string;
 }
+
+
 
 
 export interface I_config_scanDisk {

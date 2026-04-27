@@ -126,6 +126,7 @@ type Config_FilesBases struct {
 	PlugInUnitCup                bool                      `json:"plugInUnit_Cup"`               // 插件单元-cup
 	PlugInUnitCupText            string                    `json:"plugInUnit_Cup_Text"`          // 插件单元-cup-文字
 	PreviewImageFolder           string                    `json:"previewImageFolder"`           // 预览-图片文件夹
+	VideoPreviewImageCount       int                       `json:"videoPreviewImageCount"`       // 获取视频预览图关键帧数量
 	RandomPosterAutoSize         bool                      `json:"randomPosterAutoSize"`         // 随机海报-自动大小
 	RandomPosterWidth            int                       `json:"randomPosterWidth"`            // 随机海报-宽度
 	RandomPosterHeight           int                       `json:"randomPosterHeight"`           // 随机海报-高度

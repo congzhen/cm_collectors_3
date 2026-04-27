@@ -337,11 +337,12 @@ const submitHandle = async () => {
 }
 
 const videoThumbnailPosterHandle = () => {
-  if (dramaSeries.value.length == 0 && dramaSeries.value[0].src != '') {
+  if (dramaSeries.value.length == 0 || !dramaSeries.value[0] || dramaSeries.value[0].src == '') {
     ElMessage.error('请先设置一个视频资源');
     return;
   }
-  videoThumbnailPosterDialogRef.value?.open(dramaSeries.value[0].src);
+  const frameCount = Math.max(1, store.appStoreData.currentConfigApp.videoPreviewImageCount || 32);
+  videoThumbnailPosterDialogRef.value?.open(dramaSeries.value[0].src, frameCount);
 }
 
 const scraperVideoInfoHandle = () => {
