@@ -8,7 +8,9 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
+	"unicode"
 )
 
 // SortOrder 定义文件排序方式的枚举类型
@@ -124,9 +126,15 @@ func GetFilesByExtensions(dirPaths []string, extensions []string, recursive bool
 func SortFilesByOrder(filePaths []string, sortOrder FilesSortOrder) []string {
 	switch sortOrder {
 	case FileNameAsc:
-		sort.Strings(filePaths)
+		// 文件名排序用于资源导入时决定剧集追加顺序。
+		// 这里使用自然排序，避免字符串排序把 10.mp4 排在 2.mp4 前面。
+		sort.SliceStable(filePaths, func(i, j int) bool {
+			return naturalPathLess(filePaths[i], filePaths[j])
+		})
 	case FileNameDesc:
-		sort.Sort(sort.Reverse(sort.StringSlice(filePaths)))
+		sort.SliceStable(filePaths, func(i, j int) bool {
+			return naturalPathLess(filePaths[j], filePaths[i])
+		})
 	case FileTimeAsc, FileTimeDesc:
 		// 创建包含文件路径和信息的结构体切片
 		filesWithInfo := make([]struct {
@@ -159,6 +167,102 @@ func SortFilesByOrder(filePaths []string, sortOrder FilesSortOrder) []string {
 	}
 
 	return filePaths
+}
+
+// naturalPathLess 按路径的“自然顺序”比较两个文件。
+//
+// 比较策略：
+//  1. 先比较目录，确保跨目录扫描时同一目录的文件相邻。
+//  2. 同目录内优先比较文件名中的第一个数字，用于处理剧集号。
+//  3. 数字相同或没有数字时，再退回自然字符串比较。
+//
+// 这样可以让 1.mp4、02.mp4、第3集.mp4、10.mp4、第11集.mp4 按真实集数排序。
+func naturalPathLess(a, b string) bool {
+	a = filepath.ToSlash(a)
+	b = filepath.ToSlash(b)
+	aDir := strings.ToLower(filepath.ToSlash(filepath.Dir(a)))
+	bDir := strings.ToLower(filepath.ToSlash(filepath.Dir(b)))
+	if aDir != bDir {
+		return naturalStringLess(aDir, bDir)
+	}
+	aBase := strings.ToLower(filepath.Base(a))
+	bBase := strings.ToLower(filepath.Base(b))
+	// 剧集命名不总是以数字开头，例如“第3集.mp4”。
+	// 先抽取文件名中的第一个数字比较，可以让“10.mp4”和“第3集.mp4”按 3、10 的顺序排列。
+	aNumber, aHasNumber := firstNaturalNumber(aBase)
+	bNumber, bHasNumber := firstNaturalNumber(bBase)
+	if aHasNumber && bHasNumber && aNumber != bNumber {
+		return aNumber < bNumber
+	}
+	return naturalStringLess(aBase, bBase)
+}
+
+// naturalStringLess 比较两个字符串的自然顺序。
+//
+// 与普通字符串比较不同，连续数字会被当作一个数字整体处理：
+// - file2 < file10
+// - ep09 < ep10
+//
+// 当数字值相同（如 2 与 02）时，再用数字长度做稳定区分，保证排序结果可预测。
+func naturalStringLess(a, b string) bool {
+	aRunes := []rune(a)
+	bRunes := []rune(b)
+	i, j := 0, 0
+	for i < len(aRunes) && j < len(bRunes) {
+		aRune := aRunes[i]
+		bRune := bRunes[j]
+		if unicode.IsDigit(aRune) && unicode.IsDigit(bRune) {
+			aNumber, aNext := readNaturalNumber(aRunes, i)
+			bNumber, bNext := readNaturalNumber(bRunes, j)
+			if aNumber != bNumber {
+				return aNumber < bNumber
+			}
+			aDigits := aNext - i
+			bDigits := bNext - j
+			if aDigits != bDigits {
+				return aDigits < bDigits
+			}
+			i = aNext
+			j = bNext
+			continue
+		}
+		if aRune != bRune {
+			return aRune < bRune
+		}
+		i++
+		j++
+	}
+	return len(aRunes) < len(bRunes)
+}
+
+// readNaturalNumber 从指定位置读取一段连续数字，并返回数字值和读取结束位置。
+//
+// 调用方保证 start 位置是数字；如果数字过大导致解析失败，则按 0 返回，但仍推进到数字段结尾。
+func readNaturalNumber(runes []rune, start int) (int64, int) {
+	end := start
+	for end < len(runes) && unicode.IsDigit(runes[end]) {
+		end++
+	}
+	number, err := strconv.ParseInt(string(runes[start:end]), 10, 64)
+	if err != nil {
+		return 0, end
+	}
+	return number, end
+}
+
+// firstNaturalNumber 提取字符串中出现的第一个数字段。
+//
+// 主要服务于剧集排序：文件名可以是 01.mp4，也可以是 第01集.mp4，
+// 两者都应该提取到同一个集数 1。
+func firstNaturalNumber(value string) (int64, bool) {
+	runes := []rune(value)
+	for i := 0; i < len(runes); i++ {
+		if unicode.IsDigit(runes[i]) {
+			number, _ := readNaturalNumber(runes, i)
+			return number, true
+		}
+	}
+	return 0, false
 }
 
 // GetFileNameFromPath 从给定的文件路径中提取文件名

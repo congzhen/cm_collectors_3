@@ -212,6 +212,7 @@ export interface I_config_scanDisk {
   coverPosterHeight: number; // 封面海报高度
   autoCreatePoster: boolean; // 自动创建封面海报
   folderToSeries: boolean; // 将同一文件夹下的多个视频文件合并为剧集
+  similarNameToSeries: boolean; // 将同一文件夹下名称相近、纯集数或集数前缀相同的视频文件合并为剧集
   folderToSeriesSort: boolean; // 合并剧集时，是否按名称重新排序
   enableNfoFuzzyMatch: boolean; // 开启nfo模糊匹配
   useRandomNfoIfNoneMatch: boolean; // nfo无法匹配时使用目录下随机nfo文件
@@ -249,6 +250,7 @@ export const defualtConfigScanDisk: I_config_scanDisk = {
   coverPosterHeight: 0,
   autoCreatePoster: true,
   folderToSeries: false,
+  similarNameToSeries: false,
   folderToSeriesSort: false,
   enableNfoFuzzyMatch: true,
   useRandomNfoIfNoneMatch: false,

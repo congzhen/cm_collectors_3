@@ -72,6 +72,12 @@
           <el-checkbox v-model="formData.folderToSeries" label="将同一文件夹下的多个视频文件合并为剧集" />
         </el-form-item>
         <el-form-item>
+          <div class="form-column-list">
+            <el-checkbox v-model="formData.similarNameToSeries" label="将同一文件夹下名称相近的视频文件合并为剧集" />
+            <div><el-text type="warning">适合连续剧文件名只差集数、分段号或少量字符的情况；开启“同一文件夹合并”时会优先使用完整文件夹合并。</el-text></div>
+          </div>
+        </el-form-item>
+        <el-form-item>
           <el-checkbox v-model="formData.folderToSeriesSort" label="合并剧集时，是否按名称重新排序" />
         </el-form-item>
         <el-form-item>

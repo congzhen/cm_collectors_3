@@ -17,6 +17,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"unicode"
 )
 
 type ImportData struct {
@@ -47,7 +48,7 @@ func (ImportData) ScanDiskImportPaths(filesBasesId string, config datatype.Confi
 	if err != nil {
 		return nil, err
 	}
-	filesPaths = utils.SortFilesByOrder(filesPaths, utils.FileTimeAsc)
+	filesPaths = utils.SortFilesByOrder(filesPaths, utils.FileNameAsc)
 	db := core.DBS()
 
 	if saveConfig {
@@ -98,9 +99,15 @@ func (t ImportData) ScanDiskImportData(filesBasesId, filePath string, config dat
 	fileDir := utils.GetDirPathFromFilePath(filePath)
 	fileName := utils.GetFileNameFromPath(filePath, false)
 
-	// 如果启用了“文件夹转系列”，则先去查找是否已经有资源
-	if config.FolderToSeries {
+	// 合并为剧集的入口：
+	// - FolderToSeries：老逻辑，认为同一文件夹下的视频都属于同一个资源。
+	// - SimilarNameToSeries：新逻辑，只在同一文件夹下继续比较文件名相似度，避免把同目录的不同作品误合并。
+	if config.FolderToSeries || config.SimilarNameToSeries {
 		resourcesDramaSeries, err := ResourcesDramaSeries{}.FindDramaSeriesSlcBySearchPath(filesBasesId, fileDir)
+		if err == nil && config.SimilarNameToSeries && !config.FolderToSeries {
+			// “同一文件夹合并”优先级更高；只有未开启完整文件夹合并时，才做相似名称过滤。
+			resourcesDramaSeries = t.filterSimilarNameDramaSeries(resourcesDramaSeries, fileName)
+		}
 		if err == nil && len(*resourcesDramaSeries) > 0 {
 			existsDramaSeriesFilePath := false
 			//判断filepath是否已在改资源的剧集中，则不处理
@@ -229,6 +236,280 @@ func (ImportData) GetResourceTitle(filePath string, config datatype.Config_ScanD
 		resourceTitle = filePath
 	}
 	return resourceTitle
+}
+
+// filterSimilarNameDramaSeries 从同一文件夹下已有的剧集资源中筛选“应该归入同一资源”的那一组。
+//
+// 这里传入的数据可能包含同目录下多个资源的剧集，因此先按 ResourcesID 分组，再判断当前文件名
+// 是否与某个资源内的任意剧集文件名/资源标题相似；命中后返回该资源的剧集列表，后续追加剧集时
+// 会使用这个列表的第一个 ResourcesID。
+//
+// 匹配规则按保守到宽松分三层：
+//  1. 集数前缀 + 相同主体：如 01xxxxxxx / 02xxxxxxx、01.xxxxxxx / 02.xxxxxxx。
+//  2. 标题归一化后相同或互相包含：如 My Show 第01集 / My Show 第02集。
+//  3. 归一化标题相似度达到阈值：处理少量字符差异，但避免短标题被误合并。
+func (ImportData) filterSimilarNameDramaSeries(resourcesDramaSeries *[]models.DramaSeriesWithResource, fileName string) *[]models.DramaSeriesWithResource {
+	if resourcesDramaSeries == nil || len(*resourcesDramaSeries) == 0 {
+		return &[]models.DramaSeriesWithResource{}
+	}
+	targetName := normalizeSeriesName(fileName)
+	if len([]rune(targetName)) < 2 {
+		// 纯集数型文件名（01、02、EP03、第4集）归一化后会变空。
+		// 这种情况不能直接放弃，否则最常见的分集命名无法合并；但也必须限制在已有资源同样是纯集数型时才合并。
+		if isSimpleSeriesPartName(fileName) {
+			return filterSimpleSeriesPartDramaSeries(resourcesDramaSeries)
+		}
+		return &[]models.DramaSeriesWithResource{}
+	}
+
+	grouped := map[string][]models.DramaSeriesWithResource{}
+	groupOrder := []string{}
+	groupMatched := map[string]bool{}
+
+	for _, item := range *resourcesDramaSeries {
+		if _, ok := grouped[item.ResourcesID]; !ok {
+			groupOrder = append(groupOrder, item.ResourcesID)
+		}
+		grouped[item.ResourcesID] = append(grouped[item.ResourcesID], item)
+
+		// 同时比较剧集文件名和资源标题：
+		// - 文件名用于处理已经按文件名导入的资源。
+		// - 标题用于处理首次导入后资源标题被 NFO 或命名配置改写的资源。
+		srcName := utils.GetFileNameFromPath(item.Src, false)
+		if isSimilarSeriesFileName(fileName, srcName) || isSimilarSeriesFileName(fileName, item.Title) || isSimilarSeriesName(targetName, srcName) || isSimilarSeriesName(targetName, item.Title) {
+			groupMatched[item.ResourcesID] = true
+		}
+	}
+
+	for _, resourcesID := range groupOrder {
+		if groupMatched[resourcesID] {
+			dataList := grouped[resourcesID]
+			return &dataList
+		}
+	}
+	return &[]models.DramaSeriesWithResource{}
+}
+
+// filterSimpleSeriesPartDramaSeries 专门处理 01、02、03 这种“只有集数没有标题主体”的文件名。
+//
+// 这类文件名无法通过相似标题判断，因为去掉集数后没有可比较内容。因此只有当同目录已有资源的
+// 文件名或标题也属于纯集数型时，才认为它们属于同一连续剧，降低误把普通短标题合并的风险。
+func filterSimpleSeriesPartDramaSeries(resourcesDramaSeries *[]models.DramaSeriesWithResource) *[]models.DramaSeriesWithResource {
+	grouped := map[string][]models.DramaSeriesWithResource{}
+	groupOrder := []string{}
+	groupMatched := map[string]bool{}
+
+	for _, item := range *resourcesDramaSeries {
+		if _, ok := grouped[item.ResourcesID]; !ok {
+			groupOrder = append(groupOrder, item.ResourcesID)
+		}
+		grouped[item.ResourcesID] = append(grouped[item.ResourcesID], item)
+
+		srcName := utils.GetFileNameFromPath(item.Src, false)
+		if isSimpleSeriesPartName(srcName) || isSimpleSeriesPartName(item.Title) {
+			groupMatched[item.ResourcesID] = true
+		}
+	}
+
+	for _, resourcesID := range groupOrder {
+		if groupMatched[resourcesID] {
+			dataList := grouped[resourcesID]
+			return &dataList
+		}
+	}
+	return &[]models.DramaSeriesWithResource{}
+}
+
+// isSimilarSeriesName 比较“去掉集数、分段号、括号信息后的标题主体”是否相似。
+//
+// normalizedTargetName 必须是已经通过 normalizeSeriesName 处理后的目标文件名；
+// candidateName 可以是原始文件名或资源标题，本函数会自行归一化。
+func isSimilarSeriesName(normalizedTargetName string, candidateName string) bool {
+	candidate := normalizeSeriesName(candidateName)
+	if len([]rune(candidate)) < 2 {
+		return false
+	}
+	if normalizedTargetName == candidate {
+		return true
+	}
+	// 对较长标题允许包含关系，比如 “show name” 与 “show name special”。
+	// 短标题不走包含匹配，避免 “ab” 误命中大量名称。
+	if len([]rune(normalizedTargetName)) >= 4 && len([]rune(candidate)) >= 4 {
+		if strings.Contains(normalizedTargetName, candidate) || strings.Contains(candidate, normalizedTargetName) {
+			return true
+		}
+	}
+	// 0.86 是偏保守的阈值：允许少量字符、空格、符号差异，但不会把主体明显不同的标题并在一起。
+	return stringSimilarity(normalizedTargetName, candidate) >= 0.86
+}
+
+// isSimilarSeriesFileName 判断“文件名前缀是集数，后面主体相同”的场景。
+//
+// 典型例子：
+// - 01xxxxxxx / 02xxxxxxx
+// - 01.xxxxxxx / 02.xxxxxxx
+// - 01-短剧 / 02.短剧
+//
+// 这种命名如果只做整体相似度，短标题时可能分数不稳定；先拆掉开头集数再比较主体更可靠。
+func isSimilarSeriesFileName(targetName string, candidateName string) bool {
+	targetSuffix, ok := leadingSeriesPartSuffix(targetName)
+	if !ok {
+		return false
+	}
+	candidateSuffix, ok := leadingSeriesPartSuffix(candidateName)
+	if !ok {
+		return false
+	}
+	return targetSuffix == candidateSuffix || stringSimilarity(targetSuffix, candidateSuffix) >= 0.9
+}
+
+// isSimpleSeriesPartName 判断文件名是否只有集数/分段信息，没有可比较的标题主体。
+//
+// 支持：
+// - 01、1、001
+// - EP01、Episode 02、Part-03、CD1
+// - 第01集、第2话
+func isSimpleSeriesPartName(name string) bool {
+	name = strings.ToLower(strings.TrimSpace(name))
+	// 去掉清晰度、来源等括号标记后再判断，避免 01[1080p] 这种命名失效。
+	name = regexp.MustCompile(`[（(【\[].*?[）)】\]]`).ReplaceAllString(name, " ")
+	name = strings.TrimSpace(name)
+	if name == "" {
+		return false
+	}
+
+	patterns := []string{
+		`^[0-9]{1,3}$`,
+		`^(?i)(e|ep|episode|part|pt|cd|disc|vol)\s*[-_. ]*\d{1,4}$`,
+		`^第\s*[0-9一二三四五六七八九十百千万]{1,4}\s*[集话話回期部]$`,
+	}
+	for _, pattern := range patterns {
+		if regexp.MustCompile(pattern).MatchString(name) {
+			return true
+		}
+	}
+	return false
+}
+
+// leadingSeriesPartSuffix 从“集数前缀 + 标题主体”中提取标题主体。
+//
+// 例如：
+// - 01xxxxxxx  -> xxxxxxx
+// - 01.xxxxxxx -> xxxxxxx
+// - 02-短剧    -> 短剧
+//
+// 如果提取出来的主体过短或仍然只是集数，则返回 false，避免 01.02 这种无标题内容被误合并。
+func leadingSeriesPartSuffix(name string) (string, bool) {
+	name = strings.ToLower(strings.TrimSpace(name))
+	name = regexp.MustCompile(`[（(【\[].*?[）)】\]]`).ReplaceAllString(name, " ")
+	name = strings.TrimSpace(name)
+
+	match := regexp.MustCompile(`^[0-9]{1,3}[\s._\-–—]*(.+)$`).FindStringSubmatch(name)
+	if len(match) != 2 {
+		return "", false
+	}
+	suffix := normalizeSeriesName(match[1])
+	if len([]rune(suffix)) < 2 || isSimpleSeriesPartName(suffix) {
+		return "", false
+	}
+	return suffix, true
+}
+
+// normalizeSeriesName 将文件名/标题归一化为适合相似度比较的“主体名称”。
+//
+// 处理内容包括：
+// - 去掉 S01E02、EP01、Part-03、第12集、尾部纯数字等集数/分段标记。
+// - 去掉括号中的清晰度、字幕组、来源等附加信息。
+// - 把符号统一压缩为空格，只保留字母、数字和中文。
+//
+// 注意：对 01、02 这种纯集数名，归一化结果会为空；调用方需要使用 isSimpleSeriesPartName 兜底。
+func normalizeSeriesName(name string) string {
+	name = strings.ToLower(strings.TrimSpace(name))
+	replacers := []struct {
+		pattern string
+		repl    string
+	}{
+		{`(?i)s\d{1,2}\s*e\d{1,3}`, " "},
+		{`(?i)\b(e|ep|episode|part|pt|cd|disc|vol)\s*[-_. ]*\d{1,4}\b`, " "},
+		{`第\s*[0-9一二三四五六七八九十百千万]+\s*[集话話回期部]`, " "},
+		{`[（(【\[].*?[）)】\]]`, " "},
+		{`[\s._\-–—]+[0-9一二三四五六七八九十百千万]{1,4}$`, " "},
+		{`[0-9]{1,4}$`, " "},
+	}
+	for _, replacer := range replacers {
+		name = regexp.MustCompile(replacer.pattern).ReplaceAllString(name, replacer.repl)
+	}
+
+	var builder strings.Builder
+	lastWasSpace := false
+	for _, r := range name {
+		if unicode.IsLetter(r) || unicode.IsDigit(r) || unicode.Is(unicode.Han, r) {
+			builder.WriteRune(r)
+			lastWasSpace = false
+			continue
+		}
+		if !lastWasSpace {
+			builder.WriteRune(' ')
+			lastWasSpace = true
+		}
+	}
+	return strings.Join(strings.Fields(builder.String()), " ")
+}
+
+// stringSimilarity 使用 Levenshtein 编辑距离计算两个字符串的相似度，返回 0~1。
+//
+// 1 表示完全一致，0 表示完全不相似。这里按 rune 处理，避免中文被按字节拆分。
+func stringSimilarity(a, b string) float64 {
+	aRunes := []rune(a)
+	bRunes := []rune(b)
+	maxLen := len(aRunes)
+	if len(bRunes) > maxLen {
+		maxLen = len(bRunes)
+	}
+	if maxLen == 0 {
+		return 1
+	}
+	distance := levenshteinDistance(aRunes, bRunes)
+	return 1 - float64(distance)/float64(maxLen)
+}
+
+// levenshteinDistance 计算两个 rune 切片之间的编辑距离。
+//
+// 编辑距离越小表示字符串越接近；支持插入、删除、替换三种操作。
+func levenshteinDistance(a, b []rune) int {
+	if len(a) == 0 {
+		return len(b)
+	}
+	if len(b) == 0 {
+		return len(a)
+	}
+	prev := make([]int, len(b)+1)
+	curr := make([]int, len(b)+1)
+	for j := range prev {
+		prev[j] = j
+	}
+	for i := 1; i <= len(a); i++ {
+		curr[0] = i
+		for j := 1; j <= len(b); j++ {
+			cost := 0
+			if a[i-1] != b[j-1] {
+				cost = 1
+			}
+			curr[j] = minInt(curr[j-1]+1, prev[j]+1, prev[j-1]+cost)
+		}
+		prev, curr = curr, prev
+	}
+	return prev[len(b)]
+}
+
+func minInt(values ...int) int {
+	min := values[0]
+	for _, value := range values[1:] {
+		if value < min {
+			min = value
+		}
+	}
+	return min
 }
 
 // VideoDefinition 获取视频文件的清晰度信息

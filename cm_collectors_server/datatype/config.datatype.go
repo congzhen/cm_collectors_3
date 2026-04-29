@@ -174,6 +174,7 @@ type Config_ScanDisk struct {
 	CoverPosterHeight                  int                 `json:"coverPosterHeight"`
 	AutoCreatePoster                   bool                `json:"autoCreatePoster"`
 	FolderToSeries                     bool                `json:"folderToSeries"`
+	SimilarNameToSeries                bool                `json:"similarNameToSeries"` // 仅在同一文件夹下，将名称相近或集数前缀相同的视频追加为同一资源的剧集
 	FolderToSeriesSort                 bool                `json:"folderToSeriesSort"`
 	EnableNfoFuzzyMatch                bool                `json:"enableNfoFuzzyMatch"`
 	UseRandomNfoIfNoneMatch            bool                `json:"useRandomNfoIfNoneMatch"`
