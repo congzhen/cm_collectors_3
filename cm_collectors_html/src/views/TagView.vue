@@ -42,7 +42,7 @@ import { E_tagType, type I_tagData } from '@/dataType/app.dataType'
 import tagCollapseItem from '@/components/tag/tagCollapseItem.vue'
 import { appStoreData } from '@/storeData/app.storeData'
 import { searchStoreData } from '@/storeData/search.storeData'
-import { ref, onMounted, watch, computed, type CSSProperties } from 'vue'
+import { ref, onMounted, onUnmounted, watch, computed, type CSSProperties } from 'vue'
 import { E_searchLogic } from '@/dataType/search.dataType'
 import { AppLang } from '@/language/app.lang'
 const appLang = AppLang()
@@ -74,9 +74,10 @@ watch(
 const tagContainerStyle_C = computed<CSSProperties>(() => {
   return {
     width: store.appStoreData.currentConfigApp.leftColumnWidth + 'px',
-    height: store.appStoreData.currentConfigApp.leftColumnMode == 'fixed' ? '100%' : '100%',
+    height: '100%',
     left: arrowStatus.value ? '0px' : -store.appStoreData.currentConfigApp.leftColumnWidth + 'px',
     position: store.appStoreData.currentConfigApp.leftColumnMode == 'fixed' ? 'unset' : 'absolute',
+    top: store.appStoreData.currentConfigApp.leftColumnMode == 'fixed' ? 'auto' : '0px',
     zIndex: 90,
     transition: 'left 0.3s ease',
   }
@@ -222,8 +223,37 @@ const arrowClickHandle = () => {
   arrowStatus.value = !arrowStatus.value;
 }
 
+const handleDocumentClick = (event: MouseEvent) => {
+  // 只在浮动模式且启用自动隐藏时处理
+  if (store.appStoreData.currentConfigApp.leftColumnMode !== 'float' ||
+    !store.appStoreData.currentConfigApp.leftColumnFloatAutoHide) {
+    return;
+  }
+
+  // 如果左侧栏未展开，不处理
+  if (!arrowStatus.value) {
+    return;
+  }
+
+  const target = event.target as HTMLElement;
+
+  // 检查点击的元素是否在左侧栏内或是箭头按钮
+  const isClickedInsideTagContainer = tagContainerRef.value?.contains(target);
+  const isClickedOnArrow = target.closest('.arrow');
+
+  // 如果点击不在左侧栏内且不是箭头按钮，则隐藏左侧栏
+  if (!isClickedInsideTagContainer && !isClickedOnArrow) {
+    arrowStatus.value = false;
+  }
+}
+
 onMounted(() => {
   init();
+  document.addEventListener('click', handleDocumentClick);
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleDocumentClick);
 })
 defineExpose({ init });
 </script>
@@ -257,6 +287,12 @@ defineExpose({ init });
   .tag-block-list {
     padding-right: 6px;
     padding-bottom: 10px;
+    overflow: hidden;
+    background-color: var(--el-fill-color-blank);
+  }
+
+  :deep(.el-scrollbar) {
+    height: 100%;
   }
 
   .arrow {

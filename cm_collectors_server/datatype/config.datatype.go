@@ -110,6 +110,7 @@ type Config_FilesBases struct {
 	HotNumber                    int                       `json:"hotNumber"`                    // 热门资源数量
 	LeftColumnMode               string                    `json:"leftColumnMode"`               // 左侧栏模式
 	LeftColumnWidth              int                       `json:"leftColumnWidth"`              // 左侧栏宽度
+	LeftColumnFloatAutoHide      bool                      `json:"leftColumnFloatAutoHide"`      // 浮动模式下点击非左侧栏位置后是否隐藏
 	LeftDisplay                  []ETagType                `json:"leftDisplay"`                  // 左侧栏显示内容
 	PageLimit                    int                       `json:"pageLimit"`                    // 分页数量
 	PerformerPhoto               bool                      `json:"performerPhoto"`               // 左侧栏-演员图片是否开启

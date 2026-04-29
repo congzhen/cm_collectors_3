@@ -44,6 +44,7 @@ export interface I_config_app {
   hotNumber: number; // 热门资源数量
   leftColumnMode: string; // 左侧栏模式
   leftColumnWidth: number; // 左侧栏宽度
+  leftColumnFloatAutoHide: boolean; // 浮动模式下点击非左侧栏位置后是否隐藏
   leftDisplay: E_tagType[]; // 左侧栏显示内容
   pageLimit: number; // 分页数量
   performerPhoto: boolean; // 左侧栏-演员图片是否开启
@@ -98,6 +99,7 @@ export const defualtConfigApp: I_config_app = {
   leftDisplay: ['sort', 'country', 'definition', 'year', 'starRating', 'performer', 'diyTag'] as E_tagType[],
   leftColumnWidth: 319,
   leftColumnMode: 'fixed',
+  leftColumnFloatAutoHide: false,
   country: ['China', 'Japan', 'SouthKorea', 'America', 'England', 'France', 'OtherCountry'],
   resourceSort: dataset.resourceSort as E_searchSort[],
   definition: ['8K', '4K', '2K', '1080P', '720P', 'HighDefinition', 'StandardDefinition'],

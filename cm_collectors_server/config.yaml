@@ -4,6 +4,7 @@ general:
     adminPassword: ""
     language: zhCn
     notAllowServerOpenFile: false
+    allowAppCloseServer: false
     theme: bright
     closePlayCloud: false
     closePlayCloudDialog: false

@@ -43,6 +43,9 @@
       <el-form-item label="左侧边栏宽度">
         <el-input-number v-model="filesConfig.leftColumnWidth" :min="100" />
       </el-form-item>
+      <el-form-item label="浮动模式自动隐藏">
+        <el-checkbox v-model="filesConfig.leftColumnFloatAutoHide" label="点击非左侧栏位置后自动隐藏" border />
+      </el-form-item>
       <el-form-item label="标签显示模式">
         <selectTagMode v-model="filesConfig.tagMode" />
       </el-form-item>

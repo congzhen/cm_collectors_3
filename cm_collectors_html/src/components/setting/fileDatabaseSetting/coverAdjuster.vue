@@ -62,6 +62,9 @@
                 <selectLeftColumnMode v-model="leftColumnMode" style="width:160px;" />
               </div>
               <div class="setting-item">
+                <el-checkbox v-model="leftColumnFloatAutoHide" label="浮动模式自动隐藏" />
+              </div>
+              <div class="setting-item">
                 <span class="setting-label">详情显示模式</span>
                 <selectResourceDetailsShowMode v-model="resourceDetailsShowMode" style="width:160px;" />
               </div>
@@ -205,6 +208,12 @@ const leftColumnMode = computed({
   get: () => store.appStoreData.currentConfigApp.leftColumnMode,
   set: (value) => {
     store.appStoreData.currentConfigApp.leftColumnMode = value;
+  }
+});
+const leftColumnFloatAutoHide = computed({
+  get: () => store.appStoreData.currentConfigApp.leftColumnFloatAutoHide,
+  set: (value) => {
+    store.appStoreData.currentConfigApp.leftColumnFloatAutoHide = value;
   }
 });
 const resourceDetailsShowMode = computed({
