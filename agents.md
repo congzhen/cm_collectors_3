@@ -248,6 +248,7 @@ docker run -d --name cm_collectors_3 -p 12345:12345 -v E:\tg_test\db:/app/db -v 
 ## 维护注意事项
 
 - 当前仓库包含多个子项目，不同目录有独立 `go.mod` 或 `package.json`，执行命令前要进入对应目录。
+- 本项目的 Git commit 说明统一使用中文撰写。
 - 不要把主前端和 Wails 前端混淆：主前端是 Vue，Wails 前端是 Svelte。
 - 服务端启动可能杀掉占用默认端口 `12345` 的进程，运行前先确认本机端口状态。
 - 前端 API 依赖 `/api` 前缀；开发时由 Vite proxy 转发，生产时由后端同源提供。

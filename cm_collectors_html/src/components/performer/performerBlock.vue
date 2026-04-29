@@ -69,7 +69,8 @@ const attr_C = computed(() => {
 <style lang="scss" scoped>
 .performer-block {
   position: relative;
-  max-width: 200px;
+  width: 100%;
+  box-sizing: border-box;
   border-radius: 5px;
   cursor: pointer;
   padding: 3px;

@@ -15,7 +15,7 @@
         </performerSearch>
         <div class="performer-list-main" v-loading="loading">
           <el-scrollbar>
-            <ul class="performer-list">
+            <ul class="performer-list" :style="{ '--performer-block-size': performerBlockSize + 'px' }">
               <li v-for="(performer, index) in dataList" :key="index">
                 <performerRightClickMenu :performer="performer" @search="searchPerformerHandle"
                   @edit="editPerformerHandle" @migrate="migratePerformerHanadle" @delete="deletePerformerHandle">
@@ -32,6 +32,10 @@
         <div class="performer-paging">
           <el-pagination background layout="total, prev, pager, next, jumper" v-model:current-page="currentPage"
             :total="dataCount" :page-size="pageSize" @change="changePageHandle" size="small" />
+          <div class="performer-size-slider">
+            <el-slider v-model="performerBlockSize" :min="performerBlockSizeMin" :max="performerBlockSizeMax" :step="1"
+              size="small" @change="changePerformerBlockSizeHandle" />
+          </div>
         </div>
       </div>
     </div>
@@ -90,6 +94,17 @@ const dataCount = ref(0);
 let fetchCount = true;
 const currentPage = ref(1);
 const pageSize = ref(90);
+const performerBlockSizeMin = 100;
+const performerBlockSizeMax = 200;
+const performerBlockSizeStorageKey = `performer-block-size-${props.performerBasesId || 'default'}`;
+const getStoragePerformerBlockSize = () => {
+  const storageValue = parseInt(localStorage.getItem(performerBlockSizeStorageKey) || '', 10);
+  if (Number.isNaN(storageValue)) {
+    return performerBlockSizeMin;
+  }
+  return Math.min(performerBlockSizeMax, Math.max(performerBlockSizeMin, storageValue));
+}
+const performerBlockSize = ref(getStoragePerformerBlockSize());
 const indexChars = ref(['ALL', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'])
 const selectIndex = ref('ALL');
 let searchCondition: I_search_performer = {
@@ -188,6 +203,11 @@ const scraperHandle = () => {
   scraperPerformerDialogRef.value?.open(props.performerBasesId)
 }
 
+const changePerformerBlockSizeHandle = (newVal: number | number[]) => {
+  if (typeof newVal === 'number') {
+    localStorage.setItem(performerBlockSizeStorageKey, newVal.toString());
+  }
+}
 
 onMounted(async () => {
   await init()
@@ -272,7 +292,7 @@ onMounted(async () => {
           gap: 0.5em;
 
           li {
-            width: 100px;
+            width: var(--performer-block-size);
           }
         }
       }
@@ -280,6 +300,15 @@ onMounted(async () => {
       .performer-paging {
         flex-shrink: 0;
         padding-top: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+
+        .performer-size-slider {
+          flex: 0 0 160px;
+          margin-right: 16px;
+        }
       }
     }
   }
