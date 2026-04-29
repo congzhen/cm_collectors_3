@@ -57,7 +57,10 @@ func (Performer) DataList(c *gin.Context) {
 	star := c.Query("star")
 	cup := c.Query("cup")
 	charIndex := c.Query("charIndex")
-	dataList, total, err := processors.Performer{}.DataList(performerBasesId, fetchCount, page, limit, search, star, cup, charIndex)
+	// countFilesBasesId 只影响 resourceCount 的统计范围，不影响演员列表本身。
+	// 例如同一个演员集被多个文件库关联时，前端可传当前 filesBasesId，让角标只显示当前文件库资源数。
+	countFilesBasesId := c.Query("countFilesBasesId")
+	dataList, total, err := processors.Performer{}.DataList(performerBasesId, fetchCount, page, limit, search, star, cup, charIndex, countFilesBasesId)
 	if err := ResError(c, err); err != nil {
 		return
 	}
@@ -73,7 +76,9 @@ func (Performer) ListTopPreferredPerformers(c *gin.Context) {
 	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {
 		return
 	}
-	dataList, err := processors.Performer{}.ListTopPreferredPerformers(par.PreferredIds, par.MainPerformerBasesId, par.ShieldNoPerformerPhoto, par.Limit)
+	// 常用演员接口也可能出现在某个具体文件库首页，需要按当前文件库统计角标数量。
+	countFilesBasesId := c.Query("countFilesBasesId")
+	dataList, err := processors.Performer{}.ListTopPreferredPerformers(par.PreferredIds, par.MainPerformerBasesId, par.ShieldNoPerformerPhoto, par.Limit, countFilesBasesId)
 	if err := ResError(c, err); err != nil {
 		return
 	}

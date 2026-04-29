@@ -22,6 +22,7 @@ export interface I_performer extends I_performerBasic {
   stars: number; // 评星
   retreatStatus: boolean; // 是否息影
   status: boolean;
+  resourceCount: number;
 }
 
 export interface I_search_performer {

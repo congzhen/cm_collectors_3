@@ -5,7 +5,8 @@
       <el-tabs v-model="activeName">
         <el-tab-pane v-for="item, key in performerBasesIDS_C" :key="key"
           :label="store.performerBasesStoreData.getNameById(item)" :name="item">
-          <performerDataList v-if="activeName == item" :performerBasesId="item"></performerDataList>
+          <performerDataList v-if="activeName == item" :performerBasesId="item" :countFilesBasesId="props.filesBasesId">
+          </performerDataList>
         </el-tab-pane>
       </el-tabs>
     </div>

@@ -139,7 +139,8 @@ export const appStoreData = defineStore('app', {
         this.currentConfigApp.performerPreferred,
         this.currentMainPerformerBasesId,
         this.currentConfigApp.shieldNoPerformerPhoto,
-        this.currentConfigApp.performerShowNum
+        this.currentConfigApp.performerShowNum,
+        filesBasesId
       );
       if (!topPreferredPerformersResult.status) {
         return {

@@ -26,8 +26,8 @@ func (Performer) BasicList(performerBasesIds []string, careerPerformer, careerDi
 	return models.Performer{}.BasicList(core.DBS(), performerBasesIds, careerPerformer, careerDirector)
 }
 
-func (Performer) DataList(performerBasesId string, fetchCount bool, page, limit int, search, star, cup, charIndex string) (*[]models.Performer, int64, error) {
-	return models.Performer{}.DataList(core.DBS(), performerBasesId, fetchCount, page, limit, search, star, cup, charIndex)
+func (Performer) DataList(performerBasesId string, fetchCount bool, page, limit int, search, star, cup, charIndex, countFilesBasesId string) (*[]models.Performer, int64, error) {
+	return models.Performer{}.DataList(core.DBS(), performerBasesId, fetchCount, page, limit, search, star, cup, charIndex, countFilesBasesId)
 }
 
 // DataListByIds 根据提供的演员ID列表获取演员数据列表
@@ -65,8 +65,8 @@ func (Performer) DataListByIds(ids []string, ordered bool) (*[]models.Performer,
 	return dataList, nil
 }
 
-func (Performer) ListTopPreferredPerformers(preferredIds []string, mainPerformerBasesId string, shieldNoPerformerPhoto bool, limit int) (*[]models.Performer, error) {
-	return models.Performer{}.ListTopPreferredPerformers(core.DBS(), preferredIds, mainPerformerBasesId, shieldNoPerformerPhoto, limit)
+func (Performer) ListTopPreferredPerformers(preferredIds []string, mainPerformerBasesId string, shieldNoPerformerPhoto bool, limit int, countFilesBasesId string) (*[]models.Performer, error) {
+	return models.Performer{}.ListTopPreferredPerformers(core.DBS(), preferredIds, mainPerformerBasesId, shieldNoPerformerPhoto, limit, countFilesBasesId)
 }
 func (Performer) SearchLastScraperUpdateTime(performerBasesId, lastScraperUpdateTime string) (*[]models.PerformerBasic, error) {
 	return models.Performer{}.SearchLastScraperUpdateTime(core.DBS(), performerBasesId, lastScraperUpdateTime)

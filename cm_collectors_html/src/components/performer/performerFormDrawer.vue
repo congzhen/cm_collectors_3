@@ -106,6 +106,7 @@ const initialFormData: I_performer = {
   bust: '',
   birthday: '',
   status: true,
+  resourceCount: 0,
 };
 
 const formData = ref<I_performer>({ ...initialFormData })

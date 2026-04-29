@@ -29,6 +29,7 @@ type Performer struct {
 	CreatedAt             *datatype.CustomTime `json:"-" gorm:"column:addTime;type:datetime"`
 	LastScraperUpdateTime *datatype.CustomDate `json:"lastScraperUpdateTime" gorm:"column:lastScraperUpdateTime;type:date;default:NULL"`
 	Status                bool                 `json:"status" gorm:"type:tinyint(1);default:1"`
+	ResourceCount         int64                `json:"resourceCount" gorm:"column:resourceCount;->;-:migration"`
 }
 
 type PerformerBasic struct {
@@ -43,6 +44,147 @@ func (Performer) TableName() string {
 }
 func (PerformerBasic) TableName() string {
 	return "performer"
+}
+
+type performerResourceCount struct {
+	PerformerID   string `gorm:"column:performer_id"`
+	ResourceCount int64  `gorm:"column:resourceCount"`
+}
+
+// resourceCountMap 批量统计一组演员在指定文件库中的资源数量。
+//
+// 这里不在 performer 列表查询中直接写逐行子查询，是为了避免一页演员触发多次
+// COUNT/EXISTS。先拿到当前页的 performerIds，再用一次 UNION + GROUP BY 统一统计，
+// 可以把“每个演员一次计数查询”压缩成“一批演员一次计数查询”。
+//
+// 统计规则：
+// 1. 只统计 status = 1 的资源。
+// 2. 演员表 resourcesPerformers 和导演表 resourcesDirectors 都计入。
+// 3. 同一个资源如果同时出现在演员和导演关联里，只算一次。
+// 4. filesBasesId 非空时，严格限定 resources.filesBases_id = filesBasesId。
+// 5. filesBasesId 为空时，按演员所属 performerBases_id 关联的文件库范围统计。
+func (Performer) resourceCountMap(db *gorm.DB, performerIds []string, filesBasesId string) (map[string]int64, error) {
+	countMap := make(map[string]int64, len(performerIds))
+	if len(performerIds) == 0 {
+		return countMap, nil
+	}
+
+	var list []performerResourceCount
+	if filesBasesId != "" {
+		err := db.Raw(`
+			SELECT performer_id, COUNT(DISTINCT resources_id) AS resourceCount
+			FROM (
+				SELECT resourcesPerformers.performer_id, resourcesPerformers.resources_id
+				FROM resourcesPerformers
+				INNER JOIN resources ON resources.id = resourcesPerformers.resources_id
+				WHERE resources.status = 1
+					AND resources.filesBases_id = ?
+					AND resourcesPerformers.performer_id IN ?
+				UNION
+				SELECT resourcesDirectors.performer_id, resourcesDirectors.resources_id
+				FROM resourcesDirectors
+				INNER JOIN resources ON resources.id = resourcesDirectors.resources_id
+				WHERE resources.status = 1
+					AND resources.filesBases_id = ?
+					AND resourcesDirectors.performer_id IN ?
+			) AS performerResources
+			GROUP BY performer_id
+		`, filesBasesId, performerIds, filesBasesId, performerIds).Scan(&list).Error
+		if err != nil {
+			return countMap, err
+		}
+	} else {
+		err := db.Raw(`
+			SELECT performer_id, COUNT(DISTINCT resources_id) AS resourceCount
+			FROM (
+				SELECT resourcesPerformers.performer_id, resourcesPerformers.resources_id
+				FROM resourcesPerformers
+				INNER JOIN resources ON resources.id = resourcesPerformers.resources_id
+				INNER JOIN performer ON performer.id = resourcesPerformers.performer_id
+				WHERE resources.status = 1
+					AND resourcesPerformers.performer_id IN ?
+					AND EXISTS (
+						SELECT 1 FROM filesRelatedPerformerBases
+						WHERE filesRelatedPerformerBases.filesBases_id = resources.filesBases_id
+							AND filesRelatedPerformerBases.performerBases_id = performer.performerBases_id
+					)
+				UNION
+				SELECT resourcesDirectors.performer_id, resourcesDirectors.resources_id
+				FROM resourcesDirectors
+				INNER JOIN resources ON resources.id = resourcesDirectors.resources_id
+				INNER JOIN performer ON performer.id = resourcesDirectors.performer_id
+				WHERE resources.status = 1
+					AND resourcesDirectors.performer_id IN ?
+					AND EXISTS (
+						SELECT 1 FROM filesRelatedPerformerBases
+						WHERE filesRelatedPerformerBases.filesBases_id = resources.filesBases_id
+							AND filesRelatedPerformerBases.performerBases_id = performer.performerBases_id
+					)
+			) AS performerResources
+			GROUP BY performer_id
+		`, performerIds, performerIds).Scan(&list).Error
+		if err != nil {
+			return countMap, err
+		}
+	}
+
+	for _, item := range list {
+		countMap[item.PerformerID] = item.ResourceCount
+	}
+	return countMap, nil
+}
+
+// fillResourceCounts 将批量统计出的资源数量回填到演员切片。
+// dataList 是值切片，内部通过索引写回 ResourceCount，因此调用方传入的切片内容会被更新。
+func (t Performer) fillResourceCounts(db *gorm.DB, dataList []Performer, filesBasesId string) error {
+	ids := make([]string, 0, len(dataList))
+	for _, performer := range dataList {
+		ids = append(ids, performer.ID)
+	}
+	countMap, err := t.resourceCountMap(db, ids, filesBasesId)
+	if err != nil {
+		return err
+	}
+	for i := range dataList {
+		dataList[i].ResourceCount = countMap[dataList[i].ID]
+	}
+	return nil
+}
+
+// fillResourceCountsForResources 给资源列表中预加载出来的演员/导演回填资源数量。
+//
+// 资源列表可能来自首页、详情页、历史记录、热门等接口。这里按资源自身的 filesBases_id
+// 分组后再批量统计，避免把不同文件库的同一演员数量混在一起，也避免在 Preload 阶段
+// 对每个演员做逐行统计。
+func (t Performer) fillResourceCountsForResources(db *gorm.DB, dataList []Resources) error {
+	performerMap := make(map[string][]*Performer)
+	for i := range dataList {
+		filesBasesId := dataList[i].FilesBasesID
+		for j := range dataList[i].Performers {
+			performerMap[filesBasesId] = append(performerMap[filesBasesId], &dataList[i].Performers[j])
+		}
+		for j := range dataList[i].Directors {
+			performerMap[filesBasesId] = append(performerMap[filesBasesId], &dataList[i].Directors[j])
+		}
+	}
+	for filesBasesId, performers := range performerMap {
+		ids := make([]string, 0, len(performers))
+		exists := make(map[string]bool, len(performers))
+		for _, performer := range performers {
+			if !exists[performer.ID] {
+				ids = append(ids, performer.ID)
+				exists[performer.ID] = true
+			}
+		}
+		countMap, err := t.resourceCountMap(db, ids, filesBasesId)
+		if err != nil {
+			return err
+		}
+		for _, performer := range performers {
+			performer.ResourceCount = countMap[performer.ID]
+		}
+	}
+	return nil
 }
 
 func (Performer) BasicList(db *gorm.DB, performerBasesIds []string, careerPerformer, careerDirector bool) (*[]PerformerBasic, error) {
@@ -98,16 +240,26 @@ func (Performer) InfoByName(db *gorm.DB, performerBasesID, name string, searchAl
 func (Performer) InfoByID(db *gorm.DB, id string) (*Performer, error) {
 	var performer Performer
 	err := db.Where("id = ?", id).First(&performer).Error
+	if err != nil {
+		return &performer, err
+	}
+	dataList := []Performer{performer}
+	err = Performer{}.fillResourceCounts(db, dataList, "")
+	performer = dataList[0]
 	return &performer, err
 }
 
 func (Performer) DataListByPerformerBasesId(db *gorm.DB, performerBasesId string) (*[]Performer, error) {
 	var dataList []Performer
 	err := db.Model(Performer{}).Where("performerBases_id = ?", performerBasesId).Find(&dataList).Error
+	if err != nil {
+		return &dataList, err
+	}
+	err = Performer{}.fillResourceCounts(db, dataList, "")
 	return &dataList, err
 }
 
-func (Performer) DataList(db *gorm.DB, performerBasesId string, fetchCount bool, page, limit int, search, star, cup, charIndex string) (*[]Performer, int64, error) {
+func (Performer) DataList(db *gorm.DB, performerBasesId string, fetchCount bool, page, limit int, search, star, cup, charIndex, countFilesBasesId string) (*[]Performer, int64, error) {
 	var dataList []Performer
 	var total int64
 	offset := (page - 1) * limit
@@ -143,18 +295,26 @@ func (Performer) DataList(db *gorm.DB, performerBasesId string, fetchCount bool,
 	if err != nil {
 		return nil, 0, err
 	}
+	err = Performer{}.fillResourceCounts(db, dataList, countFilesBasesId)
+	if err != nil {
+		return nil, 0, err
+	}
 	return &dataList, total, err
 }
 func (Performer) DataListByIds(db *gorm.DB, ids []string) (*[]Performer, error) {
 	var dataList []Performer
 	err := db.Model(Performer{}).Where("id in (?)", ids).Find(&dataList).Error
+	if err != nil {
+		return &dataList, err
+	}
+	err = Performer{}.fillResourceCounts(db, dataList, "")
 	return &dataList, err
 }
 
-func (t Performer) ListTopPreferredPerformers(db *gorm.DB, preferredIds []string, mainPerformerBasesId string, shieldNoPerformerPhoto bool, limit int) (*[]Performer, error) {
+func (t Performer) ListTopPreferredPerformers(db *gorm.DB, preferredIds []string, mainPerformerBasesId string, shieldNoPerformerPhoto bool, limit int, countFilesBasesId string) (*[]Performer, error) {
 	var dataList []Performer
 
-	dataListByIds, err := t.ListByIds(db, preferredIds)
+	dataListByIds, err := t.ListByIds(db, preferredIds, countFilesBasesId)
 	if err != nil {
 		return nil, err
 	}
@@ -171,6 +331,10 @@ func (t Performer) ListTopPreferredPerformers(db *gorm.DB, preferredIds []string
 			return nil, err
 		}
 		//组合数据
+		err = t.fillResourceCounts(db, surplusDataList, countFilesBasesId)
+		if err != nil {
+			return nil, err
+		}
 		dataList = append(*dataListByIds, surplusDataList...)
 	} else {
 		dataList = *dataListByIds
@@ -184,9 +348,13 @@ func (t Performer) RecycleBin(db *gorm.DB, performerBasesId string) (*[]Performe
 	return &dataList, err
 }
 
-func (Performer) ListByIds(db *gorm.DB, ids []string) (*[]Performer, error) {
+func (Performer) ListByIds(db *gorm.DB, ids []string, countFilesBasesId string) (*[]Performer, error) {
 	var dataList []Performer
-	err := db.Where("id in (?)", ids).Find(&dataList).Error
+	err := db.Model(Performer{}).Where("id in (?)", ids).Find(&dataList).Error
+	if err != nil {
+		return &dataList, err
+	}
+	err = Performer{}.fillResourceCounts(db, dataList, countFilesBasesId)
 	// 构建 id 到索引的映射
 	idIndexMap := make(map[string]int)
 	for i, id := range ids {

@@ -58,6 +58,9 @@ func (Resources) Preload(db *gorm.DB) *gorm.DB {
 func (t Resources) Info(db *gorm.DB, id string) (*Resources, error) {
 	var info Resources
 	err := t.Preload(db).First(&info, "id = ?", id).Error
+	if err != nil {
+		return &info, err
+	}
 	if info.Tags == nil {
 		info.Tags = []Tag{}
 	}
@@ -67,22 +70,41 @@ func (t Resources) Info(db *gorm.DB, id string) (*Resources, error) {
 	if info.Directors == nil {
 		info.Directors = []Performer{}
 	}
+	// 资源详情中的演员来自 Preload，缺少当前资源文件库下的 ResourceCount。
+	// 包装成单元素切片后复用批量回填逻辑，保证详情页和列表页的角标口径一致。
+	dataList := []Resources{info}
+	err = Performer{}.fillResourceCountsForResources(db, dataList)
+	info = dataList[0]
 	return &info, err
 }
 func (t Resources) DataCountByPerformerId(db *gorm.DB, filesBasesId, performerId string) (int64, error) {
 	var total int64
-	err := db.Model(ResourcesPerformers{}).Where("performer_id = ? and resources_id in (select id from resources where filesBases_id = ?)", performerId, filesBasesId).Count(&total).Error
+	err := db.Model(Resources{}).
+		Where("filesBases_id = ? and status = 1", filesBasesId).
+		Where(`
+			EXISTS (SELECT 1 FROM resourcesPerformers WHERE resources_id = resources.id AND performer_id = ?)
+			OR EXISTS (SELECT 1 FROM resourcesDirectors WHERE resources_id = resources.id AND performer_id = ?)
+		`, performerId, performerId).
+		Count(&total).Error
 	return total, err
 }
 func (t Resources) DataListAll(db *gorm.DB, page, limit int) (*[]Resources, error) {
 	offset := (page - 1) * limit
 	var dataList []Resources
-	err := t.Preload(db).Model(&Resources{}).Order("addTime desc").Limit(limit).Offset(offset).Find(&dataList)
-	return &dataList, err.Error
+	err := t.Preload(db).Model(&Resources{}).Order("addTime desc").Limit(limit).Offset(offset).Find(&dataList).Error
+	if err != nil {
+		return &dataList, err
+	}
+	err = Performer{}.fillResourceCountsForResources(db, dataList)
+	return &dataList, err
 }
 func (t Resources) DataListByIds(db *gorm.DB, ids []string) (*[]Resources, error) {
 	var dataList []Resources
 	err := t.Preload(db).Model(&Resources{}).Where("id in (?)", ids).Order("addTime desc").Find(&dataList).Error
+	if err != nil {
+		return &dataList, err
+	}
+	err = Performer{}.fillResourceCountsForResources(db, dataList)
 	return &dataList, err
 }
 
@@ -105,6 +127,10 @@ func (t Resources) DataListCasualView(db *gorm.DB, filesBasesId string, quantity
 	// 根据数据库类型使用相应的随机函数进行排序
 	db = t.db_random(db)
 	err = db.Limit(quantity).Find(&dataList).Error
+	if err != nil {
+		return &dataList, err
+	}
+	err = Performer{}.fillResourceCountsForResources(db, dataList)
 
 	return &dataList, err
 }
@@ -112,11 +138,19 @@ func (t Resources) DataListCasualView(db *gorm.DB, filesBasesId string, quantity
 func (t Resources) DataListHistory(db *gorm.DB, filesBasesId string, quantity int) (*[]Resources, error) {
 	var dataList []Resources
 	err := t.Preload(db).Model(&Resources{}).Where("filesBases_id = ?", filesBasesId).Order("lastPlayTime desc").Limit(quantity).Find(&dataList).Error
+	if err != nil {
+		return &dataList, err
+	}
+	err = Performer{}.fillResourceCountsForResources(db, dataList)
 	return &dataList, err
 }
 func (t Resources) DataListHot(db *gorm.DB, filesBasesId string, quantity int) (*[]Resources, error) {
 	var dataList []Resources
 	err := t.Preload(db).Model(&Resources{}).Where("filesBases_id = ?", filesBasesId).Order("hot desc").Limit(quantity).Find(&dataList).Error
+	if err != nil {
+		return &dataList, err
+	}
+	err = Performer{}.fillResourceCountsForResources(db, dataList)
 	return &dataList, err
 }
 
@@ -134,6 +168,12 @@ func (t Resources) DataList(db *gorm.DB, par *datatype.ReqParam_ResourcesList) (
 	}
 	query = t.setDbSearchDataOrder(query, par.SearchData.Sort).Limit(par.Limit).Offset(offset)
 	err := query.Find(&dataList).Error
+	if err != nil {
+		return nil, 0, err
+	}
+	// Preload 只负责拿演员/导演基础信息；资源数量按当前页资源批量回填，
+	// 避免在演员 Preload SQL 中为每个演员嵌套 COUNT 子查询。
+	err = Performer{}.fillResourceCountsForResources(db, dataList)
 	if err != nil {
 		return nil, 0, err
 	}

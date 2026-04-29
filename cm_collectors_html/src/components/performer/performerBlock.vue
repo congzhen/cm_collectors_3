@@ -1,5 +1,8 @@
 <template>
   <div class="performer-block" v-if="props.performer">
+    <div class="performer-resource-count" v-if="props.performer.resourceCount !== undefined">
+      {{ props.performer.resourceCount }}
+    </div>
     <performerPhoto :performer="props.performer"></performerPhoto>
     <div class="performer-block-name">{{ props.performer.name }}</div>
     <div class="performer-block-attr" v-if="attr_C">
@@ -65,12 +68,35 @@ const attr_C = computed(() => {
 </script>
 <style lang="scss" scoped>
 .performer-block {
+  position: relative;
   max-width: 200px;
   border-radius: 5px;
   cursor: pointer;
   padding: 3px;
   overflow: hidden;
   background-color: #262727;
+
+  .performer-resource-count {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    z-index: 2;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 2px;
+    border-radius: 999px;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #e67f23;
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.38);
+    font-size: 10px;
+    line-height: 16px;
+    pointer-events: none;
+  }
 
   &:hover {
     .performer-block-tool-btn.displayNone {

@@ -3,17 +3,23 @@ import { E_performerCareerType } from "@/dataType/app.dataType";
 import type { I_performer, I_performerBasic, I_search_performer } from "@/dataType/performer.dataType";
 const routerGroupUri = '';
 export const performerServer = {
-  dataList: async (performerBasesId: string, fetchCount: boolean, page: number, limit: number, searchCondition: I_search_performer) => {
+  dataList: async (performerBasesId: string, fetchCount: boolean, page: number, limit: number, searchCondition: I_search_performer, countFilesBasesId = '') => {
     return await request<{ total: number, dataList: I_performer[] }>({
       url: `${routerGroupUri}/performer/dataList/${performerBasesId}/${fetchCount}/${page}/${limit}`,
       method: 'get',
-      params: searchCondition
+      params: {
+        ...searchCondition,
+        countFilesBasesId,
+      }
     })
   },
-  listTopPreferredPerformers: async (preferredIds: string[], mainPerformerBasesId: string, shieldNoPerformerPhoto: boolean, limit: number) => {
+  listTopPreferredPerformers: async (preferredIds: string[], mainPerformerBasesId: string, shieldNoPerformerPhoto: boolean, limit: number, countFilesBasesId = '') => {
     return await request<I_performer[]>({
       url: `${routerGroupUri}/performer/list/top/preferred`,
       method: 'post',
+      params: {
+        countFilesBasesId,
+      },
       data: {
         preferredIds,
         mainPerformerBasesId,

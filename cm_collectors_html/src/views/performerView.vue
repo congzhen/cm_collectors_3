@@ -2,7 +2,9 @@
   <div class="performer-view">
     <HeaderView class="header" :mode="E_headerMode.GoBack"></HeaderView>
     <div class="main">
-      <performerDataList :key="key" :performerBasesId="props.mainPerformerBasesId"></performerDataList>
+      <performerDataList :key="key" :performerBasesId="props.mainPerformerBasesId"
+        :countFilesBasesId="store.appStoreData.currentFilesBases.id">
+      </performerDataList>
     </div>
   </div>
 </template>
@@ -11,6 +13,10 @@ import HeaderView from './HeaderView.vue'
 import performerDataList from '@/components/performer/performerDataList.vue'
 import { E_headerMode } from '@/dataType/app.dataType'
 import { onActivated, ref } from 'vue'
+import { appStoreData } from '@/storeData/app.storeData'
+const store = {
+  appStoreData: appStoreData(),
+}
 const props = defineProps({
   mainPerformerBasesId: {
     type: String,

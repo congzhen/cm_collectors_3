@@ -75,6 +75,10 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  countFilesBasesId: {
+    type: String,
+    default: '',
+  },
 })
 const performerFormDrawerRef = ref<InstanceType<typeof performerFormDrawer>>();
 const performerRecycleBinDialogRef = ref<InstanceType<typeof performerRecycleBinDialog>>();
@@ -111,7 +115,7 @@ const getDataListAndCount = async (fetchCountStatus: boolean = true) => {
 const getDataList = async () => {
   loading.value = true;
   searchCondition.charIndex = selectIndex.value;
-  const result = await performerServer.dataList(props.performerBasesId, fetchCount, currentPage.value, pageSize.value, searchCondition);
+  const result = await performerServer.dataList(props.performerBasesId, fetchCount, currentPage.value, pageSize.value, searchCondition, props.countFilesBasesId);
   if (result && result.status) {
     dataList.value = result.data.dataList;
     if (fetchCount) {
