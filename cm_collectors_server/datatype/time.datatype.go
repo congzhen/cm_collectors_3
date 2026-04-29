@@ -3,6 +3,7 @@ package datatype
 import (
 	"database/sql/driver"
 	"fmt"
+	"strconv"
 	"time"
 )
 
@@ -26,6 +27,18 @@ func (ct *CustomTime) MarshalJSON() ([]byte, error) {
 		return []byte("null"), nil
 	}
 	return []byte(fmt.Sprintf("\"%s\"", time.Time(*ct).Format("2006-01-02 15:04:05"))), nil
+}
+
+func (ct *CustomTime) UnmarshalJSON(data []byte) error {
+	if string(data) == "null" {
+		*ct = CustomTime(time.Time{})
+		return nil
+	}
+	value, err := strconv.Unquote(string(data))
+	if err != nil {
+		return err
+	}
+	return ct.SetValue(value)
 }
 
 // SetValue 设置 CustomTime 的值，支持 string 或 time.Time 类型，空字符串或 nil 将被设置为零值
@@ -96,6 +109,18 @@ func (cd *CustomDate) MarshalJSON() ([]byte, error) {
 		return []byte("null"), nil
 	}
 	return []byte(fmt.Sprintf("\"%s\"", time.Time(*cd).Format("2006-01-02"))), nil
+}
+
+func (cd *CustomDate) UnmarshalJSON(data []byte) error {
+	if string(data) == "null" {
+		*cd = CustomDate(time.Time{})
+		return nil
+	}
+	value, err := strconv.Unquote(string(data))
+	if err != nil {
+		return err
+	}
+	return cd.SetValue(value)
 }
 
 // SetValue 设置 CustomDate 的值，支持 string 或 time.Time 类型，空字符串或 nil 将被设置为零值
