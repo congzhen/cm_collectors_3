@@ -257,3 +257,9 @@ docker run -d --name cm_collectors_3 -p 12345:12345 -v E:\tg_test\db:/app/db -v 
 - `cm_collectors_server/html` 是前端构建产物目录，通常由 `yarn build-server` 生成，修改源代码时优先改 `cm_collectors_html/src`。
 - 仓库内有二进制/构建产物，如 APK、syso、icon、zip、build 目录等，常规代码改动应避免无关触碰。
 - 源码中部分中文注释或字符串在 PowerShell 默认读取时可能显示为乱码；README 用 UTF-8 读取正常。不要在无需求时做大规模编码转换。
+
+## 命令权限与验证命令习惯
+
+- 需要重复执行的验证命令应保持命令字符串稳定，并通过工具的 `workdir` 指定目录，不要把 `cd ...;`、环境变量设置、额外输出或其它组合语句混进命令字符串。
+- 如果用户已经对某个命令选择“以后都可以执行”，后续应尽量复用完全相同的命令形式，例如 `yarn.cmd run check`、`yarn.cmd type-check`、`yarn.cmd build`，避免在无必要时改成等价但不同的写法。
+- 这类记录只能帮助代理减少因命令前缀不同造成的重复授权询问，不能替代沙箱/权限系统本身的审批规则。

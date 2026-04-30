@@ -114,3 +114,18 @@ func (a *App) OpenMultipleFilesDialog(title, name, pattern string) ([]string, er
 	}
 	return paths, nil
 }
+
+// OpenDirectoryDialog 打开文件夹选择对话框
+func (a *App) OpenDirectoryDialog(title string) (string, error) {
+	options := wailsRuntime.OpenDialogOptions{
+		Title: title,
+	}
+	path, err := wailsRuntime.OpenDirectoryDialog(a.ctx, options)
+	if err != nil {
+		return "", err
+	}
+	if path == "" {
+		return "", nil
+	}
+	return filepath.ToSlash(filepath.Clean(path)), nil
+}

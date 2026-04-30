@@ -6,7 +6,7 @@
     Quit,
     WindowIsMaximised,
   } from "../wailsjs/runtime";
-  import { GetURL, OpenMultipleFilesDialog, RequestServerShutdown } from "../wailsjs/go/main/App";
+  import { GetURL, OpenDirectoryDialog, OpenMultipleFilesDialog, RequestServerShutdown } from "../wailsjs/go/main/App";
 
   let isMaximised = false;
   let title = "CM File Collectors";
@@ -91,7 +91,7 @@
   // 应用缩放
   function applyZoom() {
     if (webview) {
-      webview.style.zoom = zoomLevel.toString();
+      (webview.style as CSSStyleDeclaration & { zoom: string }).zoom = zoomLevel.toString();
     }
   }
 
@@ -165,6 +165,18 @@
               console.error("[Host] Go method call failed:", goError);
               throw new Error(`Failed to open file dialog: ${goError}`);
             }
+          } else if (action === "wails.dialog.openDirectory") {
+            console.log("[Host] Opening directory dialog...");
+
+            const title = typeof payload.title === 'string' ? payload.title : "Select Folder";
+
+            try {
+              result = await OpenDirectoryDialog(title);
+              console.log("[Host] Directory selected:", result);
+            } catch (goError) {
+              console.error("[Host] Go method call failed:", goError);
+              throw new Error(`Failed to open directory dialog: ${goError}`);
+            }
           } else {
             throw new Error(`Unknown action: ${action}`);
           }
@@ -214,7 +226,7 @@
     </div>
 
     <div class="content">
-      <iframe id="webview" bind:this={webview} src={iframeSrc}></iframe>
+      <iframe id="webview" bind:this={webview} src={iframeSrc} title={title}></iframe>
 
       <!-- 缩放控制按钮，通过按钮切换显示状态 -->
       {#if showZoomControls}

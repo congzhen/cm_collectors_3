@@ -237,3 +237,9 @@ export async function openMultipleFilesDialog(title?: string, name?: string, pat
     pattern
   }) as Promise<string[]>;
 }
+
+export async function openDirectoryDialog(title?: string): Promise<string> {
+  return sendToHostParentAsync('wails.dialog.openDirectory', {
+    title
+  }) as Promise<string>;
+}

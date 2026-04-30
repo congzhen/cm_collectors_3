@@ -13,6 +13,8 @@
       </ul>
       <div class="tool">
         <el-button type="primary" plain @click="addDiskLocationHandle">添加文件夹位置</el-button>
+        <el-button v-if="store.appStoreData.runtimeBridgeStatus" icon="Folder" type="primary" plain
+          @click="selectLocalDirectoryHandle">选择本地文件夹</el-button>
       </div>
     </div>
     <el-form ref="ruleFormRef" :model="formData" label-width="160px" status-icon>
@@ -71,6 +73,7 @@ import { appStoreData } from '@/storeData/app.storeData';
 import { ElMessage } from 'element-plus';
 import { debounceNow } from '@/assets/debounce';
 import { scraperDataServer } from '@/server/scraper.server';
+import { openDirectoryDialog } from '@/common/runtimeBridge';
 const store = {
   appStoreData: appStoreData(),
 }
@@ -118,6 +121,14 @@ const selectedFilesHandle = (slc: I_sfm_FileEntry[]) => {
     }
   });
 }
+
+const selectLocalDirectoryHandle = async () => {
+  const path = await openDirectoryDialog('选择刮削文件夹');
+  if (path && !formData.value.scanDiskPaths.includes(path)) {
+    formData.value.scanDiskPaths.push(path);
+  }
+}
+
 const deleteDiskLocationHandle = (index: number) => {
   formData.value.scanDiskPaths.splice(index, 1);
 }
