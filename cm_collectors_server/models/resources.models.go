@@ -88,6 +88,28 @@ func (t Resources) DataCountByPerformerId(db *gorm.DB, filesBasesId, performerId
 		Count(&total).Error
 	return total, err
 }
+func (t Resources) DataListAllSearch(db *gorm.DB, searchText string, page, limit int) (*[]Resources, int64, error) {
+	var dataList []Resources
+	var total int64
+	offset := (page - 1) * limit
+
+	countQ := db.Model(&Resources{})
+	listQ := t.Preload(db).Model(&Resources{})
+	if searchText != "" {
+		like := "%" + searchText + "%"
+		countQ = countQ.Where("(title LIKE ? OR issueNumber LIKE ?)", like, like)
+		listQ = listQ.Where("(title LIKE ? OR issueNumber LIKE ?)", like, like)
+	}
+	if err := countQ.Count(&total).Error; err != nil {
+		return &dataList, 0, err
+	}
+	if err := listQ.Order("addTime desc").Limit(limit).Offset(offset).Find(&dataList).Error; err != nil {
+		return &dataList, total, err
+	}
+	err := Performer{}.fillResourceCountsForResources(db, dataList)
+	return &dataList, total, err
+}
+
 func (t Resources) DataListAll(db *gorm.DB, page, limit int) (*[]Resources, error) {
 	offset := (page - 1) * limit
 	var dataList []Resources

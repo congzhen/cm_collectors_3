@@ -27,14 +27,12 @@ func (t TVBox) Home(c *gin.Context) {
 		return
 	}
 
-	// 获取推荐内容
-	recommendVideos := processors.TVBox{}.RecommendVideos(c.Request.Host, 30) // 获取30个推荐视频
-
 	home := map[string]interface{}{
+		"spider": "",
 		"sites": []map[string]interface{}{
 			{
 				"key":         "local_videos",
-				"name":        "CM_Collectors_3",
+				"name":        core.Config.General.LogoName,
 				"type":        1,
 				"api":         "http://" + c.Request.Host + "/api/tvbox/sites/videos",
 				"searchable":  1,
@@ -42,18 +40,12 @@ func (t TVBox) Home(c *gin.Context) {
 				"filterable":  1,
 			},
 		},
-		"lives": []interface{}{},
-		"parses": []map[string]interface{}{
-			{
-				"name": "本地解析",
-				"type": 0,
-				"url":  "",
-			},
-		},
+		"lives":     []interface{}{},
+		"parses":    []interface{}{},
 		"flags":     []string{},
 		"ijk":       []interface{}{},
 		"ads":       []string{},
-		"recommend": recommendVideos,
+		"recommend": processors.TVBox{}.RecommendVideos(c.Request.Host, 30),
 	}
 
 	c.JSON(http.StatusOK, home)

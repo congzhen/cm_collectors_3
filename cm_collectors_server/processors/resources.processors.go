@@ -43,6 +43,10 @@ func (Resources) DataListAll(page, limit int) (*[]models.Resources, error) {
 	return models.Resources{}.DataListAll(core.DBS(), page, limit)
 }
 
+func (Resources) DataListAllSearch(searchText string, page, limit int) (*[]models.Resources, int64, error) {
+	return models.Resources{}.DataListAllSearch(core.DBS(), searchText, page, limit)
+}
+
 func (Resources) DataCountByPerformerId(filesBasesId, performerId string) (int64, error) {
 	return models.Resources{}.DataCountByPerformerId(core.DBS(), filesBasesId, performerId)
 }

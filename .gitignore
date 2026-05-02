@@ -54,3 +54,4 @@ cm_collectors_wails/frontend/dist
 cm_collectors_electron/dist/*
 cm_collectors_electron/node_modules
 
+.claude/
