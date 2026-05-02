@@ -44,32 +44,6 @@ func (t TVBox) Videos(host, typeId, searchText string, page, limit int) (map[str
 	return videos, nil
 }
 
-// RecommendVideos 获取推荐视频列表
-func (t TVBox) RecommendVideos(host string, limit int) []map[string]interface{} {
-	resources, err := Resources{}.DataListAll(1, limit)
-	if err != nil || resources == nil || len(*resources) == 0 {
-		return []map[string]interface{}{}
-	}
-	recommendList := make([]map[string]interface{}, 0, len(*resources))
-	for _, resource := range *resources {
-		performerNames := t.getPerformerNames(resource.Performers)
-		directorNames := t.getDirectorNames(resource.Directors)
-		tagNames := t.getTagNames(resource.Tags)
-		year := t.getYearString(resource.IssuingDate)
-		recommendList = append(recommendList, map[string]interface{}{
-			"vod_id":       resource.ID,
-			"vod_name":     t.truncateString(resource.Title, TVBox_TitleTrunNum),
-			"vod_pic":      t.coverPosterURL(host, resource.FilesBasesID, resource.CoverPoster),
-			"vod_remarks":  resource.Definition,
-			"vod_year":     year,
-			"vod_area":     resource.Country,
-			"vod_actor":    performerNames,
-			"vod_director": directorNames,
-			"vod_content":  fmt.Sprintf("%s 标签：%s", resource.Abstract, tagNames),
-		})
-	}
-	return recommendList
-}
 
 func (t TVBox) VideoDetail(host string, resourceIds []string) (map[string]interface{}, error) {
 	list := make([]map[string]interface{}, 0)
@@ -81,22 +55,26 @@ func (t TVBox) VideoDetail(host string, resourceIds []string) (map[string]interf
 	if len(*resourceSlc) == 0 {
 		return nil, fmt.Errorf("未找到资源")
 	}
-	for _, _resource := range *resourceSlc {
-		resource := _resource
+
+	// 建立 id → resource 的索引，按 resourceIds 顺序输出
+	resourceMap := make(map[string]models.Resources, len(*resourceSlc))
+	for _, r := range *resourceSlc {
+		resourceMap[r.ID] = r
+	}
+
+	for _, id := range resourceIds {
+		resource, ok := resourceMap[id]
+		if !ok {
+			continue
+		}
 		performerNames := t.getPerformerNames(resource.Performers)
-		// 获取导演信息
 		directorNames := t.getDirectorNames(resource.Directors)
-
-		// 获取标签信息
 		tagNames := t.getTagNames(resource.Tags)
-
-		// 构造播放链接
 		playFrom, playUrls := t.buildPlayUrls(resource.ResourcesDramaSeries, host)
-
 		area := resource.Country
 		year := t.getYearString(resource.IssuingDate)
 
-		detail := map[string]interface{}{
+		list = append(list, map[string]interface{}{
 			"vod_id":        resource.ID,
 			"vod_name":      t.truncateString(resource.Title, TVBox_TitleTrunNum),
 			"vod_pic":       t.coverPosterURL(host, resource.FilesBasesID, resource.CoverPoster),
@@ -111,9 +89,7 @@ func (t TVBox) VideoDetail(host string, resourceIds []string) (map[string]interf
 			"vod_play_url":  playUrls,
 			"vod_tag":       "local",
 			"vod_class":     "本地视频",
-		}
-
-		list = append(list, detail)
+		})
 	}
 
 	if len(list) == 0 {
@@ -165,6 +141,21 @@ func (TVBox) getResources(typeId, searchText string, page, limit int) (*[]models
 			},
 		}
 		return Resources{}.DataList(&req)
+	}
+	// typeId 为空且无搜索词时，返回 TvboxRecommend 表中的推荐资源
+	if searchText == "" {
+		recommends, err := TvboxRecommend{}.List()
+		if err != nil {
+			return nil, 0, err
+		}
+		if recommends != nil && len(*recommends) > 0 {
+			resources := make([]models.Resources, 0, len(*recommends))
+			for _, rec := range *recommends {
+				resources = append(resources, rec.Resource)
+			}
+			total := int64(len(resources))
+			return &resources, total, nil
+		}
 	}
 	// typeId 为空时跨分类查询（含全局搜索）
 	return Resources{}.DataListAllSearch(searchText, page, limit)

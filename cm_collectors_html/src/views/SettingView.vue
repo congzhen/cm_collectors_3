@@ -18,6 +18,9 @@
         <el-tab-pane label="计划任务" name="cronJobs">
           <cronJobs v-if="activeName === 'cronJobs'"></cronJobs>
         </el-tab-pane>
+        <el-tab-pane label="TVBox推荐" name="tvboxRecommend">
+          <tvboxRecommendSetting v-if="activeName === 'tvboxRecommend'"></tvboxRecommendSetting>
+        </el-tab-pane>
         <el-tab-pane label="数据库清理" name="databaseCleanup">
           <databaseCleanup v-if="activeName === 'databaseCleanup'"></databaseCleanup>
         </el-tab-pane>
@@ -37,6 +40,7 @@ import performerSetting from '@/components/setting/performerDatabaseSetting/perf
 import tagSetting from '@/components/setting/tagSetting/tagSetting.vue';
 import cronJobs from '@/components/setting/cronJobs/cronJobs.vue';
 import databaseCleanup from '@/components/setting/databaseCleanup/databaseCleanup.vue';
+import tvboxRecommendSetting from '@/components/setting/tvboxRecommendSetting/tvboxRecommendSetting.vue';
 const activeName = ref('softSettings');
 </script>
 <style lang="scss" scoped>

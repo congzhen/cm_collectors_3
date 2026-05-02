@@ -38,6 +38,7 @@ func autoMigrate(db *gorm.DB) error {
 		&ResourcesTags{},
 		&Tag{},
 		&TagClass{},
+		&TvboxRecommend{},
 	)
 }
 
@@ -304,6 +305,17 @@ func AutoDatabase(db *gorm.DB) error {
 				err := tx.AutoMigrate(
 					&Resources{},
 				)
+				if err != nil {
+					core.LogErr(err)
+					return err
+				}
+				return nil
+			},
+		},
+		{
+			ID: "tvbox_recommend",
+			Migrate: func(tx *gorm.DB) error {
+				err := tx.AutoMigrate(&TvboxRecommend{})
 				if err != nil {
 					core.LogErr(err)
 					return err

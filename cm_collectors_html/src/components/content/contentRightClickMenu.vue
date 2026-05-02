@@ -14,6 +14,8 @@ import { computed, type PropType } from 'vue'
 import { eventBus } from "@/main";
 import { appStoreData } from '@/storeData/app.storeData';
 import { playListAdd } from '@/common/playList'
+import { tvboxRecommendServer } from '@/server/tvboxRecommend.server'
+import { ElMessage } from 'element-plus'
 const store = {
   appStoreData: appStoreData(),
 }
@@ -82,6 +84,18 @@ const contentMenuItems_C = computed(() => {
         icon: 'User',
         handler: () => {
           eventBus.emit('edit-resource-performer', { resource: props.resource });
+        }
+      },
+      {
+        label: '添加到TVBox推荐',
+        icon: 'Star',
+        handler: async () => {
+          const result = await tvboxRecommendServer.add(props.resource.id)
+          if (result.status) {
+            ElMessage.success('已添加到TVBox推荐')
+          } else {
+            ElMessage.error(result.msg || '添加失败')
+          }
         }
       },
       {

@@ -118,6 +118,7 @@ func publicRouter(router *gin.Engine) {
 	// 添加TVBox相关路由
 	routerGroup.GET("/tvbox/home", controllers.TVBox{}.Home)
 	routerGroup.GET("/tvbox/sites/videos", controllers.TVBox{}.Videos)
+	routerGroup.GET("/tvbox/recommend/list", controllers.TvboxRecommend{}.List)
 }
 
 func AdminRouter(router *gin.Engine) {
@@ -182,6 +183,10 @@ func AdminRouter(router *gin.Engine) {
 	routerGroup.POST("cronJobs/create", controllers.CronJobs{}.Create)
 	routerGroup.PUT("cronJobs/update", controllers.CronJobs{}.Update)
 	routerGroup.DELETE("cronJobs/delete/:cronJobsId", controllers.CronJobs{}.Delete)
+
+	routerGroup.POST("tvbox/recommend/add/:resourceId", controllers.TvboxRecommend{}.Add)
+	routerGroup.DELETE("tvbox/recommend/delete/:id", controllers.TvboxRecommend{}.Delete)
+	routerGroup.PUT("tvbox/recommend/sort", controllers.TvboxRecommend{}.UpdateSort)
 
 }
 func SFMRouter(router *gin.Engine) {

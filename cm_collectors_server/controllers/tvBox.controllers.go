@@ -27,6 +27,10 @@ func (t TVBox) Home(c *gin.Context) {
 		return
 	}
 
+	c.Header("Cache-Control", "no-cache, no-store, must-revalidate")
+	c.Header("Pragma", "no-cache")
+	c.Header("Expires", "0")
+
 	home := map[string]interface{}{
 		"spider": "",
 		"sites": []map[string]interface{}{
@@ -45,7 +49,6 @@ func (t TVBox) Home(c *gin.Context) {
 		"flags":     []string{},
 		"ijk":       []interface{}{},
 		"ads":       []string{},
-		"recommend": processors.TVBox{}.RecommendVideos(c.Request.Host, 30),
 	}
 
 	c.JSON(http.StatusOK, home)

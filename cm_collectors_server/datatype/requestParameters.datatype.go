@@ -326,3 +326,8 @@ type ReqParam_DatabaseCleanup struct {
 	FilesBasesIds []string                   `json:"filesBases_ids"`
 	ClearItems    []DatabaseCleanupClearItem `json:"clear_items"`
 }
+
+type ReqParam_TvboxRecommendSort struct {
+	ID   string `json:"id" binding:"required"`
+	Sort int    `json:"sort"`
+}
