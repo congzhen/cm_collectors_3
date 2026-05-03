@@ -319,6 +319,11 @@ func (t Resources) DeleteResource(resourceId string) error {
 		if err != nil {
 			return err
 		}
+		vfM := models.VideoFingerprint{}
+		err = vfM.DeleteByResourcesID(tx, resourceId)
+		if err != nil {
+			return err
+		}
 		err = ResourcesDramaSeries{}.DeleteByResourcesID(tx, resourceId)
 		if err != nil {
 			return err
@@ -334,7 +339,12 @@ func (t Resources) DeleteResource(resourceId string) error {
 
 func (t Resources) DeleteByFilesBasesID(db *gorm.DB, filesBases_id string, coverPosterSlc []string) error {
 	return db.Transaction(func(tx *gorm.DB) error {
-		err := models.ResourcesPerformers{}.DeleteByFilesBasesID(tx, filesBases_id)
+		vfM := models.VideoFingerprint{}
+		err := vfM.DeleteByFilesBasesID(tx, filesBases_id)
+		if err != nil {
+			return err
+		}
+		err = models.ResourcesPerformers{}.DeleteByFilesBasesID(tx, filesBases_id)
 		if err != nil {
 			return err
 		}

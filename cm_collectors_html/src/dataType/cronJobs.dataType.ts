@@ -1,5 +1,5 @@
 
-export type jobsType = 'import' | 'scraperResource' | 'scraperPerformer' | 'clear';
+export type jobsType = 'import' | 'scraperResource' | 'scraperPerformer' | 'clear' | 'videoFingerprint';
 
 export interface I_cronJobs {
   id: string;

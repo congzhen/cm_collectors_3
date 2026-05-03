@@ -107,6 +107,9 @@ func (t CronJobsExec) executeJobTask(data models.CronJobs) error {
 	case datatype.E_cronJobsType_Import:
 		// 导入任务处理
 		return t.cronJobs_Import(data)
+	case datatype.E_cronJobsType_VideoFingerprint:
+		// 视频指纹计算任务
+		return t.cronJobs_VideoFingerprint(data)
 	default:
 		return fmt.Errorf("未知任务类型: %s", data.JobsType)
 	}
@@ -199,6 +202,12 @@ func (t CronJobsExec) cronJobs_ScraperResource(data models.CronJobs) error {
 		time.Sleep(10 * time.Millisecond)
 	}
 	return nil
+}
+
+// 视频指纹计算任务处理
+func (t CronJobsExec) cronJobs_VideoFingerprint(data models.CronJobs) error {
+	fmt.Println("执行计划任务:", data.FilesBases.Name, data.JobsType, data.CronExpression)
+	return VideoFingerprint{}.ComputeWithReScanByFilesBasesID(data.FilesBasesId, 100)
 }
 
 // 导入任务处理

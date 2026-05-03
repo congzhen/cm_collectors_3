@@ -179,6 +179,7 @@ const getJobTypeName = (type: string): string => {
     case 'scraperResource': return '刮削资源';
     case 'scraperPerformer': return '刮削演员';
     case 'clear': return '清理';
+    case 'videoFingerprint': return '视频指纹';
     default: return type;
   }
 };
@@ -190,6 +191,7 @@ const getJobTypeClass = (type: string): string => {
     case 'scraperResource': return 'job-type--scraper';
     case 'scraperPerformer': return 'job-type--performer';
     case 'clear': return 'job-type--clear';
+    case 'videoFingerprint': return 'job-type--fingerprint';
     default: return '';
   }
 };
@@ -304,6 +306,11 @@ onMounted(() => {
                 &.job-type--clear {
                   background-color: #f6ffed;
                   color: #52c41a;
+                }
+
+                &.job-type--fingerprint {
+                  background-color: #f0f9ff;
+                  color: #0ea5e9;
                 }
               }
 

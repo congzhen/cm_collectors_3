@@ -188,6 +188,14 @@ func AdminRouter(router *gin.Engine) {
 	routerGroup.DELETE("tvbox/recommend/delete/:id", controllers.TvboxRecommend{}.Delete)
 	routerGroup.PUT("tvbox/recommend/sort", controllers.TvboxRecommend{}.UpdateSort)
 
+	routerGroup.GET("videoFingerprint/stats", controllers.VideoFingerprint{}.Stats)
+	routerGroup.GET("videoFingerprint/queryDuplicates", controllers.VideoFingerprint{}.QueryDuplicates)
+	routerGroup.GET("videoFingerprint/triggerCompute", controllers.VideoFingerprint{}.TriggerCompute)
+	routerGroup.GET("videoFingerprint/reScan", controllers.VideoFingerprint{}.ReScan)
+	routerGroup.GET("videoFingerprint/taskStatus", controllers.VideoFingerprint{}.TaskStatus)
+	routerGroup.PUT("videoFingerprint/resetFailed", controllers.VideoFingerprint{}.ResetFailed)
+	routerGroup.POST("videoFingerprint/deleteDramaSeries", controllers.VideoFingerprint{}.DeleteDramaSeries)
+	routerGroup.DELETE("videoFingerprint/resetAll", controllers.VideoFingerprint{}.ResetAll)
 }
 func SFMRouter(router *gin.Engine) {
 	routerGroup := router.Group("/api", middleware.AdminLoginApiMiddleware())

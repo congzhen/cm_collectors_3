@@ -95,20 +95,53 @@ func (t ResourcesDramaSeries) SetResourcesDramaSeries(db *gorm.DB, resourceID st
 		return nil
 	}
 	return db.Transaction(func(tx *gorm.DB) error {
-		err := models.ResourcesDramaSeries{}.DeleteByResourcesID(tx, resourceID)
+		vfM := models.VideoFingerprint{}
+		dsM := models.ResourcesDramaSeries{}
+
+		// 删除旧分集前先清理对应指纹
+		err := vfM.DeleteByResourcesID(tx, resourceID)
 		if err != nil {
 			return err
 		}
-		resourcesDramaSeriesModelsSlc := []models.ResourcesDramaSeries{}
+		err = dsM.DeleteByResourcesID(tx, resourceID)
+		if err != nil {
+			return err
+		}
+		newSlc := make([]models.ResourcesDramaSeries, 0, len(dramaSeriesSlc))
 		for i, v := range dramaSeriesSlc {
-			resourcesDramaSeriesModelsSlc = append(resourcesDramaSeriesModelsSlc, models.ResourcesDramaSeries{
+			newSlc = append(newSlc, models.ResourcesDramaSeries{
 				ID:          core.GenerateUniqueID(),
 				ResourcesID: resourceID,
 				Src:         v.Src,
 				Sort:        i,
 			})
 		}
-		return models.ResourcesDramaSeries{}.Creates(tx, &resourcesDramaSeriesModelsSlc)
+		err = dsM.Creates(tx, &newSlc)
+		if err != nil {
+			return err
+		}
+		// 获取 filesBasesID
+		var res models.Resources
+		err = tx.Select("id, filesBases_id, mode").Where("id = ?", resourceID).First(&res).Error
+		if err != nil {
+			return err
+		}
+		// 为新分集插入待计算指纹记录
+		if res.Mode != datatype.E_resourceMode_Movies && res.Mode != datatype.E_resourceMode_VideoLink {
+			return nil
+		}
+		vfSlc := make([]models.VideoFingerprint, 0, len(newSlc))
+		for _, ds := range newSlc {
+			vfSlc = append(vfSlc, models.VideoFingerprint{
+				ID:            core.GenerateUniqueID(),
+				DramaSeriesID: ds.ID,
+				ResourcesID:   resourceID,
+				FilesBasesID:  res.FilesBasesID,
+				Src:           ds.Src,
+				Status:        models.VideoFingerprintStatus_Pending,
+			})
+		}
+		return vfM.Creates(tx, &vfSlc)
 	})
 }
 

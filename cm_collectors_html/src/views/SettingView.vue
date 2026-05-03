@@ -18,6 +18,9 @@
         <el-tab-pane label="计划任务" name="cronJobs">
           <cronJobs v-if="activeName === 'cronJobs'"></cronJobs>
         </el-tab-pane>
+        <el-tab-pane label="视频重复检测" name="duplicateDetection">
+          <duplicateDetection v-if="activeName === 'duplicateDetection'" @switch-tab="switchTab"></duplicateDetection>
+        </el-tab-pane>
         <el-tab-pane label="TVBox推荐" name="tvboxRecommend">
           <tvboxRecommendSetting v-if="activeName === 'tvboxRecommend'"></tvboxRecommendSetting>
         </el-tab-pane>
@@ -39,9 +42,13 @@ import fileDatabaseSetting from '@/components/setting/fileDatabaseSetting/fileDa
 import performerSetting from '@/components/setting/performerDatabaseSetting/performerDatabaseSetting.vue';
 import tagSetting from '@/components/setting/tagSetting/tagSetting.vue';
 import cronJobs from '@/components/setting/cronJobs/cronJobs.vue';
+import duplicateDetection from '@/components/setting/duplicateDetection/duplicateDetection.vue';
 import databaseCleanup from '@/components/setting/databaseCleanup/databaseCleanup.vue';
 import tvboxRecommendSetting from '@/components/setting/tvboxRecommendSetting/tvboxRecommendSetting.vue';
 const activeName = ref('softSettings');
+const switchTab = (tabName: string) => {
+  activeName.value = tabName;
+}
 </script>
 <style lang="scss" scoped>
 .setting-view {

@@ -12,6 +12,7 @@
               <el-radio-button label="刮削资源" value="scraperResource" />
               <el-radio-button label="刮削演员" value="scraperPerformer" />
               <el-radio-button label="清理" value="clear" />
+              <el-radio-button label="视频指纹" value="videoFingerprint" />
             </el-radio-group>
             <el-text class="warning-text" type="warning" size="small">
               每种任务类型都依赖于预先设定的功能配置，缺少相应配置将导致任务无法执行。
