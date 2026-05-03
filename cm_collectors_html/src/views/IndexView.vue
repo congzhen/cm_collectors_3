@@ -98,10 +98,10 @@ const editResourceHandle = (event: unknown) => {
   resourceFormDrawerRef.value?.open('edit', typedEvent.resource)
 }
 const editResourcePinToTopHandle = (event: unknown) => {
-  const typedEvent = event as { resource: I_resource; };
+  const typedEvent = event as { resource: I_resource; pinToTopStatus?: boolean };
   resourcePinToTop(typedEvent.resource, () => {
     contentViewRef.value?.init_DataList(() => { }, true);
-  })
+  }, typedEvent.pinToTopStatus)
 }
 const editResourceTagHandle = (event: unknown) => {
   const typedEvent = event as { resource: I_resource; };

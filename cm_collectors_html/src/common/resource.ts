@@ -55,12 +55,13 @@ const resourceDeleteExec = async (resource: I_resource, callBackFn: () => void =
 }
 
 
-export const resourcePinToTop = async (resource: I_resource, callBackFn: () => void = () => { }) => {
-  const result = await resourceServer.pinToTop(resource.id, !resource.pinToTop);
+export const resourcePinToTop = async (resource: I_resource, callBackFn: () => void = () => { }, pinToTopStatus?: boolean) => {
+  const status = pinToTopStatus !== undefined ? pinToTopStatus : !resource.pinToTop;
+  const result = await resourceServer.pinToTop(resource.id, status);
   if (!result || !result.status) {
     ElMessage.error(result.msg);
   } else {
-    ElMessage.success(!resource.pinToTop ? '置顶成功' : '取消置顶成功');
+    ElMessage.success(status ? '置顶成功' : '取消置顶成功');
     callBackFn();
   }
 }

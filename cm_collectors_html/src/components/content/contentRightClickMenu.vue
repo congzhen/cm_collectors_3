@@ -65,13 +65,28 @@ const contentMenuItems_C = computed(() => {
           eventBus.emit('edit-resource', { resource: props.resource });
         }
       },
-      {
-        label: props.resource.pinToTop == 0 ? '置顶' : '取消置顶',
-        icon: 'Top',
-        handler: () => {
-          eventBus.emit('edit-resource-pinToTop', { resource: props.resource });
-        }
-      },
+      ...(props.resource.pinToTop == 0
+        ? [{
+          label: '置顶',
+          icon: 'Top',
+          handler: () => {
+            eventBus.emit('edit-resource-pinToTop', { resource: props.resource, pinToTopStatus: true });
+          }
+        }]
+        : [{
+          label: '再次置顶',
+          icon: 'Top',
+          handler: () => {
+            eventBus.emit('edit-resource-pinToTop', { resource: props.resource, pinToTopStatus: true });
+          }
+        }, {
+          label: '取消置顶',
+          icon: 'Bottom',
+          handler: () => {
+            eventBus.emit('edit-resource-pinToTop', { resource: props.resource, pinToTopStatus: false });
+          }
+        }]
+      ),
       {
         label: '打标签',
         icon: 'PriceTag',
