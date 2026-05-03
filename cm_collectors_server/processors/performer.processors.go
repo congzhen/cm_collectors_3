@@ -68,8 +68,8 @@ func (Performer) DataListByIds(ids []string, ordered bool) (*[]models.Performer,
 func (Performer) ListTopPreferredPerformers(preferredIds []string, mainPerformerBasesId string, shieldNoPerformerPhoto bool, limit int, countFilesBasesId string) (*[]models.Performer, error) {
 	return models.Performer{}.ListTopPreferredPerformers(core.DBS(), preferredIds, mainPerformerBasesId, shieldNoPerformerPhoto, limit, countFilesBasesId)
 }
-func (Performer) SearchLastScraperUpdateTime(performerBasesId, lastScraperUpdateTime string) (*[]models.PerformerBasic, error) {
-	return models.Performer{}.SearchLastScraperUpdateTime(core.DBS(), performerBasesId, lastScraperUpdateTime)
+func (Performer) SearchScraperFilter(performerBasesId, lastScraperUpdateTime, createdAt, hasPhoto string) (*[]models.PerformerBasic, error) {
+	return models.Performer{}.SearchScraperFilter(core.DBS(), performerBasesId, lastScraperUpdateTime, createdAt, hasPhoto)
 }
 func (Performer) PhotosByPerformerBasesId_DB(db *gorm.DB, performerBasesId string) ([]string, error) {
 	return models.Performer{}.PhotosByPerformerBasesId_DB(db, performerBasesId)

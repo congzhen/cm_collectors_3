@@ -306,6 +306,8 @@ export interface I_config_scraperPerformerData {
   scraperConfig: string;
   operate: string;
   lastScraperUpdateTime: string;
+  createdAt: string;
+  hasPhoto: string;
   concurrency: number;
   timeout: number;
 }
@@ -313,6 +315,8 @@ export const defualtConfigScraperPerformerData: I_config_scraperPerformerData = 
   scraperConfig: '',
   operate: 'update',
   lastScraperUpdateTime: '',
+  createdAt: '',
+  hasPhoto: '',
   concurrency: 3,
   timeout: 30,
 }

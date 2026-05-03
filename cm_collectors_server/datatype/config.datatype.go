@@ -213,6 +213,8 @@ type Config_ScraperPerformer struct {
 	ScraperConfig         string           `json:"scraperConfig"`
 	Operate               E_ScraperOperate `json:"operate" binding:"required,oneof=update cover"`
 	LastScraperUpdateTime string           `json:"lastScraperUpdateTime"`
+	CreatedAt             string           `json:"createdAt"`
+	HasPhoto              string           `json:"hasPhoto"`
 	Concurrency           int              `json:"concurrency"`
 	Timeout               int              `json:"timeout"`
 }

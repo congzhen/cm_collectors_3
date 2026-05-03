@@ -158,7 +158,7 @@ func (t CronJobsExec) cronJobs_ScraperPerformer(data models.CronJobs) error {
 	}
 	for _, v := range *&filesBasesInfo.FilesRelatedPerformerBases {
 		performerBasesId := v.PerformerBasesID
-		datalist, err := Performer{}.SearchLastScraperUpdateTime(performerBasesId, config.LastScraperUpdateTime)
+		datalist, err := Performer{}.SearchScraperFilter(performerBasesId, config.LastScraperUpdateTime, config.CreatedAt, config.HasPhoto)
 		if err != nil {
 			return err
 		}

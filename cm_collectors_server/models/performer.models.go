@@ -208,19 +208,30 @@ func (Performer) PhotosByPerformerBasesId_DB(db *gorm.DB, performerBasesId strin
 	return photos, err
 }
 
-func (Performer) SearchLastScraperUpdateTime(db *gorm.DB, performerBasesId, lastScraperUpdateTime string) (*[]PerformerBasic, error) {
+func (Performer) SearchScraperFilter(db *gorm.DB, performerBasesId, lastScraperUpdateTime, createdAt, hasPhoto string) (*[]PerformerBasic, error) {
 	var list []PerformerBasic
 	db = db.Model(&Performer{}).Where("performerBases_id = ?", performerBasesId)
 	if lastScraperUpdateTime != "" {
-		//转换成日期
 		lastData := datatype.CustomDate{}
 		lastData.SetValue(lastScraperUpdateTime)
 		lastDataValue, err := lastData.Value()
 		if err == nil {
-			db = db.Where("lastScraperUpdateTime < ?", lastDataValue)
+			db = db.Where("lastScraperUpdateTime < ? OR lastScraperUpdateTime IS NULL", lastDataValue)
 		}
-	} else {
-		db = db.Where("lastScraperUpdateTime is null")
+	}
+	if createdAt != "" {
+		createdData := datatype.CustomDate{}
+		createdData.SetValue(createdAt)
+		createdDataValue, err := createdData.Value()
+		if err == nil {
+			db = db.Where("addTime >= ?", createdDataValue)
+		}
+	}
+	switch hasPhoto {
+	case "yes":
+		db = db.Where("photo != ''")
+	case "no":
+		db = db.Where("photo = ''")
 	}
 	err := db.Order("addTime desc").Find(&list).Error
 	return &list, err

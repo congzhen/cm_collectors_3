@@ -71,7 +71,7 @@ func (Scraper) SearchScraperPerformer(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	datalist, err := processors.Performer{}.SearchLastScraperUpdateTime(par.PerformerBasesId, par.Config.LastScraperUpdateTime)
+	datalist, err := processors.Performer{}.SearchScraperFilter(par.PerformerBasesId, par.Config.LastScraperUpdateTime, par.Config.CreatedAt, par.Config.HasPhoto)
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return

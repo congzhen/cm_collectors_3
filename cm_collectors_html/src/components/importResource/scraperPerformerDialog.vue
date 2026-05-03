@@ -1,35 +1,51 @@
 <template>
-  <dialogCommon ref="dialogCommonRef" title="刮削演员数据" btnSubmitTitle="刮削" width="860px" @submit="submitHandle"
+  <dialogCommon ref="dialogCommonRef" title="刮削演员数据" btnSubmitTitle="刮削" width="960px" @submit="submitHandle"
     @closed="closeHandle">
     <div class="scraper-performer-main" :loading="loading">
       <div class="form">
-        <el-form ref="ruleFormRef" :model="formData" label-width="160px" status-icon>
-          <div class="form-main">
-            <div class="form-item">
-              <selectScraperConfig v-model="formData.scraperConfig" width="220px" />
-            </div>
-            <div class="form-item">
-              <el-radio-group v-model="formData.operate" fill="#4C4D4F">
-                <el-radio-button label="更新" value="update" />
-                <el-radio-button label="覆盖" value="cover" />>
-              </el-radio-group>
-            </div>
-            <div class="form-item">
-              <datePicker v-model="formData.lastScraperUpdateTime" placeholder="最后更新时间" width="140px" />
-            </div>
-            <div class="form-item">
-              <el-select v-model="formData.concurrency" style="width: 60px">
-                <el-option v-for="item in [1, 2, 3, 4, 5, 6, 7, 8, 9]" :key="item" :label="item" :value="item" />
-              </el-select>
-            </div>
-            <div class="form-item">
-              <el-button-group>
-                <el-button type="success" plain @click="searchScraperDataHandle">检索数据</el-button>
-                <el-button type="success" plain @click="saveConfigHandle">保存配置</el-button>
-              </el-button-group>
-            </div>
+        <div class="form-row">
+          <div class="form-group">
+            <span class="form-label">刮削器</span>
+            <selectScraperConfig v-model="formData.scraperConfig" width="200px" />
           </div>
-        </el-form>
+          <div class="form-group">
+            <span class="form-label">模式</span>
+            <el-radio-group v-model="formData.operate" fill="#4C4D4F">
+              <el-radio-button label="更新" value="update" />
+              <el-radio-button label="覆盖" value="cover" />
+            </el-radio-group>
+          </div>
+          <div class="form-group">
+            <span class="form-label">并发数</span>
+            <el-select v-model="formData.concurrency" style="width: 68px">
+              <el-option v-for="item in [1, 2, 3, 4, 5, 6, 7, 8, 9]" :key="item" :label="item" :value="item" />
+            </el-select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <span class="form-label">最后刮削时间</span>
+            <datePicker v-model="formData.lastScraperUpdateTime" placeholder="早于此日期" width="160px" />
+          </div>
+          <div class="form-group">
+            <span class="form-label">创建日期</span>
+            <datePicker v-model="formData.createdAt" placeholder="晚于此日期" width="140px" />
+          </div>
+          <div class="form-group">
+            <span class="form-label">头像</span>
+            <el-radio-group v-model="formData.hasPhoto" fill="#4C4D4F">
+              <el-radio-button label="全部" value="" />
+              <el-radio-button label="有头像" value="yes" />
+              <el-radio-button label="无头像" value="no" />
+            </el-radio-group>
+          </div>
+          <div class="form-group form-group--actions">
+            <el-button-group>
+              <el-button type="success" plain @click="searchScraperDataHandle">检索数据</el-button>
+              <el-button type="success" plain @click="saveConfigHandle">保存配置</el-button>
+            </el-button-group>
+          </div>
+        </div>
       </div>
       <div class="data-list">
         <el-table ref="tableRef" :data="dataList" height="100%" border size="small" style="width: 100%">
@@ -98,6 +114,8 @@ const formData = ref<I_config_scraperPerformerData>({
   scraperConfig: '',
   operate: 'update',
   lastScraperUpdateTime: '',
+  createdAt: '',
+  hasPhoto: '',
   concurrency: 3,
   timeout: 30,
 })
@@ -281,14 +299,37 @@ const closeHandle = () => {
 defineExpose({ open })
 </script>
 <style scoped lang="scss">
-.form-main {
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-bottom: 10px;
+}
+
+.form-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  align-items: center;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &--actions {
+    margin-left: auto;
+  }
+}
+
+.form-label {
+  font-size: 13px;
+  color: var(--el-text-color-secondary);
+  white-space: nowrap;
 }
 
 .data-list {
-  padding-top: 10px;
   width: 100%;
   height: 400px;
 
