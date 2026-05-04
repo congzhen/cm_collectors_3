@@ -26,6 +26,7 @@ func (App) InitData() (*App, error) {
 			LogoName:             core.Config.General.LogoName,
 			IsAdminLogin:         core.Config.General.IsAdminLogin,
 			Theme:                core.Config.General.Theme,
+			HomeMode:             core.Config.General.HomeMode,
 			ClosePlayCloud:       core.Config.General.ClosePlayCloud,
 			ClosePlayCloudDialog: core.Config.General.ClosePlayCloudDialog,
 			PlayCloudMode:        core.Config.General.PlayCloudMode,
@@ -40,6 +41,7 @@ func (App) GetConfig() datatype.App_SystemConfig {
 		App_Config: datatype.App_Config{
 			LogoName:             core.Config.General.LogoName,
 			IsAdminLogin:         core.Config.General.IsAdminLogin,
+			HomeMode:             core.Config.General.HomeMode,
 			ClosePlayCloud:       core.Config.General.ClosePlayCloud,
 			ClosePlayCloudDialog: core.Config.General.ClosePlayCloudDialog,
 			PlayCloudMode:        core.Config.General.PlayCloudMode,
@@ -74,6 +76,7 @@ func (App) SetConfig(config datatype.App_SystemConfig) error {
 	core.Config.General.NotAllowServerOpenFile = config.NotAllowServerOpenFile
 	core.Config.General.AllowAppCloseServer = config.AllowAppCloseServer
 	core.Config.General.Theme = config.Theme
+	core.Config.General.HomeMode = config.HomeMode
 	core.Config.General.ClosePlayCloud = config.ClosePlayCloud
 	core.Config.General.ClosePlayCloudDialog = config.ClosePlayCloudDialog
 	core.Config.General.PlayCloudMode = config.PlayCloudMode

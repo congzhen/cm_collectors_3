@@ -48,7 +48,8 @@ const width_C = computed(() => {
   } catch {
     rowNumRatio = 25;
   }
-  return `calc(${rowNumRatio}% - 0.9em)`
+  return `calc(${rowNumRatio}% - ${store.appStoreData.currentConfigApp.tagFixedModeRowShowNum * 0.1}em)`
+  //return `calc(${rowNumRatio}% - 0.9em)`
 })
 
 

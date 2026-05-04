@@ -73,6 +73,23 @@
           <label class="menu-item-title">设置</label>
            -->
         </div>
+        <el-dropdown class="home-mode-dropdown" trigger="click" @command="changeHomeMode">
+          <div class="menu-item">
+            <el-tooltip :content="`主页样式：${currentHomeModeLabel}`" placement="bottom">
+              <el-icon>
+                <Grid />
+              </el-icon>
+            </el-tooltip>
+          </div>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item v-for="item in homeModeOptions" :key="item.value" :command="item.value"
+                :disabled="item.value == currentHomeMode">
+                {{ item.label }}
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
         <div class="menu-item" v-admin @click="goToSetting">
           <el-tooltip content="设置" placement="bottom">
             <el-icon>
@@ -134,12 +151,14 @@ import playListDrawer from '@/components/playList/playListDrawer.vue'
 import { appStoreData } from '@/storeData/app.storeData'
 import type { I_resource } from '@/dataType/resource.dataType'
 import { AppLang } from '@/language/app.lang'
+import { useHomeMode, type T_homeMode } from '@/common/homeMode'
 const appLang = AppLang()
 
 const router = useRouter()
 const store = {
   appStoreData: appStoreData(),
 }
+const { currentHomeMode, currentHomeModeLabel, homeModeOptions, setHomeMode } = useHomeMode()
 const emits = defineEmits(['createResouceSuccess'])
 
 const tagListDrawerRef = ref<InstanceType<typeof tagListDrawer>>()
@@ -177,6 +196,9 @@ const openCheckUpdateSoft = () => {
 }
 const openPlayListHandle = () => {
   playListDrawerRef.value?.open()
+}
+const changeHomeMode = (mode: T_homeMode) => {
+  setHomeMode(mode)
 }
 
 const goToPerformer = () => {
@@ -270,6 +292,18 @@ const createResouceSuccessHandle = (data: I_resource) => {
 
         .el-link {
           padding: 2px 5px;
+        }
+      }
+
+      .home-mode-dropdown {
+        display: flex;
+        align-items: center;
+        font-size: inherit;
+        line-height: inherit;
+
+        .menu-item {
+          font-size: inherit;
+          line-height: inherit;
         }
       }
 

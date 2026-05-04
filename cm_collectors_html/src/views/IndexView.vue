@@ -1,24 +1,28 @@
 <template>
-  <div class="index-view" v-loading="loading">
-    <HeaderView class="header" @create-resouce-success="createResouceSuccessHandle"></HeaderView>
-    <dataBaseMenuView class="menu" @select-files-base="selectFilesBaseHandle"></dataBaseMenuView>
-    <div class="main">
-      <TagView ref="tagViewRef" class="tag"></TagView>
-      <ContentView ref="contentViewRef" class="content" @select-resources="selectResourcesHandle"></ContentView>
-      <DetailsView ref="detailsViewRef" v-if="store.appStoreData.detailsViewStatus && resDetails" class="details"
-        :resource="resDetails" @update-resouce-success="updateResouceSuccessHandle"
-        @delete-resource-success="deleteResouceSuccessHandle">
-      </DetailsView>
+  <div class="home-mode-view">
+    <HomeStudioView v-if="currentHomeMode == 'studio'"></HomeStudioView>
+    <div v-else class="index-view" v-loading="loading">
+      <HeaderView class="header" @create-resouce-success="createResouceSuccessHandle"></HeaderView>
+      <dataBaseMenuView class="menu" @select-files-base="selectFilesBaseHandle"></dataBaseMenuView>
+      <div class="main">
+        <TagView ref="tagViewRef" class="tag"></TagView>
+        <ContentView ref="contentViewRef" class="content" @select-resources="selectResourcesHandle"></ContentView>
+        <DetailsView ref="detailsViewRef" v-if="store.appStoreData.detailsViewStatus && resDetails" class="details"
+          :resource="resDetails" @update-resouce-success="updateResouceSuccessHandle"
+          @delete-resource-success="deleteResouceSuccessHandle">
+        </DetailsView>
+      </div>
+      <videoPlayDialog ref="videoPlayDialogRef"></videoPlayDialog>
+      <resourceFormDrawer ref="resourceFormDrawerRef" @success="updateResouceSuccessHandle"></resourceFormDrawer>
+      <resourceSetTagDialog ref="resourceSetTagDialogRef" @success="updateResouceSuccessHandle"></resourceSetTagDialog>
+      <resourceSetPerformerDialog ref="resourceSetPerformerDialogRef" @success="updateResouceSuccessHandle">
+      </resourceSetPerformerDialog>
+      <playCloudCheckPromptDialog ref="playCloudCheckPromptDialogRef"></playCloudCheckPromptDialog>
     </div>
-    <videoPlayDialog ref="videoPlayDialogRef"></videoPlayDialog>
-    <resourceFormDrawer ref="resourceFormDrawerRef" @success="updateResouceSuccessHandle"></resourceFormDrawer>
-    <resourceSetTagDialog ref="resourceSetTagDialogRef" @success="updateResouceSuccessHandle"></resourceSetTagDialog>
-    <resourceSetPerformerDialog ref="resourceSetPerformerDialogRef" @success="updateResouceSuccessHandle">
-    </resourceSetPerformerDialog>
-    <playCloudCheckPromptDialog ref="playCloudCheckPromptDialogRef"></playCloudCheckPromptDialog>
   </div>
 </template>
 <script setup lang="ts">
+import HomeStudioView from './HomeStudioView.vue'
 import HeaderView from './HeaderView.vue'
 import dataBaseMenuView from './dataBaseMenuView.vue'
 import TagView from './TagView.vue'
@@ -37,10 +41,12 @@ import resourceSetTagDialog from '@/components/resource/resourceSetTagDialog.vue
 import resourceSetPerformerDialog from '@/components/resource/resourceSetPerformerDialog.vue'
 import playCloudCheckPromptDialog from '@/components/play/playCloudCheckPromptDialog.vue'
 import { resourcePinToTop } from '@/common/resource'
+import { useHomeMode } from '@/common/homeMode'
 const store = {
   appStoreData: appStoreData(),
   searchStoreData: searchStoreData(),
 }
+const { currentHomeMode } = useHomeMode()
 const tagViewRef = ref<InstanceType<typeof TagView>>();
 const contentViewRef = ref<InstanceType<typeof ContentView>>();
 const detailsViewRef = ref<InstanceType<typeof DetailsView>>();
@@ -133,6 +139,13 @@ onMounted(() => {
 
 </script>
 <style lang="scss" scoped>
+.home-mode-view {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
 .index-view {
   width: 100%;
   height: 100%;

@@ -10,6 +10,11 @@
           <el-option label="明亮" value="bright" />
         </el-select>
       </el-form-item>
+      <el-form-item label="主页样式">
+        <el-select v-model="formData.homeMode">
+          <el-option v-for="item in homeModeOptions" :key="item.value" :label="item.label" :value="item.value" />
+        </el-select>
+      </el-form-item>
       <el-form-item label="管理需登录">
         <el-switch v-model="formData.isAdminLogin" />
       </el-form-item>
@@ -158,8 +163,11 @@ import { debounceNow } from '@/assets/debounce';
 import type { I_sfm_FileEntry } from '@/components/serverFileManagement/com/dataType';
 import dataset from '@/assets/dataset';
 import { playCloudPluginDownload, playCloudPluginDownloadUrl } from '@/components/play/playCloud'
+import { homeModeOptions } from '@/common/homeMode'
+import { appStoreData } from '@/storeData/app.storeData'
 
 const serverFileManagementDialogRef = ref<InstanceType<typeof serverFileManagementDialog>>();
+const store = appStoreData()
 
 const formData = ref<I_appSystemConfig>({
   logoName: 'CM File Collectors',
@@ -169,6 +177,7 @@ const formData = ref<I_appSystemConfig>({
   notAllowServerOpenFile: false,
   allowAppCloseServer: false,
   theme: 'default',
+  homeMode: 'classic',
   closePlayCloud: true,
   closePlayCloudDialog: true,
   playCloudMode: 'm3u8',
@@ -206,6 +215,9 @@ const getAppConfig = async () => {
       return
     }
     formData.value = result.data;
+    if (!formData.value.homeMode) {
+      formData.value.homeMode = 'classic'
+    }
     console.log(formData.value);
     return
   } catch (error) {
@@ -253,6 +265,7 @@ const saveHandle = debounceNow(async () => {
       return
     }
     ElMessage.success('保存成功');
+    //store.appConfig.homeMode = formData.value.homeMode
     return
   } catch (error) {
     console.log(error)
