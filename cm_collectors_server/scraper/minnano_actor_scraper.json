@@ -1,0 +1,117 @@
+{
+  "name": "minnano_av_scraper",
+  "cache_enabled": true,
+  "proxy": {
+    "enabled": false,
+    "protocol": "http",
+    "host": "127.0.0.1",
+    "port": 8080
+  },
+  "file_patterns": ["([A-Z0-9]+-[0-9]+)", "([a-z0-9]+-[0-9]+)"],
+  "headers": {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+    "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Connection": "keep-alive",
+    "Upgrade-Insecure-Requests": "1",
+    "Sec-Ch-Ua": "\"Chromium\";v=\"118\", \"Google Chrome\";v=\"118\", \"Not=A?Brand\";v=\"99\"",
+    "Sec-Ch-Ua-Mobile": "?0",
+    "Sec-Ch-Ua-Platform": "\"Windows\"",
+    "Sec-Fetch-Dest": "document",
+    "Sec-Fetch-Mode": "navigate",
+    "Sec-Fetch-Site": "none",
+    "Sec-Fetch-User": "?1",
+    "Cache-Control": "max-age=0",
+    "Referer": "https://www.minnano-av.com/"
+  },
+  "sites": [
+    {
+      "name": "minnano_detail",
+      "url": "https://www.minnano-av.com/search_result.php?search_scope=actress&search_word={id}&search=+Go+",
+      "priority": 2,
+      "selectors": {
+        "avatar": {
+          "selector": ".actress-header div.act-area div.thumb img",
+          "type": "attribute",
+          "attribute": "src",
+          "post_process": {
+            "type": "regexp",
+            "pattern": "^(/.*)",
+            "replacement": "https://www.minnano-av.com$1"
+          }
+        },
+        "name": {
+          "selector": ".actress-header div.act-profile h2",
+          "type": "text",
+          "post_process": {
+            "type": "regexp",
+            "pattern": "^([^（\\(]+)"
+          }
+        },
+        "alias": {
+          "selector": ".actress-header div.act-profile h2",
+          "type": "text",
+          "post_process": {
+            "type": "regexp",
+            "pattern": "（(.+)）"
+          }
+        },
+        "full": {
+          "selector": ".actress-header div.act-profile table tr:has(span:contains('サイズ')) td p",
+          "type": "text"
+        },
+        "height": {
+          "selector": ".actress-header div.act-profile table tr:has(span:contains('サイズ')) td p",
+          "type": "text",
+          "post_process": {
+            "type": "regexp",
+            "pattern": "T\\s*(\\d+)"
+          }
+        },
+        "bust": {
+          "selector": ".actress-header div.act-profile table tr:has(span:contains('サイズ')) td p",
+          "type": "text",
+          "post_process": {
+            "type": "regexp",
+            "pattern": "B\\s*\\(?\\s*(\\d+)"
+          }
+        },
+        "waist": {
+          "selector": ".actress-header div.act-profile table tr:has(span:contains('サイズ')) td p",
+          "type": "text",
+          "post_process": {
+            "type": "regexp",
+            "pattern": "W\\s*(\\d+)"
+          }
+        },
+        "hip": {
+          "selector": ".actress-header div.act-profile table tr:has(span:contains('サイズ')) td p",
+          "type": "text",
+          "post_process": {
+            "type": "regexp",
+            "pattern": "H\\s*(\\d+)"
+          }
+        },
+        "birth": {
+          "selector": "tr:has(span:contains('生年月日')), tr:has(td:contains('誕生日')), p:has(strong:contains('誕生日')), div:contains('誕生日'), td:contains('生年月日')",
+          "type": "text",
+          "post_process": {
+            "type": "regexp",
+            "pattern": "[\\s\\S]*?(\\d{4})[年/-](\\d{1,2})[月/-](\\d{1,2})[\\s\\S]*",
+            "replacement": "$1-$2-$3"
+          }
+        },
+        "cup": {
+          "selector": ".actress-header div.act-profile table tr:has(span:contains('サイズ')) td p",
+          "type": "text",
+          "post_process": {
+            "type": "regexp",
+            "pattern": "[\\s\\S]*B\\d*\\(([A-Z])(?:カップ|cup)?[\\s\\S]*",
+            "replacement": "$1"
+          }
+        }
+      }
+    }
+  ]
+}
