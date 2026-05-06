@@ -53,7 +53,7 @@ func (Performer) DataList(c *gin.Context) {
 	GetUrlParameter_Param(c, "fetchCount", &fetchCount)
 	GetUrlParameter_Param(c, "page", &page)
 	GetUrlParameter_Param(c, "limit", &limit)
-	search := c.Query("search")
+	search := strings.TrimSpace(c.Query("search"))
 	star := c.Query("star")
 	cup := c.Query("cup")
 	charIndex := c.Query("charIndex")

@@ -9,6 +9,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"os"
+	"strings"
 	"path"
 	"sort"
 
@@ -205,12 +206,14 @@ func (t Performer) Create(par *datatype.ReqParam_PerformerData) (*models.Perform
 	createdAt := datatype.CustomTime(core.TimeNow())
 	id := core.GenerateUniqueID()
 
+	name := strings.TrimSpace(par.Performer.Name)
+	aliasName := strings.TrimSpace(par.Performer.AliasName)
 	performerModels := models.Performer{
 		ID:               id,
 		PerformerBasesID: par.Performer.PerformerBasesID,
-		Name:             par.Performer.Name,
-		AliasName:        par.Performer.AliasName,
-		KeyWords:         utils.PinyinInitials(par.Performer.Name + par.Performer.AliasName),
+		Name:             name,
+		AliasName:        aliasName,
+		KeyWords:         utils.PinyinInitials(name + aliasName),
 		Birthday:         par.Performer.Birthday,
 		Nationality:      par.Performer.Nationality,
 		CareerPerformer:  &par.Performer.CareerPerformer,
@@ -267,12 +270,14 @@ func (t Performer) Update(par *datatype.ReqParam_PerformerData) (*models.Perform
 	}
 
 	db := core.DBS()
+	name := strings.TrimSpace(par.Performer.Name)
+	aliasName := strings.TrimSpace(par.Performer.AliasName)
 	performerModels := models.Performer{
 		ID:               par.Performer.ID,
 		PerformerBasesID: par.Performer.PerformerBasesID,
-		Name:             par.Performer.Name,
-		AliasName:        par.Performer.AliasName,
-		KeyWords:         utils.PinyinInitials(par.Performer.Name + par.Performer.AliasName),
+		Name:             name,
+		AliasName:        aliasName,
+		KeyWords:         utils.PinyinInitials(name + aliasName),
 		Birthday:         par.Performer.Birthday,
 		Nationality:      par.Performer.Nationality,
 		CareerPerformer:  &par.Performer.CareerPerformer,

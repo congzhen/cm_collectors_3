@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"strings"
 	"path"
 	"path/filepath"
 
@@ -458,11 +459,12 @@ func (t Resources) Create(tx *gorm.DB, par *datatype.ReqParam_Resource) (string,
 	issuingDate.SetValue(par.Resource.IssuingDate)
 	var createdAt datatype.CustomTime
 	createdAt.SetValue(core.TimeNow())
+	title := strings.TrimSpace(par.Resource.Title)
 	resourcesModels := models.Resources{
 		ID:                id,
 		FilesBasesID:      par.Resource.FilesBasesID,
-		Title:             par.Resource.Title,
-		KeyWords:          utils.PinyinInitials(par.Resource.Title),
+		Title:             title,
+		KeyWords:          utils.PinyinInitials(title),
 		IssueNumber:       par.Resource.IssueNumber,
 		Mode:              par.Resource.Mode,
 		CoverPoster:       coverPoster,
@@ -499,11 +501,12 @@ func (t Resources) Update(db *gorm.DB, par *datatype.ReqParam_Resource) (string,
 	}
 	var issuingDate datatype.CustomDate
 	issuingDate.SetValue(par.Resource.IssuingDate)
+	title := strings.TrimSpace(par.Resource.Title)
 	resourcesModels := models.Resources{
 		ID:                id,
 		FilesBasesID:      par.Resource.FilesBasesID,
-		Title:             par.Resource.Title,
-		KeyWords:          utils.PinyinInitials(par.Resource.Title),
+		Title:             title,
+		KeyWords:          utils.PinyinInitials(title),
 		IssueNumber:       par.Resource.IssueNumber,
 		Mode:              par.Resource.Mode,
 		CoverPosterMode:   par.Resource.CoverPosterMode,

@@ -214,11 +214,12 @@ func (t Tag) Create_DB(db *gorm.DB, par *datatype.ReqParam_Tag) (string, error) 
 	}
 	timeNow := datatype.CustomTime(core.TimeNow())
 	id := core.GenerateUniqueID()
+	name := strings.TrimSpace(par.Name)
 	tagModels := models.Tag{
 		ID:         id,
 		TagClassID: par.TagClassID,
-		Name:       par.Name,
-		KeyWords:   utils.PinyinInitials(par.Name),
+		Name:       name,
+		KeyWords:   utils.PinyinInitials(name),
 		Sort:       int(tagTotal) + 1,
 		CreatedAt:  &timeNow,
 		Status:     true,
@@ -228,16 +229,18 @@ func (t Tag) Create_DB(db *gorm.DB, par *datatype.ReqParam_Tag) (string, error) 
 
 func (Tag) Update(tag *datatype.ReqParam_Tag) error {
 	db := core.DBS()
+	name := strings.TrimSpace(tag.Name)
 	return models.Tag{}.Update(db, &models.Tag{
 		ID:         tag.ID,
-		Name:       tag.Name,
+		Name:       name,
 		TagClassID: tag.TagClassID,
-		KeyWords:   utils.PinyinInitials(tag.Name),
+		KeyWords:   utils.PinyinInitials(name),
 		Sort:       tag.Sort,
 		Status:     tag.Status,
 	}, []string{"name", "keyWords", "tagClass_id", "sort", "status"})
 }
 func (Tag) UpdateNameAndTagClassIDByID_DB(db *gorm.DB, id, name, tagClassID string) error {
+	name = strings.TrimSpace(name)
 	return models.Tag{}.Update(db, &models.Tag{
 		ID:         id,
 		Name:       name,

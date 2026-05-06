@@ -5,6 +5,7 @@ import (
 	"cm_collectors_server/datatype"
 	"cm_collectors_server/errorMessage"
 	"cm_collectors_server/models"
+	"strings"
 
 	"gorm.io/gorm"
 )
@@ -75,7 +76,7 @@ func (t TagClass) Create_DB(db *gorm.DB, par *datatype.ReqParam_TagClass) (strin
 	tagClassModels := models.TagClass{
 		ID:           id,
 		FilesBasesID: par.FilesBasesID,
-		Name:         par.Name,
+		Name:         strings.TrimSpace(par.Name),
 		LeftShow:     true,
 		Sort:         int(tagClassTotal) + 1,
 		CreatedAt:    &timeNow,
@@ -88,7 +89,7 @@ func (TagClass) Update(tagClass *datatype.ReqParam_TagClass) error {
 	db := core.DBS()
 	return models.TagClass{}.Update(db, &models.TagClass{
 		ID:       tagClass.ID,
-		Name:     tagClass.Name,
+		Name:     strings.TrimSpace(tagClass.Name),
 		LeftShow: tagClass.LeftShow,
 		Sort:     tagClass.Sort,
 		Status:   tagClass.Status,
@@ -97,7 +98,7 @@ func (TagClass) Update(tagClass *datatype.ReqParam_TagClass) error {
 func (TagClass) UpdateNameByID_DB(db *gorm.DB, id, name string) error {
 	return models.TagClass{}.Update(db, &models.TagClass{
 		ID:   id,
-		Name: name,
+		Name: strings.TrimSpace(name),
 	}, []string{"name"})
 }
 

@@ -23,6 +23,6 @@ const props = defineProps({
 const emit = defineEmits(['change'])
 
 const changeHandle = debounce(() => {
-  emit('change', searchVal.value)
+  emit('change', searchVal.value.trim())
 }, 200)
 </script>
