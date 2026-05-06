@@ -16,6 +16,32 @@
         </div>
       </el-timeline-item>
       -->
+      <el-timeline-item center timestamp="2026/5/6" placement="top">
+        <h4 class="version-title">版本: v 3.0.9</h4>
+        <div class="rawContent">
+          <h5 class="section-title">新特性</h5>
+          <p class="logContent">新增主页模式切换功能，支持经典模式与画室布局视图切换</p>
+          <p class="logContent">新增视频指纹重复检测，支持按文件库、汉明距离阈值筛选并删除重复视频</p>
+          <p class="logContent">新增资源置顶功能，已置顶资源支持再次置顶至第一位</p>
+          <p class="logContent">刮削演员对话框新增创建日期与头像筛选条件</p>
+          <p class="logContent">新增TVBox功能开关配置，未开启时接口返回不可用提示</p>
+          <p class="logContent">新增TVBox推荐管理，支持拖拽排序，资源右键菜单可直接添加到推荐</p>
+          <p class="logContent">TVBox接口支持m3u8/mp4双源切换，新增视频分页总数及跨分类搜索</p>
+          <p class="logContent">桌面端导入与刮削配置支持选择本地文件夹</p>
+          <p class="logContent">连续剧导入新增相似名称合并选项，按自然排序写入剧集顺序</p>
+          <p class="logContent">演员卡片新增大小调节滑块，右上角显示关联资源数量角标</p>
+          <p class="logContent">左侧标签栏浮动模式新增自动隐藏功能</p>
+          <p class="logContent">新增允许应用程序关闭服务器的开关配置项</p>
+          <p class="logContent">文件库设置新增视频预览图关键帧数量配置项，默认32帧</p>
+          <p class="logContent">新增资源封面标签点击搜索功能，支持年份、国家、星级等多种标签类型</p>
+          <p class="logContent">导入与刮削对话框新增数据条目选择功能，支持只处理勾选项</p>
+          <p class="logContent">搜索功能新增导演字段查询，AND/OR/NOT搜索均支持导演匹配</p>
+          <p class="logContent">详情页和播放页摘要内容支持HTML渲染，换行符自动转换为段落</p>
+          <p class="logContent">导入资源时支持使用 regex: 前缀的正则表达式匹配封面海报文件</p>
+          <p class="logContent">内容标签新增鼠标悬停高亮效果，固定模式支持配置每行显示数量</p>
+          <p class="logContent">新增安卓APK客户端，方便移动端直接安装访问</p>
+        </div>
+      </el-timeline-item>
       <el-timeline-item center timestamp="2026/1/1" placement="top">
         <h4 class="version-title">版本: v 3.0.8</h4>
         <div class="rawContent">

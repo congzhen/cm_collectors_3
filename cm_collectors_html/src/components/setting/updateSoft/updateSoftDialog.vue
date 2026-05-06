@@ -98,7 +98,7 @@ interface UpdateInfo {
   cloudPlayScriptUrl?: string;
 }
 
-const currentVersion = ref('3.0.8')
+const currentVersion = ref('3.0.9')
 const latestVersion = ref('')
 const updateInfo = ref<UpdateInfo | null>(null)
 const checking = ref(false)
