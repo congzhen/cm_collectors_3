@@ -27,7 +27,7 @@
   "search": {
     "url": "https://www.themoviedb.org/search?query={id}",
     "selectors": {
-      "selector": ".white_column .search_results:first-child .card:first-child a.result",
+      "selector": ".white_column .search_results:first-child .results .media-card-list:first-child div:first-child a.font-normal:first-child",
       "type": "attribute",
       "attribute": "href"
     }

@@ -389,33 +389,47 @@ func (t Scraper) ScraperOneResourceDataProcess(par *datatype.ReqParam_ScraperOne
 		scraperSL := cmscraper.NewScraper(scraperConfig, t.GetBrowserPath(), core.Config.Scraper.Headless, time.Duration(par.Timeout), 1, core.Config.Scraper.LogStatus, core.Config.Scraper.LogPath)
 		// 关闭日志
 		defer cmscraper.CloseGlobalLogger()
-		var scrapeIDS = [3]string{}
+		// 单个资源手动刮削时，用户明确填写的番号/版号可信度最高；
+		// 其次才是资源标题；最后才从视频文件名里解析候选名称。
+		// file_patterns 只参与第三步的文件名解析，不应排在 IssueNumber 前面。
+		scrapeIDS := make([]string, 0, 3)
 		if par.IssueNumber != "" {
-			scrapeIDS[0] = par.IssueNumber
+			scrapeIDS = append(scrapeIDS, par.IssueNumber)
 		}
 		if par.Title != "" {
-			scrapeIDS[1] = par.Title
+			scrapeIDS = append(scrapeIDS, par.Title)
 		}
 		if filePathExists {
-			scrapeIDS[2] = cmscraper.ParseID(par.DramaSeriesSrc, scraperConfig)
+			scrapeIDS = append(scrapeIDS, cmscraper.ParseID(par.DramaSeriesSrc, scraperConfig))
 		}
 		var pageUrl string = ""
 		// 刮削数据
 		ctx := context.Background()
+		var lastScrapeErr error
+		validMetadata := false
 		for _, id := range scrapeIDS {
 			if id == "" {
 				continue
 			}
 			metadata, pageUrl, err = scraperSL.Scrape(ctx, id)
-			if err == nil {
+			if err != nil {
+				lastScrapeErr = err
+				continue
+			}
+			// Scrape 没返回错误并不一定代表找到了正确条目：
+			// 搜索页可能返回空内容、错误页面或字段全空的详情页。
+			// 只有元数据通过配置字段校验后，才认为当前候选成功，
+			// 并立即停止，避免后面的标题/文件名候选覆盖第一次成功结果。
+			if cmscraper.IsValidMetadata(metadata, scraperConfig) {
+				validMetadata = true
 				break
 			}
+			lastScrapeErr = errors.New("没有找到匹配的元数据")
 		}
-		if err != nil {
-			return nil, err
-		}
-		// 检查元数据是否有效
-		if !cmscraper.IsValidMetadata(metadata, scraperConfig) {
+		if !validMetadata {
+			if lastScrapeErr != nil {
+				return nil, lastScrapeErr
+			}
 			return nil, errors.New("没有找到匹配的元数据")
 		}
 		// 获取图片

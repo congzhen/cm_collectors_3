@@ -250,6 +250,13 @@ func (s *ScraperChromeDp) scrapeSearch(ctx context.Context, searchConfig *Search
 	case "attribute":
 		// 属性类型处理 - 提取元素的属性值
 		doc.Find(searchConfig.Selectors.Selector).Each(func(i int, sel *goquery.Selection) {
+			// 搜索页 selector 可能匹配到多条结果；页面顺序通常代表相关度顺序，
+			// 搜索结果按页面顺序排列，通常第一条最相关。
+			// 已经拿到第一个有效属性值后，不再让后续匹配项覆盖它。
+			// 因此只取第一个非空属性值。
+			if value != id {
+				return
+			}
 			// 首先尝试主属性
 			attrValue, exists := sel.Attr(searchConfig.Selectors.Attribute)
 			if !exists && len(searchConfig.Selectors.FallbackAttributes) > 0 {
@@ -262,7 +269,10 @@ func (s *ScraperChromeDp) scrapeSearch(ctx context.Context, searchConfig *Search
 				}
 			}
 			if exists {
-				value = strings.TrimSpace(attrValue)
+				attrValue = strings.TrimSpace(attrValue)
+				if attrValue != "" {
+					value = attrValue
+				}
 			}
 		})
 

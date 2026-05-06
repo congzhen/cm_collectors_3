@@ -95,6 +95,11 @@ var defaultFilePatterns = []string{
 	`([a-z0-9]+-[0-9]+)`, // 匹配类似 abc123-456 的格式
 }
 
+// 常见发布组/压制信息，只在文件名没有命中 file_patterns 时作为影视名兜底清洗使用。
+// 这里不处理番号：番号仍然优先交给各 scraper 配置里的 file_patterns 提取。
+var mediaFilenameNoisePattern = regexp.MustCompile(`(?i)\b(4k|8k|2160p|1080p|720p|480p|hd1080p|hd720p|x264|x265|h264|h265|hevc|avc|aac|ac3|dts|truehd|atmos|bluray|bdrip|bd|web-?dl|webrip|hdtv|hdrip|dvdrip|remux|english|chs|cht|chs-?eng|cht-?eng|gb|big5|bdys)\b`)
+var mediaFilenameYearPattern = regexp.MustCompile(`^(?:19|20)\d{2}$`)
+
 // LoadConfig 从文件加载刮削配置
 // 参数：filePath - 配置文件路径
 // 返回：解析后的配置对象和可能的错误
@@ -170,7 +175,9 @@ func ParseID(filePath string, config *ScraperConfig) string {
 	ext := filepath.Ext(filename)
 	filename = strings.TrimSuffix(filename, ext)
 
-	// 使用配置文件中的文件名匹配模式
+	// 使用配置文件中的文件名匹配模式。
+	// 这是文件名解析的第一优先级，适合 JavBus/JavDB 这类按番号刮削的站点；
+	// 一旦命中就直接返回，避免后面的通用影视名清洗误改番号。
 	if config != nil && len(config.FilePatterns) > 0 {
 		// 尝试每个模式
 		for _, pattern := range config.FilePatterns {
@@ -187,11 +194,117 @@ func ParseID(filePath string, config *ScraperConfig) string {
 		}
 	}
 
-	// 如果没有匹配的模式，返回清理后的文件名
-	filename = strings.ReplaceAll(filename, "_", "-")
-	filename = strings.ReplaceAll(filename, " ", "-")
+	// 如果没有匹配的模式，才按普通影视资源文件名清洗。
+	// 主要处理“剧名.季.年份.集数.清晰度.编码.字幕组”这类文件名，
+	// 避免把整串发布信息都当作搜索关键词。
+	filename = cleanMediaFilenameForSearch(filename)
 	LogInfo("解析得到的ID: %s", filename)
 	return filename
+}
+
+func cleanMediaFilenameForSearch(filename string) string {
+	filename = strings.TrimSpace(filename)
+	if filename == "" {
+		return filename
+	}
+
+	// 去掉站点水印/发布组前缀，例如：
+	// [电影天堂www.dytt89.com]权力的游戏S01E03BD中英双字
+	filename = removeBracketText(filename)
+	filename = strings.TrimSpace(filename)
+	if filename == "" {
+		return filename
+	}
+
+	// 统一分隔符后更容易识别季、集、年份和压制信息。
+	normalized := normalizeMediaFilenameSeparators(filename)
+	if tvName := extractTVSeriesSearchName(normalized); tvName != "" {
+		return tvName
+	}
+	if movieName := extractMovieSearchName(normalized); movieName != "" {
+		return movieName
+	}
+	return strings.ReplaceAll(normalized, " ", "-")
+}
+
+func removeBracketText(filename string) string {
+	var builder strings.Builder
+	depth := 0
+	for _, r := range filename {
+		switch r {
+		case '[', '【', '(', '（':
+			depth++
+			continue
+		case ']', '】', ')', '）':
+			if depth > 0 {
+				depth--
+				continue
+			}
+		}
+		if depth == 0 {
+			builder.WriteRune(r)
+		}
+	}
+	return builder.String()
+}
+
+func normalizeMediaFilenameSeparators(filename string) string {
+	replacer := strings.NewReplacer(
+		"_", " ",
+		".", " ",
+		"-", " ",
+		"+", " ",
+	)
+	filename = replacer.Replace(filename)
+	return strings.Join(strings.Fields(filename), " ")
+}
+
+func extractTVSeriesSearchName(filename string) string {
+	// 常见剧集格式优先保留“剧名 + 季”，比如：
+	// 最后生还者 第一季 2023 EP09 ...
+	// 权力的游戏S01E03...
+	// 这样搜索时既能避开 EP/画质等噪声，又能减少只搜剧名导致的歧义。
+	patterns := []*regexp.Regexp{
+		regexp.MustCompile(`(?i)^(.+?)\s+((?:第[一二三四五六七八九十百0-9]+季)|(?:season\s*[0-9]+))\s+(?:19|20)\d{2}\s*(?:ep?\s*[0-9]+|第[一二三四五六七八九十百0-9]+[集话話回]).*$`),
+		regexp.MustCompile(`(?i)^(.+?)\s+((?:第[一二三四五六七八九十百0-9]+季)|(?:season\s*[0-9]+))\s*(?:ep?\s*[0-9]+|第[一二三四五六七八九十百0-9]+[集话話回]).*$`),
+		regexp.MustCompile(`(?i)^(.+?)\s+s[0-9]{1,2}\s*e[0-9]{1,3}.*$`),
+		regexp.MustCompile(`(?i)^(.+?)s[0-9]{1,2}e[0-9]{1,3}.*$`),
+		regexp.MustCompile(`(?i)^(.+?)\s+(?:ep?\s*[0-9]+|第[一二三四五六七八九十百0-9]+[集话話回]).*$`),
+	}
+	for index, pattern := range patterns {
+		matches := pattern.FindStringSubmatch(filename)
+		if len(matches) <= 1 {
+			continue
+		}
+		title := strings.TrimSpace(matches[1])
+		if index < 2 && len(matches) > 2 {
+			title = strings.TrimSpace(title + " " + matches[2])
+		}
+		if title != "" {
+			return title
+		}
+	}
+	return ""
+}
+
+func extractMovieSearchName(filename string) string {
+	// 电影通常在片名后跟年份或画质/编码信息；
+	// 遇到这些标记后截断，保留前面的片名作为搜索关键词。
+	parts := strings.Fields(filename)
+	if len(parts) == 0 {
+		return ""
+	}
+	cutIndex := len(parts)
+	for i, part := range parts {
+		if mediaFilenameYearPattern.MatchString(part) || mediaFilenameNoisePattern.MatchString(part) {
+			cutIndex = i
+			break
+		}
+	}
+	if cutIndex == 0 {
+		return ""
+	}
+	return strings.Join(parts[:cutIndex], " ")
 }
 
 // GetMetadataImages 从元数据中提取图片信息，并使用 ChromeDP 下载这些图片。
