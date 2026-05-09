@@ -115,6 +115,7 @@ type Config_FilesBases struct {
 	PageLimit                    int                       `json:"pageLimit"`                    // 分页数量
 	PerformerPhoto               bool                      `json:"performerPhoto"`               // 左侧栏-演员图片是否开启
 	PerformerPreferred           []string                  `json:"performerPreferred"`           // 左侧栏-优先显示演员
+	ShowPerformerResourceCount   bool                      `json:"showPerformerResourceCount"`   // 演员卡片是否显示关联资源数量
 	PerformerShowNum             int                       `json:"performerShowNum"`             // 左侧栏-演员显示数量
 	PerformerText                string                    `json:"performer_Text"`               // 演员显示名称
 	PerformerPhotoDefault        string                    `json:"performer_photo"`              // 默认演员照片

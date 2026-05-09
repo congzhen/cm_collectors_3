@@ -282,6 +282,9 @@
       <el-form-item label="自定义头像">
         <setCustomAvatar v-model="filesConfig.performer_photo" />
       </el-form-item>
+      <el-form-item label="资源数量角标">
+        <el-checkbox v-model="filesConfig.showPerformerResourceCount" label="显示演员关联资源数量" border />
+      </el-form-item>
 
       <el-alert title="插件设置" type="success" :closable="false" />
       <el-form-item label="Cup插件">
@@ -514,7 +517,7 @@ const importHandle = debounceNow(async () => {
   }
   console.log(data);
   // 更新配置
-  filesConfig.value = data
+  filesConfig.value = { ...defualtConfigApp, ...data }
 })
 
 onMounted(() => {

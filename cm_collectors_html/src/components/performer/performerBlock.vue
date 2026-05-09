@@ -1,6 +1,6 @@
 <template>
   <div class="performer-block" v-if="props.performer">
-    <div class="performer-resource-count" v-if="props.performer.resourceCount !== undefined">
+    <div class="performer-resource-count" v-if="showResourceCount_C && props.performer.resourceCount !== undefined">
       {{ props.performer.resourceCount }}
     </div>
     <performerPhoto :performer="props.performer"></performerPhoto>
@@ -42,6 +42,10 @@ import { computed, type PropType } from 'vue'
 import { calculateAge } from '@/assets/calculate'
 import performerPhoto from './performerPhoto.vue'
 import type { I_performer } from '@/dataType/performer.dataType'
+import { appStoreData } from '@/storeData/app.storeData'
+const store = {
+  appStoreData: appStoreData(),
+}
 const props = defineProps({
   performer: {
     type: Object as PropType<I_performer>,
@@ -64,6 +68,9 @@ const props = defineProps({
 const emits = defineEmits(['search', 'edit', 'delete'])
 const attr_C = computed(() => {
   return props.attrAge || props.attrNationality
+})
+const showResourceCount_C = computed(() => {
+  return store.appStoreData.currentConfigApp.showPerformerResourceCount !== false
 })
 </script>
 <style lang="scss" scoped>
