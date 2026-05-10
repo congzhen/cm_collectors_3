@@ -194,7 +194,7 @@ REM 选项 6: Wails
 if "!BUILD_WAILS!"=="1" (
     echo [Wails] 构建中...
     pushd "!ROOT_DIR!\cm_collectors_wails"
-    wails build -o ../../../build/cm_collectors_wails.exe || (echo [错误] Wails 构建失败 & popd & goto END)
+    wails build -devtools -o ../../../build/cm_collectors_wails.exe || (echo [错误] Wails 构建失败 & popd & goto END)
     popd
     echo [Wails] 构建完成
     pushd "!BUILD_DIR!"

@@ -2,13 +2,18 @@
   import { onMount, onDestroy } from "svelte";
   import {
     WindowMinimise,
+    WindowFullscreen,
+    WindowUnfullscreen,
+    WindowIsFullscreen,
     WindowToggleMaximise,
+    WindowMaximise,
     Quit,
     WindowIsMaximised,
   } from "../wailsjs/runtime";
-  import { GetURL, OpenDirectoryDialog, OpenMultipleFilesDialog, RequestServerShutdown } from "../wailsjs/go/main/App";
+  import { GetURL, OpenDevToolsShortcut, OpenDirectoryDialog, OpenMultipleFilesDialog, RequestServerShutdown } from "../wailsjs/go/main/App";
 
   let isMaximised = false;
+  let isFullscreen = false;
   let title = "CM File Collectors";
   let showDragOverlay = false;
   let iframeSrc = "http://127.0.0.1:12345";
@@ -19,6 +24,7 @@
   onMount(async () => {
     // 组件挂载后检查窗口状态
     isMaximised = await WindowIsMaximised();
+    isFullscreen = await WindowIsFullscreen();
 
     // 获取从Go传递的URL参数
     try {
@@ -39,6 +45,7 @@
 
     // 监听鼠标按下事件，当在标题栏按下时显示覆盖层
     document.addEventListener("mousedown", handleMouseDown);
+    window.addEventListener("keydown", handleKeyDown);
 
     // 确保在应用启动时调用代理设置
     setupIframeProxy();
@@ -96,8 +103,38 @@
   }
 
   function toggleMaximize() {
+    if (isFullscreen) {
+      WindowUnfullscreen();
+      isFullscreen = false;
+    }
     WindowToggleMaximise();
     WindowIsMaximised().then((result) => (isMaximised = result));
+  }
+
+  async function toggleFullscreen() {
+    if (await WindowIsFullscreen()) {
+      WindowUnfullscreen();
+      WindowMaximise();
+      isFullscreen = false;
+      isMaximised = true;
+      return;
+    }
+
+    WindowFullscreen();
+    isFullscreen = true;
+    isMaximised = false;
+  }
+
+  function handleKeyDown(event: KeyboardEvent) {
+    if (event.key === "F11") {
+      event.preventDefault();
+      toggleFullscreen();
+    } else if (event.key === "F12") {
+      event.preventDefault();
+      OpenDevToolsShortcut().catch((e) => {
+        console.error("Failed to open devtools:", e);
+      });
+    }
   }
 
   async function handleQuit() {
@@ -113,6 +150,7 @@
   // 清理事件监听器
   onDestroy(() => {
     document.removeEventListener("mousedown", handleMouseDown);
+    window.removeEventListener("keydown", handleKeyDown);
   });
 
   /**
@@ -212,7 +250,7 @@
 
 <main>
   <div class="container">
-    <div class="titlebar">
+    <div class="titlebar" class:hidden-titlebar={isFullscreen}>
       <div class="titlebar-title">{title}</div>
       <div class="titlebar-controls">
         <button class="titlebar-button" on:click={WindowMinimise}>─</button>
@@ -273,6 +311,10 @@
     -webkit-user-select: none;
     position: relative;
     z-index: 100;
+  }
+
+  .hidden-titlebar {
+    display: none;
   }
 
   .titlebar-title {
