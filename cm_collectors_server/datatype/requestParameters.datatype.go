@@ -80,6 +80,11 @@ type ReqParam_BatchSetTag struct {
 	Tags        []string `json:"tags"`
 }
 
+type ReqParam_BatchSetStars struct {
+	ResourceIDS []string `json:"resourceIds"`
+	Stars       int      `json:"stars" binding:"min=0,max=5"`
+}
+
 type ReqParam_ResourcePinToTop struct {
 	ID             string `json:"id"`
 	PinToTopStatus bool   `json:"pinToTopStatus"`

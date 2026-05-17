@@ -9,9 +9,9 @@ import (
 	"fmt"
 	"net/url"
 	"os"
-	"strings"
 	"path"
 	"path/filepath"
+	"strings"
 
 	"gorm.io/gorm"
 )
@@ -288,6 +288,15 @@ func (t Resources) BatchSetTag(mode string, resourceIDS, tags []string) error {
 		}
 		return nil
 	})
+}
+func (t Resources) BatchSetStars(resourceIDS []string, stars int) error {
+	if len(resourceIDS) == 0 {
+		return errorMessage.Err_Resources_ID_Empty
+	}
+	if stars < 0 || stars > 5 {
+		return fmt.Errorf("stars must be between 0 and 5")
+	}
+	return core.DBS().Model(&models.Resources{}).Where("id IN ?", resourceIDS).Update("stars", stars).Error
 }
 func (t Resources) PinToTop(resourceId string, pinToTopStatus bool) error {
 	var pinToTopValue int64

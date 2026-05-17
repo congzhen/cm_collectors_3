@@ -144,6 +144,16 @@ export const resourceServer = {
       },
     });
   },
+  batchSetStars: async (resourceIds: string[], stars: number) => {
+    return await request<boolean>({
+      url: `${routerGroupUri}/resource/batchSetStars`,
+      method: 'put',
+      data: {
+        resourceIds,
+        stars
+      },
+    });
+  },
   pinToTop: async (id: string, pinToTopStatus: boolean) => {
     return await request<boolean>({
       url: `${routerGroupUri}/resource/pinToTop`,

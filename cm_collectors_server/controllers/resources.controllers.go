@@ -195,6 +195,17 @@ func (Resource) BatchSetTag(c *gin.Context) {
 	}
 	response.OkWithData(true, c)
 }
+func (Resource) BatchSetStars(c *gin.Context) {
+	var par datatype.ReqParam_BatchSetStars
+	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {
+		return
+	}
+	err := processors.Resources{}.BatchSetStars(par.ResourceIDS, par.Stars)
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(true, c)
+}
 func (Resource) PinToTop(c *gin.Context) {
 	var par datatype.ReqParam_ResourcePinToTop
 	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {

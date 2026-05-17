@@ -6,6 +6,7 @@
         <el-button @click="batchAddTagHandle">批量添加标签</el-button>
         <el-button @click="batchDeleteTagHandle">批量删除标签</el-button>
         <el-button @click="batchAddPerformerHandle">批量添加演员</el-button>
+        <el-button @click="batchSetStarsHandle">批量设置评星</el-button>
       </el-button-group>
     </div>
     <div class="table-container">
@@ -54,6 +55,8 @@
       </resourceSetTagBatchDialog>
       <resourceSetPerformerBatchDialog ref="resourceSetPerformerBatchDialogRef" @success="updateResourceSuccessHandle">
       </resourceSetPerformerBatchDialog>
+      <resourceSetStarsBatchDialog ref="resourceSetStarsBatchDialogRef" @success="updateResourceSuccessHandle">
+      </resourceSetStarsBatchDialog>
     </div>
   </div>
 </template>
@@ -62,6 +65,7 @@ import type { I_resource } from '@/dataType/resource.dataType';
 import resourceFormDrawer from '@/components/resource/resourceFormDrawer.vue'
 import resourceSetTagBatchDialog from '../resource/resourceSetTagBatchDialog.vue';
 import resourceSetPerformerBatchDialog from '../resource/resourceSetPerformerBatchDialog.vue';
+import resourceSetStarsBatchDialog from '../resource/resourceSetStarsBatchDialog.vue';
 import { getResourceCoverPoster } from '@/common/photo';
 import { playResource, playOpenResourceFolder } from '@/common/play'
 import { resourceDelete, resourceBatchDelete } from '@/common/resource'
@@ -82,6 +86,7 @@ const tableRef = ref<InstanceType<typeof ElTable>>()
 const resourceFormDrawerRef = ref<InstanceType<typeof resourceFormDrawer>>()
 const resourceSetTagBatchDialogRef = ref<InstanceType<typeof resourceSetTagBatchDialog>>()
 const resourceSetPerformerBatchDialogRef = ref<InstanceType<typeof resourceSetPerformerBatchDialog>>()
+const resourceSetStarsBatchDialogRef = ref<InstanceType<typeof resourceSetStarsBatchDialog>>()
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const selectResourcesHandle = (item: I_resource) => {
   emits('selectResources', item)
@@ -135,6 +140,16 @@ const batchAddPerformerHandle = () => {
     ElMessage.error('请选择要添加演员的资源');
   } else {
     resourceSetPerformerBatchDialogRef.value?.open(selectedResources)
+  }
+}
+
+const batchSetStarsHandle = () => {
+  if (!tableRef.value) return;
+  const selectedResources = tableRef.value.getSelectionRows() as I_resource[];
+  if (selectedResources.length == 0) {
+    ElMessage.error('请选择要设置评星的资源');
+  } else {
+    resourceSetStarsBatchDialogRef.value?.open(selectedResources)
   }
 }
 
