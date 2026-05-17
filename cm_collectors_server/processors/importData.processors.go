@@ -1,6 +1,7 @@
 package processors
 
 import (
+	"bytes"
 	"cm_collectors_server/core"
 	"cm_collectors_server/datatype"
 	"cm_collectors_server/models"
@@ -18,6 +19,8 @@ import (
 	"strconv"
 	"strings"
 	"unicode"
+
+	"golang.org/x/net/html/charset"
 )
 
 type ImportData struct {
@@ -163,32 +166,9 @@ func (t ImportData) ScanDiskImportData(filesBasesId, filePath string, config dat
 		resourceDataParam.Resource.Definition = t.VideoDefinition(filePath, config)
 	}
 
-	nfoPath := path.Join(fileDir, fileName+".nfo")
-	// 如果nfo文件不存在，则从文件夹下所有nfo文件中查找
-	if !utils.FileExists(nfoPath) && config.EnableNfoFuzzyMatch {
-		//读取文件夹下所有nfo文件
-		nfos, err := utils.GetFilesByExtensions([]string{fileDir}, []string{"nfo"}, false)
-		if err != nil {
-			return err
-		}
-		// 遍历所有nfo文件，判断文件名是否包含fileName
-		for _, nfo := range nfos {
-			tmpFileName := utils.GetFileNameFromPath(nfo, false)
-			if strings.Contains(tmpFileName, fileName) {
-				nfoPath = path.Join(fileDir, tmpFileName+".nfo")
-				break
-			}
-		}
-	}
-	// 如果nfo文件不存在，则使用随机nfo文件
-	if !utils.FileExists(nfoPath) && config.UseRandomNfoIfNoneMatch {
-		nfos, err := utils.GetFilesByExtensions([]string{fileDir}, []string{"nfo"}, false)
-		if err != nil {
-			return err
-		}
-		if len(nfos) > 0 {
-			nfoPath = nfos[0]
-		}
+	nfoPath, err := t.findNfoPath(fileDir, fileName, config)
+	if err != nil {
+		return err
 	}
 
 	t.Nfo(filesBasesId, nfoPath, config.Nfo, &resourceDataParam)
@@ -710,11 +690,7 @@ func (t ImportData) Nfo(filesBasesId, nfoPath string, nfoConfig datatype.Config_
 	// 解析XML
 	byteValue, _ := io.ReadAll(xmlFile)
 
-	// 创建XML解码器
-	decoder := xml.NewDecoder(strings.NewReader(string(byteValue)))
-
-	// 解析为通用结构
-	rootElement, err := utils.XML_parseXMLToMap(decoder)
+	rootElement, err := parseNfoXMLToMap(byteValue)
 	if err != nil {
 		return err
 	}
@@ -927,4 +903,184 @@ func getPerformerImage(value string, nfoDir string) (string, error) {
 	}
 
 	return base64Data, nil
+}
+
+func (ImportData) findNfoPath(fileDir, fileName string, config datatype.Config_ScanDisk) (string, error) {
+	nfoPath := path.Join(fileDir, fileName+".nfo")
+	if utils.FileExists(nfoPath) {
+		return nfoPath, nil
+	}
+
+	nfos, err := utils.GetFilesByExtensions([]string{fileDir}, []string{"nfo"}, false)
+	if err != nil {
+		return "", err
+	}
+
+	if config.EnableNfoFuzzyMatch {
+		if matched := findBestMatchedNfoPath(nfos, fileName); matched != "" {
+			return matched, nil
+		}
+	}
+
+	if config.UseRandomNfoIfNoneMatch && len(nfos) > 0 {
+		return nfos[0], nil
+	}
+
+	return nfoPath, nil
+}
+
+func findBestMatchedNfoPath(nfos []string, fileName string) string {
+	normalizedFileName := normalizeNfoMatchName(fileName)
+	fileIssueNumber := extractNfoIssueNumber(fileName)
+
+	for _, nfo := range nfos {
+		nfoFileName := utils.GetFileNameFromPath(nfo, false)
+		normalizedNfoName := normalizeNfoMatchName(nfoFileName)
+		if normalizedNfoName == normalizedFileName ||
+			strings.Contains(normalizedNfoName, normalizedFileName) ||
+			strings.Contains(normalizedFileName, normalizedNfoName) {
+			return nfo
+		}
+	}
+
+	if fileIssueNumber == "" {
+		return ""
+	}
+
+	for _, nfo := range nfos {
+		if extractNfoIssueNumber(utils.GetFileNameFromPath(nfo, false)) == fileIssueNumber {
+			return nfo
+		}
+	}
+
+	return ""
+}
+
+func normalizeNfoMatchName(name string) string {
+	name = strings.ToLower(strings.TrimSpace(name))
+	var builder strings.Builder
+	for _, r := range name {
+		if unicode.IsLetter(r) || unicode.IsDigit(r) {
+			builder.WriteRune(r)
+		}
+	}
+	return builder.String()
+}
+
+func extractNfoIssueNumber(name string) string {
+	name = strings.ToUpper(name)
+	match := regexp.MustCompile(`[A-Z]{2,10}[-_ ]?\d{2,6}`).FindString(name)
+	if match == "" {
+		return ""
+	}
+	return strings.ReplaceAll(strings.ReplaceAll(match, "_", "-"), " ", "-")
+}
+
+func parseNfoXMLToMap(data []byte) (map[string]interface{}, error) {
+	rootElement, err := parseXMLBytesToMap(data)
+	if err == nil {
+		return rootElement, nil
+	}
+
+	repaired := repairNfoXML(data)
+	if bytes.Equal(bytes.TrimSpace(data), bytes.TrimSpace(repaired)) {
+		return nil, err
+	}
+
+	rootElement, repairedErr := parseXMLBytesToMap(repaired)
+	if repairedErr == nil {
+		return rootElement, nil
+	}
+
+	return nil, err
+}
+
+func parseXMLBytesToMap(data []byte) (map[string]interface{}, error) {
+	decoder := xml.NewDecoder(bytes.NewReader(data))
+	decoder.CharsetReader = charset.NewReaderLabel
+	return utils.XML_parseXMLToMap(decoder)
+}
+
+func repairNfoXML(data []byte) []byte {
+	xmlText := strings.ToValidUTF8(string(data), "")
+	xmlText = strings.TrimPrefix(xmlText, "\ufeff")
+	xmlText = removeInvalidXMLChars(xmlText)
+	xmlText = escapeBareAmpersands(xmlText)
+	return []byte(xmlText)
+}
+
+func escapeBareAmpersands(value string) string {
+	var builder strings.Builder
+	for i := 0; i < len(value); i++ {
+		if value[i] != '&' {
+			builder.WriteByte(value[i])
+			continue
+		}
+		if end := strings.IndexByte(value[i:], ';'); end > 0 && isValidXMLEntity(value[i+1:i+end]) {
+			builder.WriteString(value[i : i+end+1])
+			i += end
+			continue
+		}
+		builder.WriteString("&amp;")
+	}
+	return builder.String()
+}
+
+func isValidXMLEntity(entity string) bool {
+	if entity == "" {
+		return false
+	}
+	if strings.HasPrefix(entity, "#x") || strings.HasPrefix(entity, "#X") {
+		if len(entity) == 2 {
+			return false
+		}
+		for _, r := range entity[2:] {
+			if !((r >= '0' && r <= '9') || (r >= 'a' && r <= 'f') || (r >= 'A' && r <= 'F')) {
+				return false
+			}
+		}
+		return true
+	}
+	if strings.HasPrefix(entity, "#") {
+		if len(entity) == 1 {
+			return false
+		}
+		for _, r := range entity[1:] {
+			if r < '0' || r > '9' {
+				return false
+			}
+		}
+		return true
+	}
+	for i, r := range entity {
+		if i == 0 {
+			if !((r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z')) {
+				return false
+			}
+			continue
+		}
+		if !((r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z') || (r >= '0' && r <= '9')) {
+			return false
+		}
+	}
+	return true
+}
+
+func removeInvalidXMLChars(value string) string {
+	var builder strings.Builder
+	for _, r := range value {
+		if isValidXMLChar(r) {
+			builder.WriteRune(r)
+		}
+	}
+	return builder.String()
+}
+
+func isValidXMLChar(r rune) bool {
+	return r == 0x9 ||
+		r == 0xA ||
+		r == 0xD ||
+		(r >= 0x20 && r <= 0xD7FF) ||
+		(r >= 0xE000 && r <= 0xFFFD) ||
+		(r >= 0x10000 && r <= 0x10FFFF)
 }
