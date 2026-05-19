@@ -15,6 +15,9 @@
           <el-option v-for="item in homeModeOptions" :key="item.value" :label="item.label" :value="item.value" />
         </el-select>
       </el-form-item>
+      <el-form-item label="关闭移动端显示">
+        <el-switch v-model="formData.closeMobileDisplay" />
+      </el-form-item>
       <el-form-item label="管理需登录">
         <el-switch v-model="formData.isAdminLogin" />
       </el-form-item>
@@ -165,6 +168,7 @@ import dataset from '@/assets/dataset';
 import { playCloudPluginDownload, playCloudPluginDownloadUrl } from '@/components/play/playCloud'
 import { homeModeOptions } from '@/common/homeMode'
 import { appStoreData } from '@/storeData/app.storeData'
+import { setCloseMobileDisplay } from '@/assets/mobile'
 
 const serverFileManagementDialogRef = ref<InstanceType<typeof serverFileManagementDialog>>();
 const store = appStoreData()
@@ -178,6 +182,7 @@ const formData = ref<I_appSystemConfig>({
   allowAppCloseServer: false,
   theme: 'default',
   homeMode: 'classic',
+  closeMobileDisplay: false,
   closePlayCloud: true,
   closePlayCloudDialog: true,
   playCloudMode: 'm3u8',
@@ -218,6 +223,7 @@ const getAppConfig = async () => {
     if (!formData.value.homeMode) {
       formData.value.homeMode = 'classic'
     }
+    formData.value.closeMobileDisplay = formData.value.closeMobileDisplay === true
     console.log(formData.value);
     return
   } catch (error) {
@@ -265,7 +271,19 @@ const saveHandle = debounceNow(async () => {
       return
     }
     ElMessage.success('保存成功');
-    //store.appConfig.homeMode = formData.value.homeMode
+    store.appConfig = {
+      ...store.appConfig,
+      logoName: formData.value.logoName,
+      isAdminLogin: formData.value.isAdminLogin,
+      theme: formData.value.theme,
+      homeMode: formData.value.homeMode,
+      closeMobileDisplay: formData.value.closeMobileDisplay,
+      closePlayCloud: formData.value.closePlayCloud,
+      closePlayCloudDialog: formData.value.closePlayCloudDialog,
+      playCloudMode: formData.value.playCloudMode,
+    }
+    // 保存后立即同步移动端显示开关，避免必须刷新页面才生效。
+    setCloseMobileDisplay(formData.value.closeMobileDisplay)
     return
   } catch (error) {
     console.log(error)

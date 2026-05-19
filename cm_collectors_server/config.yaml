@@ -6,6 +6,8 @@ general:
     notAllowServerOpenFile: false
     allowAppCloseServer: false
     theme: bright
+    homeMode: classic
+    closeMobileDisplay: false
     closePlayCloud: false
     closePlayCloudDialog: false
     playCloudMode: m3u8

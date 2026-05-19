@@ -88,6 +88,7 @@ export interface I_appConfig {
   isAdminLogin: boolean;
   theme: string;
   homeMode: T_homeMode;
+  closeMobileDisplay: boolean;
   closePlayCloud: boolean;
   closePlayCloudDialog: boolean;
   playCloudMode: T_VideoPlayMode;

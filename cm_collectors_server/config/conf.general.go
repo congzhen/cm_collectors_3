@@ -9,6 +9,7 @@ type General struct {
 	AllowAppCloseServer    bool           `yaml:"allowAppCloseServer"`
 	Theme                  string         `yaml:"theme"`
 	HomeMode               string         `yaml:"homeMode"`
+	CloseMobileDisplay     bool           `yaml:"closeMobileDisplay"`
 	ClosePlayCloud         bool           `yaml:"closePlayCloud"`
 	ClosePlayCloudDialog   bool           `yaml:"closePlayCloudDialog"`
 	PlayCloudMode          string         `yaml:"playCloudMode"`

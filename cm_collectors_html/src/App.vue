@@ -16,6 +16,8 @@ import { searchStoreData } from './storeData/search.storeData';
 import { LoadingService } from '@/assets/loading'
 import { ElMessage } from 'element-plus'
 import { runRuntimeBridge } from "@/common/runtimeBridge"
+import router from '@/router'
+import { setCloseMobileDisplay } from '@/assets/mobile'
 
 const initStatus = ref(false)
 
@@ -45,6 +47,12 @@ const init = async () => {
     if (result && !result.status) {
       ElMessage.error(result.message);
       return
+    }
+    // 根据服务端配置设置是否关闭移动端显示
+    setCloseMobileDisplay(store.appStoreData.appConfig.closeMobileDisplay)
+    // 如果首次路由守卫已经进入 /mobile，等待服务端配置加载后再纠正回 PC 端。
+    if (store.appStoreData.appConfig.closeMobileDisplay && router.currentRoute.value.path === '/mobile') {
+      await router.replace('/')
     }
     // 根据存储的主题设置初始化主题
     toggleTheme(store.appStoreData.appConfig.theme)

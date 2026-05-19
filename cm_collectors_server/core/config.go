@@ -30,6 +30,7 @@ func getDefaultConfig() *config.Config {
 			NotAllowServerOpenFile: false,
 			AllowAppCloseServer:    false,
 			Theme:                  "default",
+			CloseMobileDisplay:     false,
 			ClosePlayCloud:         false,
 			ClosePlayCloudDialog:   false,
 			PlayCloudMode:          "m3u8",
