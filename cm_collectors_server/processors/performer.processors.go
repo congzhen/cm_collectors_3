@@ -9,9 +9,9 @@ import (
 	"encoding/base64"
 	"fmt"
 	"os"
-	"strings"
 	"path"
 	"sort"
+	"strings"
 
 	"gorm.io/gorm"
 )
@@ -93,26 +93,76 @@ func (Performer) InfoByID_DB(db *gorm.DB, id string) (*models.Performer, error) 
 	}
 	return info, err
 }
+
+// PerformerInfoByNameNotFoundCreate 在资源导入时按演员名称匹配演员。
+//
+// 匹配规则：
+//  1. 先在当前文件库的主演员库中查找。
+//  2. 主演员库不存在时，再查找当前文件库关联的其它演员库。
+//  3. 所有关联演员库都不存在时，才在主演员库中新建演员。
+//
+// 这样可以避免同一个文件库关联的多个演员库中，因为导入资源而重复创建同名演员。
 func (t Performer) PerformerInfoByNameNotFoundCreate(filesBasesId, name, photoBase64 string) (*models.Performer, error) {
-	mainPerformerBasesId, err := FilesBases{}.GetMainPerformerBasesId(filesBasesId)
+	relatedPerformerBases, err := models.FilesRelatedPerformerBases{}.ListByFilesBasesID(core.DBS(), filesBasesId)
 	if err != nil {
 		return nil, err
 	}
-	info, err := t.InfoByName(mainPerformerBasesId, name, true)
-	if err != nil && err == errorMessage.Err_performer_Not_Found {
-		par := datatype.ReqParam_PerformerData{
-			Performer: datatype.ReqParam_Performer{
-				PerformerBasesID: mainPerformerBasesId,
-				Name:             name,
-				CareerPerformer:  true,
-			},
+
+	// 生成导入时的演员库搜索顺序：主演员库优先，关联演员库随后。
+	mainPerformerBasesId, searchPerformerBasesIds := t.performerBasesSearchOrderForImport(*relatedPerformerBases)
+
+	for _, performerBasesId := range searchPerformerBasesIds {
+		info, err := t.InfoByName(performerBasesId, name, true)
+		if err == nil {
+			return info, nil
 		}
-		if photoBase64 != "" {
-			par.PhotoBase64 = photoBase64
+		if err != errorMessage.Err_performer_Not_Found {
+			return nil, err
 		}
-		return t.Create(&par)
 	}
-	return info, err
+
+	if mainPerformerBasesId == "" {
+		return nil, errorMessage.Err_performer_Not_Found
+	}
+
+	// 只有主库和子库都匹配不到时，才回落到主演员库创建新演员。
+	par := datatype.ReqParam_PerformerData{
+		Performer: datatype.ReqParam_Performer{
+			PerformerBasesID: mainPerformerBasesId,
+			Name:             name,
+			CareerPerformer:  true,
+		},
+	}
+	if photoBase64 != "" {
+		par.PhotoBase64 = photoBase64
+	}
+	return t.Create(&par)
+}
+
+// performerBasesSearchOrderForImport 返回导入资源时要查询的演员库顺序。
+//
+// 返回值中的 mainPerformerBasesId 用于后续兜底创建演员；searchPerformerBasesIds
+// 则保证主库排在第一位，其它关联库保持原关联顺序。
+func (Performer) performerBasesSearchOrderForImport(relatedPerformerBases []models.FilesRelatedPerformerBases) (string, []string) {
+	mainPerformerBasesId := ""
+	for _, related := range relatedPerformerBases {
+		if related.Main {
+			mainPerformerBasesId = related.PerformerBasesID
+			break
+		}
+	}
+
+	searchPerformerBasesIds := make([]string, 0, len(relatedPerformerBases))
+	if mainPerformerBasesId != "" {
+		searchPerformerBasesIds = append(searchPerformerBasesIds, mainPerformerBasesId)
+	}
+	for _, related := range relatedPerformerBases {
+		if related.PerformerBasesID != mainPerformerBasesId {
+			searchPerformerBasesIds = append(searchPerformerBasesIds, related.PerformerBasesID)
+		}
+	}
+
+	return mainPerformerBasesId, searchPerformerBasesIds
 }
 
 func (Performer) RecycleBin(performerBasesId string) (*[]models.Performer, error) {
