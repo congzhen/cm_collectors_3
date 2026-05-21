@@ -60,6 +60,12 @@ export const tagServer = {
       data: tagClass,
     });
   },
+  deleteTagClass: async (tagClassId: string) => {
+    return await request<boolean>({
+      url: `${routerGroupUri}/tagClass/delete/${tagClassId}`,
+      method: 'delete',
+    });
+  },
   setTagDataSort: async (tagClassSort: I_tagSort[], tagSort: I_tagSort[]) => {
     return await request<boolean>({
       url: `${routerGroupUri}/tag/update/sort/`,

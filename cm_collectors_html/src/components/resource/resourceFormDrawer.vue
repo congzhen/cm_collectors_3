@@ -110,7 +110,7 @@
         </div>
         <div class="resource-form-class-title">
           <el-alert title="标签" type="warning" :closable="false" />
-          <el-form-item v-for="tagClass, index in store.appStoreData.currentTagClass" :key="index"
+          <el-form-item v-for="tagClass, index in store.appStoreData.currentTagClass.filter(item => item.status)" :key="index"
             :label="tagClass.name">
             <selectTag v-model="tags[tagClass.id]" :tagClassId="tagClass.id" dataSource="store" multiple />
           </el-form-item>

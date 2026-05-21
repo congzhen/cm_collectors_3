@@ -15,8 +15,9 @@
             </div>
             <el-button-group>
               <el-button icon="Edit" size="small" @click="tagClassEditHandle(item)" />
-              <el-button v-if="item.status" icon="Delete" size="small" @click="tagClassDeleteHandle(item)" />
-              <el-button v-else icon="RefreshLeft" size="small" @click="tagClassRestorationHandle(item)" />
+              <el-button v-if="item.status" icon="Hide" size="small" @click="tagClassDisableHandle(item)" />
+              <el-button v-if="!item.status" icon="RefreshLeft" size="small" @click="tagClassRestorationHandle(item)" />
+              <el-button icon="Delete" size="small" @click="tagClassDeleteHandle(item)" />
             </el-button-group>
           </div>
         </div>
@@ -189,14 +190,37 @@ const successHandle = () => {
   });
 }
 
-const tagClassDeleteHandle = (tagClass: I_tagClass) => {
+const tagClassDisableHandle = (tagClass: I_tagClass) => {
   messageBoxConfirm({
-    text: '确定要删除吗？',
+    text: '确定要禁用吗？',
     successCallBack: async () => {
       tagClass.status = false;
       const result = await tagServer.updateTagClass(tagClass);
       if (result && result.status) {
         emits('updateTagDataCompleted')
+      } else {
+        ElMessage.error(result.msg);
+      }
+    },
+    failCallBack: () => {
+      //console.log('取消禁用')
+    },
+  })
+}
+
+const tagClassDeleteHandle = (tagClass: I_tagClass) => {
+  const tags = tagObjectList.value[tagClass.id] || [];
+  if (tags.length > 0) {
+    ElMessage.warning('该标签分类下还有标签，请先删除或者移走');
+    return;
+  }
+  messageBoxConfirm({
+    text: `确定要真实删除标签分类 [ ${tagClass.name} ] 吗？删除后无法恢复！`,
+    successCallBack: async () => {
+      const result = await tagServer.deleteTagClass(tagClass.id);
+      if (result && result.status) {
+        emits('updateTagDataCompleted')
+        init()
       } else {
         ElMessage.error(result.msg);
       }

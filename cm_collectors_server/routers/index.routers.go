@@ -160,6 +160,7 @@ func AdminRouter(router *gin.Engine) {
 	routerGroup.DELETE("tag/delete/:tagId", controllers.Tag{}.DeleteTag)
 	routerGroup.POST("tagClass/create", controllers.Tag{}.CreateTagClass)
 	routerGroup.PUT("tagClass/update", controllers.Tag{}.UpdateTagClass)
+	routerGroup.DELETE("tagClass/delete/:tagClassId", controllers.Tag{}.DeleteTagClass)
 	routerGroup.PUT("tag/update/sort", controllers.Tag{}.UpdateSort)
 	routerGroup.POST("tag/import", controllers.Tag{}.ImportTag)
 

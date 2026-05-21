@@ -98,6 +98,15 @@ func (Tag) UpdateTagClass(c *gin.Context) {
 	response.OkWithData(true, c)
 }
 
+func (Tag) DeleteTagClass(c *gin.Context) {
+	tagClassID := c.Param("tagClassId")
+	err := processors.TagClass{}.DeleteTagClass(tagClassID)
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(true, c)
+}
+
 func (Tag) UpdateSort(c *gin.Context) {
 	var par datatype.ReqParam_UpdateTagDataSort
 	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {

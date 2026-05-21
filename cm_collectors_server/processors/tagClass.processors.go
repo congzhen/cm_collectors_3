@@ -102,6 +102,29 @@ func (TagClass) UpdateNameByID_DB(db *gorm.DB, id, name string) error {
 	}, []string{"name"})
 }
 
+func (TagClass) DeleteTagClass(tagClassID string) error {
+	db := core.DBS()
+	return db.Transaction(func(tx *gorm.DB) error {
+		_, err := models.TagClass{}.InfoByID(tx, tagClassID)
+		if err != nil {
+			if err == gorm.ErrRecordNotFound {
+				return errorMessage.Err_TagClaSS_Not_Found
+			}
+			return err
+		}
+
+		tagTotal, err := models.Tag{}.GetTotalByTagClassID(tx, tagClassID)
+		if err != nil {
+			return err
+		}
+		if tagTotal > 0 {
+			return errorMessage.Err_TagClass_Not_Empty
+		}
+
+		return models.TagClass{}.DeleteById(tx, tagClassID)
+	})
+}
+
 func (TagClass) DeleteByFilesBasesID_DB(db *gorm.DB, filesBasesID string) error {
 	return models.TagClass{}.DeleteByFilesBasesID(db, filesBasesID)
 }

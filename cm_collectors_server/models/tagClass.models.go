@@ -52,3 +52,7 @@ func (TagClass) Create(db *gorm.DB, tagClass *TagClass) error {
 func (TagClass) DeleteByFilesBasesID(db *gorm.DB, filesBasesID string) error {
 	return db.Unscoped().Where("filesBases_id = ?", filesBasesID).Delete(&TagClass{}).Error
 }
+
+func (TagClass) DeleteById(db *gorm.DB, id string) error {
+	return db.Unscoped().Where("id = ?", id).Delete(&TagClass{}).Error
+}
