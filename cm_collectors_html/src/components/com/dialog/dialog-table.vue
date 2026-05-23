@@ -1,7 +1,8 @@
 <template>
   <dialogCommon ref="dialogCommonRef" :width="props.width" :title="props.title" :footer="false" @closed="close">
+    <slot name="toolbar"></slot>
     <el-table class="tableContainer" ref="tableRef" :data="dataList" border :height="props.tableHeight"
-      :size="props.size" style="width: 100%" v-loading="loading">
+      :size="props.size" style="width: 100%" v-loading="loading" @selection-change="selectionChangeHandle">
       <el-table-column v-if="props.check" label="-" width="40" align="center">
         <template #default="scope">
           <el-checkbox class="tr-checkbox" v-model="scope.row.check" />
@@ -24,6 +25,7 @@ import { ref } from 'vue';
 import dialogCommon from './dialog-common.vue'
 
 const dialogCommonRef = ref<InstanceType<typeof dialogCommon>>()
+const tableRef = ref();
 
 const props = defineProps({
   loading: {
@@ -72,7 +74,7 @@ const props = defineProps({
   },
 })
 
-const emits = defineEmits(['changePagination'])
+const emits = defineEmits(['changePagination', 'selectionChange'])
 
 const page = ref(props.currentPage);
 const getNo = (index: number) => {
@@ -83,6 +85,9 @@ const changePaginationHandle = (currentPage: number, pageSize: number) => {
   emits('changePagination', currentPage, pageSize)
 }
 
+const selectionChangeHandle = (selection: unknown[]) => {
+  emits('selectionChange', selection)
+}
 
 const reload = () => {
   page.value = 1
@@ -94,6 +99,15 @@ const open = () => {
 const close = () => {
   dialogCommonRef.value?.close()
 }
+const getSelectionRows = () => {
+  return tableRef.value?.getSelectionRows() || []
+}
+const toggleAllSelection = () => {
+  tableRef.value?.toggleAllSelection()
+}
+const clearSelection = () => {
+  tableRef.value?.clearSelection()
+}
 // eslint-disable-next-line no-undef
-defineExpose({ open, close, reload })
+defineExpose({ open, close, reload, getSelectionRows, toggleAllSelection, clearSelection })
 </script>
