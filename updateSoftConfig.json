@@ -1,8 +1,8 @@
 {
   "version": "3.0.9",
   "changelog": [
-    "***新特性***",
-    "新增主页模式切换功能，支持经典模式与画室布局视图切换",
+    "**新特性**",
+    "新增首页模式切换功能，支持经典模式与画廊布局视图切换",
     "新增视频指纹重复检测，支持按文件库、汉明距离阈值筛选并删除重复视频",
     "新增资源置顶功能，已置顶资源支持再次置顶至第一位",
     "刮削演员对话框新增创建日期与头像筛选条件",
@@ -14,18 +14,16 @@
     "演员卡片新增大小调节滑块，右上角显示关联资源数量角标",
     "左侧标签栏浮动模式新增自动隐藏功能",
     "新增允许应用程序关闭服务器的开关配置项",
-    "文件库设置新增视频预览图关键帧数量配置项，默认32帧",
+    "文件库设置新增视频预览图关键帧数量配置项，默认 2 帧",
     "新增资源封面标签点击搜索功能，支持年份、国家、星级等多种标签类型",
     "导入与刮削对话框新增数据条目选择功能，支持只处理勾选项",
-    "搜索功能新增导演字段查询，AND/OR/NOT搜索均支持导演匹配",
-    "详情页和播放页摘要内容支持HTML渲染，换行符自动转换为段落",
+    "搜索功能新增导演字段查询，AND/OR/NOT 搜索均支持导演匹配",
+    "详情页和播放页概要内容支持 HTML 渲染，换行符自动转换为段落",
     "导入资源时支持使用 regex: 前缀的正则表达式匹配封面海报文件",
     "内容标签新增鼠标悬停高亮效果，固定模式支持配置每行显示数量",
-    "新增安卓APK客户端，方便移动端直接安装访问"
+    "新增安卓 APK 客户端，方便移动端直接安装访问"
   ],
-  "windowsDownloadUrl": "https://objectstorageapi.ap-southeast-1.clawcloudrun.com/vj5i0ntw-cm-collectors-3/download/last/cm_collectors_3_windows.zip",
-  "linuxDownloadUrl": "https://objectstorageapi.ap-southeast-1.clawcloudrun.com/vj5i0ntw-cm-collectors-3/download/last/cm_collectors_3_linux.zip",
-  "dockerDownloadUrl": "docker pull congzhen/cm_collectors_3:latest",
-  "dockerMinimalDownloadUrl": "https://objectstorageapi.ap-southeast-1.clawcloudrun.com/vj5i0ntw-cm-collectors-3/download/last/cm_collectors_server_docker_minimal.tar",
-  "cloudPlayScriptUrl": "https://objectstorageapi.ap-southeast-1.clawcloudrun.com/vj5i0ntw-cm-collectors-3/download/last/video_caller.zip"
+  "windowsDownloadUrl": "https://github.com/congzhen/cm_collectors_3/releases/latest/download/cm_collectors_3_windows.zip",
+  "linuxDownloadUrl": "https://github.com/congzhen/cm_collectors_3/releases/latest/download/cm_collectors_3_linux.zip",
+  "dockerDownloadUrl": "docker pull congzhen/cm_collectors_3:latest"
 }

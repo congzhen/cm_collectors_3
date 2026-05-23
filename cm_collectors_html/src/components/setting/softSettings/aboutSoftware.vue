@@ -16,8 +16,11 @@
           欢迎各位使用者根据使用经验对本软件提出宝贵意见和建议。
         </p>
       </div>
-
-      <h3 class="section-title">联系方式:</h3>
+      <h3 class="section-title">Git Hub:</h3>
+      <div class="content-section">
+        <p class="contact-info">https://github.com/congzhen/cm_collectors_3</p>
+      </div>
+      <h3 class="section-title">反馈邮箱:</h3>
       <div class="content-section">
         <p class="contact-info">Email: czpk673@gmail.com</p>
         <!--

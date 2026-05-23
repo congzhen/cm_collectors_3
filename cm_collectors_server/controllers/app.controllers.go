@@ -58,14 +58,19 @@ func (App) Shutdown(c *gin.Context) {
 }
 
 func (App) GetUpdateSoftConfig(c *gin.Context) {
-	updateURL := core.Config.System.UpdateSoftConfig
+	updateURL := core.GetUpdateSoftConfigURL()
 	// 发起HTTP GET请求
-	resp, err := http.Get(updateURL)
+	client := http.Client{Timeout: 60 * time.Second}
+	resp, err := client.Get(updateURL)
 	if err != nil {
 		response.FailWithMessage("请求更新配置失败: "+err.Error(), c)
 		return
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode < http.StatusOK || resp.StatusCode >= http.StatusMultipleChoices {
+		response.FailWithMessage("请求更新配置失败: "+resp.Status, c)
+		return
+	}
 
 	// 读取响应体
 	body, err := io.ReadAll(resp.Body)

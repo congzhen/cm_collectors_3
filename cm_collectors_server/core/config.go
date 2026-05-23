@@ -12,6 +12,12 @@ import (
 
 const configFile = "config.yaml"
 
+const updateSoftConfigURL = "https://raw.githubusercontent.com/congzhen/cm_collectors_3/master/updateSoftConfig.json"
+
+var deprecatedUpdateSoftConfigURLs = map[string]struct{}{
+	"https://objectstorageapi.ap-southeast-1.clawcloudrun.com/vj5i0ntw-cm-collectors-3/updateConfig/updateSoftConfig.json": {},
+}
+
 // 定义始终优先使用配置文件值的字段列表（即使为零值也不使用默认值覆盖）
 var configFilePriorityFields = map[string]bool{
 	"Scraper.LogStatus": true,
@@ -55,7 +61,7 @@ func getDefaultConfig() *config.Config {
 			ResponseMsgLanguage: "en",
 			LogFilePath:         "./err.log",
 			LogLevel:            "Error",
-			UpdateSoftConfig:    "https://objectstorageapi.ap-southeast-1.clawcloudrun.com/vj5i0ntw-cm-collectors-3/updateConfig/updateSoftConfig.json",
+			UpdateSoftConfig:    updateSoftConfigURL,
 		},
 		Scraper: config.Scraper{
 			UseBrowserPath: false,
@@ -252,6 +258,17 @@ func ResetConfig() {
 // GetConfig 获取全局配置实例
 func GetConfig() *config.Config {
 	return Config
+}
+
+func GetUpdateSoftConfigURL() string {
+	updateURL := Config.System.UpdateSoftConfig
+	if updateURL == "" {
+		return updateSoftConfigURL
+	}
+	if _, deprecated := deprecatedUpdateSoftConfigURLs[updateURL]; deprecated {
+		return updateSoftConfigURL
+	}
+	return updateURL
 }
 
 func GetConfig_ServerFileManagementRootPath() []string {
