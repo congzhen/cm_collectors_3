@@ -146,10 +146,14 @@ func AdminRouter(router *gin.Engine) {
 	routerGroup.PUT("filesBases/setData", controllers.FilesBases{}.SetFilesBases)
 	routerGroup.PUT("filesBases/sort", controllers.FilesBases{}.Sort)
 	routerGroup.PUT("filesBases/setConfig/filesBases", controllers.FilesBases{}.SetConfig_FilesBases)
+	// 真实删除文件库：仅管理员可调用，业务层会拒绝删除仍包含资源记录的文件库。
+	routerGroup.DELETE("filesBases/delete/:id", controllers.FilesBases{}.Delete)
 	routerGroup.POST("performerBases/create", controllers.Performer{}.CreatePerformerBases)
 	routerGroup.PUT("performerBases/update", controllers.Performer{}.PerformerBasesUpdate)
 	routerGroup.GET("performerBases/export/:id", controllers.Performer{}.ExportPerformerBases)
 	routerGroup.POST("performerBases/import", controllers.Performer{}.ImportPerformerBases)
+	// 真实删除演员库：仅管理员可调用，业务层会拒绝删除仍包含演员或仍被文件库关联的演员库。
+	routerGroup.DELETE("performerBases/delete/:id", controllers.Performer{}.DeletePerformerBases)
 	routerGroup.POST("performer/create", controllers.Performer{}.CreatePerformer)
 	routerGroup.PUT("performer/update", controllers.Performer{}.UpdatePerformer)
 	routerGroup.PUT("performer/updateStatus", controllers.Performer{}.UpdatePerformerStatus)

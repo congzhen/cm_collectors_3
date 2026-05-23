@@ -36,3 +36,9 @@ func (FilesBasesSetting) CreateNull(db *gorm.DB, filesBasesID string) error {
 	}
 	return db.Create(&fbm).Error
 }
+
+// DeleteByFilesBasesID 删除指定文件库的配置记录。
+// 文件库真实删除时，配置 JSON 已不再可达，需要跟随文件库一起物理清理。
+func (FilesBasesSetting) DeleteByFilesBasesID(db *gorm.DB, filesBasesID string) error {
+	return db.Unscoped().Where("filesBases_id = ?", filesBasesID).Delete(&FilesBasesSetting{}).Error
+}

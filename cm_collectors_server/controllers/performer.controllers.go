@@ -175,6 +175,17 @@ func (Performer) CreatePerformerBases(c *gin.Context) {
 	}
 	response.OkWithData(info, c)
 }
+
+// DeletePerformerBases 真实删除演员库。
+// 演员库可能被演员数据和文件库关联关系引用，所以删除前的业务校验放在 processors 层集中处理。
+func (Performer) DeletePerformerBases(c *gin.Context) {
+	id := c.Param("id")
+	err := processors.PerformerBases{}.DeleteByID(id)
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(true, c)
+}
 func (Performer) DeletePerformer(c *gin.Context) {
 	id := c.Param("id")
 	err := processors.Performer{}.DeleteByID(id)

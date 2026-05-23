@@ -45,3 +45,9 @@ func (PerformerBases) Update(db *gorm.DB, performerBases *PerformerBases, fields
 func (PerformerBases) Create(db *gorm.DB, performerBases *PerformerBases) error {
 	return db.Create(&performerBases).Error
 }
+
+// DeleteByID 物理删除演员库主记录。
+// 调用方必须先确认该演员库没有演员记录，也没有被任何文件库关联。
+func (PerformerBases) DeleteByID(db *gorm.DB, id string) error {
+	return db.Unscoped().Where("id = ?", id).Delete(&PerformerBases{}).Error
+}

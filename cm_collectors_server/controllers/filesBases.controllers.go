@@ -47,6 +47,18 @@ func (FilesBases) Create(c *gin.Context) {
 	response.OkWithData(info, c)
 }
 
+// Delete 真实删除文件库。
+// 这里的删除不是“禁用”文件库，而是删除文件库主记录及其空库时才允许清理的关联配置。
+// 是否允许删除由 processors.FilesBases.DeleteByID 统一判断，控制器只负责取路由参数和返回响应。
+func (FilesBases) Delete(c *gin.Context) {
+	id := c.Param("id")
+	err := processors.FilesBases{}.DeleteByID(id)
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(true, c)
+}
+
 func (FilesBases) Sort(c *gin.Context) {
 	var par datatype.ReqParam_FilesBasesSort
 	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {

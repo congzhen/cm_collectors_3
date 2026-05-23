@@ -8,6 +8,7 @@ import (
 	"cm_collectors_server/utils"
 	"encoding/json"
 	"errors"
+	"fmt"
 
 	"gorm.io/gorm"
 )
@@ -379,4 +380,42 @@ func (t FilesBases) Create(name, mainPerformerBasesId string, relatedPerformerBa
 		return nil
 	})
 	return id, err
+}
+
+// DeleteByID 真实删除文件库。
+// 删除文件库是高风险操作，因此这里不复用“清空数据库”逻辑：
+// 1. 先确认该文件库下没有资源记录，有资源时直接拒绝删除。
+// 2. 再在同一个事务里清理只属于该文件库的配置、标签分类、定时任务和演员库关联。
+// 3. 最后 Unscoped 删除 filesBases 主记录，确保对用户来说是真正删除而不是软删除。
+func (FilesBases) DeleteByID(id string) error {
+	db := core.DBS()
+	return db.Transaction(func(tx *gorm.DB) error {
+		// 资源是文件库最核心的数据。只要还有资源，就不能删除文件库入口，
+		// 否则资源、封面、分集、演员关联等数据都会失去可达的文件库上下文。
+		resourceTotal, err := models.Resources{}.CountByFilesBasesID(tx, id)
+		if err != nil {
+			return err
+		}
+		if resourceTotal > 0 {
+			return fmt.Errorf("文件库中还有 %d 条资源记录，无法删除", resourceTotal)
+		}
+
+		// 文件库为空时，下面这些表只保存该库的附属配置或关联关系。
+		// 它们需要和主记录一起在事务内删除，避免出现“文件库已删但配置残留”的半完成状态。
+		databaseTool := DatabaseTool{}
+		if err := databaseTool.clear_tagClass(tx, &models.FilesBases{ID: id}); err != nil {
+			return err
+		}
+		if err := (models.CronJobs{}).DeleteByFilesBasesID(tx, id); err != nil {
+			return err
+		}
+		if err := (models.FilesRelatedPerformerBases{}).DeleteByFilesBasesID(tx, id); err != nil {
+			return err
+		}
+		if err := (models.FilesBasesSetting{}).DeleteByFilesBasesID(tx, id); err != nil {
+			return err
+		}
+		// 最后删除主表记录。前面的清理都成功后才走到这里，事务失败会整体回滚。
+		return (models.FilesBases{}).DeleteByID(tx, id)
+	})
 }

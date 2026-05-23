@@ -88,6 +88,14 @@ func (t Resources) DataCountByPerformerId(db *gorm.DB, filesBasesId, performerId
 		Count(&total).Error
 	return total, err
 }
+
+// CountByFilesBasesID 统计指定文件库下的资源数量。
+// 真实删除文件库前必须先调用它确认资源数量为 0，避免把仍有资源的数据入口删掉。
+func (Resources) CountByFilesBasesID(db *gorm.DB, filesBasesID string) (int64, error) {
+	var total int64
+	err := db.Model(&Resources{}).Where("filesBases_id = ?", filesBasesID).Count(&total).Error
+	return total, err
+}
 func (t Resources) DataListAllSearch(db *gorm.DB, searchText string, page, limit int) (*[]Resources, int64, error) {
 	var dataList []Resources
 	var total int64

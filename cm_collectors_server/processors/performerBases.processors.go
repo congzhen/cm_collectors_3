@@ -5,6 +5,7 @@ import (
 	"cm_collectors_server/datatype"
 	"cm_collectors_server/models"
 	"encoding/json"
+	"fmt"
 
 	"gorm.io/gorm"
 )
@@ -49,6 +50,37 @@ func (t PerformerBases) Create(name string) (string, error) {
 		Status:    true,
 	}
 	return id, performerBasesModels.Create(db, &performerBasesModels)
+}
+
+// DeleteByID 真实删除演员库。
+// 演员库删除需要同时保护两类数据：
+// 1. 演员记录本身，存在演员时不能删除所属库。
+// 2. 文件库到演员库的关联关系，仍被文件库引用时不能删除，避免文件库配置指向不存在的演员库。
+func (PerformerBases) DeleteByID(id string) error {
+	db := core.DBS()
+	return db.Transaction(func(tx *gorm.DB) error {
+		// 演员库内还有演员时拒绝删除，这是“库内是否还有记录”的核心判断。
+		performerTotal, err := models.Performer{}.CountByPerformerBasesID(tx, id)
+		if err != nil {
+			return err
+		}
+		if performerTotal > 0 {
+			return fmt.Errorf("演员库中还有 %d 条演员记录，无法删除", performerTotal)
+		}
+
+		// 即使演员数量为 0，只要文件库配置仍引用该演员库，也不能直接删除。
+		// 否则文件库的主演员库、关联演员库选择会出现悬空引用。
+		relatedTotal, err := models.FilesRelatedPerformerBases{}.CountByPerformerBasesID(tx, id)
+		if err != nil {
+			return err
+		}
+		if relatedTotal > 0 {
+			return fmt.Errorf("演员库仍被 %d 个文件库关联，无法删除", relatedTotal)
+		}
+
+		// 所有保护条件通过后才删除主表记录；事务为后续扩展关联清理保留一致性边界。
+		return models.PerformerBases{}.DeleteByID(tx, id)
+	})
 }
 
 func (PerformerBases) Export(id string) (string, error) {

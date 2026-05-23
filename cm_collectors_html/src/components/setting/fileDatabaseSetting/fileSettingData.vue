@@ -587,6 +587,7 @@ onMounted(() => {
     background-color: #262727;
     display: flex;
     justify-content: space-between;
+    align-items: center;
   }
 }
 </style>

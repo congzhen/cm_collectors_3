@@ -2,9 +2,7 @@
   <div class="setting-data">
     <el-form label-width="auto">
       <el-form-item label="演员集名称">
-        <div class="form-row">
-          <el-input class="form-input" v-model="formData.name" />
-        </div>
+        <el-input v-model="formData.name" />
       </el-form-item>
     </el-form>
     <div class="setting-data-performer">
@@ -48,8 +46,6 @@ const update = debounce(async (value: I_performerBases) => {
     ElMessage.error(result.msg)
   }
 })
-
-
 </script>
 <style lang="scss" scoped>
 .setting-data {

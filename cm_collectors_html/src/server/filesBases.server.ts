@@ -33,6 +33,14 @@ export const filesBasesServer = {
       },
     });
   },
+  // 真实删除文件库。
+  // 后端会检查该文件库是否仍有资源记录，前端调用方只需要传当前选中的文件库 ID。
+  delete: async (id: string) => {
+    return await request<boolean>({
+      url: `${routerGroupUri}/filesBases/delete/${id}`,
+      method: 'delete',
+    });
+  },
   sort: async (sortObj: I_filesBases_sort[]) => {
     return await request<boolean>({
       url: `${routerGroupUri}/filesBases/sort`,

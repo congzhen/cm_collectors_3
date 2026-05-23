@@ -18,6 +18,14 @@ export const performerBasesServer = {
       data: obj
     });
   },
+  // 真实删除演员库。
+  // 后端会检查该演员库是否还有演员，以及是否仍被文件库关联。
+  delete: async (id: string) => {
+    return await request<boolean>({
+      url: `${routerGroupUri}/performerBases/delete/${id}`,
+      method: 'delete',
+    });
+  },
   export: async (id: string) => {
     return await request<string>({
       url: `${routerGroupUri}/performerBases/export/${id}`,

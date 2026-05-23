@@ -69,3 +69,9 @@ func (FilesBases) Update(db *gorm.DB, filesBases *FilesBases, fields []string) e
 func (FilesBases) Create(db *gorm.DB, filesBases *FilesBases) error {
 	return db.Create(&filesBases).Error
 }
+
+// DeleteByID 物理删除文件库主记录。
+// 调用方必须先完成“库内资源数量为 0”的业务校验，这里只执行最底层的数据删除。
+func (FilesBases) DeleteByID(db *gorm.DB, id string) error {
+	return db.Unscoped().Where("id = ?", id).Delete(&FilesBases{}).Error
+}

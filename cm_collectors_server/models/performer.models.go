@@ -270,6 +270,14 @@ func (Performer) DataListByPerformerBasesId(db *gorm.DB, performerBasesId string
 	return &dataList, err
 }
 
+// CountByPerformerBasesID 统计指定演员库下的演员数量。
+// 演员库只有在没有演员记录时才能真实删除，否则会造成演员资料失去所属库。
+func (Performer) CountByPerformerBasesID(db *gorm.DB, performerBasesID string) (int64, error) {
+	var total int64
+	err := db.Model(&Performer{}).Where("performerBases_id = ?", performerBasesID).Count(&total).Error
+	return total, err
+}
+
 func (Performer) DataList(db *gorm.DB, performerBasesId string, fetchCount bool, page, limit int, search, star, cup, charIndex, countFilesBasesId string) (*[]Performer, int64, error) {
 	var dataList []Performer
 	var total int64
