@@ -1,5 +1,8 @@
 # CM Collectors 3
 
+[![GitHub all downloads](https://img.shields.io/github/downloads/congzhen/cm_collectors_3/total?label=downloads%20total)](https://github.com/congzhen/cm_collectors_3/releases)
+[![GitHub latest downloads](https://img.shields.io/github/downloads/congzhen/cm_collectors_3/latest/total?label=downloads%20latest)](https://github.com/congzhen/cm_collectors_3/releases/latest)
+
 CM Collectors 3 是一个多媒体文件管理系统，用于收集、管理和播放视频与图片等。主要基于 Vue.js + Go 开发。
 
 ## 联系方式
