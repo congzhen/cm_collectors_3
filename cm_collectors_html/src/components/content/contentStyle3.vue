@@ -3,6 +3,7 @@
     <div class="content-style content-style3" :style="{ width: coverPosterSize_C.width + 'px' }">
       <div class="content-cover" :style="{ height: coverPosterSize_C.height + 'px' }">
         <contentCoverImage :resource="props.resource"></contentCoverImage>
+        <contentVideoDurationBadge :resource="props.resource"></contentVideoDurationBadge>
         <div class="play-icon" @click.stop="playResource(props.resource)">
           <el-icon>
             <VideoPlay />
@@ -35,6 +36,7 @@ import { computed, ref, type PropType } from 'vue';
 import { playResource } from '@/common/play';
 import { appStoreData } from '@/storeData/app.storeData';
 import contentCoverImage from './contentCoverImage.vue';
+import contentVideoDurationBadge from './contentVideoDurationBadge.vue';
 import dataset from '@/assets/dataset';
 import { coverPosterSize } from '@/common/photo';
 const store = {

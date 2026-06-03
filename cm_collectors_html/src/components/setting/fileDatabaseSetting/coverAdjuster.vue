@@ -51,6 +51,9 @@
                   <el-radio-button label="around" value="space-around" />
                 </el-radio-group>
               </div>
+              <div class="setting-item">
+                <el-checkbox v-model="showVideoDuration" label="显示视频时长" />
+              </div>
             </div>
             <div class="other-settings">
               <div class="setting-item">
@@ -239,6 +242,13 @@ const hotModuleStatus = computed({
   get: () => store.appStoreData.currentConfigApp.hotModule,
   set: (value) => {
     store.appStoreData.currentConfigApp.hotModule = value;
+  }
+});
+
+const showVideoDuration = computed({
+  get: () => store.appStoreData.currentConfigApp.showVideoDuration,
+  set: (value) => {
+    store.appStoreData.currentConfigApp.showVideoDuration = value;
   }
 });
 

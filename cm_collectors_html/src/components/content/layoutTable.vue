@@ -23,6 +23,12 @@
           </div>
         </template>
       </el-table-column>
+      <el-table-column v-if="store.appStoreData.currentConfigApp.showVideoDuration" label="时长" width="120"
+        align="center">
+        <template #default="scope">
+          {{ getResourceDurationText(scope.row) || '-' }}
+        </template>
+      </el-table-column>
       <el-table-column prop="title" label="名称" min-width="180" :show-overflow-tooltip="true"></el-table-column>
       <el-table-column prop="issueNumber" label="版号、番号、刊号" width="120" :show-overflow-tooltip="true" />
       <el-table-column label="评星" width="80">
@@ -73,6 +79,13 @@ import { ref, type PropType } from 'vue';
 import { getResourceCoverPoster } from '@/common/photo';
 import { playResource } from '@/common/play';
 import type { ElTable } from 'element-plus';
+import { appStoreData } from '@/storeData/app.storeData';
+import { getResourceDurationText } from '@/common/videoDuration';
+
+const store = {
+  appStoreData: appStoreData(),
+}
+
 const props = defineProps({
   dataList: {
     type: Array as PropType<I_resource[]>,

@@ -78,6 +78,7 @@ export interface I_config_app {
   routeConversion: I_routeConversion[];// 路由转换
   shieldNoPerformerPhoto: boolean; // 屏蔽无照片演员
   showPreviewImage: boolean; // 显示预览图片
+  showVideoDuration: boolean; // 封面显示视频时长
   sortMode: string; // 排序模式
   tagMode: string; // 标签模式
   tagFixedModeRowShowNum: number; // 固定标签每行显示数量
@@ -132,6 +133,7 @@ export const defualtConfigApp: I_config_app = {
   youLikeTagClass: [],
   resourceDetailsShowMode: 'right',
   showPreviewImage: false,
+  showVideoDuration: false,
   previewImageFolder: '/',
   videoPreviewImageCount: 32,
   plugInUnit_Cup: false,

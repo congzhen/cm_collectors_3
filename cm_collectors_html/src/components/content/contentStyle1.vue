@@ -9,6 +9,8 @@
       <div class="content-cover">
         <contentCoverImage :resource="props.resource"></contentCoverImage>
       </div>
+      <contentVideoDurationBadge :resource="props.resource" offset-bottom="24px" offset-right="4px">
+      </contentVideoDurationBadge>
 
 
       <div class="play-icon" @click.stop="playResource(props.resource)">
@@ -25,6 +27,7 @@
 import contentCoverImage from './contentCoverImage.vue';
 import type { I_resource } from '@/dataType/resource.dataType';
 import contentTagDisplay from './contentTagDisplay.vue';
+import contentVideoDurationBadge from './contentVideoDurationBadge.vue';
 import { computed, type PropType } from 'vue';
 import { appStoreData } from '@/storeData/app.storeData';
 import { playResource } from '@/common/play';

@@ -44,6 +44,9 @@ export interface I_resourceDramaSeries extends I_resourceDramaSeries_base {
   type: E_resourceDramaSeriesType;
   sort: number;
   storageLocation: E_resourceStorageLocation;
+  durationSeconds: number;
+  durationProbeStatus: '' | 'success' | 'failed';
+  durationProbeTime: string;
   m3u8BuilderTime: string;
   m3u8BuilderStatus: boolean;
 }

@@ -105,6 +105,9 @@ func (t FilesBases) Config_FilesBases(id string) (datatype.Config_FilesBases, er
 	if err != nil {
 		return config, err
 	}
+	if jsonConfig == "" {
+		return config, nil
+	}
 
 	err = json.Unmarshal([]byte(jsonConfig), &config)
 	if err != nil {

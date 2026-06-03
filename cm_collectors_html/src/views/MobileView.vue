@@ -46,6 +46,7 @@ const store = {
 const contentListRef = ref<InstanceType<typeof contentList>>()
 
 let fetchCount = true;
+let durationRefreshTimer: number | undefined;
 const loading = ref(false);
 const dataList = ref<I_resource[]>([])
 const dataCount = ref(0);
@@ -75,6 +76,7 @@ const getDataList = debounce(async (fn: () => void = () => { }) => {
         dataCount.value = result.data.total;
         fetchCount = false;
       }
+      scheduleDurationRefresh();
       fn();
     } else {
       ElMessage.error(result.msg);
@@ -85,6 +87,21 @@ const getDataList = debounce(async (fn: () => void = () => { }) => {
     loading.value = false;
   }
 }, 200)
+
+// 移动端同样采用“列表先返回、后台采集、稍后刷新”的策略。
+// 这样不会因为当前页视频数量多或 ffprobe 较慢而阻塞翻页/切库操作。
+const scheduleDurationRefresh = () => {
+  if (!store.appStoreData.currentConfigApp.showVideoDuration) {
+    return;
+  }
+  window.clearTimeout(durationRefreshTimer);
+  durationRefreshTimer = window.setTimeout(async () => {
+    const result = await resourceServer.dataList(store.appStoreData.currentFilesBases.id, false, currentPage.value, pageSize.value, store.searchStoreData.searchData);
+    if (result && result.status) {
+      dataList.value = result.data.dataList;
+    }
+  }, 2500);
+}
 
 // 上一页
 const prevPage = async () => {

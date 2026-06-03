@@ -8,6 +8,7 @@
       <div class="content-cover"
         :style="{ width: coverPosterSize_C.width + 'px', height: coverPosterSize_C.height + 'px' }">
         <contentCoverImage :resource="props.resource"></contentCoverImage>
+        <contentVideoDurationBadge :resource="props.resource"></contentVideoDurationBadge>
       </div>
       <div class="play-icon" @click.stop="playResource(props.resource)">
         <el-icon>
@@ -22,6 +23,7 @@
 import contentCoverImage from './contentCoverImage.vue';
 import type { I_resource } from '@/dataType/resource.dataType';
 import contentTagDisplay from './contentTagDisplay.vue';
+import contentVideoDurationBadge from './contentVideoDurationBadge.vue';
 import { computed, type PropType } from 'vue';
 import { appStoreData } from '@/storeData/app.storeData';
 import { playResource } from '@/common/play';
@@ -96,6 +98,7 @@ const titleStyleObj_C = computed(() => {
     width: 100%;
     height: 100%;
     overflow: hidden;
+    position: relative;
 
     .el-image {
       width: 100%;

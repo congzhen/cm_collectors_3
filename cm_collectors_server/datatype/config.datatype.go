@@ -97,7 +97,7 @@ type Config_FilesBases struct {
 	CoverPosterWidthStatus       bool                      `json:"coverPosterWidthStatus"`       // 封面宽度状态
 	CoverPosterHeightBase        int                       `json:"coverPosterHeightBase"`        // 封面高度
 	CoverPosterHeightStatus      bool                      `json:"coverPosterHeightStatus"`      // 封面高度状态
-	CoverPosterGap               int                       `json:"coverPosterGap"`               // 封面间隔
+	CoverPosterGap               float64                   `json:"coverPosterGap"`               // 封面间隔
 	ContentPadding               int                       `json:"contentPadding"`               // 左右空距
 	Definition                   []string                  `json:"definition"`                   // 清晰度
 	DefinitionFontColor          string                    `json:"definitionFontColor"`          // 清晰度颜色
@@ -144,6 +144,7 @@ type Config_FilesBases struct {
 	RouteConversion              []IRouteConversion        `json:"routeConversion"`              // 路由转换
 	ShieldNoPerformerPhoto       bool                      `json:"shieldNoPerformerPhoto"`       // 屏蔽无照片演员
 	ShowPreviewImage             bool                      `json:"showPreviewImage"`             // 显示预览图片
+	ShowVideoDuration            bool                      `json:"showVideoDuration"`            // 封面显示视频时长
 	SortMode                     string                    `json:"sortMode"`                     // 排序模式
 	TagMode                      string                    `json:"tagMode"`                      // 标签模式
 	TagFixedModeRowShowNum       int                       `json:"tagFixedModeRowShowNum"`       // 固定模式-每行显示标签数量

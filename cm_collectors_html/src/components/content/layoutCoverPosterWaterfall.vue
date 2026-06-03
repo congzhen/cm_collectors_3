@@ -8,6 +8,8 @@
             <contentRightClickMenu :resource="props.dataList[index]">
               <div class="waterfall-item" @click="selectResourcesHandle(item)">
                 <el-image :src="item.src" :title="item.title" :fit="fit_C" @load="onImageLoad" />
+                <contentVideoDurationBadge :resource="props.dataList[index]" offset-bottom="8px" offset-right="4px">
+                </contentVideoDurationBadge>
                 <div class="play-icon" @click.stop="playResource(item)">
                   <el-icon>
                     <VideoPlay />
@@ -38,6 +40,7 @@ import { debounce } from '@/assets/debounce';
 import type { ElScrollbar } from 'element-plus';
 import { isMobile } from '@/assets/mobile';
 import contentRightClickMenu from './contentRightClickMenu.vue';
+import contentVideoDurationBadge from './contentVideoDurationBadge.vue';
 const store = {
   appStoreData: appStoreData(),
 }

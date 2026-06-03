@@ -8,10 +8,13 @@
             <template #default="{ item, index }">
               <contentRightClickMenu :resource="props.dataList[index]">
                 <div class="waterfall-item"
-                  :class="{ active: index === currentPlayIndex, ['waterfall-item-' + index]: true }"
+                  :class="{ active: index === currentPlayIndex, ['waterfall-item-' + index]: true, 'duration-adaptive-container': isMobile() }"
                   @click.stop="clickResourceHandle(index)">
 
                   <el-image :src="item.src" :title="item.title" :fit="fit_C" @load="onImageLoad" />
+                  <contentVideoDurationBadge :resource="props.dataList[index]" offset-bottom="8px" offset-right="4px"
+                    :compact-text="isMobile()" :adaptive-mobile="isMobile()">
+                  </contentVideoDurationBadge>
 
                   <div v-if="!isMobile()" class="play-icon" @click.stop="selectResourcesHandle(item)">
                     <el-icon>
@@ -59,6 +62,7 @@ import { debounce } from '@/assets/debounce';
 import videoPlay from '@/components/play/videoPlay.vue';
 import { getPlayVideoURLAndType } from '@/common/play';
 import contentRightClickMenu from './contentRightClickMenu.vue';
+import contentVideoDurationBadge from './contentVideoDurationBadge.vue';
 import { appStoreData } from '@/storeData/app.storeData';
 
 const store = {
@@ -307,6 +311,10 @@ defineExpose({ change, });
       border: 2px solid transparent;
       border-radius: 4px;
       transition: border-color 0.3s ease;
+
+      &.duration-adaptive-container {
+        container-type: inline-size;
+      }
 
       &.active {
         border-color: #409eff;

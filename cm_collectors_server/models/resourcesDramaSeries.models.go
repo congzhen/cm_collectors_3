@@ -9,14 +9,22 @@ import (
 	"gorm.io/gorm"
 )
 
+const (
+	DurationProbeStatusSuccess = "success"
+	DurationProbeStatusFailed  = "failed"
+)
+
 type ResourcesDramaSeries struct {
-	ID                string               `json:"id" gorm:"primaryKey;type:char(20);"`
-	ResourcesID       string               `json:"resources_id" gorm:"column:resources_id;type:char(20);index:idx_ResourcesDramaSeries_resourcesID"`
-	Type              string               `json:"type" gorm:"column:type;type:varchar(50);"`
-	Src               string               `json:"src" gorm:"column:src;type:text;"`
-	Sort              int                  `json:"sort" gorm:"type:int;default:0"`
-	M3u8BuilderTime   *datatype.CustomTime `json:"m3u8BuilderTime" gorm:"column:m3u8BuilderTime;type:datetime;"`
-	M3u8BuilderStatus bool                 `json:"m3u8BuilderStatus" gorm:"column:m3u8BuilderStatus;type:tinyint(1);default:0"`
+	ID                  string               `json:"id" gorm:"primaryKey;type:char(20);"`
+	ResourcesID         string               `json:"resources_id" gorm:"column:resources_id;type:char(20);index:idx_ResourcesDramaSeries_resourcesID"`
+	Type                string               `json:"type" gorm:"column:type;type:varchar(50);"`
+	Src                 string               `json:"src" gorm:"column:src;type:text;"`
+	Sort                int                  `json:"sort" gorm:"type:int;default:0"`
+	DurationSeconds     int                  `json:"durationSeconds" gorm:"column:durationSeconds;type:int;default:0"`
+	DurationProbeStatus string               `json:"durationProbeStatus" gorm:"column:durationProbeStatus;type:varchar(20);"`
+	DurationProbeTime   *datatype.CustomTime `json:"durationProbeTime" gorm:"column:durationProbeTime;type:datetime;"`
+	M3u8BuilderTime     *datatype.CustomTime `json:"m3u8BuilderTime" gorm:"column:m3u8BuilderTime;type:datetime;"`
+	M3u8BuilderStatus   bool                 `json:"m3u8BuilderStatus" gorm:"column:m3u8BuilderStatus;type:tinyint(1);default:0"`
 }
 
 func (ResourcesDramaSeries) TableName() string {
@@ -157,6 +165,18 @@ func (ResourcesDramaSeries) ListByResourceID(db *gorm.DB, resourceID string) (*[
 
 func (ResourcesDramaSeries) Creates(db *gorm.DB, resourcesDramaSeriesSlc *[]ResourcesDramaSeries) error {
 	return db.Create(resourcesDramaSeriesSlc).Error
+}
+
+// UpdateDuration 只更新分集的视频时长采集结果。
+// 这里使用 map 明确字段名，避免传入 durationSeconds=0 记录失败状态时被 GORM 当成零值跳过。
+func (ResourcesDramaSeries) UpdateDuration(db *gorm.DB, id string, durationSeconds int, status string, probeTime *datatype.CustomTime) error {
+	return db.Model(&ResourcesDramaSeries{}).
+		Where("id = ?", id).
+		Updates(map[string]interface{}{
+			"durationSeconds":     durationSeconds,
+			"durationProbeStatus": status,
+			"durationProbeTime":   probeTime,
+		}).Error
 }
 func (ResourcesDramaSeries) DeleteIDS(db *gorm.DB, ids []string) error {
 	return db.Unscoped().Where("id in (?) ", ids).Delete(&ResourcesDramaSeries{}).Error

@@ -19,22 +19,40 @@ import (
 type Resources struct{}
 
 func (Resources) DataList(par *datatype.ReqParam_ResourcesList) (*[]models.Resources, int64, error) {
-	return models.Resources{}.DataList(core.DBS(), par)
+	dataList, total, err := models.Resources{}.DataList(core.DBS(), par)
+	if err == nil {
+		// 列表接口只触发当前页缺失时长的后台采集，不等待采集完成。
+		// 前端会在开启显示时长时稍后静默刷新一次当前页。
+		VideoDuration{}.TriggerForResources(par.FilesBasesId, dataList)
+	}
+	return dataList, total, err
 }
 
 // 获取随机的指定数量的记录
 func (Resources) DataListCasualView(filesBasesId string, quantity int) (*[]models.Resources, error) {
-	return models.Resources{}.DataListCasualView(core.DBS(), filesBasesId, quantity)
+	dataList, err := models.Resources{}.DataListCasualView(core.DBS(), filesBasesId, quantity)
+	if err == nil {
+		VideoDuration{}.TriggerForResources(filesBasesId, dataList)
+	}
+	return dataList, err
 }
 
 // 获取指定数量的历史记录
 func (Resources) DataListHistory(filesBasesId string, quantity int) (*[]models.Resources, error) {
-	return models.Resources{}.DataListHistory(core.DBS(), filesBasesId, quantity)
+	dataList, err := models.Resources{}.DataListHistory(core.DBS(), filesBasesId, quantity)
+	if err == nil {
+		VideoDuration{}.TriggerForResources(filesBasesId, dataList)
+	}
+	return dataList, err
 }
 
 // 获取指定数量的最热记录
 func (Resources) DataListHot(filesBasesId string, quantity int) (*[]models.Resources, error) {
-	return models.Resources{}.DataListHot(core.DBS(), filesBasesId, quantity)
+	dataList, err := models.Resources{}.DataListHot(core.DBS(), filesBasesId, quantity)
+	if err == nil {
+		VideoDuration{}.TriggerForResources(filesBasesId, dataList)
+	}
+	return dataList, err
 }
 func (Resources) DataListByIds(ids []string) (*[]models.Resources, error) {
 	return models.Resources{}.DataListByIds(core.DBS(), ids)
@@ -164,7 +182,12 @@ func (t Resources) CreateResource(par *datatype.ReqParam_Resource) (*models.Reso
 	if err != nil {
 		return nil, err
 	}
-	return t.Info(id)
+	info, err := t.Info(id)
+	if err == nil {
+		// 新建资源成功后，如果文件库开启了时长显示，立即让新分集进入后台采集队列。
+		VideoDuration{}.TriggerForResource(info)
+	}
+	return info, err
 }
 
 func (t Resources) UpdateResource(par *datatype.ReqParam_Resource, setResourcesDramaSeries bool) (*models.Resources, error) {
@@ -181,7 +204,12 @@ func (t Resources) UpdateResource(par *datatype.ReqParam_Resource, setResourcesD
 	if err != nil {
 		return nil, err
 	}
-	return t.Info(id)
+	info, err := t.Info(id)
+	if err == nil {
+		// 修改资源可能新增分集或变更路径；已有时长会在重建分集时保留，缺失项在这里后台补齐。
+		VideoDuration{}.TriggerForResource(info)
+	}
+	return info, err
 }
 func (t Resources) UpdateResourcePerformer(resourceID string, performers []string) (*models.Resources, error) {
 	db := core.DBS()

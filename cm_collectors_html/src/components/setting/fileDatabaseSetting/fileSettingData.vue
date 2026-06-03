@@ -73,6 +73,9 @@
       <el-form-item label="资源显示模式">
         <selectResourcesMode v-model="filesConfig.resourcesShowMode" />
       </el-form-item>
+      <el-form-item label="显示视频时长">
+        <el-switch v-model="filesConfig.showVideoDuration" inline-prompt active-text="显示" inactive-text="关闭" />
+      </el-form-item>
       <el-form-item v-if="filesConfig.resourcesShowMode == 'coverPosterBox'" label="封面海报盒子-信息宽度">
         <el-input-number v-model="filesConfig.coverPosterBoxInfoWidth" :min="20" :max="9999" />
       </el-form-item>

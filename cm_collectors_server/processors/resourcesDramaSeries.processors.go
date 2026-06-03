@@ -98,8 +98,23 @@ func (t ResourcesDramaSeries) SetResourcesDramaSeries(db *gorm.DB, resourceID st
 		vfM := models.VideoFingerprint{}
 		dsM := models.ResourcesDramaSeries{}
 
+		// 当前保存资源时会先删除旧分集再重建新分集。
+		// 为了让“未改路径且已采集时长”的视频不因为保存而丢失时长，
+		// 删除旧分集前先按 src 建立旧时长索引，后面创建新分集时再回填。
+		oldDramaSeries, err := dsM.ListByResourceID(tx, resourceID)
+		if err != nil {
+			return err
+		}
+		durationBySrc := map[string]models.ResourcesDramaSeries{}
+		for _, oldDS := range *oldDramaSeries {
+			if oldDS.Src == "" || oldDS.DurationSeconds <= 0 {
+				continue
+			}
+			durationBySrc[oldDS.Src] = oldDS
+		}
+
 		// 删除旧分集前先清理对应指纹
-		err := vfM.DeleteByResourcesID(tx, resourceID)
+		err = vfM.DeleteByResourcesID(tx, resourceID)
 		if err != nil {
 			return err
 		}
@@ -109,11 +124,16 @@ func (t ResourcesDramaSeries) SetResourcesDramaSeries(db *gorm.DB, resourceID st
 		}
 		newSlc := make([]models.ResourcesDramaSeries, 0, len(dramaSeriesSlc))
 		for i, v := range dramaSeriesSlc {
+			// 相同路径视为同一个视频，保留旧分集已经成功采集到的时长。
+			// 新增路径或路径变更时 durationSeconds 为 0，后续由 VideoDuration 异步采集。
 			newSlc = append(newSlc, models.ResourcesDramaSeries{
-				ID:          core.GenerateUniqueID(),
-				ResourcesID: resourceID,
-				Src:         v.Src,
-				Sort:        i,
+				ID:                  core.GenerateUniqueID(),
+				ResourcesID:         resourceID,
+				Src:                 v.Src,
+				Sort:                i,
+				DurationSeconds:     durationBySrc[v.Src].DurationSeconds,
+				DurationProbeStatus: durationBySrc[v.Src].DurationProbeStatus,
+				DurationProbeTime:   durationBySrc[v.Src].DurationProbeTime,
 			})
 		}
 		err = dsM.Creates(tx, &newSlc)
