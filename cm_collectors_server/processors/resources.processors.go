@@ -182,6 +182,7 @@ func (t Resources) CreateResource(par *datatype.ReqParam_Resource) (*models.Reso
 	if err != nil {
 		return nil, err
 	}
+	AutoBackup{}.RecordResourceChanges(1)
 	info, err := t.Info(id)
 	if err == nil {
 		// 新建资源成功后，如果文件库开启了时长显示，立即让新分集进入后台采集队列。
@@ -204,6 +205,7 @@ func (t Resources) UpdateResource(par *datatype.ReqParam_Resource, setResourcesD
 	if err != nil {
 		return nil, err
 	}
+	AutoBackup{}.RecordResourceChanges(1)
 	info, err := t.Info(id)
 	if err == nil {
 		// 修改资源可能新增分集或变更路径；已有时长会在重建分集时保留，缺失项在这里后台补齐。
@@ -217,6 +219,7 @@ func (t Resources) UpdateResourcePerformer(resourceID string, performers []strin
 	if err != nil {
 		return nil, err
 	}
+	AutoBackup{}.RecordResourceChanges(1)
 	return t.Info(resourceID)
 }
 func (t Resources) UpdateResourceTag(resourceID string, tags []string) (*models.Resources, error) {
@@ -225,6 +228,7 @@ func (t Resources) UpdateResourceTag(resourceID string, tags []string) (*models.
 	if err != nil {
 		return nil, err
 	}
+	AutoBackup{}.RecordResourceChanges(1)
 	return t.Info(resourceID)
 }
 
@@ -238,7 +242,7 @@ func (t Resources) UpdateResourceTag(resourceID string, tags []string) (*models.
 //   - error: 操作成功时返回nil，失败时返回错误信息
 func (t Resources) BatchSetPerformer(resourceIds, performersIds []string) error {
 	db := core.DBS()
-	return db.Transaction(func(tx *gorm.DB) error {
+	err := db.Transaction(func(tx *gorm.DB) error {
 		// 遍历每个资源ID，处理其表演者关系
 		for _, resourceId := range resourceIds {
 			rpList, err := ResourcesPerformers{}.ListByResourceID_DB(tx, resourceId)
@@ -271,10 +275,14 @@ func (t Resources) BatchSetPerformer(resourceIds, performersIds []string) error 
 		}
 		return nil
 	})
+	if err == nil {
+		AutoBackup{}.RecordResourceChanges(uniqueStringCount(resourceIds))
+	}
+	return err
 }
 func (t Resources) BatchSetTag(mode string, resourceIDS, tags []string) error {
 	db := core.DBS()
-	return db.Transaction(func(tx *gorm.DB) error {
+	err := db.Transaction(func(tx *gorm.DB) error {
 		for _, resourceId := range resourceIDS {
 
 			if mode == "remove" {
@@ -316,6 +324,10 @@ func (t Resources) BatchSetTag(mode string, resourceIDS, tags []string) error {
 		}
 		return nil
 	})
+	if err == nil {
+		AutoBackup{}.RecordResourceChanges(uniqueStringCount(resourceIDS))
+	}
+	return err
 }
 func (t Resources) BatchSetStars(resourceIDS []string, stars int) error {
 	if len(resourceIDS) == 0 {
@@ -324,7 +336,11 @@ func (t Resources) BatchSetStars(resourceIDS []string, stars int) error {
 	if stars < 0 || stars > 5 {
 		return fmt.Errorf("stars must be between 0 and 5")
 	}
-	return core.DBS().Model(&models.Resources{}).Where("id IN ?", resourceIDS).Update("stars", stars).Error
+	err := core.DBS().Model(&models.Resources{}).Where("id IN ?", resourceIDS).Update("stars", stars).Error
+	if err == nil {
+		AutoBackup{}.RecordResourceChanges(uniqueStringCount(resourceIDS))
+	}
+	return err
 }
 func (t Resources) PinToTop(resourceId string, pinToTopStatus bool) error {
 	var pinToTopValue int64
@@ -336,7 +352,11 @@ func (t Resources) PinToTop(resourceId string, pinToTopStatus bool) error {
 		ID:       resourceId,
 		PinToTop: pinToTopValue,
 	}
-	return models.Resources{}.Update(db, &resourceModels, []string{"PinToTop"})
+	err := models.Resources{}.Update(db, &resourceModels, []string{"PinToTop"})
+	if err == nil {
+		AutoBackup{}.RecordResourceChanges(1)
+	}
+	return err
 }
 func (t Resources) DeleteResource(resourceId string) error {
 	info, err := t.Info(resourceId)
@@ -586,4 +606,15 @@ func (t Resources) Update(db *gorm.DB, par *datatype.ReqParam_Resource) (string,
 
 func (t Resources) DeleteById(db *gorm.DB, id string) error {
 	return models.Resources{}.DeleteById(db, id)
+}
+
+func uniqueStringCount(values []string) int {
+	seen := map[string]struct{}{}
+	for _, value := range values {
+		if value == "" {
+			continue
+		}
+		seen[value] = struct{}{}
+	}
+	return len(seen)
 }

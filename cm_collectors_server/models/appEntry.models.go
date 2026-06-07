@@ -39,6 +39,7 @@ func autoMigrate(db *gorm.DB) error {
 		&Tag{},
 		&TagClass{},
 		&TvboxRecommend{},
+		&AutoBackupState{},
 	)
 }
 
@@ -327,6 +328,22 @@ func AutoDatabase(db *gorm.DB) error {
 			ID: "video_fingerprint",
 			Migrate: func(tx *gorm.DB) error {
 				err := tx.AutoMigrate(&VideoFingerprint{})
+				if err != nil {
+					core.LogErr(err)
+					return err
+				}
+				return nil
+			},
+		},
+		{
+			ID: "auto_backup_state",
+			Migrate: func(tx *gorm.DB) error {
+				err := tx.AutoMigrate(&AutoBackupState{})
+				if err != nil {
+					core.LogErr(err)
+					return err
+				}
+				_, err = AutoBackupState{}.Ensure(tx)
 				if err != nil {
 					core.LogErr(err)
 					return err

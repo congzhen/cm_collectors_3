@@ -59,6 +59,7 @@ type App_SystemConfig struct {
 	Scraper                      App_Config_Scraper    `json:"scraper"`
 	TaryMenu                     []config.TaryMenu     `json:"taryMenu"`
 	ServerFileManagementRootPath []string              `json:"serverFileManagementRootPath"`
+	AutoBackup                   config.AutoBackup     `json:"autoBackup"`
 }
 
 // 用户类型

@@ -37,6 +37,7 @@ cm_collectors_server/db_backup/
 cm_collectors_server/err.log
 cm_collectors_server/gin.log
 
+cm_collectors_server/auto_backup/*
 cm_collectors_server/html/*
 cm_collectors_server/ffmpeg/*
 cm_collectors_server/*.exe*

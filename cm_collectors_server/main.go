@@ -66,6 +66,7 @@ func appInit() {
 
 	//计划任务
 	processors.InitCronjob()
+	processors.InitAutoBackup()
 }
 
 // startTrayMode 根据构建标签决定是否启用系统托盘

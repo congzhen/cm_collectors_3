@@ -27,6 +27,9 @@
         <el-tab-pane label="数据库清理" name="databaseCleanup">
           <databaseCleanup v-if="activeName === 'databaseCleanup'"></databaseCleanup>
         </el-tab-pane>
+        <el-tab-pane label="自动备份" name="autoBackup">
+          <autoBackup v-if="activeName === 'autoBackup'"></autoBackup>
+        </el-tab-pane>
 
 
       </el-tabs>
@@ -44,6 +47,7 @@ import tagSetting from '@/components/setting/tagSetting/tagSetting.vue';
 import cronJobs from '@/components/setting/cronJobs/cronJobs.vue';
 import duplicateDetection from '@/components/setting/duplicateDetection/duplicateDetection.vue';
 import databaseCleanup from '@/components/setting/databaseCleanup/databaseCleanup.vue';
+import autoBackup from '@/components/setting/autoBackup/autoBackup.vue';
 import tvboxRecommendSetting from '@/components/setting/tvboxRecommendSetting/tvboxRecommendSetting.vue';
 const activeName = ref('softSettings');
 const switchTab = (tabName: string) => {

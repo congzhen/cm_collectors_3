@@ -108,3 +108,35 @@ func (App) DeleteDbBackup(c *gin.Context) {
 	}
 	response.OkWithData(true, c)
 }
+
+func (App) AutoBackupState(c *gin.Context) {
+	data, err := processors.AutoBackup{}.StateData()
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(data, c)
+}
+
+func (App) AutoBackupList(c *gin.Context) {
+	files, err := processors.AutoBackup{}.AutoBackupList()
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(files, c)
+}
+
+func (App) RunAutoBackup(c *gin.Context) {
+	err := processors.AutoBackup{}.ManualRun()
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(true, c)
+}
+
+func (App) DeleteAutoBackup(c *gin.Context) {
+	err := processors.AutoBackup{}.DeleteAutoBackup(c.Param("fileName"))
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(true, c)
+}

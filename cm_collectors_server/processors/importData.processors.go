@@ -127,6 +127,7 @@ func (t ImportData) ScanDiskImportData(filesBasesId, filePath string, config dat
 				if err != nil {
 					return err
 				}
+				AutoBackup{}.RecordResourceChanges(1)
 				// 是否按名称重新排序剧集
 				if config.FolderToSeriesSort {
 					err := ResourcesDramaSeries{}.SortBySrc(resourcesID)

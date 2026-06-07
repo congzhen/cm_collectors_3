@@ -100,6 +100,33 @@ export interface I_appConfig_scraper {
 
 }
 
+export interface I_autoBackupConfig {
+  enabled: boolean;
+  backupPath: string;
+  intervalHours: number;
+  resourceChangeThreshold: number;
+  maxBackups: number;
+}
+
+export interface I_autoBackupState {
+  id: string;
+  last_success_backup_at: string | null;
+  pending_resource_change_count: number;
+  last_resource_change_at: string | null;
+  last_time_check_at: string | null;
+  running: boolean;
+  running_started_at: string | null;
+  last_backup_path: string;
+  last_backup_reason: string;
+  last_error: string;
+  updated_at: string | null;
+}
+
+export interface I_autoBackupStateData {
+  state: I_autoBackupState;
+  config: I_autoBackupConfig;
+}
+
 export interface I_appSystemVideoRateLimit {
   enabled: boolean;
   requestsPerSecond: number;
@@ -123,6 +150,7 @@ export interface I_appSystemConfig extends I_appConfig {
   videoRateLimit: I_appSystemVideoRateLimit;
   scraper: I_appConfig_scraper;
   taryMenu: I_taryMenu[];
+  autoBackup: I_autoBackupConfig;
 }
 export interface I_video_basic_info {
   width: number;

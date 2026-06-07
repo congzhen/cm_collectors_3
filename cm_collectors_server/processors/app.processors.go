@@ -64,6 +64,7 @@ func (App) GetConfig() datatype.App_SystemConfig {
 		},
 		TaryMenu:                     core.Config.TaryMenu,
 		ServerFileManagementRootPath: core.GetConfig_ServerFileManagementRootPath(),
+		AutoBackup:                   core.Config.AutoBackup,
 	}
 	return config
 }
@@ -92,7 +93,12 @@ func (App) SetConfig(config datatype.App_SystemConfig) error {
 	core.Config.Scraper.UseBrowserPath = config.Scraper.UseBrowserPath
 	core.Config.TaryMenu = config.TaryMenu
 	core.Config.ServerFileManagement.RootPath = config.ServerFileManagementRootPath
-	return core.SaveConfig()
+	core.Config.AutoBackup = config.AutoBackup
+	if err := core.SaveConfig(); err != nil {
+		return err
+	}
+	AutoBackup{}.CheckTimeTrigger("config")
+	return nil
 }
 
 func (App) ShutdownAllowed() bool {

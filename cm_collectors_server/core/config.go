@@ -115,6 +115,13 @@ func getDefaultConfig() *config.Config {
 		ServerFileManagement: config.ServerFileManagement{
 			RootPath: []string{"/", "A:\\", "B:\\", "C:\\", "D:\\", "E:\\", "F:\\", "G:\\", "H:\\", "I:\\", "J:\\", "K:\\", "L:\\", "M:\\", "N:\\", "O:\\", "P:\\", "Q:\\", "R:\\", "S:\\", "T:\\", "U:\\", "V:\\", "W:\\", "X:\\", "Y:\\", "Z:\\"},
 		},
+		AutoBackup: config.AutoBackup{
+			Enabled:                 false,
+			BackupPath:              "./auto_backup",
+			IntervalHours:           0,
+			ResourceChangeThreshold: 0,
+			MaxBackups:              5,
+		},
 		TaryMenu: []config.TaryMenu{},
 	}
 }

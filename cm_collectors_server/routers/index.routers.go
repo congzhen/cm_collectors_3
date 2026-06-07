@@ -129,6 +129,10 @@ func AdminRouter(router *gin.Engine) {
 	routerGroup.POST("database/cleanup", controllers.App{}.DatabaseCleanup)
 	routerGroup.GET("database/dbBackupList", controllers.App{}.DBBackupList)
 	routerGroup.DELETE("database/deleteDbBackup/:fileName", controllers.App{}.DeleteDbBackup)
+	routerGroup.GET("database/autoBackupState", controllers.App{}.AutoBackupState)
+	routerGroup.GET("database/autoBackupList", controllers.App{}.AutoBackupList)
+	routerGroup.POST("database/autoBackup/run", controllers.App{}.RunAutoBackup)
+	routerGroup.DELETE("database/deleteAutoBackup/:fileName", controllers.App{}.DeleteAutoBackup)
 
 	routerGroup.POST("resource/create", controllers.Resource{}.CreateResource)
 	routerGroup.PUT("resource/update", controllers.Resource{}.UpdateResource)

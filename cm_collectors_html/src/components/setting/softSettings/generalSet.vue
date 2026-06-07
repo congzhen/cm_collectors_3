@@ -200,6 +200,13 @@ const formData = ref<I_appSystemConfig>({
     useBrowserPath: false,
     browserPath: ''
   },
+  autoBackup: {
+    enabled: false,
+    backupPath: './auto_backup',
+    intervalHours: 0,
+    resourceChangeThreshold: 0,
+    maxBackups: 5,
+  },
   taryMenu: [],
 })
 
