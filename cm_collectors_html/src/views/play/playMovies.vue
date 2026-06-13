@@ -1,5 +1,5 @@
 <template>
-  <div class="play-movies-container" :style="mainContainerStyle_C">
+  <div class="play-movies-container" :class="{ 'is-bright-theme': isBrightTheme_C }" :style="mainContainerStyle_C">
     <div class="main-container-overlay"></div>
     <HeaderView class="header" :mode="E_headerMode.GoBack" :title="resourceInfo?.title || ''"></HeaderView>
     <div class="main-container" v-loading="loading">
@@ -131,6 +131,9 @@ const mainContainerStyle_C = computed<CSSProperties>(() => {
   }
   return {};
 });
+const isBrightTheme_C = computed(() => {
+  return store.appStoreData.appConfig.theme === 'bright' || document.documentElement.classList.contains('bright')
+})
 const abstract_C = computed(() => {
   if (!resourceInfo.value) return ''
   //将props.resource.abstract中的换行符号转换为html的换行符号
@@ -220,11 +223,32 @@ onMounted(async () => {
 </script>
 <style lang="scss" scoped>
 .play-movies-container {
+  --play-overlay-bg: rgba(0, 0, 0, 0.3);
+  --play-panel-bg: rgba(31, 31, 31, 0.8);
+  --play-panel-border: transparent;
+  --play-panel-shadow: none;
+  --play-muted-text: #c0c4cc;
+  --play-title-text: #c0c4cc;
+  --play-performer-bg: #434343;
+  --play-performer-border: transparent;
+
   width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+
+  &.is-bright-theme,
+  :global(html.bright) & {
+    --play-overlay-bg: rgba(255, 255, 255, 0.46);
+    --play-panel-bg: rgba(255, 255, 255, 0.62);
+    --play-panel-border: rgba(255, 255, 255, 0.56);
+    --play-panel-shadow: 0 10px 32px rgba(31, 45, 61, 0.14);
+    --play-muted-text: #606266;
+    --play-title-text: #606266;
+    --play-performer-bg: rgba(255, 255, 255, 0.92);
+    --play-performer-border: var(--el-border-color-lighter);
+  }
 
   .main-container-overlay {
     position: absolute;
@@ -235,7 +259,7 @@ onMounted(async () => {
     height: 100%;
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
-    background-color: rgba(0, 0, 0, 0.3);
+    background-color: var(--play-overlay-bg);
     z-index: 0;
   }
 
@@ -259,10 +283,11 @@ onMounted(async () => {
       padding: 10px;
       display: flex;
       gap: 10px;
-      background-color: rgba(31, 31, 31, 0.8);
+      background-color: var(--play-panel-bg);
+      border: 1px solid var(--play-panel-border);
+      box-shadow: var(--play-panel-shadow);
       position: relative;
       z-index: 1;
-
 
       .main-left {
         flex: 1;
@@ -279,7 +304,7 @@ onMounted(async () => {
           flex-wrap: wrap;
           gap: 5px 10px;
           font-size: 14px;
-          color: #909399;
+          color: var(--play-muted-text) !important;
           line-height: 24px;
         }
 
@@ -292,7 +317,8 @@ onMounted(async () => {
             width: 300px;
             border-radius: 10px;
             padding: 15px;
-            background-color: #434343;
+            background-color: var(--play-performer-bg);
+            border: 1px solid var(--play-performer-border);
           }
         }
 
@@ -304,7 +330,7 @@ onMounted(async () => {
 
         .abstract {
           font-size: 16px;
-          color: #909399;
+          color: var(--play-muted-text) !important;
           line-height: 1.5;
           text-indent: 2em;
         }
@@ -323,6 +349,7 @@ onMounted(async () => {
 
         .title {
           font-size: 14px;
+          color: var(--play-title-text) !important;
         }
       }
     }

@@ -75,19 +75,20 @@
 
 /** play */
 .bright .app-container .main-container-overlay {
-  background-color: rgba(255, 255, 255, 0.2) !important;
+  background-color: rgba(255, 255, 255, 0.46) !important;
 }
 .bright .app-container .header {
   background-color: #ffffff !important;
 }
 .bright .app-container .play-movies-container .main-container .main .main-left .info-base {
-  color: #ffffff !important;
+  color: #606266 !important;
 }
 .bright .app-container .play-movies-container .main-container .main .main-right .title {
-  color: #ffffff;
+  color: #606266 !important;
 }
 .bright .app-container .play-movies-container .performer-list .performer-item {
-  background-color: #fcecae !important;
+  background-color: rgba(255, 255, 255, 0.92) !important;
+  border-color: var(--el-border-color-lighter) !important;
 }
 /** 抽屉 */
 .bright .el-drawer__header {
