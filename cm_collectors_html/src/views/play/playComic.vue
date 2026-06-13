@@ -210,7 +210,15 @@ const removeEventListeners = () => {
   document.removeEventListener('keydown', handleKeyDown);
 }
 
+const isInputTarget = (target: EventTarget | null) => {
+  const el = target as HTMLElement | null;
+  if (!el) return false;
+  const tagName = el.tagName?.toLowerCase();
+  return tagName === 'input' || tagName === 'textarea' || tagName === 'select' || el.isContentEditable;
+}
+
 const handleKeyDown = (event: KeyboardEvent) => {
+  if (isInputTarget(event.target)) return;
   if (event.key === 'ArrowUp') {
     setContentScrollbar(-200, EsetContentScrollbarMode.add)
   } else if (event.key === 'ArrowDown') {

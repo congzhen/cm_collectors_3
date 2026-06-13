@@ -242,7 +242,15 @@ const scrollToCurrentItem = () => {
 }
 
 // 键盘事件处理函数
+const isInputTarget = (target: EventTarget | null) => {
+  const el = target as HTMLElement | null;
+  if (!el) return false;
+  const tagName = el.tagName?.toLowerCase();
+  return tagName === 'input' || tagName === 'textarea' || tagName === 'select' || el.isContentEditable;
+}
+
 const handleKeyDown = (event: KeyboardEvent) => {
+  if (isInputTarget(event.target)) return;
   // 上/左箭头键触发上一个
   if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') {
     event.preventDefault();
