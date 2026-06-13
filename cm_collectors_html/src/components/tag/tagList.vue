@@ -253,6 +253,8 @@ const createTagHandle = (tagClassId: string) => {
     name: '',
     tagClass_id: tagClassId,
     keyWords: '',
+    aiDescription: '',
+    aiEnabled: true,
     hot: 0,
     sort: 0,
     status: true,

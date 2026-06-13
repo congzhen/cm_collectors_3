@@ -8,14 +8,16 @@ import (
 )
 
 type Tag struct {
-	ID         string               `json:"id" gorm:"primaryKey;type:char(20);"`
-	TagClassID string               `json:"tagClass_id" gorm:"column:tagClass_id;type:char(20);index:idx_tag_tagClassID;"`
-	Name       string               `json:"name" gorm:"type:varchar(200);"`
-	KeyWords   string               `json:"keyWords" gorm:"column:keyWords;type:varchar(500);"`
-	Hot        int                  `json:"hot" gorm:"type:int;default:0"`
-	Sort       int                  `json:"sort" gorm:"type:int;default:0"`
-	CreatedAt  *datatype.CustomTime `json:"-" gorm:"column:addTime;type:datetime"`
-	Status     bool                 `json:"status" gorm:"type:tinyint(1);default:1"`
+	ID            string               `json:"id" gorm:"primaryKey;type:char(20);"`
+	TagClassID    string               `json:"tagClass_id" gorm:"column:tagClass_id;type:char(20);index:idx_tag_tagClassID;"`
+	Name          string               `json:"name" gorm:"type:varchar(200);"`
+	KeyWords      string               `json:"keyWords" gorm:"column:keyWords;type:varchar(500);"`
+	AIDescription string               `json:"aiDescription" gorm:"column:aiDescription;type:text;"`
+	AIEnabled     bool                 `json:"aiEnabled" gorm:"column:aiEnabled;type:tinyint(1);default:1"`
+	Hot           int                  `json:"hot" gorm:"type:int;default:0"`
+	Sort          int                  `json:"sort" gorm:"type:int;default:0"`
+	CreatedAt     *datatype.CustomTime `json:"-" gorm:"column:addTime;type:datetime"`
+	Status        bool                 `json:"status" gorm:"type:tinyint(1);default:1"`
 }
 
 func (Tag) TableName() string {

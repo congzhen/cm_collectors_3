@@ -9,11 +9,14 @@
         <el-tab-pane label="文件数据库" name="fileDatabase">
           <fileDatabaseSetting v-if="activeName === 'fileDatabase'"></fileDatabaseSetting>
         </el-tab-pane>
-        <el-tab-pane label="演员数据集" name="performerDatabase">
+        <el-tab-pane label="演员数据库" name="performerDatabase">
           <performerSetting v-if="activeName === 'performerDatabase'"></performerSetting>
         </el-tab-pane>
-        <el-tab-pane label="标签数据集" name="tagDatabase">
+        <el-tab-pane label="标签数据库" name="tagDatabase">
           <tagSetting v-if="activeName === 'tagDatabase'"></tagSetting>
+        </el-tab-pane>
+        <el-tab-pane label="AI 自动标签" name="aiTag">
+          <aiTagSetting v-if="activeName === 'aiTag'"></aiTagSetting>
         </el-tab-pane>
         <el-tab-pane label="计划任务" name="cronJobs">
           <cronJobs v-if="activeName === 'cronJobs'"></cronJobs>
@@ -30,8 +33,6 @@
         <el-tab-pane label="自动备份" name="autoBackup">
           <autoBackup v-if="activeName === 'autoBackup'"></autoBackup>
         </el-tab-pane>
-
-
       </el-tabs>
     </div>
   </div>
@@ -44,6 +45,7 @@ import softSettings from '@/components/setting/softSettings/softSettings.vue';
 import fileDatabaseSetting from '@/components/setting/fileDatabaseSetting/fileDatabaseSetting.vue';
 import performerSetting from '@/components/setting/performerDatabaseSetting/performerDatabaseSetting.vue';
 import tagSetting from '@/components/setting/tagSetting/tagSetting.vue';
+import aiTagSetting from '@/components/setting/aiTag/aiTagSetting.vue';
 import cronJobs from '@/components/setting/cronJobs/cronJobs.vue';
 import duplicateDetection from '@/components/setting/duplicateDetection/duplicateDetection.vue';
 import databaseCleanup from '@/components/setting/databaseCleanup/databaseCleanup.vue';
@@ -71,10 +73,6 @@ const switchTab = (tabName: string) => {
     .setting-tabs {
       width: 100%;
       height: 100%;
-
-      .el-tab-pane {
-        height: 100%;
-      }
 
       .el-tab-pane {
         height: 100%;

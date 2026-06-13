@@ -180,6 +180,7 @@ const getJobTypeName = (type: string): string => {
     case 'scraperPerformer': return '刮削演员';
     case 'clear': return '清理';
     case 'videoFingerprint': return '视频指纹';
+    case 'aiTag': return 'AI 自动标签';
     default: return type;
   }
 };
@@ -192,6 +193,7 @@ const getJobTypeClass = (type: string): string => {
     case 'scraperPerformer': return 'job-type--performer';
     case 'clear': return 'job-type--clear';
     case 'videoFingerprint': return 'job-type--fingerprint';
+    case 'aiTag': return 'job-type--ai-tag';
     default: return '';
   }
 };
@@ -311,6 +313,11 @@ onMounted(() => {
                 &.job-type--fingerprint {
                   background-color: #f0f9ff;
                   color: #0ea5e9;
+                }
+
+                &.job-type--ai-tag {
+                  background-color: #f0fdf4;
+                  color: #15803d;
                 }
               }
 

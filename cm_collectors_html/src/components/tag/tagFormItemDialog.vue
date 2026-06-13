@@ -1,5 +1,5 @@
 <template>
-  <dialogForm ref="dialogFormRef" title="标签" width="400px" labelPosition="top" :modelValue="formData" :rules="formRules"
+  <dialogForm ref="dialogFormRef" title="标签" width="520px" labelPosition="top" :modelValue="formData" :rules="formRules"
     @submit="submitHandle">
     <el-form-item label="标签名称" prop="name">
       <el-input v-model="formData.name" />
@@ -9,6 +9,12 @@
         <el-option v-for="item, key in store.appStoreData.currentTagClass" :key="key" :label="item.name"
           :value="item.id"></el-option>
       </el-select>
+    </el-form-item>
+    <el-form-item label="AI 识别说明" prop="aiDescription">
+      <el-input v-model="formData.aiDescription" type="textarea" :rows="4" placeholder="用于解释简写标签、判定条件或典型画面特征" />
+    </el-form-item>
+    <el-form-item label="参与 AI 自动标签" prop="aiEnabled">
+      <el-switch v-model="formData.aiEnabled" />
     </el-form-item>
   </dialogForm>
 </template>
@@ -52,7 +58,11 @@ const submitHandle = async () => {
 }
 const open = (_mode: 'add' | 'edit', tag: I_tag) => {
   mode = _mode;
-  formData.value = { ...tag };
+  formData.value = {
+    ...tag,
+    aiDescription: tag.aiDescription || '',
+    aiEnabled: tag.aiEnabled ?? true,
+  };
   dialogFormRef.value?.open()
 }
 

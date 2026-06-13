@@ -11,6 +11,8 @@ export interface I_tag {
   name: string;
   keyWords: string;
   tagClass_id: string;
+  aiDescription: string;
+  aiEnabled: boolean;
   hot: number;
   sort: number;
   status: boolean;
@@ -28,4 +30,10 @@ export interface I_tagClass {
 export interface I_tagSort {
   id: string;
   sort: number;
+}
+
+export interface I_tagImportItem {
+  name: string;
+  aiDescription?: string;
+  aiEnabled?: boolean;
 }

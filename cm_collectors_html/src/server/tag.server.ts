@@ -1,5 +1,5 @@
 import request from "@/assets/request";
-import type { I_tag, I_tagClass, I_tagData, I_tagSort } from "@/dataType/tag.dataType";
+import type { I_tag, I_tagClass, I_tagData, I_tagImportItem, I_tagSort } from "@/dataType/tag.dataType";
 const routerGroupUri = '';
 export const tagServer = {
   tagDataByFilesBasesId: async (filesBases_id: string) => {
@@ -76,7 +76,7 @@ export const tagServer = {
       }
     });
   },
-  import: async (filesBases_Id: string, import_data: Record<string, string[]>) => {
+  import: async (filesBases_Id: string, import_data: Record<string, I_tagImportItem[]>) => {
     return await request<string>({
       url: `${routerGroupUri}/tag/import`,
       method: 'post',

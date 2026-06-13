@@ -38,6 +38,9 @@ func autoMigrate(db *gorm.DB) error {
 		&ResourcesTags{},
 		&Tag{},
 		&TagClass{},
+		&AiTagSetting{},
+		&AiTagEnabledFilesBases{},
+		&AiTagAnalysisRecord{},
 		&TvboxRecommend{},
 		&AutoBackupState{},
 	)
@@ -371,6 +374,17 @@ func AutoDatabase(db *gorm.DB) error {
 					return err
 				}
 				return nil
+			},
+		},
+		{
+			ID: "ai_auto_tagging",
+			Migrate: func(tx *gorm.DB) error {
+				err := tx.AutoMigrate(&Tag{}, &AiTagSetting{}, &AiTagEnabledFilesBases{}, &AiTagAnalysisRecord{})
+				if err != nil {
+					core.LogErr(err)
+					return err
+				}
+				return tx.Model(&Tag{}).Where("aiEnabled IS NULL").Update("aiEnabled", true).Error
 			},
 		},
 	})

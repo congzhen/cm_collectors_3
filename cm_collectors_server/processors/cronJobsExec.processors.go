@@ -110,6 +110,9 @@ func (t CronJobsExec) executeJobTask(data models.CronJobs) error {
 	case datatype.E_cronJobsType_VideoFingerprint:
 		// 视频指纹计算任务
 		return t.cronJobs_VideoFingerprint(data)
+	case datatype.E_cronJobsType_AiTag:
+		// AI自动标签任务
+		return t.cronJobs_AiTag(data)
 	default:
 		return fmt.Errorf("未知任务类型: %s", data.JobsType)
 	}
@@ -208,6 +211,12 @@ func (t CronJobsExec) cronJobs_ScraperResource(data models.CronJobs) error {
 func (t CronJobsExec) cronJobs_VideoFingerprint(data models.CronJobs) error {
 	fmt.Println("执行计划任务:", data.FilesBases.Name, data.JobsType, data.CronExpression)
 	return VideoFingerprint{}.ComputeWithReScanByFilesBasesID(data.FilesBasesId, 100)
+}
+
+// AI自动标签任务处理
+func (t CronJobsExec) cronJobs_AiTag(data models.CronJobs) error {
+	fmt.Println("执行计划任务:", data.FilesBases.Name, data.JobsType, data.CronExpression)
+	return AiTag{}.RunForCron(data.FilesBasesId)
 }
 
 // 导入任务处理

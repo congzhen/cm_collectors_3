@@ -6,6 +6,7 @@ import (
 	"cm_collectors_server/errorMessage"
 	"cm_collectors_server/models"
 	"cm_collectors_server/utils"
+	"encoding/json"
 	"strings"
 
 	"gorm.io/gorm"
@@ -16,6 +17,27 @@ type Tag struct{}
 type TagData struct {
 	TagClass *[]models.TagClass `json:"tagClass"`
 	Tag      *[]models.Tag      `json:"tag"`
+}
+
+type importTagItem struct {
+	Name             string  `json:"name"`
+	AIDescription    *string `json:"aiDescription,omitempty"`
+	AIEnabled        *bool   `json:"aiEnabled,omitempty"`
+	HasAIDescription bool    `json:"-"`
+}
+
+func (i *importTagItem) UnmarshalJSON(data []byte) error {
+	type alias importTagItem
+	var raw alias
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	*i = importTagItem(raw)
+	var fieldMap map[string]json.RawMessage
+	if err := json.Unmarshal(data, &fieldMap); err == nil {
+		_, i.HasAIDescription = fieldMap["aiDescription"]
+	}
+	return nil
 }
 
 func (t Tag) TagData(filesBasesID string) (*TagData, error) {
@@ -116,7 +138,11 @@ func (Tag) GetTotalByTagClassID(tagClassID string) (int64, error) {
 	return models.Tag{}.GetTotalByTagClassID(core.DBS(), tagClassID)
 }
 
-func (t Tag) ImportTag(filesBasesID string, importData map[string][]string) error {
+func (t Tag) ImportTag(filesBasesID string, importDataRaw json.RawMessage) error {
+	importData, err := t.normalizeImportTagData(importDataRaw)
+	if err != nil {
+		return err
+	}
 	db := core.DBS()
 	return db.Transaction(func(tx *gorm.DB) error {
 		tagData, err := t.TagData(filesBasesID)
@@ -124,7 +150,6 @@ func (t Tag) ImportTag(filesBasesID string, importData map[string][]string) erro
 			return err
 		}
 
-		// 创建映射以提高查找效率
 		tagClassMap := make(map[string]*models.TagClass)
 		tagMap := make(map[string]*models.Tag)
 
@@ -138,20 +163,15 @@ func (t Tag) ImportTag(filesBasesID string, importData map[string][]string) erro
 
 		for tagClassName, tagSlc := range importData {
 			oldNameTagClass, newNameTagClass := t.ParseTagName(tagClassName)
-
-			// 判断tagClassList中是否已有该旧名，如果有且新旧名字不同，则修改，若没有，则用新名称创建
 			var tagClassID string
 			if existingTagClass, exists := tagClassMap[oldNameTagClass]; exists {
 				tagClassID = existingTagClass.ID
 				if oldNameTagClass != newNameTagClass {
-					// 修改tagClassName
-					err := TagClass{}.UpdateNameByID_DB(tx, existingTagClass.ID, newNameTagClass)
-					if err != nil {
+					if err := (TagClass{}).UpdateNameByID_DB(tx, existingTagClass.ID, newNameTagClass); err != nil {
 						return err
 					}
 				}
 			} else {
-				// 如果不存在，则创建新的标签分类
 				tagClassID, err = TagClass{}.Create_DB(tx, &datatype.ReqParam_TagClass{
 					FilesBasesID: filesBasesID,
 					Name:         newNameTagClass,
@@ -161,25 +181,44 @@ func (t Tag) ImportTag(filesBasesID string, importData map[string][]string) erro
 				}
 			}
 
-			// 处理标签
-			for _, tagName := range tagSlc {
-				oldNameTag, newNameTag := t.ParseTagName(tagName)
-
+			for _, tagItem := range tagSlc {
+				oldNameTag, newNameTag := t.ParseTagName(tagItem.Name)
 				if existingTag, exists := tagMap[oldNameTag]; exists {
+					fields := []string{}
+					tagUpdate := models.Tag{ID: existingTag.ID}
 					if oldNameTag != newNameTag || existingTag.TagClassID != tagClassID {
-						// 修改tagName
-						err := t.UpdateNameAndTagClassIDByID_DB(tx, existingTag.ID, newNameTag, tagClassID)
-						if err != nil {
+						tagUpdate.Name = newNameTag
+						tagUpdate.TagClassID = tagClassID
+						tagUpdate.KeyWords = utils.PinyinInitials(newNameTag)
+						fields = append(fields, "name", "keyWords", "tagClass_id")
+					}
+					if tagItem.HasAIDescription {
+						aiDescription := ""
+						if tagItem.AIDescription != nil {
+							aiDescription = *tagItem.AIDescription
+						}
+						tagUpdate.AIDescription = strings.TrimSpace(aiDescription)
+						fields = append(fields, "aiDescription")
+					}
+					if tagItem.AIEnabled != nil {
+						tagUpdate.AIEnabled = *tagItem.AIEnabled
+						fields = append(fields, "aiEnabled")
+					}
+					if len(fields) > 0 {
+						if err := (models.Tag{}).Update(tx, &tagUpdate, fields); err != nil {
 							return err
 						}
 					}
 				} else {
-					// 如果标签不存在，则创建新标签
-					_, err = t.Create_DB(tx, &datatype.ReqParam_Tag{
+					par := datatype.ReqParam_Tag{
 						TagClassID: tagClassID,
 						Name:       newNameTag,
-					})
-					if err != nil {
+						AIEnabled:  tagItem.AIEnabled,
+					}
+					if tagItem.HasAIDescription && tagItem.AIDescription != nil {
+						par.AIDescription = *tagItem.AIDescription
+					}
+					if _, err = t.Create_DB(tx, &par); err != nil {
 						return err
 					}
 				}
@@ -187,6 +226,50 @@ func (t Tag) ImportTag(filesBasesID string, importData map[string][]string) erro
 		}
 		return nil
 	})
+}
+
+func (t Tag) normalizeImportTagData(importDataRaw json.RawMessage) (map[string][]importTagItem, error) {
+	result := map[string][]importTagItem{}
+	if len(importDataRaw) == 0 || string(importDataRaw) == "null" {
+		return result, nil
+	}
+
+	var newData map[string][]importTagItem
+	if err := json.Unmarshal(importDataRaw, &newData); err == nil {
+		for tagClassName, tags := range newData {
+			tagClassName = strings.TrimSpace(tagClassName)
+			if tagClassName == "" {
+				continue
+			}
+			for _, tag := range tags {
+				tag.Name = strings.TrimSpace(tag.Name)
+				if tag.Name == "" {
+					continue
+				}
+				result[tagClassName] = append(result[tagClassName], tag)
+			}
+		}
+		return result, nil
+	}
+
+	var oldData map[string][]string
+	if err := json.Unmarshal(importDataRaw, &oldData); err != nil {
+		return nil, err
+	}
+	for tagClassName, tags := range oldData {
+		tagClassName = strings.TrimSpace(tagClassName)
+		if tagClassName == "" {
+			continue
+		}
+		for _, tagName := range tags {
+			tagName = strings.TrimSpace(tagName)
+			if tagName == "" {
+				continue
+			}
+			result[tagClassName] = append(result[tagClassName], importTagItem{Name: tagName})
+		}
+	}
+	return result, nil
 }
 
 // ParseTagName 解析标签名称，如果含有 => 则分解为旧名称和新名称，否则两个名称相同
@@ -215,14 +298,20 @@ func (t Tag) Create_DB(db *gorm.DB, par *datatype.ReqParam_Tag) (string, error) 
 	timeNow := datatype.CustomTime(core.TimeNow())
 	id := core.GenerateUniqueID()
 	name := strings.TrimSpace(par.Name)
+	aiEnabled := true
+	if par.AIEnabled != nil {
+		aiEnabled = *par.AIEnabled
+	}
 	tagModels := models.Tag{
-		ID:         id,
-		TagClassID: par.TagClassID,
-		Name:       name,
-		KeyWords:   utils.PinyinInitials(name),
-		Sort:       int(tagTotal) + 1,
-		CreatedAt:  &timeNow,
-		Status:     true,
+		ID:            id,
+		TagClassID:    par.TagClassID,
+		Name:          name,
+		KeyWords:      utils.PinyinInitials(name),
+		AIDescription: strings.TrimSpace(par.AIDescription),
+		AIEnabled:     aiEnabled,
+		Sort:          int(tagTotal) + 1,
+		CreatedAt:     &timeNow,
+		Status:        true,
 	}
 	return id, tagModels.Create(db, &tagModels)
 }
@@ -230,14 +319,20 @@ func (t Tag) Create_DB(db *gorm.DB, par *datatype.ReqParam_Tag) (string, error) 
 func (Tag) Update(tag *datatype.ReqParam_Tag) error {
 	db := core.DBS()
 	name := strings.TrimSpace(tag.Name)
+	aiEnabled := true
+	if tag.AIEnabled != nil {
+		aiEnabled = *tag.AIEnabled
+	}
 	return models.Tag{}.Update(db, &models.Tag{
-		ID:         tag.ID,
-		Name:       name,
-		TagClassID: tag.TagClassID,
-		KeyWords:   utils.PinyinInitials(name),
-		Sort:       tag.Sort,
-		Status:     tag.Status,
-	}, []string{"name", "keyWords", "tagClass_id", "sort", "status"})
+		ID:            tag.ID,
+		Name:          name,
+		TagClassID:    tag.TagClassID,
+		KeyWords:      utils.PinyinInitials(name),
+		AIDescription: strings.TrimSpace(tag.AIDescription),
+		AIEnabled:     aiEnabled,
+		Sort:          tag.Sort,
+		Status:        tag.Status,
+	}, []string{"name", "keyWords", "tagClass_id", "aiDescription", "aiEnabled", "sort", "status"})
 }
 func (Tag) UpdateNameAndTagClassIDByID_DB(db *gorm.DB, id, name, tagClassID string) error {
 	name = strings.TrimSpace(name)

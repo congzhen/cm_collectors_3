@@ -26,6 +26,7 @@ const (
 	E_cronJobsType_ScraperPerformer E_cronJobsType = "scraperPerformer"
 	E_cronJobsType_Clear            E_cronJobsType = "clear"
 	E_cronJobsType_VideoFingerprint E_cronJobsType = "videoFingerprint"
+	E_cronJobsType_AiTag            E_cronJobsType = "aiTag"
 )
 
 type App_Config struct {

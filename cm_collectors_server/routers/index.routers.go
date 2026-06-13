@@ -206,6 +206,21 @@ func AdminRouter(router *gin.Engine) {
 	routerGroup.PUT("videoFingerprint/resetFailed", controllers.VideoFingerprint{}.ResetFailed)
 	routerGroup.POST("videoFingerprint/deleteDramaSeries", controllers.VideoFingerprint{}.DeleteDramaSeries)
 	routerGroup.DELETE("videoFingerprint/resetAll", controllers.VideoFingerprint{}.ResetAll)
+
+	routerGroup.GET("aiTag/setting", controllers.AiTag{}.Setting)
+	routerGroup.PUT("aiTag/setting", controllers.AiTag{}.SaveSetting)
+	routerGroup.GET("aiTag/filesBases", controllers.AiTag{}.FilesBases)
+	routerGroup.PUT("aiTag/filesBases", controllers.AiTag{}.SaveFilesBases)
+	routerGroup.GET("aiTag/stats", controllers.AiTag{}.Stats)
+	routerGroup.GET("aiTag/records", controllers.AiTag{}.Records)
+	routerGroup.POST("aiTag/runOnce", controllers.AiTag{}.RunOnce)
+	routerGroup.POST("aiTag/resetFailed", controllers.AiTag{}.ResetFailed)
+	routerGroup.POST("aiTag/resetProcessing", controllers.AiTag{}.ResetProcessing)
+	routerGroup.POST("aiTag/pause", controllers.AiTag{}.Pause)
+	routerGroup.POST("aiTag/resume", controllers.AiTag{}.Resume)
+	routerGroup.POST("aiTag/rescan", controllers.AiTag{}.Rescan)
+	routerGroup.POST("aiTag/testService", controllers.AiTag{}.TestService)
+	routerGroup.POST("aiTag/testConnection", controllers.AiTag{}.TestConnection)
 }
 func SFMRouter(router *gin.Engine) {
 	routerGroup := router.Group("/api", middleware.AdminLoginApiMiddleware())

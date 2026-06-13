@@ -1,5 +1,7 @@
 package datatype
 
+import "encoding/json"
+
 type ParPaging struct {
 	Page       int  `json:"page" binding:"required"`
 	Limit      int  `json:"limit" binding:"required"`
@@ -210,11 +212,13 @@ type ReqParam_TagClass struct {
 
 // 请求参数 - 修改Tag
 type ReqParam_Tag struct {
-	ID         string `json:"id"`
-	TagClassID string `json:"tagClass_id"`
-	Name       string `json:"name"`
-	Sort       int    `json:"sort"`
-	Status     bool   `json:"status"`
+	ID            string `json:"id"`
+	TagClassID    string `json:"tagClass_id"`
+	Name          string `json:"name"`
+	AIDescription string `json:"aiDescription"`
+	AIEnabled     *bool  `json:"aiEnabled"`
+	Sort          int    `json:"sort"`
+	Status        bool   `json:"status"`
 }
 
 // 请求参数 - 修改TagData排序
@@ -228,8 +232,8 @@ type TagSort struct {
 }
 
 type ReqParam_ImportTag struct {
-	FilesBasesID string              `json:"filesBases_id"`
-	ImportData   map[string][]string `json:"import_data"`
+	FilesBasesID string          `json:"filesBases_id"`
+	ImportData   json.RawMessage `json:"import_data"`
 }
 
 type ReqParam_FFmpeg_VideoKeyFramePosters struct {

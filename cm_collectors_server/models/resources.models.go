@@ -51,7 +51,7 @@ func (Resources) Preload(db *gorm.DB) *gorm.DB {
 				Order("tagClass.sort asc, tag.sort asc")
 		}).
 		Preload("ResourcesDramaSeries", func(db *gorm.DB) *gorm.DB {
-			return db.Order("sort asc")
+			return db.Order("sort asc, src asc, id asc")
 		})
 }
 
