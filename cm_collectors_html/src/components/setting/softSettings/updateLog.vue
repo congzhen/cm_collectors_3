@@ -16,6 +16,32 @@
         </div>
       </el-timeline-item>
       -->
+      <el-timeline-item center timestamp="2026/6/14" placement="top">
+        <h4 class="version-title">版本: v 3.1.0</h4>
+        <div class="rawContent">
+          <h5 class="section-title">新特性</h5>
+          <p class="logContent">新增 AI 自动标签功能，可根据资源信息自动生成并写入标签</p>
+          <p class="logContent">新增自动备份功能，支持查看备份列表、手动执行备份和删除历史备份</p>
+          <p class="logContent">新增库真实删除功能，可在设置中按库清理实际资源文件</p>
+          <p class="logContent">新增演员回收站批量删除能力，提升演员数据清理效率</p>
+          <p class="logContent">新增标签分类删除功能，并优化标签状态管理</p>
+          <p class="logContent">新增资源批量设置评星功能</p>
+          <p class="logContent">新增封面视频时长显示，资源列表可直接查看视频封面时长信息</p>
+          <p class="logContent">新增移动端显示关闭配置，便于按部署场景控制移动端访问</p>
+          <p class="logContent">Wails 端新增开发者工具支持并增强窗口控制能力</p>
+        </div>
+        <div class="rawContent">
+          <h5 class="section-title optimization">优化</h5>
+          <p class="logContent">更新检测切换到 GitHub 更新配置源，兼容旧对象存储配置地址</p>
+          <p class="logContent">优化文件名解析逻辑，提升影视资源命名清洗与识别效果</p>
+          <p class="logContent">优化演员导入匹配逻辑，避免因名称匹配重复创建演员</p>
+          <p class="logContent">优化播放页明亮主题配色</p>
+        </div>
+        <div class="rawContent">
+          <h5 class="section-title bug-fix">BUG修复</h5>
+          <p class="logContent">修复输入框内方向键会触发页面快捷键的问题</p>
+        </div>
+      </el-timeline-item>
       <el-timeline-item center timestamp="2026/5/6" placement="top">
         <h4 class="version-title">版本: v 3.0.9</h4>
         <div class="rawContent">
