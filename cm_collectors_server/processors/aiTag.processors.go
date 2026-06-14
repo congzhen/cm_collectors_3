@@ -568,15 +568,23 @@ func (AiTag) nextPendingResource(setting *models.AiTagSetting, filesBasesID stri
 // success/failed/processing/skipped 都不会被普通扫描再次领取；失败重试必须显式 resetFailed。
 func (AiTag) nextPendingResourceInFilesBases(setting *models.AiTagSetting, enabled models.AiTagEnabledFilesBases) (*models.Resources, error) {
 	var resources []models.Resources
-	q := (models.Resources{}).Preload(core.DBS()).Where("filesBases_id = ? AND status = ? AND mode IN ?", enabled.FilesBasesID, true, []datatype.E_resourceMode{datatype.E_resourceMode_Movies, datatype.E_resourceMode_VideoLink})
-	if err := q.Order("addTime desc").Limit(setting.MaxResourcesPerRun * 5).Find(&resources).Error; err != nil {
+	db := core.DBS()
+	limit := maxInt(setting.MaxResourcesPerRun*5, 50)
+	// 这里必须在数据库层直接筛出“可领取”资源，不能只取最新一批再在内存里排除。
+	// 否则最新资源都已有 success/failed 记录时，更旧的未分析资源永远查不到，任务会表现为“点了立即执行但马上结束”。
+	q := (models.Resources{}).Preload(db).
+		Model(&models.Resources{}).
+		Joins("LEFT JOIN ai_tag_analysis_records ai_tag_record ON ai_tag_record.resources_id = resources.id").
+		Where("resources.filesBases_id = ? AND resources.status = ? AND resources.mode IN ?", enabled.FilesBasesID, true, []datatype.E_resourceMode{datatype.E_resourceMode_Movies, datatype.E_resourceMode_VideoLink}).
+		Where("(ai_tag_record.id IS NULL OR ai_tag_record.status = ? OR ai_tag_record.status = '')", models.AiTagRecordStatusPending)
+	if setting.WriteMode == models.AiTagWriteModeOnlyEmpty {
+		q = q.Where("NOT EXISTS (SELECT 1 FROM resourcesTags WHERE resourcesTags.resources_id = resources.id)")
+	}
+	if err := q.Order("resources.addTime desc").Limit(limit).Find(&resources).Error; err != nil {
 		return nil, err
 	}
 	for _, resource := range resources {
-		if setting.WriteMode == models.AiTagWriteModeOnlyEmpty && len(resource.Tags) > 0 {
-			continue
-		}
-		record, err := (models.AiTagAnalysisRecord{}).GetByResourceID(core.DBS(), resource.ID)
+		record, err := (models.AiTagAnalysisRecord{}).GetByResourceID(db, resource.ID)
 		claimable, err := isAiTagRecordClaimable(record, err)
 		if err != nil {
 			return nil, err
