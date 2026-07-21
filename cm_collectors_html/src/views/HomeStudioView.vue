@@ -84,6 +84,7 @@ const resourceModeLabels: Record<string, string> = {
   coverPosterSimpleExpand: '展开',
   coverPosterWaterfall: '瀑布',
   shortVideo: '短视频',
+  shortVideoTopBottom: '影廊',
   table: '表格',
 }
 

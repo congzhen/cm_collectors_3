@@ -25,6 +25,7 @@ export default {
     coverPosterSimpleExpand: '封面海报精简-扩展',
     coverPosterWaterfall: '封面海报瀑布流',
     shortVideo: '短视频',
+    shortVideoTopBottom: '影廊模式',
     table: '表格'
   },
   resourceDetailsShowMode: {

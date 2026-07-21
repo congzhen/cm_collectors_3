@@ -13,6 +13,10 @@
       v-else-if="store.appStoreData.currentConfigApp.resourcesShowMode == 'shortVideo'" :data-list="props.dataList"
       @select-resources="selectResourcesHandle">
     </layoutShortVideo>
+    <layoutShortVideoTopBottom ref="layoutShortVideoTopBottomRef"
+      v-else-if="store.appStoreData.currentConfigApp.resourcesShowMode == 'shortVideoTopBottom'"
+      :data-list="props.dataList" @select-resources="selectResourcesHandle">
+    </layoutShortVideoTopBottom>
     <layoutTable ref="layoutTableRef" v-else-if="store.appStoreData.currentConfigApp.resourcesShowMode == 'table'"
       :data-list="props.dataList" @select-resources="selectResourcesHandle">
     </layoutTable>
@@ -22,6 +26,7 @@
 import layoutCoverPoster from './layoutCoverPoster.vue';
 import layoutCoverPosterWaterfall from './layoutCoverPosterWaterfall.vue';
 import layoutShortVideo from './layoutShortVideo.vue';
+import layoutShortVideoTopBottom from './layoutShortVideoTopBottom.vue';
 import layoutTable from './layoutTable.vue';
 import type { I_resource } from '@/dataType/resource.dataType';
 import { ref, computed, type PropType } from 'vue';
@@ -42,6 +47,7 @@ const emits = defineEmits(['selectResources']);
 const layoutCoverPosterRef = ref<typeof layoutCoverPoster>();
 const layoutCoverPosterWaterfallRef = ref<typeof layoutCoverPosterWaterfall>();
 const layoutShortVideoRef = ref<typeof layoutShortVideo>();
+const layoutShortVideoTopBottomRef = ref<typeof layoutShortVideoTopBottom>();
 const layoutTableRef = ref<typeof layoutTable>();
 
 const contentListStyleObj_C = computed(() => {
@@ -72,6 +78,9 @@ const change = () => {
       break;
     case 'shortVideo':
       layoutShortVideoRef.value?.change();
+      break;
+    case 'shortVideoTopBottom':
+      layoutShortVideoTopBottomRef.value?.change();
       break;
     case 'table':
       layoutTableRef.value?.change();
