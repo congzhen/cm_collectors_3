@@ -76,6 +76,8 @@ const videoControlsRef = ref<InstanceType<typeof videoPlayControls> | null>(null
 const playCloudCheckPromptDialogRef = ref<InstanceType<typeof playCloudCheckPromptDialog> | null>(null)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const player = ref<any>(null) // 指定更合适的类型
+let playerSetupVersion = 0;
+let playerSetupTimer: number | undefined;
 const videoId = ref('');
 const videoSrc = ref('');
 const isHls = ref(false)
@@ -167,9 +169,21 @@ const videoOptions = (isMobileDevice: boolean) => {
 }
 
 const setupPlayer = (_sources: I_playerSource, callBack?: () => void) => {
+  const setupVersion = ++playerSetupVersion;
+
+  // video.js 会在媒体元素之外维护播放实例。切换 key 前必须先释放旧实例，
+  // 否则旧元素虽然从 Vue DOM 中移除，音轨仍可能继续播放。
+  window.clearTimeout(playerSetupTimer);
+  if (player.value) {
+    player.value.pause();
+    player.value.dispose();
+    player.value = null;
+  }
+
   indexkey.value++;
   nextTick(() => {
-    setTimeout(() => {
+    playerSetupTimer = window.setTimeout(() => {
+      if (setupVersion !== playerSetupVersion) return;
       initializePlayer(_sources, callBack);
     }, 100)
   })
@@ -848,9 +862,17 @@ onMounted(() => {
 
 // 组件销毁前释放播放器资源
 onBeforeUnmount(() => {
+  playerSetupVersion++;
+  window.clearTimeout(playerSetupTimer);
   if (player.value) {
+    player.value.pause()
     player.value.dispose()
     player.value = null
+  }
+  if (nativeVideoRef.value) {
+    nativeVideoRef.value.pause()
+    nativeVideoRef.value.removeAttribute('src')
+    nativeVideoRef.value.load()
   }
 })
 

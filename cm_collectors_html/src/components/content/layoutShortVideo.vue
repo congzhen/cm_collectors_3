@@ -90,17 +90,21 @@ const shortVideoPlayContainerRef = ref<HTMLDivElement>();
 const videoPlayRef = ref<InstanceType<typeof videoPlay>>();
 
 const currentPlayIndex = ref(-1);
+const currentPlayingDramaSeriesId = ref('');
+let sourceRequestVersion = 0;
 const dataListWrapper = computed(() => props.dataList);
 
 watch(dataListWrapper, () => {
-  init()
+  syncCurrentPlayIndex()
 }, { deep: true })
 
 
 watch(currentPlayIndex, (newVal) => {
   if (newVal < 0) return;
   scrollToCurrentItem();
-  setVideoSource(currentPlayDramaSeriesId_C.value);
+  const dramaSeriesId = currentPlayDramaSeriesId_C.value;
+  if (dramaSeriesId === currentPlayingDramaSeriesId.value) return;
+  setVideoSource(dramaSeriesId);
 })
 
 // 监听waterfallColumn变化，保存到本地存储
@@ -143,9 +147,21 @@ const waterfallBreakpoints_C = computed(() => {
   }
 });
 
-const init = () => {
-  currentPlayIndex.value = 0;
-  setVideoSource(currentPlayDramaSeriesId_C.value);
+const syncCurrentPlayIndex = () => {
+  if (dataListWrapper.value.length === 0) {
+    currentPlayIndex.value = -1;
+    return;
+  }
+
+  if (currentPlayingDramaSeriesId.value === '') {
+    currentPlayIndex.value = 0;
+    return;
+  }
+
+  // 翻页仅更新左侧列表。当前视频不在新页面时取消列表高亮，但保持右侧继续播放。
+  currentPlayIndex.value = dataListWrapper.value.findIndex(resource =>
+    resource.dramaSeries.some(dramaSeries => dramaSeries.id === currentPlayingDramaSeriesId.value)
+  );
 }
 
 const selectResourcesHandle = (item: I_resource) => {
@@ -166,9 +182,15 @@ const onImageLoad = debounce(() => {
 const setVideoSource = async (dramaSeriesId: string) => {
   const vp = videoPlayRef.value;
   if (!vp || dramaSeriesId == '') return;
+  currentPlayingDramaSeriesId.value = dramaSeriesId;
+  const requestVersion = ++sourceRequestVersion;
   const isPlaying = vp.isPlaying() || false;
+  // 异步获取新播放地址期间先停止旧音轨，防止切换后旧声音残留。
+  vp.pause();
   const { playUrl, playType } = await getPlayVideoURLAndType(dramaSeriesId)
+  if (requestVersion !== sourceRequestVersion) return;
   vp.setVideoSource(playUrl, playType, () => {
+    if (requestVersion !== sourceRequestVersion) return;
     vp.addTextTrack(
       `/api/video/subtitle/${dramaSeriesId}`,
       '默认字幕',
@@ -264,6 +286,7 @@ const handleKeyDown = (event: KeyboardEvent) => {
 }
 
 onMounted(() => {
+  syncCurrentPlayIndex();
   nextTick(() => {
     setVideoPlaySize();
   });
@@ -271,12 +294,13 @@ onMounted(() => {
   window.addEventListener('keydown', handleKeyDown);
 })
 onBeforeUnmount(() => {
+  sourceRequestVersion++;
+  videoPlayRef.value?.pause();
   // 移除键盘事件监听
   window.removeEventListener('keydown', handleKeyDown);
 })
 
 const change = () => {
-  init();
   nextTick(() => {
     scrollbarRef.value?.setScrollTop(0);
   });
