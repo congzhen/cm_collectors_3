@@ -6,13 +6,9 @@ import (
 	"cm_collectors_server/models"
 	processorsFFmpeg "cm_collectors_server/processorsFFmpeg"
 	"cm_collectors_server/utils"
-	"context"
 	"errors"
 	"os"
-	"os/exec"
 	"path/filepath"
-	"runtime"
-	"time"
 
 	"github.com/skratchdot/open-golang/open"
 )
@@ -145,64 +141,6 @@ func (p Play) PlayOpenResourceFolder(resourceId string) error {
 		return open.Run(folderPath)
 	}
 	return nil
-}
-
-func (p Play) openFolderAndSelectFile(filePath string) error {
-	var cmd *exec.Cmd
-
-	switch runtime.GOOS {
-	case "windows":
-		// Windows下使用 explorer 命令并添加 /select 参数来选中文件
-		cmd = exec.Command("explorer", "/select,", filePath)
-	case "darwin":
-		// macOS下使用 open 命令打开文件所在文件夹
-		// macOS没有直接选中文件的命令行选项
-		folderPath := filepath.Dir(filePath)
-		cmd = exec.Command("open", folderPath)
-	default:
-		// Linux下使用 xdg-open 命令打开文件所在文件夹
-		// 大多数Linux文件管理器没有直接选中文件的命令行选项
-		folderPath := filepath.Dir(filePath)
-		cmd = exec.Command("xdg-open", folderPath)
-	}
-
-	// 添加超时控制，防止进程挂起
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	cmd = exec.CommandContext(ctx, cmd.Path, cmd.Args[1:]...)
-
-	// 执行命令
-	err := cmd.Run()
-
-	// 特殊处理Windows下的explorer命令
-	// Windows的explorer命令有时会返回exit status 1，即使成功执行
-	if runtime.GOOS == "windows" {
-		if exitError, ok := err.(*exec.ExitError); ok {
-			// 如果是exit status 1，我们将其视为成功
-			if exitError.ExitCode() == 1 {
-				return nil
-			}
-		}
-	}
-
-	// 确保命令执行完成后资源得到释放
-	if cmd != nil && cmd.Process != nil {
-		// 等待一段时间确保进程完全退出
-		done := make(chan error, 1)
-		go func() {
-			done <- cmd.Wait()
-		}()
-
-		select {
-		case <-done:
-			// 正常完成
-		case <-time.After(1 * time.Second):
-			// 超时，强制杀死进程
-			cmd.Process.Kill()
-		}
-	}
-
-	return err
 }
 
 // 检测源路径是否存在
