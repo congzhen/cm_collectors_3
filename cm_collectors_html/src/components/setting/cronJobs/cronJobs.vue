@@ -10,7 +10,7 @@
       <div class="content-wrapper" v-loading="loading">
         <div class="jobs-grid">
           <div v-for="job in cronJobsList" :key="job.id" class="job-card"
-            :class="{ 'job-card--failed': !job.last_exec_status && job.last_exec_at }">
+            :class="{ 'job-card--failed': !isJobRunning(job) && !job.last_exec_status && job.last_exec_at }">
             <div class="job-card__header">
               <div class="job-info">
                 <span class="job-type" :class="getJobTypeClass(job.jobs_type)">
@@ -52,7 +52,8 @@
 
             <div class="job-card__footer">
               <div>
-                <el-button type="primary" size="small" @click="execJob(job)" class="action-btn">
+                <el-button type="primary" size="small" @click="execJob(job)" class="action-btn"
+                  :loading="executingJobIds.has(job.id)" :disabled="isJobRunning(job)">
                   <el-icon>
                     <Bell />
                   </el-icon>
@@ -84,7 +85,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { onMounted, onUnmounted, reactive, ref } from 'vue';
 import createCronJobsDrawer from './createCronJobsDrawer.vue';
 import { messageBox, messageBoxConfirm } from '@/common/messageBox';
 import { cronJobsServer } from '@/server/cronJobs.server';
@@ -99,14 +100,16 @@ const store = {
 const createCronJobsDrawerRef = ref<InstanceType<typeof createCronJobsDrawer>>();
 const loading = ref(false);
 const cronJobsList = ref<I_cronJobs_info[]>([]);
+const executingJobIds = reactive(new Set<string>());
+let refreshTimer: ReturnType<typeof setInterval> | undefined;
 
 const init = async () => {
   await getCronJobsList();
 }
 
-const getCronJobsList = async () => {
+const getCronJobsList = async (showLoading = true) => {
   try {
-    loading.value = true;
+    if (showLoading) loading.value = true;
     const result = await cronJobsServer.list();
     if (result && result.status) {
       cronJobsList.value = result.data.map(item => ({
@@ -114,12 +117,12 @@ const getCronJobsList = async () => {
         filesBasesName: '文件库名称' // 这里应该通过filesBasesId查询实际的文件库名称
       }));
     } else {
-      messageBox({ text: result.msg, type: 'error' });
+      if (showLoading) messageBox({ text: result.msg, type: 'error' });
     }
   } catch (error) {
-    messageBox({ text: String(error), type: 'error' });
+    if (showLoading) messageBox({ text: String(error), type: 'error' });
   } finally {
-    loading.value = false;
+    if (showLoading) loading.value = false;
   }
 };
 
@@ -128,16 +131,23 @@ const createHandle = () => {
 };
 
 const execJob = (job: I_cronJobs_info) => {
+  if (isJobRunning(job)) return;
   messageBoxConfirm({
     text: `确定要执行该任务吗？`,
     type: 'warning',
     successCallBack: async () => {
-      const result = await cronJobsServer.exec(job.id);
-      if (result && result.status) {
-        messageBox({ text: '执行成功', type: 'success' });
-        getCronJobsList();
-      } else {
-        messageBox({ text: result.msg, type: 'error' });
+      if (isJobRunning(job)) return;
+      executingJobIds.add(job.id);
+      try {
+        const result = await cronJobsServer.exec(job.id);
+        if (result && result.status) {
+          messageBox({ text: '执行成功', type: 'success' });
+        } else {
+          messageBox({ text: result.msg, type: 'error' });
+        }
+      } finally {
+        executingJobIds.delete(job.id);
+        await getCronJobsList(false);
       }
     },
     failCallBack: () => {
@@ -200,16 +210,22 @@ const getJobTypeClass = (type: string): string => {
 
 // 获取状态文本
 const getStatusText = (job: I_cronJobs_info): string => {
+  if (isJobRunning(job)) return '执行中';
   if (job.last_exec_status) return '成功';
   if (job.last_exec_at) return '失败';
   return '未执行';
 };
 
 // 获取状态标签类型
-const getStatusType = (job: I_cronJobs_info): 'success' | 'danger' | 'info' => {
+const getStatusType = (job: I_cronJobs_info): 'success' | 'warning' | 'danger' | 'info' => {
+  if (isJobRunning(job)) return 'warning';
   if (job.last_exec_status) return 'success';
   if (job.last_exec_at) return 'danger';
   return 'info';
+};
+
+const isJobRunning = (job: I_cronJobs_info): boolean => {
+  return job.running || executingJobIds.has(job.id);
 };
 
 // 格式化日期时间
@@ -228,6 +244,11 @@ const truncateText = (text: string, length: number): string => {
 
 onMounted(() => {
   init();
+  refreshTimer = setInterval(() => getCronJobsList(false), 2000);
+});
+
+onUnmounted(() => {
+  if (refreshTimer) clearInterval(refreshTimer);
 });
 </script>
 

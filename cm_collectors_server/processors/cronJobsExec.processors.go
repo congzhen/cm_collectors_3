@@ -2,6 +2,7 @@ package processors
 
 import (
 	"cm_collectors_server/datatype"
+	"cm_collectors_server/errorMessage"
 	"cm_collectors_server/models"
 	"fmt"
 	"time"
@@ -61,7 +62,9 @@ func (t CronJobsExec) RegCronJobs() error {
 
 			// 执行任务
 			execErr := t.ExecuteJob(jobCopy)
-			if execErr != nil {
+			if execErr == errorMessage.Err_CronJobs_Running {
+				fmt.Printf("跳过计划任务 [%s]: 上一轮尚未执行完成\n", job.JobsType)
+			} else if execErr != nil {
 				fmt.Printf("计划任务执行完成 [%s]: %v\n", job.JobsType, execErr)
 			} else {
 				fmt.Printf("计划任务执行完成 [%s]: 成功\n", job.JobsType)
@@ -79,6 +82,11 @@ func (t CronJobsExec) RegCronJobs() error {
 	return nil
 }
 func (t CronJobsExec) ExecuteJob(data models.CronJobs) error {
+	if !cronJobExecutions.tryStart(data.ID) {
+		return errorMessage.Err_CronJobs_Running
+	}
+	defer cronJobExecutions.finish(data.ID)
+
 	// 执行任务核心逻辑
 	err := t.executeJobTask(data)
 

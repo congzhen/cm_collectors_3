@@ -14,4 +14,5 @@ export interface I_cronJobs_info extends I_cronJobs {
   last_exec_error: string;
   last_exec_status: boolean;
   status: boolean;
+  running: boolean;
 }

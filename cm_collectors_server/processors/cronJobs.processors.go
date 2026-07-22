@@ -12,7 +12,14 @@ import (
 type CronJobs struct{}
 
 func (CronJobs) DataList() (*[]models.CronJobs, error) {
-	return models.CronJobs{}.DataList(core.DBS())
+	list, err := models.CronJobs{}.DataList(core.DBS())
+	if err != nil {
+		return nil, err
+	}
+	for i := range *list {
+		(*list)[i].Running = cronJobExecutions.isRunning((*list)[i].ID)
+	}
+	return list, nil
 }
 
 func (CronJobs) InfoByID_DB(db *gorm.DB, id string) (*models.CronJobs, error) {

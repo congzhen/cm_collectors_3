@@ -17,6 +17,7 @@ type CronJobs struct {
 	LastExecError  string                  `json:"last_exec_error" gorm:"type:varchar(255);"`
 	LastExecStatus bool                    `json:"last_exec_status" gorm:"type:tinyint(1);"`
 	Status         bool                    `json:"status" gorm:"type:tinyint(1);"`
+	Running        bool                    `json:"running" gorm:"-"`
 }
 
 func (CronJobs) TableName() string {
