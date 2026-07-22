@@ -6,6 +6,11 @@
     <selectStar width="200px" @change="changeStarHandle" />
     <selectCup v-if="store.appStoreData.currentConfigApp.plugInUnit_Cup" :search-mode="true" width="200px"
       @change="changeCupHandle" />
+    <el-select v-model="searchData.sort" style="width: 180px" @change="changeSortHandle">
+      <el-option label="最新创建" value="createdAtDesc" />
+      <el-option label="影片数从多到少" value="resourceCountDesc" />
+      <el-option label="影片数从少到多" value="resourceCountAsc" />
+    </el-select>
     <el-button icon="Magnet" v-admin v-if="props.admin" @click="emits('scraper')">刮削</el-button>
   </div>
 </template>
@@ -30,7 +35,8 @@ const searchData = reactive<I_search_performer>({
   search: '',
   star: '',
   cup: '',
-  charIndex: ''
+  charIndex: '',
+  sort: 'createdAtDesc',
 })
 
 const emits = defineEmits(['add', 'recycleBin', 'search', 'scraper'])
@@ -46,6 +52,10 @@ const changeStarHandle = (val: string) => {
 }
 const changeCupHandle = (val: string) => {
   searchData.cup = val
+  emits('search', searchData)
+}
+
+const changeSortHandle = () => {
   emits('search', searchData)
 }
 

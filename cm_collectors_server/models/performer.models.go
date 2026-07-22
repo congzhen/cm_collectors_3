@@ -51,6 +51,12 @@ type performerResourceCount struct {
 	ResourceCount int64  `gorm:"column:resourceCount"`
 }
 
+const (
+	PerformerSortCreatedAtDesc     = "createdAtDesc"
+	PerformerSortResourceCountAsc  = "resourceCountAsc"
+	PerformerSortResourceCountDesc = "resourceCountDesc"
+)
+
 // resourceCountMap 批量统计一组演员在指定文件库中的资源数量。
 //
 // 这里不在 performer 列表查询中直接写逐行子查询，是为了避免一页演员触发多次
@@ -278,7 +284,7 @@ func (Performer) CountByPerformerBasesID(db *gorm.DB, performerBasesID string) (
 	return total, err
 }
 
-func (Performer) DataList(db *gorm.DB, performerBasesId string, fetchCount bool, page, limit int, search, star, cup, charIndex, countFilesBasesId string) (*[]Performer, int64, error) {
+func (t Performer) DataList(db *gorm.DB, performerBasesId string, fetchCount bool, page, limit int, search, star, cup, charIndex, sortMode, countFilesBasesId string) (*[]Performer, int64, error) {
 	var dataList []Performer
 	var total int64
 	offset := (page - 1) * limit
@@ -309,16 +315,92 @@ func (Performer) DataList(db *gorm.DB, performerBasesId string, fetchCount bool,
 			return nil, 0, err
 		}
 	}
-	query = query.Order("addTime desc").Limit(limit).Offset(offset)
+	resourceCountSort := sortMode == PerformerSortResourceCountAsc || sortMode == PerformerSortResourceCountDesc
+	if resourceCountSort {
+		resourceCountQuery := t.resourceCountSortQuery(db, performerBasesId, countFilesBasesId)
+		query = query.
+			Select("performer.*, COALESCE(performerResourceCounts.resourceCount, 0) AS resourceCount").
+			Joins("LEFT JOIN (?) AS performerResourceCounts ON performerResourceCounts.performer_id = performer.id", resourceCountQuery)
+		if sortMode == PerformerSortResourceCountAsc {
+			query = query.Order("COALESCE(performerResourceCounts.resourceCount, 0) asc")
+		} else {
+			query = query.Order("COALESCE(performerResourceCounts.resourceCount, 0) desc")
+		}
+		query = query.Order("performer.addTime desc").Order("performer.id desc")
+	} else {
+		query = query.Order("addTime desc").Order("id desc")
+	}
+	query = query.Limit(limit).Offset(offset)
 	err := query.Find(&dataList).Error
 	if err != nil {
 		return nil, 0, err
 	}
-	err = Performer{}.fillResourceCounts(db, dataList, countFilesBasesId)
-	if err != nil {
-		return nil, 0, err
+	if !resourceCountSort {
+		err = t.fillResourceCounts(db, dataList, countFilesBasesId)
+		if err != nil {
+			return nil, 0, err
+		}
 	}
 	return &dataList, total, err
+}
+
+// resourceCountSortQuery aggregates counts for one performer base only when
+// the caller explicitly sorts by resource count. Default list requests keep
+// using the cheaper page-first batch count path.
+func (Performer) resourceCountSortQuery(db *gorm.DB, performerBasesId, filesBasesId string) *gorm.DB {
+	if filesBasesId != "" {
+		return db.Raw(`
+			SELECT performerResources.performer_id, COUNT(*) AS resourceCount
+			FROM (
+				SELECT resourcesPerformers.performer_id, resourcesPerformers.resources_id
+				FROM resourcesPerformers
+				INNER JOIN resources ON resources.id = resourcesPerformers.resources_id
+				INNER JOIN performer ON performer.id = resourcesPerformers.performer_id
+				WHERE resources.status = 1
+					AND resources.filesBases_id = ?
+					AND performer.performerBases_id = ?
+				UNION
+				SELECT resourcesDirectors.performer_id, resourcesDirectors.resources_id
+				FROM resourcesDirectors
+				INNER JOIN resources ON resources.id = resourcesDirectors.resources_id
+				INNER JOIN performer ON performer.id = resourcesDirectors.performer_id
+				WHERE resources.status = 1
+					AND resources.filesBases_id = ?
+					AND performer.performerBases_id = ?
+			) AS performerResources
+			GROUP BY performerResources.performer_id
+		`, filesBasesId, performerBasesId, filesBasesId, performerBasesId)
+	}
+
+	return db.Raw(`
+		SELECT performerResources.performer_id, COUNT(*) AS resourceCount
+		FROM (
+			SELECT resourcesPerformers.performer_id, resourcesPerformers.resources_id
+			FROM resourcesPerformers
+			INNER JOIN resources ON resources.id = resourcesPerformers.resources_id
+			INNER JOIN performer ON performer.id = resourcesPerformers.performer_id
+			WHERE resources.status = 1
+				AND performer.performerBases_id = ?
+				AND EXISTS (
+					SELECT 1 FROM filesRelatedPerformerBases
+					WHERE filesRelatedPerformerBases.filesBases_id = resources.filesBases_id
+						AND filesRelatedPerformerBases.performerBases_id = performer.performerBases_id
+				)
+			UNION
+			SELECT resourcesDirectors.performer_id, resourcesDirectors.resources_id
+			FROM resourcesDirectors
+			INNER JOIN resources ON resources.id = resourcesDirectors.resources_id
+			INNER JOIN performer ON performer.id = resourcesDirectors.performer_id
+			WHERE resources.status = 1
+				AND performer.performerBases_id = ?
+				AND EXISTS (
+					SELECT 1 FROM filesRelatedPerformerBases
+					WHERE filesRelatedPerformerBases.filesBases_id = resources.filesBases_id
+						AND filesRelatedPerformerBases.performerBases_id = performer.performerBases_id
+				)
+		) AS performerResources
+		GROUP BY performerResources.performer_id
+	`, performerBasesId, performerBasesId)
 }
 func (Performer) DataListByIds(db *gorm.DB, ids []string) (*[]Performer, error) {
 	var dataList []Performer

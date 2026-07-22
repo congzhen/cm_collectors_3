@@ -112,6 +112,7 @@ let searchCondition: I_search_performer = {
   star: '',
   cup: '',
   charIndex: '',
+  sort: 'createdAtDesc',
 }
 
 const currentShowPerformer = ref<I_performer | undefined>(undefined);

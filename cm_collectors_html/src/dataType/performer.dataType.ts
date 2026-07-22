@@ -30,6 +30,7 @@ export interface I_search_performer {
   star: string;
   cup: string;
   charIndex: string;
+  sort: 'createdAtDesc' | 'resourceCountDesc' | 'resourceCountAsc';
 }
 
 
