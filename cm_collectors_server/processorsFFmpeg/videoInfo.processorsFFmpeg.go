@@ -41,13 +41,19 @@ const (
 // VideoFormatInfo 保存视频格式信息的结构体
 type VideoFormatInfo struct {
 	Streams []struct {
-		CodecType string `json:"codec_type"`
-		CodecName string `json:"codec_name"`
-		Profile   string `json:"profile"`
-		Width     int    `json:"width,omitempty"`
-		Height    int    `json:"height,omitempty"`
-		Duration  string `json:"duration,omitempty"`
-		BitRate   string `json:"bit_rate,omitempty"`
+		CodecType        string `json:"codec_type"`
+		CodecName        string `json:"codec_name"`
+		Profile          string `json:"profile"`
+		PixelFormat      string `json:"pix_fmt,omitempty"`
+		Level            int    `json:"level,omitempty"`
+		Width            int    `json:"width,omitempty"`
+		Height           int    `json:"height,omitempty"`
+		Duration         string `json:"duration,omitempty"`
+		BitRate          string `json:"bit_rate,omitempty"`
+		BitsPerRawSample string `json:"bits_per_raw_sample,omitempty"`
+		SampleRate       string `json:"sample_rate,omitempty"`
+		Channels         int    `json:"channels,omitempty"`
+		ChannelLayout    string `json:"channel_layout,omitempty"`
 	} `json:"streams"`
 	Format struct {
 		Filename   string `json:"filename,omitempty"`

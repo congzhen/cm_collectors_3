@@ -36,6 +36,7 @@ cm_collectors_server/db_backup/
 
 cm_collectors_server/err.log
 cm_collectors_server/gin.log
+cm_collectors_server/playback_error.log
 
 cm_collectors_server/auto_backup/*
 cm_collectors_server/html/*

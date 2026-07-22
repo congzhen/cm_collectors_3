@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strings"
 )
 
 type FFmpeg struct{}
@@ -59,6 +60,17 @@ func (f FFmpeg) IsFFmpegAvailable() (string, error) {
 //	error: 如果未找到ffprobe或无法执行，则返回错误信息
 func (f FFmpeg) IsFFprobeAvailable() (string, error) {
 	return f.isToolAvailable("ffprobe")
+}
+
+// GetToolVersion 返回 FFmpeg/FFprobe 版本输出的第一行，供异常诊断日志使用。
+func (f FFmpeg) GetToolVersion(toolPath string) (string, error) {
+	cmd := createCommand(toolPath, "-version")
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return "", fmt.Errorf("读取工具版本失败: %w", err)
+	}
+	firstLine, _, _ := strings.Cut(strings.TrimSpace(string(output)), "\n")
+	return strings.TrimSpace(firstLine), nil
 }
 
 // 检查指定工具是否可用的通用方法
