@@ -47,20 +47,21 @@ type App_Config_Scraper struct {
 
 type App_SystemConfig struct {
 	App_Config
-	AdminPassword                string                `json:"adminPassword"`
-	Language                     string                `json:"language"`
-	NotAllowServerOpenFile       bool                  `json:"notAllowServerOpenFile"`
-	AllowAppCloseServer          bool                  `json:"allowAppCloseServer"`
-	Theme                        string                `json:"theme"`
-	PlayVideoFormats             []string              `json:"playVideoFormats"`
-	PlayAudioFormats             []string              `json:"playAudioFormats"`
-	WindowsStartNotRunApp        bool                  `json:"windowsStartNotRunApp"`
-	TvBoxEnabled                 bool                  `json:"tvBoxEnabled"`
-	VideoRateLimit               config.VideoRateLimit `json:"videoRateLimit"`
-	Scraper                      App_Config_Scraper    `json:"scraper"`
-	TaryMenu                     []config.TaryMenu     `json:"taryMenu"`
-	ServerFileManagementRootPath []string              `json:"serverFileManagementRootPath"`
-	AutoBackup                   config.AutoBackup     `json:"autoBackup"`
+	AdminPassword                string                        `json:"adminPassword"`
+	Language                     string                        `json:"language"`
+	NotAllowServerOpenFile       bool                          `json:"notAllowServerOpenFile"`
+	AllowAppCloseServer          bool                          `json:"allowAppCloseServer"`
+	Theme                        string                        `json:"theme"`
+	PlayVideoFormats             []string                      `json:"playVideoFormats"`
+	PlayAudioFormats             []string                      `json:"playAudioFormats"`
+	WindowsStartNotRunApp        bool                          `json:"windowsStartNotRunApp"`
+	TvBoxEnabled                 bool                          `json:"tvBoxEnabled"`
+	VideoRateLimit               config.VideoRateLimit         `json:"videoRateLimit"`
+	Scraper                      App_Config_Scraper            `json:"scraper"`
+	TaryMenu                     []config.TaryMenu             `json:"taryMenu"`
+	ServerFileManagementRootPath []string                      `json:"serverFileManagementRootPath"`
+	AutoBackup                   config.AutoBackup             `json:"autoBackup"`
+	PerformerAvatarLibrary       config.PerformerAvatarLibrary `json:"performerAvatarLibrary"`
 }
 
 // 用户类型

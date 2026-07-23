@@ -82,6 +82,10 @@ cache:
     freeCache:
         maxMemoryMB: 100
         defaultExpireSec: 3600
+performerAvatarLibrary:
+    cachePath: ./runtime/cache/gfriends/
+    customBaseUrl: ""
+    defaultStrategy: recommended
 serverFileManagement:
     rootPath:
         - /

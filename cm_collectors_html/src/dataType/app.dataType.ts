@@ -1,5 +1,6 @@
 import type { I_filesBases } from "./filesBases.dataType";
 import type { I_performerBases } from "./performer.dataType";
+import type { I_performerAvatarLibraryConfig } from "./performerAvatarLibrary.dataType";
 
 //header模式
 export enum E_headerMode {
@@ -151,6 +152,7 @@ export interface I_appSystemConfig extends I_appConfig {
   scraper: I_appConfig_scraper;
   taryMenu: I_taryMenu[];
   autoBackup: I_autoBackupConfig;
+  performerAvatarLibrary: I_performerAvatarLibraryConfig;
 }
 export interface I_video_basic_info {
   width: number;

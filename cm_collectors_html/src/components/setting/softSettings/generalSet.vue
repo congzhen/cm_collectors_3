@@ -207,6 +207,11 @@ const formData = ref<I_appSystemConfig>({
     resourceChangeThreshold: 0,
     maxBackups: 5,
   },
+  performerAvatarLibrary: {
+    cachePath: './runtime/cache/gfriends/',
+    customBaseUrl: '',
+    defaultStrategy: 'recommended',
+  },
   taryMenu: [],
 })
 

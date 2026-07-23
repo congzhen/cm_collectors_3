@@ -1,5 +1,5 @@
 import router from '@/router';
-import axios, { type AxiosRequestConfig } from 'axios'
+import axios, { AxiosError, type AxiosRequestConfig } from 'axios'
 
 
 
@@ -36,7 +36,7 @@ axios.interceptors.response.use(
   error => Promise.reject(error)
 );
 
-// eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function showCustomAlert(str: string, callBack = () => { }, residenceTime = 3000) {
   const alertContainer = document.createElement('div');
   alertContainer.style.display = 'block';
@@ -103,6 +103,46 @@ const _request = <T>(obj: IRequest): Promise<IResponse<T>> => {
   });
 }
 
+const getBlobErrorMessage = async (error: unknown): Promise<string> => {
+  if (!(error instanceof AxiosError)) return error instanceof Error ? error.message : 'Request Error';
+  const responseData = error.response?.data;
+  if (responseData instanceof Blob) {
+    try {
+      const result = JSON.parse(await responseData.text()) as Partial<IResponse<unknown>>;
+      if (result.msg) return result.msg;
+    } catch {
+      // The response is not a JSON API error.
+    }
+  }
+  return error.message;
+};
+
+export const requestBlob = async (obj: IRequest): Promise<IResponse<Blob>> => {
+  obj.url = requestPrefix + obj.url;
+  obj.headers = { ...defaultHeaders, ...(obj.headers || {}) };
+  obj.responseType = 'blob';
+  try {
+    const result = await axios(obj);
+    return {
+      status: true,
+      statusCode: 0,
+      msg: 'OK',
+      data: result.data as Blob,
+    };
+  } catch (error) {
+    if (error instanceof AxiosError && error.response?.status === 401) {
+      router.push('/adminLogin');
+    }
+    console.error(error);
+    return {
+      status: false,
+      statusCode: 1,
+      msg: await getBlobErrorMessage(error),
+      data: undefined as unknown as Blob,
+    };
+  }
+};
+
 export default async <T>(obj: IRequest, contentType: null | 'application/x-www-form-urlencoded' | 'application/json' = null): Promise<IResponse<T>> => {
   try {
     if (contentType != null) {
@@ -115,4 +155,3 @@ export default async <T>(obj: IRequest, contentType: null | 'application/x-www-f
     return errorIResponse as IResponse<T>;
   }
 }
-

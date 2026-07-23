@@ -19,7 +19,7 @@ const props = defineProps({
     required: true,
   },
 })
-const emits = defineEmits(['search', 'edit', 'migrate', 'delete'])
+const emits = defineEmits(['search', 'avatar', 'edit', 'migrate', 'delete'])
 
 const contentMenuItems_C = computed(() => {
   // 基本菜单项
@@ -34,6 +34,14 @@ const contentMenuItems_C = computed(() => {
   ]
   if (store.appStoreData.displayAdminFn) {
     contentMenuItems.push(...[
+
+      {
+        label: '从头像库选择头像',
+        icon: 'Picture',
+        handler: () => {
+          emits('avatar', props.performer)
+        }
+      },
 
       {
         label: '编辑',

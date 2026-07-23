@@ -11,6 +11,7 @@
 ## Design
 
 - [设计文档目录](design/README.md)：用于沉淀功能设计、技术方案和重要决策。
+- [Gfriends 演员头像库设计](design/performer-avatar-library.md)：独立头像数据文件、匹配策略、单人和批量更新流程。
 
 ## Testing
 

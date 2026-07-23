@@ -7,6 +7,7 @@ import (
 	"cm_collectors_server/models"
 	"cm_collectors_server/utils"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"os"
 	"path"
@@ -219,6 +220,28 @@ func (Performer) _savePerformerPhoto(performerBasesID, photoBase64 string) (stri
 		return "", errorMessage.WrapError(errorMessage.Err_performer_Save_Photo_Failed, err)
 	}
 	return photoName, nil
+}
+
+// replacePhoto 供同包内的独立头像源复用；新文件和数据库均保存成功后才删除旧文件。
+func (t Performer) replacePhoto(info models.Performer, photoBase64 string, overwrite bool) error {
+	if info.Photo != "" && !overwrite {
+		return errors.New("演员已有头像，未允许覆盖")
+	}
+	newPhotoName, err := t._savePerformerPhoto(info.PerformerBasesID, photoBase64)
+	if err != nil {
+		return err
+	}
+	if newPhotoName == "" {
+		return errors.New("头像数据为空")
+	}
+	if err := (models.Performer{}).Update(core.DBS(), &models.Performer{ID: info.ID, Photo: newPhotoName}, []string{"photo"}); err != nil {
+		_ = t.DeletePerformerPhoto(info.PerformerBasesID, newPhotoName)
+		return err
+	}
+	if info.Photo != "" {
+		_ = t.DeletePerformerPhoto(info.PerformerBasesID, info.Photo)
+	}
+	return nil
 }
 
 // MovePerformerPhoto 迁移表演者图片到新的目录

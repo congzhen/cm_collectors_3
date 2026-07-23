@@ -65,11 +65,25 @@ func (App) GetConfig() datatype.App_SystemConfig {
 		TaryMenu:                     core.Config.TaryMenu,
 		ServerFileManagementRootPath: core.GetConfig_ServerFileManagementRootPath(),
 		AutoBackup:                   core.Config.AutoBackup,
+		PerformerAvatarLibrary:       core.Config.PerformerAvatarLibrary,
 	}
 	return config
 }
 
 func (App) SetConfig(config datatype.App_SystemConfig) error {
+	avatarSetting, err := normalizeAvatarLibrarySetting(datatype.PerformerAvatarLibrarySetting{
+		CustomBaseURL:   config.PerformerAvatarLibrary.CustomBaseURL,
+		DefaultStrategy: datatype.PerformerAvatarStrategy(config.PerformerAvatarLibrary.DefaultStrategy),
+	})
+	if err != nil {
+		return err
+	}
+	if config.PerformerAvatarLibrary.CachePath == "" {
+		config.PerformerAvatarLibrary.CachePath = core.Config.PerformerAvatarLibrary.CachePath
+	}
+	config.PerformerAvatarLibrary.CustomBaseURL = avatarSetting.CustomBaseURL
+	config.PerformerAvatarLibrary.DefaultStrategy = string(avatarSetting.DefaultStrategy)
+
 	core.Config.General.LogoName = config.LogoName
 	core.Config.General.IsAdminLogin = config.IsAdminLogin
 	if config.AdminPassword != "" {
@@ -94,6 +108,7 @@ func (App) SetConfig(config datatype.App_SystemConfig) error {
 	core.Config.TaryMenu = config.TaryMenu
 	core.Config.ServerFileManagement.RootPath = config.ServerFileManagementRootPath
 	core.Config.AutoBackup = config.AutoBackup
+	core.Config.PerformerAvatarLibrary = config.PerformerAvatarLibrary
 	if err := core.SaveConfig(); err != nil {
 		return err
 	}

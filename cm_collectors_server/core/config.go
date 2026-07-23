@@ -112,6 +112,11 @@ func getDefaultConfig() *config.Config {
 				DefaultExpireSec: 3600,
 			},
 		},
+		PerformerAvatarLibrary: config.PerformerAvatarLibrary{
+			CachePath:       "./runtime/cache/gfriends/",
+			CustomBaseURL:   "",
+			DefaultStrategy: "recommended",
+		},
 		ServerFileManagement: config.ServerFileManagement{
 			RootPath: []string{"/", "A:\\", "B:\\", "C:\\", "D:\\", "E:\\", "F:\\", "G:\\", "H:\\", "I:\\", "J:\\", "K:\\", "L:\\", "M:\\", "N:\\", "O:\\", "P:\\", "Q:\\", "R:\\", "S:\\", "T:\\", "U:\\", "V:\\", "W:\\", "X:\\", "Y:\\", "Z:\\"},
 		},

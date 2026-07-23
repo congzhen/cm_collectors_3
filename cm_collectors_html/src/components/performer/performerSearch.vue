@@ -12,6 +12,7 @@
       <el-option label="影片数从少到多" value="resourceCountAsc" />
     </el-select>
     <el-button icon="Magnet" v-admin v-if="props.admin" @click="emits('scraper')">刮削</el-button>
+    <el-button icon="Picture" v-admin v-if="props.admin" @click="emits('avatarBatch')">批量匹配头像</el-button>
   </div>
 </template>
 <script setup lang="ts">
@@ -39,7 +40,7 @@ const searchData = reactive<I_search_performer>({
   sort: 'createdAtDesc',
 })
 
-const emits = defineEmits(['add', 'recycleBin', 'search', 'scraper'])
+const emits = defineEmits(['add', 'recycleBin', 'search', 'scraper', 'avatarBatch'])
 
 
 const changeSearchHandle = (val: string) => {

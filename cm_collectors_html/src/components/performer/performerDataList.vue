@@ -11,14 +11,14 @@
       </div>
       <div class="performer-container-main">
         <performerSearch class="performer-search" :admin="true" @add="addPerformerHandle" @recycleBin="recycleBinHandle"
-          @search="changeSearchHandle" @scraper="scraperHandle">
+          @search="changeSearchHandle" @scraper="scraperHandle" @avatarBatch="avatarBatchHandle">
         </performerSearch>
         <div class="performer-list-main" v-loading="loading">
           <el-scrollbar>
             <ul class="performer-list" :style="{ '--performer-block-size': performerBlockSize + 'px' }">
               <li v-for="(performer, index) in dataList" :key="index">
                 <performerRightClickMenu :performer="performer" @search="searchPerformerHandle"
-                  @edit="editPerformerHandle" @migrate="migratePerformerHanadle" @delete="deletePerformerHandle">
+                  @avatar="avatarHandle" @edit="editPerformerHandle" @migrate="migratePerformerHanadle" @delete="deletePerformerHandle">
                   <performerBlock :performer="performer" :tool="true" :admin="true" :attrAge="true"
                     :attrNationality="true" @search="searchPerformerHandle"
                     @click.stop="clickPerformerHandle(performer)" @edit="editPerformerHandle(performer)"
@@ -48,6 +48,9 @@
   <scraperPerformerDialog ref="scraperPerformerDialogRef" @success="getDataListAndCount">
   </scraperPerformerDialog>
   <performerMigrateDialog ref="performerMigrateDialogRef" @success="getDataListAndCount" />
+  <performerAvatarLibraryDialog ref="performerAvatarLibraryDialogRef" @success="getDataListAndCount" />
+  <performerAvatarLibraryBatchDialog ref="performerAvatarLibraryBatchDialogRef" :page-size="pageSize"
+    @success="getDataListAndCount" />
 </template>
 <script lang="ts" setup>
 import { ref, onMounted } from 'vue';
@@ -65,6 +68,8 @@ import { searchStoreData } from '@/storeData/search.storeData';
 import { useRouter } from 'vue-router';
 import performerRightClickMenu from './performerRightClickMenu.vue';
 import performerMigrateDialog from './performerMigrateDialog.vue';
+import performerAvatarLibraryDialog from './performerAvatarLibraryDialog.vue';
+import performerAvatarLibraryBatchDialog from './performerAvatarLibraryBatchDialog.vue';
 const router = useRouter()
 const store = {
   searchStoreData: searchStoreData(),
@@ -88,6 +93,8 @@ const performerFormDrawerRef = ref<InstanceType<typeof performerFormDrawer>>();
 const performerRecycleBinDialogRef = ref<InstanceType<typeof performerRecycleBinDialog>>();
 const scraperPerformerDialogRef = ref<InstanceType<typeof scraperPerformerDialog>>();
 const performerMigrateDialogRef = ref<InstanceType<typeof performerMigrateDialog>>();
+const performerAvatarLibraryDialogRef = ref<InstanceType<typeof performerAvatarLibraryDialog>>();
+const performerAvatarLibraryBatchDialogRef = ref<InstanceType<typeof performerAvatarLibraryBatchDialog>>();
 const loading = ref(false);
 const dataList = ref<I_performer[]>([]);
 const dataCount = ref(0);
@@ -202,6 +209,14 @@ const selectCharIndexHandle = (charIndex: string) => {
 
 const scraperHandle = () => {
   scraperPerformerDialogRef.value?.open(props.performerBasesId)
+}
+
+const avatarHandle = (performer: I_performer) => {
+  performerAvatarLibraryDialogRef.value?.open(performer)
+}
+
+const avatarBatchHandle = () => {
+  performerAvatarLibraryBatchDialogRef.value?.open(props.performerBasesId)
 }
 
 const changePerformerBlockSizeHandle = (newVal: number | number[]) => {

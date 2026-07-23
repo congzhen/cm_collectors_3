@@ -12,6 +12,9 @@
         <el-tab-pane label="演员数据库" name="performerDatabase">
           <performerSetting v-if="activeName === 'performerDatabase'"></performerSetting>
         </el-tab-pane>
+        <el-tab-pane label="演员头像库" name="performerAvatarLibrary">
+          <performerAvatarLibrarySetting v-if="activeName === 'performerAvatarLibrary'" />
+        </el-tab-pane>
         <el-tab-pane label="标签数据库" name="tagDatabase">
           <tagSetting v-if="activeName === 'tagDatabase'"></tagSetting>
         </el-tab-pane>
@@ -44,6 +47,7 @@ import { E_headerMode } from '@/dataType/app.dataType';
 import softSettings from '@/components/setting/softSettings/softSettings.vue';
 import fileDatabaseSetting from '@/components/setting/fileDatabaseSetting/fileDatabaseSetting.vue';
 import performerSetting from '@/components/setting/performerDatabaseSetting/performerDatabaseSetting.vue';
+import performerAvatarLibrarySetting from '@/components/setting/performerAvatarLibrary/performerAvatarLibrarySetting.vue';
 import tagSetting from '@/components/setting/tagSetting/tagSetting.vue';
 import aiTagSetting from '@/components/setting/aiTag/aiTagSetting.vue';
 import cronJobs from '@/components/setting/cronJobs/cronJobs.vue';
