@@ -211,3 +211,90 @@ func TestSelectAvatarCandidateStrategies(t *testing.T) {
 		}
 	}
 }
+
+func TestPerformerAvatarImageCacheInfoClearAndStartup(t *testing.T) {
+	originalConfig := core.Config
+	originalIndex := avatarLibraryRuntime.Index
+	testRoot := t.TempDir()
+	core.Config = &config.Config{}
+	core.Config.PerformerAvatarLibrary.CachePath = filepath.Join(testRoot, "gfriends")
+	defer func() {
+		core.Config = originalConfig
+		avatarLibraryRuntime.Lock()
+		avatarLibraryRuntime.Index = originalIndex
+		avatarLibraryRuntime.Unlock()
+	}()
+	avatarLibraryRuntime.Lock()
+	avatarLibraryRuntime.Index = nil
+	avatarLibraryRuntime.Unlock()
+
+	imagesDir := filepath.Join(core.Config.PerformerAvatarLibrary.CachePath, "images")
+	if err := os.MkdirAll(imagesDir, 0755); err != nil {
+		t.Fatal(err)
+	}
+	testFiles := map[string]string{
+		"first.cache":       "1234",
+		"second.cache":      "123456",
+		"pending.cache.tmp": "12",
+		"unknown.tmp":       "must remain too",
+		"keep.txt":          "must remain",
+	}
+	for name, content := range testFiles {
+		if err := os.WriteFile(filepath.Join(imagesDir, name), []byte(content), 0644); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	library := PerformerAvatarLibrary{}
+	count, size, err := library.ImageCacheInfo()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 || size != 10 {
+		t.Fatalf("unexpected cache info: count=%d size=%d", count, size)
+	}
+	result, err := library.ClearImageCache()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.ClearedImages != 2 || result.FreedSize != 12 || result.Status.CachedImages != 0 {
+		t.Fatalf("unexpected clear result: %#v", result)
+	}
+	if _, err := os.Stat(filepath.Join(imagesDir, "keep.txt")); err != nil {
+		t.Fatalf("unknown cache-directory file should be preserved: %v", err)
+	}
+	if _, err := os.Stat(filepath.Join(imagesDir, "unknown.tmp")); err != nil {
+		t.Fatalf("unknown temporary file should be preserved: %v", err)
+	}
+
+	if err := os.WriteFile(filepath.Join(imagesDir, "startup.cache"), []byte("123"), 0644); err != nil {
+		t.Fatal(err)
+	}
+	core.Config.PerformerAvatarLibrary.ClearCacheOnStartup = true
+	InitPerformerAvatarLibrary()
+	if _, err := os.Stat(filepath.Join(imagesDir, "startup.cache")); !os.IsNotExist(err) {
+		t.Fatalf("startup cache file should be removed, got: %v", err)
+	}
+
+	scheduledCachePath := filepath.Join(imagesDir, "scheduled.cache")
+	if err := os.WriteFile(scheduledCachePath, []byte("123"), 0644); err != nil {
+		t.Fatal(err)
+	}
+	if err := (CronJobsExec{}).executeJobTask(models.CronJobs{
+		JobsType: datatype.E_cronJobsType_ClearPerformerAvatarCache,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(scheduledCachePath); !os.IsNotExist(err) {
+		t.Fatalf("scheduled cache cleanup should use the shared cleaner, got: %v", err)
+	}
+}
+
+func TestCronJobClearPerformerAvatarCacheDoesNotRequireFilesBase(t *testing.T) {
+	if err := validateCronJobScope("", datatype.E_cronJobsType_ClearPerformerAvatarCache); err != nil {
+		t.Fatalf("global avatar cache task should not require a files base: %v", err)
+	}
+	if cronJobRequiresFilesBase(datatype.E_cronJobsType_ClearPerformerAvatarCache) {
+		t.Fatal("avatar cache task must be treated as a global task")
+	}
+}

@@ -16,7 +16,7 @@
                 <span class="job-type" :class="getJobTypeClass(job.jobs_type)">
                   {{ getJobTypeName(job.jobs_type) }}
                 </span>
-                <h3 class="job-name">{{ store.filesBasesStoreData.getFilesBasesNameById(job.filesBases_id) || '文件库名称' }}
+                <h3 class="job-name">{{ getJobScopeName(job) }}
                 </h3>
               </div>
 
@@ -191,6 +191,7 @@ const getJobTypeName = (type: string): string => {
     case 'clear': return '清理';
     case 'videoFingerprint': return '视频指纹';
     case 'aiTag': return 'AI 自动标签';
+    case 'clearPerformerAvatarCache': return '清理演员头像缓存';
     default: return type;
   }
 };
@@ -204,8 +205,14 @@ const getJobTypeClass = (type: string): string => {
     case 'clear': return 'job-type--clear';
     case 'videoFingerprint': return 'job-type--fingerprint';
     case 'aiTag': return 'job-type--ai-tag';
+    case 'clearPerformerAvatarCache': return 'job-type--avatar-cache';
     default: return '';
   }
+};
+
+const getJobScopeName = (job: I_cronJobs_info): string => {
+  if (job.jobs_type === 'clearPerformerAvatarCache') return '全局任务';
+  return store.filesBasesStoreData.getFilesBasesNameById(job.filesBases_id) || '文件库名称';
 };
 
 // 获取状态文本
@@ -339,6 +346,11 @@ onUnmounted(() => {
                 &.job-type--ai-tag {
                   background-color: #f0fdf4;
                   color: #15803d;
+                }
+
+                &.job-type--avatar-cache {
+                  background-color: #fff1f0;
+                  color: #cf1322;
                 }
               }
 

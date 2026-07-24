@@ -5,6 +5,7 @@ import (
 	"cm_collectors_server/datatype"
 	"cm_collectors_server/errorMessage"
 	"cm_collectors_server/models"
+	"errors"
 
 	"gorm.io/gorm"
 )
@@ -40,6 +41,12 @@ func (t CronJobs) Exec(id string) error {
 }
 
 func (t CronJobs) Create(filesBasesID string, jobsType datatype.E_cronJobsType, cronExpression string) (*models.CronJobs, error) {
+	if err := validateCronJobScope(filesBasesID, jobsType); err != nil {
+		return nil, err
+	}
+	if !cronJobRequiresFilesBase(jobsType) {
+		filesBasesID = ""
+	}
 	db := core.DBS()
 	id := core.GenerateUniqueID()
 	createdAt := datatype.CustomTime(core.TimeNow())
@@ -76,6 +83,12 @@ func (t CronJobs) UpdateExec(id string, execError error) error {
 	return cronJobsModels.Update(db, &cronJobsModels, []string{"last_exec_error", "last_exec_status", "last_exec_at"})
 }
 func (t CronJobs) Update(id string, filesBasesID string, jobsType datatype.E_cronJobsType, cronExpression string) (*models.CronJobs, error) {
+	if err := validateCronJobScope(filesBasesID, jobsType); err != nil {
+		return nil, err
+	}
+	if !cronJobRequiresFilesBase(jobsType) {
+		filesBasesID = ""
+	}
 	db := core.DBS()
 	cronJobsModels := models.CronJobs{
 		ID:             id,
@@ -90,6 +103,17 @@ func (t CronJobs) Update(id string, filesBasesID string, jobsType datatype.E_cro
 	}
 	RestartCronjob()
 	return t.InfoByID_DB(db, id)
+}
+
+func cronJobRequiresFilesBase(jobsType datatype.E_cronJobsType) bool {
+	return jobsType != datatype.E_cronJobsType_ClearPerformerAvatarCache
+}
+
+func validateCronJobScope(filesBasesID string, jobsType datatype.E_cronJobsType) error {
+	if cronJobRequiresFilesBase(jobsType) && filesBasesID == "" {
+		return errors.New("该计划任务必须选择执行文件库")
+	}
+	return nil
 }
 
 func (CronJobs) Delete(id string) error {

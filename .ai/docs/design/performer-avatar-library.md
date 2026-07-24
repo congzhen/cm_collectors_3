@@ -16,7 +16,7 @@ CM Collectors 3 已有演员资料、头像本地存储和演员资料刮削能�
 ## 非目标
 
 - 不从 Gfriends 更新演员生日、三围、国籍或简介。
-- 不加入现有网页刮削器配置和计划任务。
+- 不加入现有网页刮削器配置；计划任务只提供头像缓存清理，不自动匹配演员头像。
 - 第一版不提供来源黑名单、自动更新和按分辨率评分。
 - 不把头像或文件树打包到项目构建产物。
 
@@ -35,6 +35,11 @@ runtime/cache/gfriends/images/*.cache
 接口读写，不维护头像库专用配置文件或旁路保存接口。
 
 更新使用临时文件，完成 JSON 结构和可检索内容校验后才替换旧文件。更新失败时保留旧版本。
+
+头像缓存统计只包含 `images` 目录中的 `.cache` 文件。清理操作同时移除本功能遗留的
+`.cache.tmp`、`.cache.bak` 文件，但保留
+`Filetree.json`、`metadata.json`、已保存到演员资料目录的正式头像，以及缓存目录中的未知文件。
+手动清理、软件启动自动清理和计划任务均调用 `PerformerAvatarLibrary.ClearImageCache`。
 
 默认数据源为 GitHub Raw；下载失败时尝试 Gfriends 文档提供的 jsDelivr 镜像。用户可以配置自定义仓库根地址。
 
@@ -63,6 +68,7 @@ runtime/cache/gfriends/images/*.cache
 
 - `GET /api/performerAvatarLibrary/status`
 - `POST /api/performerAvatarLibrary/updateDataFile`
+- `POST /api/performerAvatarLibrary/clearImageCache`
 - `GET /api/performerAvatarLibrary/candidates/:performerId`
 - `GET /api/performerAvatarLibrary/batchActors/:performerBasesId/:page/:limit`
 - `GET /api/performerAvatarLibrary/batchActorIds/:performerBasesId`
@@ -78,6 +84,17 @@ ID，前端每 3 秒查询一次进度，完成后显示成功、失败、未匹
 
 预览图片通过项目统一请求层发起带管理员令牌的 Blob 请求。服务端只代理本地索引中确实属于目标
 演员的候选，不能代理任意 URL；单人候选图最多同时加载 4 张，失败时保留具体原因并允许点击重试。
+
+## 自动清理与计划任务
+
+- `performerAvatarLibrary.clearCacheOnStartup` 默认关闭，由 `core.getDefaultConfig()` 提供默认值并经
+  统一应用配置接口保存。
+- 应用完成核心配置和数据库初始化后调用 `InitPerformerAvatarLibrary`；启用启动清理时由该入口
+  调用统一清理函数。
+- 计划任务类型 `clearPerformerAvatarCache` 是全局任务，不绑定文件库。创建、编辑、手动执行和
+  Cron 调度继续使用现有计划任务模型、运行状态互斥及执行结果记录。
+- 清理通过缓存代次和读写锁与并发下载协调：清理不等待远程下载，清理前已开始的下载不会在清理
+  后重新写入旧代次缓存。
 
 ## 安全与失败恢复
 
@@ -98,3 +115,6 @@ ID，前端每 3 秒查询一次进度，完成后显示成功、失败、未匹
 - 默认批量处理跳过已有头像；启用覆盖后明确警告。
 - 头像更新不会改变演员其他字段。
 - GitHub Raw 不可用时可以切换备用镜像。
+- 设置页显示当前缓存头像数量和空间占用；手动清理需要二次确认并反馈清理数量。
+- 开启启动清理后，重启软件会清空头像下载缓存但保留头像库索引和演员正式头像。
+- “清理演员头像缓存”计划任务不要求选择文件库，并复用手动清理的后端函数。

@@ -23,6 +23,14 @@ func (PerformerAvatarLibrary) UpdateDataFile(c *gin.Context) {
 	response.OkWithData(status, c)
 }
 
+func (PerformerAvatarLibrary) ClearImageCache(c *gin.Context) {
+	result, err := processors.PerformerAvatarLibrary{}.ClearImageCache()
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(result, c)
+}
+
 func (PerformerAvatarLibrary) Candidates(c *gin.Context) {
 	performerID := c.Param("performerId")
 	candidates, err := processors.PerformerAvatarLibrary{}.Candidates(performerID)

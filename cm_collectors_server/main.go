@@ -64,7 +64,9 @@ func appInit() {
 		return
 	}
 
-	//计划任务
+	// 演员头像库启动初始化
+	processors.InitPerformerAvatarLibrary()
+	// 计划任务
 	processors.InitCronjob()
 	processors.InitAutoBackup()
 }

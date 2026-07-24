@@ -15,4 +15,7 @@ func TestMergeWithDefaultsFillsPerformerAvatarLibraryConfig(t *testing.T) {
 	if userConfig.PerformerAvatarLibrary.DefaultStrategy != "recommended" {
 		t.Fatalf("unexpected avatar strategy: %q", userConfig.PerformerAvatarLibrary.DefaultStrategy)
 	}
+	if userConfig.PerformerAvatarLibrary.ClearCacheOnStartup {
+		t.Fatal("avatar cache startup cleanup should be disabled by default")
+	}
 }

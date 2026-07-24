@@ -86,6 +86,7 @@ performerAvatarLibrary:
     cachePath: ./runtime/cache/gfriends/
     customBaseUrl: ""
     defaultStrategy: recommended
+    clearCacheOnStartup: false
 serverFileManagement:
     rootPath:
         - /

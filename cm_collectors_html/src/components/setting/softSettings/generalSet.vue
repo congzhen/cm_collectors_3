@@ -211,6 +211,7 @@ const formData = ref<I_appSystemConfig>({
     cachePath: './runtime/cache/gfriends/',
     customBaseUrl: '',
     defaultStrategy: 'recommended',
+    clearCacheOnStartup: false,
   },
   taryMenu: [],
 })

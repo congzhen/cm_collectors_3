@@ -58,7 +58,7 @@ func (t CronJobsExec) RegCronJobs() error {
 
 		// 将任务添加到调度器
 		_, err := cronScheduler.AddFunc(job.CronExpression, func() {
-			fmt.Printf("开始执行计划任务: %s (%s)\n", job.FilesBases.Name, job.JobsType)
+			fmt.Printf("开始执行计划任务: %s (%s)\n", cronJobScopeName(job), job.JobsType)
 
 			// 执行任务
 			execErr := t.ExecuteJob(jobCopy)
@@ -72,11 +72,11 @@ func (t CronJobsExec) RegCronJobs() error {
 		})
 
 		if err != nil {
-			fmt.Printf("注册计划任务失败 [%s] %s: %v\n", job.FilesBases.Name, job.CronExpression, err)
-			return fmt.Errorf("注册计划任务 '%s' 失败: %w", job.FilesBases.Name, err)
+			fmt.Printf("注册计划任务失败 [%s] %s: %v\n", cronJobScopeName(job), job.CronExpression, err)
+			return fmt.Errorf("注册计划任务 '%s' 失败: %w", cronJobScopeName(job), err)
 		}
 
-		fmt.Printf("成功注册计划任务: %s (%s) - %s\n", job.FilesBases.Name, job.JobsType, job.CronExpression)
+		fmt.Printf("成功注册计划任务: %s (%s) - %s\n", cronJobScopeName(job), job.JobsType, job.CronExpression)
 	}
 
 	return nil
@@ -121,9 +121,21 @@ func (t CronJobsExec) executeJobTask(data models.CronJobs) error {
 	case datatype.E_cronJobsType_AiTag:
 		// AI自动标签任务
 		return t.cronJobs_AiTag(data)
+	case datatype.E_cronJobsType_ClearPerformerAvatarCache:
+		return t.cronJobs_ClearPerformerAvatarCache(data)
 	default:
 		return fmt.Errorf("未知任务类型: %s", data.JobsType)
 	}
+}
+
+func cronJobScopeName(data models.CronJobs) string {
+	if !cronJobRequiresFilesBase(data.JobsType) {
+		return "全局任务"
+	}
+	if data.FilesBases.Name != "" {
+		return data.FilesBases.Name
+	}
+	return data.FilesBasesId
 }
 func (t CronJobsExec) Start() {
 	cronScheduler.Start()
@@ -157,6 +169,12 @@ func (t CronJobsExec) cronJobs_Clear(data models.CronJobs) error {
 		}
 	}
 	return nil
+}
+
+func (t CronJobsExec) cronJobs_ClearPerformerAvatarCache(data models.CronJobs) error {
+	fmt.Println("执行计划任务:", cronJobScopeName(data), data.JobsType, data.CronExpression)
+	_, err := (PerformerAvatarLibrary{}).ClearImageCache()
+	return err
 }
 
 // 刮削演员任务处理

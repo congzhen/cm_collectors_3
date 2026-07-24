@@ -19,6 +19,7 @@ import (
 	"sort"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 	"unicode"
 
@@ -118,12 +119,20 @@ type PerformerAvatarLibraryStatus struct {
 	Ready         bool                                   `json:"ready"`
 	Updating      bool                                   `json:"updating"`
 	FileSize      int64                                  `json:"fileSize"`
+	CachedImages  int                                    `json:"cachedImages"`
+	CacheSize     int64                                  `json:"cacheSize"`
 	UpdatedAt     string                                 `json:"updatedAt"`
 	DataTimestamp string                                 `json:"dataTimestamp"`
 	TotalNum      string                                 `json:"totalNum"`
 	TotalSize     string                                 `json:"totalSize"`
 	ActiveBaseURL string                                 `json:"activeBaseUrl"`
 	Setting       datatype.PerformerAvatarLibrarySetting `json:"setting"`
+}
+
+type PerformerAvatarCacheClearResult struct {
+	ClearedImages int64                        `json:"clearedImages"`
+	FreedSize     int64                        `json:"freedSize"`
+	Status        PerformerAvatarLibraryStatus `json:"status"`
 }
 
 type PerformerAvatarBatchPreview struct {
@@ -194,6 +203,8 @@ var avatarLibraryRuntime = struct {
 }{}
 
 var avatarCandidateLocks sync.Map
+var avatarImageCacheMutex sync.RWMutex
+var avatarImageCacheGeneration atomic.Uint64
 
 var avatarBatchProgress sync.Map
 
@@ -203,12 +214,14 @@ func avatarLibraryDir() string {
 
 func avatarLibraryTreePath() string     { return filepath.Join(avatarLibraryDir(), "Filetree.json") }
 func avatarLibraryMetadataPath() string { return filepath.Join(avatarLibraryDir(), "metadata.json") }
+func avatarLibraryImagesDir() string    { return filepath.Join(avatarLibraryDir(), "images") }
 
 func (PerformerAvatarLibrary) Setting() datatype.PerformerAvatarLibrarySetting {
 	appConfig := core.GetConfig()
 	setting := datatype.PerformerAvatarLibrarySetting{
-		CustomBaseURL:   appConfig.PerformerAvatarLibrary.CustomBaseURL,
-		DefaultStrategy: datatype.PerformerAvatarStrategy(appConfig.PerformerAvatarLibrary.DefaultStrategy),
+		CustomBaseURL:       appConfig.PerformerAvatarLibrary.CustomBaseURL,
+		DefaultStrategy:     datatype.PerformerAvatarStrategy(appConfig.PerformerAvatarLibrary.DefaultStrategy),
+		ClearCacheOnStartup: appConfig.PerformerAvatarLibrary.ClearCacheOnStartup,
 	}
 	if !validAvatarStrategy(setting.DefaultStrategy) {
 		setting.DefaultStrategy = datatype.PerformerAvatarStrategyRecommended
@@ -237,6 +250,10 @@ func (t PerformerAvatarLibrary) Status() PerformerAvatarLibraryStatus {
 	updating := avatarLibraryRuntime.Updating
 	avatarLibraryRuntime.RUnlock()
 	status := PerformerAvatarLibraryStatus{Setting: setting, Updating: updating}
+	if cachedImages, cacheSize, err := t.ImageCacheInfo(); err == nil {
+		status.CachedImages = cachedImages
+		status.CacheSize = cacheSize
+	}
 	index, err := t.loadIndex()
 	if err != nil {
 		return status
@@ -254,6 +271,95 @@ func (t PerformerAvatarLibrary) Status() PerformerAvatarLibraryStatus {
 		status.UpdatedAt = index.Metadata.UpdatedAt.Format(time.RFC3339)
 	}
 	return status
+}
+
+// InitPerformerAvatarLibrary 执行只与进程启动相关的头像库初始化行为。
+func InitPerformerAvatarLibrary() {
+	if !core.GetConfig().PerformerAvatarLibrary.ClearCacheOnStartup {
+		return
+	}
+	if _, err := (PerformerAvatarLibrary{}).ClearImageCache(); err != nil {
+		core.LogErr(fmt.Errorf("启动时清理演员头像缓存失败: %w", err))
+	}
+}
+
+// ImageCacheInfo 只统计本功能生成的 .cache 图片文件，不包含索引和元数据。
+func (PerformerAvatarLibrary) ImageCacheInfo() (int, int64, error) {
+	avatarImageCacheMutex.RLock()
+	defer avatarImageCacheMutex.RUnlock()
+
+	entries, err := os.ReadDir(avatarLibraryImagesDir())
+	if os.IsNotExist(err) {
+		return 0, 0, nil
+	}
+	if err != nil {
+		return 0, 0, err
+	}
+	count := 0
+	var size int64
+	for _, entry := range entries {
+		if entry.IsDir() || !isAvatarImageCacheFile(entry.Name()) {
+			continue
+		}
+		info, err := entry.Info()
+		if err != nil {
+			return count, size, err
+		}
+		count++
+		size += info.Size()
+	}
+	return count, size, nil
+}
+
+// ClearImageCache 是手动操作、启动清理和计划任务共用的唯一缓存清理入口。
+// 仅移除本功能生成的 .cache/.cache.tmp/.cache.bak 文件，保留索引、元数据和未知文件。
+func (t PerformerAvatarLibrary) ClearImageCache() (PerformerAvatarCacheClearResult, error) {
+	avatarImageCacheMutex.Lock()
+	avatarImageCacheGeneration.Add(1)
+
+	entries, err := os.ReadDir(avatarLibraryImagesDir())
+	if os.IsNotExist(err) {
+		avatarImageCacheMutex.Unlock()
+		return PerformerAvatarCacheClearResult{Status: t.Status()}, nil
+	}
+	if err != nil {
+		avatarImageCacheMutex.Unlock()
+		return PerformerAvatarCacheClearResult{}, err
+	}
+	var result PerformerAvatarCacheClearResult
+	var clearErrors []error
+	for _, entry := range entries {
+		if entry.IsDir() || !isAvatarImageCacheArtifact(entry.Name()) {
+			continue
+		}
+		info, infoErr := entry.Info()
+		if infoErr != nil {
+			clearErrors = append(clearErrors, infoErr)
+			continue
+		}
+		targetPath := filepath.Join(avatarLibraryImagesDir(), entry.Name())
+		if removeErr := os.Remove(targetPath); removeErr != nil {
+			clearErrors = append(clearErrors, removeErr)
+			continue
+		}
+		result.FreedSize += info.Size()
+		if isAvatarImageCacheFile(entry.Name()) {
+			result.ClearedImages++
+		}
+	}
+	avatarImageCacheMutex.Unlock()
+	result.Status = t.Status()
+	return result, errors.Join(clearErrors...)
+}
+
+func isAvatarImageCacheFile(name string) bool {
+	return strings.HasSuffix(name, ".cache")
+}
+
+func isAvatarImageCacheArtifact(name string) bool {
+	return isAvatarImageCacheFile(name) ||
+		strings.HasSuffix(name, ".cache.tmp") ||
+		strings.HasSuffix(name, ".cache.bak")
 }
 
 func (t PerformerAvatarLibrary) UpdateDataFile() (PerformerAvatarLibraryStatus, error) {
@@ -733,13 +839,17 @@ func (t PerformerAvatarLibrary) downloadCandidate(candidate PerformerAvatarCandi
 	candidateLock.Lock()
 	defer candidateLock.Unlock()
 
-	cachePath := filepath.Join(avatarLibraryDir(), "images", candidate.ID+".cache")
+	cachePath := filepath.Join(avatarLibraryImagesDir(), candidate.ID+".cache")
+	avatarImageCacheMutex.RLock()
 	if data, err := os.ReadFile(cachePath); err == nil {
 		contentType := http.DetectContentType(data)
 		if strings.HasPrefix(contentType, "image/") {
+			avatarImageCacheMutex.RUnlock()
 			return data, contentType, nil
 		}
 	}
+	cacheGeneration := avatarImageCacheGeneration.Load()
+	avatarImageCacheMutex.RUnlock()
 
 	index, err := t.loadIndex()
 	if err != nil {
@@ -765,11 +875,17 @@ func (t PerformerAvatarLibrary) downloadCandidate(candidate PerformerAvatarCandi
 			lastErr = errors.New("下载内容不是有效图片")
 			continue
 		}
-		if err := os.MkdirAll(filepath.Dir(cachePath), 0755); err == nil {
-			tempPath := cachePath + ".tmp"
-			if err := os.WriteFile(tempPath, data, 0644); err == nil {
-				_ = replaceFileSafely(tempPath, cachePath)
+		if avatarImageCacheGeneration.Load() == cacheGeneration {
+			avatarImageCacheMutex.RLock()
+			if avatarImageCacheGeneration.Load() == cacheGeneration {
+				if err := os.MkdirAll(filepath.Dir(cachePath), 0755); err == nil {
+					tempPath := cachePath + ".tmp"
+					if err := os.WriteFile(tempPath, data, 0644); err == nil {
+						_ = replaceFileSafely(tempPath, cachePath)
+					}
+				}
 			}
+			avatarImageCacheMutex.RUnlock()
 		}
 		return data, contentType, nil
 	}

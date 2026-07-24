@@ -4,6 +4,7 @@ import type {
   I_performerAvatarBatchProgress,
   I_performerAvatarBatchActorPage,
   I_performerAvatarCandidate,
+  I_performerAvatarCacheClearResult,
   I_performerAvatarLibraryStatus,
   PerformerAvatarStrategy,
 } from '@/dataType/performerAvatarLibrary.dataType';
@@ -14,6 +15,10 @@ export const performerAvatarLibraryServer = {
   }),
   updateDataFile: async () => request<I_performerAvatarLibraryStatus>({
     url: '/performerAvatarLibrary/updateDataFile',
+    method: 'post',
+  }),
+  clearImageCache: async () => request<I_performerAvatarCacheClearResult>({
+    url: '/performerAvatarLibrary/clearImageCache',
     method: 'post',
   }),
   candidates: async (performerId: string) => request<I_performerAvatarCandidate[]>({

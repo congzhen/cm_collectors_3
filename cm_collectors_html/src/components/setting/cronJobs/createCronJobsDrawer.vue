@@ -3,17 +3,20 @@
     <drawerCommon ref="drawerCommonRef" width="720px" title="计划任务" @submit="submitHandle">
       <div class="create-cron-jobs-main" :loading="loading">
         <el-form ref="ruleFormRef" :model="formData" label-width="160px" label-position="top" status-icon>
-          <el-form-item label="执行文件库">
+          <el-form-item v-if="requiresFilesBase" label="执行文件库">
             <selectFilesBases v-model="formData.filesBases_id"></selectFilesBases>
           </el-form-item>
+          <el-alert v-else class="global-task-alert" title="该任务作用于全局演员头像缓存，不需要选择文件库。"
+            type="info" :closable="false" show-icon />
           <el-form-item label="任务类型">
-            <el-radio-group v-model="formData.jobs_type">
+            <el-radio-group v-model="formData.jobs_type" class="task-type-group">
               <el-radio-button label="导入" value="import" />
               <el-radio-button label="刮削资源" value="scraperResource" />
               <el-radio-button label="刮削演员" value="scraperPerformer" />
               <el-radio-button label="清理" value="clear" />
               <el-radio-button label="视频指纹" value="videoFingerprint" />
               <el-radio-button label="AI 自动标签" value="aiTag" />
+              <el-radio-button label="清理演员头像缓存" value="clearPerformerAvatarCache" />
             </el-radio-group>
             <el-text class="warning-text" type="warning" size="small">
               每种任务类型都依赖于预先设定的功能配置，缺少相应配置将导致任务无法执行。
@@ -65,7 +68,7 @@ import drawerCommon from '@/components/com/dialog/drawer-common.vue';
 import selectFilesBases from '@/components/com/form/selectFilesBases.vue';
 import type { I_cronJobs, I_cronJobs_info } from '@/dataType/cronJobs.dataType';
 import { cronJobsServer } from '@/server/cronJobs.server';
-import { ref, reactive, nextTick } from 'vue';
+import { computed, ref, reactive, nextTick } from 'vue';
 
 // 定义各个字段的选项
 const secondsOptions = [
@@ -208,6 +211,7 @@ const formData = ref<I_cronJobs>({
 })
 const loading = ref(false);
 let mode: 'add' | 'edit' = 'add';
+const requiresFilesBase = computed(() => formData.value.jobs_type !== 'clearPerformerAvatarCache');
 
 const cronParts = reactive({
   second: '0',
@@ -289,8 +293,8 @@ const init = (_mode: 'add' | 'edit' = 'add', _info: I_cronJobs_info | null = nul
   mode = _mode;
   if (_mode == 'edit' && _info != null) {
     formData.value.id = _info.id;
-    formData.value.filesBases_id = _info.filesBases_id;
     formData.value.jobs_type = _info.jobs_type;
+    formData.value.filesBases_id = requiresFilesBase.value ? _info.filesBases_id : '';
 
     // 将传入的 cron 表达式拆分成 cronParts
     const parts = _info.cron_expression.split(' ');
@@ -331,7 +335,7 @@ const init = (_mode: 'add' | 'edit' = 'add', _info: I_cronJobs_info | null = nul
 
 const submitHandle = debounceNow(async () => {
   console.log(formData.value)
-  if (formData.value.filesBases_id === '') {
+  if (requiresFilesBase.value && formData.value.filesBases_id === '') {
     messageBoxAlert({ text: '请选择执行文件库', type: 'warning' });
     return;
   }
@@ -383,6 +387,14 @@ defineExpose({ open })
     flex: 1;
     min-width: 105px;
   }
+}
+
+.global-task-alert {
+  margin-bottom: 18px;
+}
+
+.task-type-group {
+  flex-wrap: wrap;
 }
 
 .cron-help-text {

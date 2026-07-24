@@ -72,8 +72,9 @@ func (App) GetConfig() datatype.App_SystemConfig {
 
 func (App) SetConfig(config datatype.App_SystemConfig) error {
 	avatarSetting, err := normalizeAvatarLibrarySetting(datatype.PerformerAvatarLibrarySetting{
-		CustomBaseURL:   config.PerformerAvatarLibrary.CustomBaseURL,
-		DefaultStrategy: datatype.PerformerAvatarStrategy(config.PerformerAvatarLibrary.DefaultStrategy),
+		CustomBaseURL:       config.PerformerAvatarLibrary.CustomBaseURL,
+		DefaultStrategy:     datatype.PerformerAvatarStrategy(config.PerformerAvatarLibrary.DefaultStrategy),
+		ClearCacheOnStartup: config.PerformerAvatarLibrary.ClearCacheOnStartup,
 	})
 	if err != nil {
 		return err
@@ -83,6 +84,7 @@ func (App) SetConfig(config datatype.App_SystemConfig) error {
 	}
 	config.PerformerAvatarLibrary.CustomBaseURL = avatarSetting.CustomBaseURL
 	config.PerformerAvatarLibrary.DefaultStrategy = string(avatarSetting.DefaultStrategy)
+	config.PerformerAvatarLibrary.ClearCacheOnStartup = avatarSetting.ClearCacheOnStartup
 
 	core.Config.General.LogoName = config.LogoName
 	core.Config.General.IsAdminLogin = config.IsAdminLogin

@@ -165,6 +165,7 @@ func AdminRouter(router *gin.Engine) {
 	routerGroup.POST("performer/migrate", controllers.Performer{}.MigratePerformer)
 	routerGroup.GET("performerAvatarLibrary/status", controllers.PerformerAvatarLibrary{}.Status)
 	routerGroup.POST("performerAvatarLibrary/updateDataFile", controllers.PerformerAvatarLibrary{}.UpdateDataFile)
+	routerGroup.POST("performerAvatarLibrary/clearImageCache", controllers.PerformerAvatarLibrary{}.ClearImageCache)
 	routerGroup.GET("performerAvatarLibrary/candidates/:performerId", controllers.PerformerAvatarLibrary{}.Candidates)
 	routerGroup.GET("performerAvatarLibrary/batchActors/:performerBasesId/:page/:limit", controllers.PerformerAvatarLibrary{}.BatchActors)
 	routerGroup.GET("performerAvatarLibrary/batchActorIds/:performerBasesId", controllers.PerformerAvatarLibrary{}.BatchActorIDs)

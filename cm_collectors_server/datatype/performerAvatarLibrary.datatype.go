@@ -9,8 +9,9 @@ const (
 )
 
 type PerformerAvatarLibrarySetting struct {
-	CustomBaseURL   string                  `json:"customBaseUrl"`
-	DefaultStrategy PerformerAvatarStrategy `json:"defaultStrategy"`
+	CustomBaseURL       string                  `json:"customBaseUrl"`
+	DefaultStrategy     PerformerAvatarStrategy `json:"defaultStrategy"`
+	ClearCacheOnStartup bool                    `json:"clearCacheOnStartup"`
 }
 
 type ReqParam_PerformerAvatarApply struct {

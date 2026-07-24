@@ -4,6 +4,7 @@ export type PerformerAvatarDialogStrategy = PerformerAvatarStrategy | 'manual';
 export interface I_performerAvatarLibrarySetting {
   customBaseUrl: string;
   defaultStrategy: PerformerAvatarStrategy;
+  clearCacheOnStartup: boolean;
 }
 
 export interface I_performerAvatarLibraryConfig extends I_performerAvatarLibrarySetting {
@@ -14,12 +15,20 @@ export interface I_performerAvatarLibraryStatus {
   ready: boolean;
   updating: boolean;
   fileSize: number;
+  cachedImages: number;
+  cacheSize: number;
   updatedAt: string;
   dataTimestamp: string;
   totalNum: string;
   totalSize: string;
   activeBaseUrl: string;
   setting: I_performerAvatarLibrarySetting;
+}
+
+export interface I_performerAvatarCacheClearResult {
+  clearedImages: number;
+  freedSize: number;
+  status: I_performerAvatarLibraryStatus;
 }
 
 export interface I_performerAvatarCandidate {
