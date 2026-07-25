@@ -3,7 +3,7 @@
     :width="props.width" :fullscreen="fullscreen()" append-to-body>
     <div :style="{ height: 'calc(' + props.height + ' - 80px)' }">
       <comCropper v-if="dialogVisible" ref="comCropperRef" :cropWidth="cropWidth" :cropHeight="cropHeight" mode="50%"
-        @sumbit="sumbitCropper">
+        :fitImageToCrop="fitImageToCrop" @sumbit="sumbitCropper">
       </comCropper>
     </div>
   </el-dialog>
@@ -33,17 +33,21 @@ const dialogVisible = ref(false)
 
 const cropWidth = ref(270);
 const cropHeight = ref(320);
+const fitImageToCrop = ref(false);
 
-const open = (raw: File | undefined = undefined, mode = '100%', _cropWidth: number | undefined = undefined, _cropHeight: number | undefined = undefined, maxCropWidth = 900, maxCropHeight = 580) => {
+const open = (image: File | string | undefined = undefined, mode = '100%', _cropWidth: number | undefined = undefined, _cropHeight: number | undefined = undefined, maxCropWidth = 900, maxCropHeight = 580, _fitImageToCrop = false) => {
   if (_cropWidth) cropWidth.value = _cropWidth > maxCropWidth ? maxCropWidth : _cropWidth;
   if (_cropHeight) cropHeight.value = _cropHeight > maxCropHeight ? maxCropHeight : _cropHeight;
+  fitImageToCrop.value = _fitImageToCrop;
   if (dialogVisible.value == false) {
     dialogVisible.value = true;
   }
   nextTick(() => {
     comCropperRef.value?.setMode(mode);
-    if (raw) {
-      comCropperRef.value?.setRawFile(raw);
+    if (image instanceof File) {
+      comCropperRef.value?.setRawFile(image);
+    } else if (image) {
+      comCropperRef.value?.setImage(image);
     }
   })
 

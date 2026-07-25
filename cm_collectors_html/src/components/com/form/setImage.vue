@@ -9,6 +9,8 @@
         </el-image>
       </div>
     </el-upload>
+    <el-button v-if="image_C" class="edit-image-button" type="primary" icon="Edit" circle
+      aria-label="重新编辑图片" title="重新编辑图片" @click.stop="editCurrentImage" />
     <comCropperDialog ref="comCropperDialogRef" @sumbit="cropperSubmit"></comCropperDialog>
   </div>
 </template>
@@ -61,8 +63,12 @@ const handleUploadPhotos = (_uploadFile: UploadFile) => {
   }
 }
 
-const openCropper = (file: File | undefined = undefined, mode = '100%', _cropWidth: number | undefined = undefined, _cropHeight: number | undefined = undefined, maxCropWidth: number | undefined, maxCropHeight: number | undefined) => {
-  comCropperDialogRef.value?.open(file, mode, _cropWidth, _cropHeight, maxCropWidth, maxCropHeight);
+const openCropper = (image: File | string | undefined = undefined, mode = '100%', _cropWidth: number | undefined = undefined, _cropHeight: number | undefined = undefined, maxCropWidth: number | undefined, maxCropHeight: number | undefined, fitImageToCrop = false) => {
+  comCropperDialogRef.value?.open(image, mode, _cropWidth, _cropHeight, maxCropWidth, maxCropHeight, fitImageToCrop);
+}
+
+const editCurrentImage = () => {
+  openCropper(image_C.value, '50%', props.cropperWidth, props.cropperHeight, props.cropperWidth, props.cropperHeight, true);
 }
 
 const cropperSubmit = (fileData: string) => {
@@ -118,6 +124,8 @@ defineExpose({ init, getImageBase64, getImageSize, openCropper })
 </script>
 <style scoped lang="scss">
 .set-image {
+  position: relative;
+
   :first-child {
     width: 100%;
     height: 100%;
@@ -136,5 +144,22 @@ defineExpose({ init, getImageBase64, getImageSize, openCropper })
     font-size: 1.2em;
   }
 
+  .edit-image-button {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 2;
+    width: 32px;
+    height: 32px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+
+  &:hover .edit-image-button,
+  &:focus-within .edit-image-button {
+    opacity: 1;
+    pointer-events: auto;
+  }
 }
 </style>

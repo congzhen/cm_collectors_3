@@ -4,7 +4,8 @@
       <vueCropper ref="cropperRef" :mode="option.mode" :img="option.img" :full="option.full"
         :maxImgSize="option.maxImgSize" :fixedNumber="option.fixedNumber" :fixed="option.fixed"
         :autoCrop="option.autoCrop" :autoCropWidth="option.autoCropWidth" :autoCropHeight="option.autoCropHeight"
-        :fixedBox="option.fixedBox" :outputSize="option.outputSize" :outputType="option.outputType"></vueCropper>
+        :fixedBox="option.fixedBox" :outputSize="option.outputSize" :outputType="option.outputType"
+        @imgLoad="handleImageLoad"></vueCropper>
     </div>
     <div class="cropperImageMainTool">
       <el-button-group size="small">
@@ -44,7 +45,7 @@
 <script setup lang="ts">
 import 'vue-cropper/dist/index.css'
 import { VueCropper } from "./vue-cropper-wrapper.ts";
-import { ref, reactive } from 'vue'
+import { nextTick, ref, reactive } from 'vue'
 import type { UploadFile } from 'element-plus'
 // eslint-disable-next-line no-undef
 const props = defineProps({
@@ -63,6 +64,10 @@ const props = defineProps({
   btnList: {
     type: Array as () => string[],
     default: () => ["selectPicture", "zoomIn", "zoomOut", "rotateLeft", "rotateRight", "autoLeftMaxCrop", "autoRightMaxCrop", "submit"]
+  },
+  fitImageToCrop: {
+    type: Boolean,
+    default: false
   }
 });
 
@@ -105,6 +110,9 @@ const setRawFile = (rawFile: File) => {
     }
   })
 }
+const setImage = (image: string) => {
+  option.img = image;
+}
 const setMode = (_mode: string) => {
   if (option.mode != _mode) {
     option.mode = _mode;
@@ -143,6 +151,21 @@ const cl_rotateLeft = () => {
 }
 const cl_rotateRight = () => {
   cropperRef.value?.rotateRight();
+}
+const ensureImageCoversCrop = () => {
+  if (!cropperRef.value) return;
+  const { cropW, cropH, trueWidth, trueHeight } = cropperRef.value;
+  if (!cropW || !cropH || !trueWidth || !trueHeight) {
+    return;
+  }
+
+  const minimumScale = Math.max(cropW / trueWidth, cropH / trueHeight);
+  cropperRef.value.scale = minimumScale;
+}
+const handleImageLoad = (status: string) => {
+  if (status === 'success' && props.fitImageToCrop) {
+    nextTick(ensureImageCoversCrop);
+  }
 }
 const auto_crop_match_img_size = () => {
   if (!cropperRef.value) return;
@@ -209,7 +232,7 @@ const cl_upload = () => {
 }
 
 // eslint-disable-next-line no-undef
-defineExpose({ setRawFile, setMode });
+defineExpose({ setRawFile, setImage, setMode });
 
 </script>
 <style scoped>
