@@ -65,6 +65,7 @@ const materialViewportRef = ref<HTMLDivElement>();
 const scrollbarRef = ref<InstanceType<typeof ElScrollbar>>();
 let sourceRequestVersion = 0;
 let resizeObserver: ResizeObserver | undefined;
+let resetScrollAfterFilesBaseChange = false;
 
 const dataListWrapper = computed(() => props.dataList);
 const dataList_C = computed(() => props.dataList.map(item => ({
@@ -72,7 +73,13 @@ const dataList_C = computed(() => props.dataList.map(item => ({
   src: getResourceCoverPoster(item),
 })));
 
-watch(dataListWrapper, syncCurrentPlayIndex, { deep: true });
+watch(dataListWrapper, () => {
+  syncCurrentPlayIndex();
+  if (resetScrollAfterFilesBaseChange && dataListWrapper.value.length > 0) {
+    resetScrollAfterFilesBaseChange = false;
+    resetResourceScroll();
+  }
+}, { deep: true });
 watch(() => store.appStoreData.currentFilesBases.id, resetPlaybackForFilesBaseChange, { flush: 'sync' });
 watch(currentPlayIndex, newIndex => {
   if (newIndex < 0) return;
@@ -102,6 +109,18 @@ function resetPlaybackForFilesBaseChange() {
   currentPlayingDramaSeriesId.value = '';
   currentPlayIndex.value = -1;
   videoPlayRef.value?.pause();
+  resetScrollAfterFilesBaseChange = true;
+  resetResourceScroll();
+}
+
+function resetResourceScroll() {
+  nextTick(() => {
+    scrollbarRef.value?.update();
+    window.requestAnimationFrame(() => {
+      scrollbarRef.value?.setScrollLeft(0);
+      if (scrollbarRef.value?.wrapRef) scrollbarRef.value.wrapRef.scrollLeft = 0;
+    });
+  });
 }
 
 function getResourceDramaSeriesId(index: number) {

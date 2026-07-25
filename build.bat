@@ -19,6 +19,8 @@ set "BUILD_SERVER_WIN_TRAY_GUI=0"
 set "BUILD_SERVER_WIN_TRAY=0"
 set "BUILD_SERVER_WIN=0"
 set "BUILD_SERVER_LINUX=0"
+set "BUILD_SERVER_DARWIN_AMD64=0"
+set "BUILD_SERVER_DARWIN_ARM64=0"
 set "BUILD_WAILS=0"
 set "BUILD_LAUNCHER=0"
 set "BUILD_VIDEO_CALLER_WIN=0"
@@ -40,6 +42,8 @@ echo [7] cm_collectors_windows_launcher
 echo [8] cm_collectors_video_caller (Windows)
 echo [9] cm_collectors_video_caller (Linux)
 echo [10] cm_collectors_scraper_debugger
+echo [11] cm_collectors_server (macOS Intel)
+echo [12] cm_collectors_server (macOS Apple Silicon)
 echo.
 echo 提示: 直接按回车键开始构建 (首次使用将构建默认项目: 前端+Linux服务端+Windows托盘版)
 echo.
@@ -72,6 +76,8 @@ if "%INPUT%"=="" (
         if "!ITEM!"=="8" (set "BUILD_VIDEO_CALLER_WIN=1" & set "VALID_INPUT=1")
         if "!ITEM!"=="9" (set "BUILD_VIDEO_CALLER_LINUX=1" & set "VALID_INPUT=1")
         if "!ITEM!"=="10" (set "BUILD_SCRAPER_DEBUGGER=1" & set "VALID_INPUT=1")
+        if "!ITEM!"=="11" (set "BUILD_SERVER_DARWIN_AMD64=1" & set "VALID_INPUT=1")
+        if "!ITEM!"=="12" (set "BUILD_SERVER_DARWIN_ARM64=1" & set "VALID_INPUT=1")
     )
 
     REM 如果输入无效，提示并返回菜单
@@ -103,6 +109,8 @@ echo BUILD_SERVER_WIN_TRAY_GUI=%BUILD_SERVER_WIN_TRAY_GUI%
 echo BUILD_SERVER_WIN_TRAY=%BUILD_SERVER_WIN_TRAY%
 echo BUILD_SERVER_WIN=%BUILD_SERVER_WIN%
 echo BUILD_SERVER_LINUX=%BUILD_SERVER_LINUX%
+echo BUILD_SERVER_DARWIN_AMD64=%BUILD_SERVER_DARWIN_AMD64%
+echo BUILD_SERVER_DARWIN_ARM64=%BUILD_SERVER_DARWIN_ARM64%
 echo BUILD_WAILS=%BUILD_WAILS%
 echo BUILD_LAUNCHER=%BUILD_LAUNCHER%
 echo BUILD_VIDEO_CALLER_WIN=%BUILD_VIDEO_CALLER_WIN%
@@ -188,6 +196,30 @@ if "!BUILD_SERVER_LINUX!"=="1" (
     pushd "!BUILD_DIR!"
 )
 
+REM 选项 11: macOS Intel
+if "!BUILD_SERVER_DARWIN_AMD64!"=="1" (
+    echo [服务端macOS Intel] 构建中...
+    pushd "!ROOT_DIR!\cm_collectors_server"
+    set GOOS=darwin
+    set GOARCH=amd64
+    go build -o "!BUILD_DIR!\cm_collectors_server_darwin_amd64" . || (echo [错误] macOS Intel 构建失败 & popd & goto END)
+    popd
+    echo [服务端macOS Intel] 构建完成
+    pushd "!BUILD_DIR!"
+)
+
+REM 选项 12: macOS Apple Silicon
+if "!BUILD_SERVER_DARWIN_ARM64!"=="1" (
+    echo [服务端macOS Apple Silicon] 构建中...
+    pushd "!ROOT_DIR!\cm_collectors_server"
+    set GOOS=darwin
+    set GOARCH=arm64
+    go build -o "!BUILD_DIR!\cm_collectors_server_darwin_arm64" . || (echo [错误] macOS Apple Silicon 构建失败 & popd & goto END)
+    popd
+    echo [服务端macOS Apple Silicon] 构建完成
+    pushd "!BUILD_DIR!"
+)
+
 REM --- 其他子项目构建 ---
 
 REM 选项 6: Wails
@@ -260,6 +292,8 @@ if "!BUILD_SERVER_WIN_TRAY_GUI!"=="1" set "COPY_SERVER_ASSETS=1"
 if "!BUILD_SERVER_WIN_TRAY!"=="1" set "COPY_SERVER_ASSETS=1"
 if "!BUILD_SERVER_WIN!"=="1" set "COPY_SERVER_ASSETS=1"
 if "!BUILD_SERVER_LINUX!"=="1" set "COPY_SERVER_ASSETS=1"
+if "!BUILD_SERVER_DARWIN_AMD64!"=="1" set "COPY_SERVER_ASSETS=1"
+if "!BUILD_SERVER_DARWIN_ARM64!"=="1" set "COPY_SERVER_ASSETS=1"
 
 if "!BUILD_VIDEO_CALLER_WIN!"=="1" set "COPY_VIDEO_CALLER_ASSETS=1"
 if "!BUILD_VIDEO_CALLER_LINUX!"=="1" set "COPY_VIDEO_CALLER_ASSETS=1"

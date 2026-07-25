@@ -92,10 +92,15 @@ const videoPlayRef = ref<InstanceType<typeof videoPlay>>();
 const currentPlayIndex = ref(-1);
 const currentPlayingDramaSeriesId = ref('');
 let sourceRequestVersion = 0;
+let resetScrollAfterFilesBaseChange = false;
 const dataListWrapper = computed(() => props.dataList);
 
 watch(dataListWrapper, () => {
   syncCurrentPlayIndex()
+  if (resetScrollAfterFilesBaseChange && dataListWrapper.value.length > 0) {
+    resetScrollAfterFilesBaseChange = false;
+    resetResourceScroll();
+  }
 }, { deep: true })
 
 watch(() => store.appStoreData.currentFilesBases.id, () => {
@@ -174,6 +179,18 @@ const resetPlaybackForFilesBaseChange = () => {
   currentPlayingDramaSeriesId.value = '';
   currentPlayIndex.value = -1;
   videoPlayRef.value?.pause();
+  resetScrollAfterFilesBaseChange = true;
+  resetResourceScroll();
+}
+
+const resetResourceScroll = () => {
+  nextTick(() => {
+    waterfallRef.value?.renderer();
+    window.requestAnimationFrame(() => {
+      scrollbarRef.value?.setScrollTop(0);
+      if (scrollbarRef.value?.wrapRef) scrollbarRef.value.wrapRef.scrollTop = 0;
+    });
+  });
 }
 
 const selectResourcesHandle = (item: I_resource) => {
