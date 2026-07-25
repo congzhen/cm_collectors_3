@@ -38,9 +38,14 @@ import { isMobile } from '@/assets/mobile';
 import { getResourceCoverPoster } from '@/common/photo';
 import { getPlayVideoURLAndType } from '@/common/play';
 import type { I_resource } from '@/dataType/resource.dataType';
+import { appStoreData } from '@/storeData/app.storeData';
 import videoPlay from '@/components/play/videoPlay.vue';
 import contentRightClickMenu from './contentRightClickMenu.vue';
 import contentVideoDurationBadge from './contentVideoDurationBadge.vue';
+
+const store = {
+  appStoreData: appStoreData(),
+};
 
 const props = defineProps({
   dataList: {
@@ -68,6 +73,7 @@ const dataList_C = computed(() => props.dataList.map(item => ({
 })));
 
 watch(dataListWrapper, syncCurrentPlayIndex, { deep: true });
+watch(() => store.appStoreData.currentFilesBases.id, resetPlaybackForFilesBaseChange, { flush: 'sync' });
 watch(currentPlayIndex, newIndex => {
   if (newIndex < 0) return;
   scrollToCurrentItem();
@@ -88,6 +94,14 @@ function syncCurrentPlayIndex() {
   currentPlayIndex.value = dataListWrapper.value.findIndex(resource =>
     resource.dramaSeries.some(dramaSeries => dramaSeries.id === currentPlayingDramaSeriesId.value)
   );
+}
+
+function resetPlaybackForFilesBaseChange() {
+  // 同库翻页保留播放状态；切库时必须立即隔离旧库的播放器和异步请求。
+  sourceRequestVersion++;
+  currentPlayingDramaSeriesId.value = '';
+  currentPlayIndex.value = -1;
+  videoPlayRef.value?.pause();
 }
 
 function getResourceDramaSeriesId(index: number) {

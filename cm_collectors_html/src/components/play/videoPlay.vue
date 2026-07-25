@@ -515,10 +515,18 @@ const getRotation = (): number => {
 
 //播放
 const play = () => {
+  if (isMobile()) {
+    nativeVideoRef.value?.play();
+    return;
+  }
   player.value?.play();
 }
 // 暂停
 const pause = () => {
+  if (isMobile()) {
+    nativeVideoRef.value?.pause();
+    return;
+  }
   player.value?.pause();
 }
 
@@ -539,6 +547,9 @@ const getAspectRatio = (): string | null => {
 
 // 获取播放状态
 const isPlaying = (): boolean => {
+  if (isMobile()) {
+    return Boolean(nativeVideoRef.value && !nativeVideoRef.value.paused && !nativeVideoRef.value.ended);
+  }
   if (player.value) {
     return !player.value.paused();
   }

@@ -98,6 +98,10 @@ watch(dataListWrapper, () => {
   syncCurrentPlayIndex()
 }, { deep: true })
 
+watch(() => store.appStoreData.currentFilesBases.id, () => {
+  resetPlaybackForFilesBaseChange();
+}, { flush: 'sync' })
+
 
 watch(currentPlayIndex, (newVal) => {
   if (newVal < 0) return;
@@ -162,6 +166,14 @@ const syncCurrentPlayIndex = () => {
   currentPlayIndex.value = dataListWrapper.value.findIndex(resource =>
     resource.dramaSeries.some(dramaSeries => dramaSeries.id === currentPlayingDramaSeriesId.value)
   );
+}
+
+const resetPlaybackForFilesBaseChange = () => {
+  // 同库翻页保留播放状态；切库时必须立即隔离旧库的播放器和异步请求。
+  sourceRequestVersion++;
+  currentPlayingDramaSeriesId.value = '';
+  currentPlayIndex.value = -1;
+  videoPlayRef.value?.pause();
 }
 
 const selectResourcesHandle = (item: I_resource) => {
