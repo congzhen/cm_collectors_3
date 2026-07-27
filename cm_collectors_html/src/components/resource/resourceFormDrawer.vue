@@ -359,16 +359,24 @@ const scraperVideoInfoHandle = () => {
 }
 
 const selectThumbnailPosterHandle = async (imageBase64: string) => {
-  const maxWidth = formData.value.coverPosterWidth || 400;
+  const coverPosterMode = formData.value.coverPosterMode;
+  const coverPosterPreset = coverPosterMode >= 0
+    ? store.appStoreData.currentConfigApp.coverPosterData[coverPosterMode]
+    : undefined;
+  const maxWidth = Math.max(coverPosterPreset?.width || 0, formData.value.coverPosterWidth || 0, 400);
   const scaleImageBase64 = await scaleImage(imageBase64, maxWidth)
   const { width, height } = await getImageDimensions(scaleImageBase64);
   const imageFile = base64ToFile(scaleImageBase64, 'cover_poster.png');
-  console.log(width, height)
-  autoCoverPoster.value = {
-    width: width,
-    height: height
+  const cropWidth = coverPosterPreset?.width || width;
+  const cropHeight = coverPosterPreset?.height || height;
+
+  if (!coverPosterPreset) {
+    autoCoverPoster.value = {
+      width,
+      height
+    }
   }
-  setImageRef.value?.openCropper(imageFile, '50%', width, height, width, height)
+  setImageRef.value?.openCropper(imageFile, '50%', cropWidth, cropHeight, cropWidth, cropHeight, true)
 }
 
 const success = (data: I_resource) => {
