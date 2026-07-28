@@ -233,10 +233,17 @@ const toggleMaximize = () => {
   emit('maximize', isMaximized.value)
 }
 
+const setMaximized = (maximized: boolean) => {
+  isMaximized.value = maximized
+}
+
 // 全屏控制
 const toggleFullscreen = () => {
-  isFullscreen.value = !isFullscreen.value
   emit('fullscreen')
+}
+
+const setFullscreen = (fullscreen: boolean) => {
+  isFullscreen.value = fullscreen
 }
 
 // 点击其他地方关闭速度菜单
@@ -279,6 +286,8 @@ defineExpose({
   rotateVideo,
   togglePictureInPicture,
   toggleFullscreen,
+  setMaximized,
+  setFullscreen,
   formatTime,
   isPlaying,
   isMuted,

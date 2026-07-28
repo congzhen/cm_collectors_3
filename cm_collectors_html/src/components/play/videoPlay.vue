@@ -1,6 +1,8 @@
 <template>
-  <div ref="videoPlayContainerElementRef" class="video-player-container"
-    :class="{ 'fullscreen-mode': isFullscreenMode }">
+  <Teleport to="body" :disabled="!isFullscreenMode">
+    <div ref="videoPlayContainerElementRef" class="video-player-container"
+      :class="{ 'fullscreen-mode': isFullscreenMode, 'controls-hidden': isControlsHidden }"
+      @mousemove="handlePlayerActivity" @mousedown="handlePlayerActivity">
     <div class="video-player-windows" :key="indexkey">
       <div v-if="isLoading && !isMobile()" class="loading-overlay">
         <div class="loading-spinner"></div>
@@ -15,17 +17,21 @@
       <!-- 移动端使用原生播放器 -->
       <video v-else ref="nativeVideoRef" class="native-video-player" controls preload="metadata" width="100%"
         playsinline webkit-playsinline x5-playsinline x5-video-player-type="h5" x5-video-player-fullscreen="true"
-        x5-video-orientation="portraint">
+        x5-video-orientation="portraint" @timeupdate="handleNativeTimeUpdate">
         <source :src="videoSrc" :type="isHls ? 'application/x-mpegURL' : 'video/mp4'">
       </video>
+      <div v-if="activeSubtitleText" class="custom-subtitle-display">{{ activeSubtitleText }}</div>
     </div>
     <videoPlayControls v-if="useVideoPlayControls && !isMobile()" ref="videoControlsRef" @play="handlePlay"
       @pause="handlePause" @seek="handleSeek" @volume-change="handleVolumeChange" @mute-toggle="handleMuteToggle"
       @playback-rate-change="handlePlaybackRateChange" @rotate="handleRotate" @fullscreen="handleFullscreen"
-      @picture-in-picture="handlePictureInPicture" @maximize="toggleFullscreenMode" @open-in-player="handleOpenInPlayer"
-      @open-cloud-player="handleOpenCloudPlayer" />
+      @picture-in-picture="handlePictureInPicture" @maximize="handleMaximize" @open-in-player="handleOpenInPlayer"
+      @open-cloud-player="handleOpenCloudPlayer" @mouseenter="handleControlsInteractionStart"
+      @mouseleave="handleControlsInteractionEnd" @focusin="handleControlsInteractionStart"
+      @focusout="handleControlsInteractionEnd" />
     <playCloudCheckPromptDialog ref="playCloudCheckPromptDialogRef" />
-  </div>
+    </div>
+  </Teleport>
 </template>
 
 <script lang="ts" setup>
@@ -45,11 +51,19 @@ import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { ElMessage } from 'element-plus';
 import { isMobile } from '@/assets/mobile';
 import { openInPlayerDramaSeries } from '@/common/play';
+import { onHostWindowFullscreenChanged, setHostWindowFullscreen } from '@/common/runtimeBridge';
+import { appStoreData } from '@/storeData/app.storeData';
 import playCloudCheckPromptDialog from './playCloudCheckPromptDialog.vue';
 
 interface I_playerSource {
   src: string;
   type: 'application/x-mpegURL' | 'video/mp4';
+}
+
+interface I_subtitleCue {
+  startTime: number;
+  endTime: number;
+  text: string;
 }
 
 const props = defineProps({
@@ -63,6 +77,7 @@ const props = defineProps({
   },
 })
 
+const appStore = appStoreData()
 const indexkey = ref(0);
 const isLoading = ref(false);
 const loadingText = ref('正在加载视频...');
@@ -81,12 +96,22 @@ let playerSetupTimer: number | undefined;
 const videoId = ref('');
 const videoSrc = ref('');
 const isHls = ref(false)
+const subtitleCues = ref<I_subtitleCue[]>([])
+const activeSubtitleText = ref('')
+let subtitleLoadVersion = 0
 //
 const initVideoAspectRatio = ref(props.aspectRatio)
 // 添加旋转角度状态
 const rotation = ref(0)
 const isFullscreen = ref(false)
 const isFullscreenMode = ref(false)
+const isControlsHidden = ref(false)
+let browserFullscreenActive = false
+let bodyOverflowBeforeMaximize: string | null = null
+let controlsHideTimer: number | undefined
+let controlsInteractionDepth = 0
+let removeHostFullscreenListener: (() => void) | undefined
+const controlsHideDelay = 3000
 const videoOptions = (isMobileDevice: boolean) => {
   // 公共配置
   const baseOptions = {
@@ -218,7 +243,7 @@ const initializePlayer = (_sources: I_playerSource, callBack?: () => void) => {
 
 // 设置播放器事件监听器
 const setupPlayerEventListeners = () => {
-  if (!player.value || !videoControlsRef.value) return;
+  if (!player.value) return;
 
   // 监听播放事件
   player.value.on('play', function () {
@@ -227,6 +252,7 @@ const setupPlayerEventListeners = () => {
     }
     // 隐藏loading
     isLoading.value = false;
+    showControls()
   });
 
   // 监听暂停事件
@@ -234,12 +260,14 @@ const setupPlayerEventListeners = () => {
     if (videoControlsRef.value) {
       videoControlsRef.value.isPlaying = false;
     }
+    showControls(false)
   });
 
   // 监听时间更新事件
   player.value.on('timeupdate', function () {
     const currentTime = player.value.currentTime();
     const duration = player.value.duration();
+    updateActiveSubtitle(currentTime)
 
     if (videoControlsRef.value) {
       videoControlsRef.value.currentTime = currentTime;
@@ -272,18 +300,6 @@ const setupPlayerEventListeners = () => {
     isLoading.value = false;
   });
 
-  // 监听全屏变化事件
-  player.value.on('fullscreenchange', function () {
-    isFullscreen.value = player.value.isFullscreen();
-    // 根据全屏状态切换控制条
-    if (isFullscreen.value) {
-      // 全屏时启用内置控制条
-      player.value.controls(true);
-    } else {
-      // 非全屏时禁用内置控制条
-      player.value.controls(false);
-    }
-  });
   //监控音量变化
   player.value.on('volumechange', function () {
     // 获取当前音量
@@ -355,21 +371,74 @@ const handleRotate = (degrees: number) => {
   rotateVideo(degrees);
 };
 
-// 最大化函数
-const toggleFullscreenMode = () => {
-  isFullscreenMode.value = !isFullscreenMode.value
-  console.log(props.aspectRatio);
-  console.log(player.value?.aspectRatio());
+const updateActiveSubtitle = (currentTime: number) => {
+  activeSubtitleText.value = subtitleCues.value
+    .filter((cue) => cue.startTime <= currentTime && currentTime <= cue.endTime)
+    .map((cue) => cue.text)
+    .join('\n')
+}
+
+const handleNativeTimeUpdate = () => {
+  updateActiveSubtitle(nativeVideoRef.value?.currentTime || 0)
+}
+
+const clearControlsHideTimer = () => {
+  window.clearTimeout(controlsHideTimer)
+  controlsHideTimer = undefined
+}
+
+const showControls = (autoHide = true) => {
+  isControlsHidden.value = false
+  clearControlsHideTimer()
+  if (
+    autoHide &&
+    controlsInteractionDepth === 0 &&
+    isFullscreenMode.value &&
+    player.value &&
+    !player.value.paused()
+  ) {
+    controlsHideTimer = window.setTimeout(() => {
+      if (controlsInteractionDepth > 0) return
+      isControlsHidden.value = true
+    }, controlsHideDelay)
+  }
+}
+
+const handleControlsInteractionStart = () => {
+  controlsInteractionDepth++
+  showControls(false)
+}
+
+const handleControlsInteractionEnd = () => {
+  controlsInteractionDepth = Math.max(0, controlsInteractionDepth - 1)
+  if (controlsInteractionDepth === 0) {
+    showControls()
+  }
+}
+
+const handlePlayerActivity = () => {
   if (isFullscreenMode.value) {
-    // 进入最大化模式
+    showControls()
+  }
+}
+
+// 最大化函数
+const toggleFullscreenMode = (maximized = !isFullscreenMode.value) => {
+  if (isFullscreenMode.value === maximized) return
+
+  isFullscreenMode.value = maximized
+  if (isFullscreenMode.value) {
+    bodyOverflowBeforeMaximize = document.body.style.overflow
     document.body.style.overflow = 'hidden'
-    // 可以在这里添加其他需要的样式调整
+    showControls()
   } else {
-    // 退出最大化模式
-    document.body.style.overflow = ''
+    document.body.style.overflow = bodyOverflowBeforeMaximize ?? ''
+    bodyOverflowBeforeMaximize = null
+    showControls(false)
   }
 
   nextTick(() => {
+    videoControlsRef.value?.setMaximized(isFullscreenMode.value)
     if (isFullscreenMode.value) {
       const ep = videoPlayContainerElementRef.value || undefined;
       if (ep) {
@@ -384,14 +453,79 @@ const toggleFullscreenMode = () => {
 
 }
 
-// 处理全屏事件
-const handleFullscreen = () => {
-  if (player.value) {
-    if (player.value.isFullscreen()) {
-      player.value.exitFullscreen();
-    } else {
-      player.value.requestFullscreen();
+const handleMaximizeKeydown = (event: KeyboardEvent) => {
+  handlePlayerActivity()
+  if (event.key !== 'Escape') return
+
+  if (isFullscreen.value) {
+    if (appStore.runtimeBridgeStatus) {
+      void handleFullscreen()
     }
+    return
+  }
+
+  if (isFullscreenMode.value) {
+    toggleFullscreenMode(false)
+  }
+}
+
+const handleMaximize = (maximized: boolean) => {
+  if (!maximized && isFullscreen.value) {
+    void handleFullscreen()
+    return
+  }
+  toggleFullscreenMode(maximized)
+}
+
+const handleDocumentFullscreenChange = () => {
+  if (!browserFullscreenActive) return
+
+  const fullscreen = document.fullscreenElement !== null
+  isFullscreen.value = fullscreen
+  videoControlsRef.value?.setFullscreen(fullscreen)
+  if (!fullscreen) {
+    browserFullscreenActive = false
+    toggleFullscreenMode(false)
+  }
+}
+
+const handleHostFullscreenChange = (fullscreen: boolean) => {
+  isFullscreen.value = fullscreen
+  videoControlsRef.value?.setFullscreen(fullscreen)
+  toggleFullscreenMode(fullscreen)
+}
+
+// 处理全屏事件
+const handleFullscreen = async () => {
+  if (appStore.runtimeBridgeStatus) {
+    const fullscreen = !isFullscreen.value
+    try {
+      await setHostWindowFullscreen(fullscreen)
+      isFullscreen.value = fullscreen
+      videoControlsRef.value?.setFullscreen(fullscreen)
+      toggleFullscreenMode(fullscreen)
+    } catch (error) {
+      console.error('Wails fullscreen toggle failed:', error)
+      ElMessage.error('无法切换全屏模式')
+    }
+    return
+  }
+
+  try {
+    if (browserFullscreenActive && document.fullscreenElement) {
+      await document.exitFullscreen()
+    } else {
+      browserFullscreenActive = true
+      toggleFullscreenMode(true)
+      await document.documentElement.requestFullscreen()
+    }
+  } catch (error) {
+    browserFullscreenActive = false
+    isFullscreen.value = false
+    videoControlsRef.value?.setFullscreen(false)
+    toggleFullscreenMode(false)
+    console.error('Browser fullscreen toggle failed:', error)
+    ElMessage.error('当前环境不支持全屏播放')
   }
 };
 
@@ -597,6 +731,7 @@ const extractVideoIdFromPath = (path: string): string => {
 
 // 设置视频源
 const setVideoSource = (src: string, type = 'mp4', fn = () => { }, retryCount = 0) => {
+  clearSubtitleCues()
   videoId.value = extractVideoIdFromPath(src)
   videoSrc.value = src
   isHls.value = type === 'm3u8' || type === 'hls'
@@ -617,6 +752,7 @@ const setVideoSource = (src: string, type = 'mp4', fn = () => { }, retryCount = 
       // 使用 nextTick 确保 DOM 更新后再设置新源
       nextTick(() => {
         nativeVideoRef.value!.src = src;
+        nativeVideoRef.value!.addEventListener('loadedmetadata', fn, { once: true })
         // 强制重新加载视频
         void nativeVideoRef.value!.load();
         // 如果之前正在播放，则在可以播放时自动播放
@@ -638,8 +774,7 @@ const setVideoSource = (src: string, type = 'mp4', fn = () => { }, retryCount = 
       // 从本地存储读取并设置音量
       const savedVolume = getVolumeFromStorage();
       setVolume(savedVolume)
-      // 添加 loadedmetadata 事件监听
-      player.value.on('loadedmetadata', function () {
+      const handleLoadedMetadata = () => {
         // 同步时长到控制组件
         if (videoControlsRef.value) {
           videoControlsRef.value.duration = player.value.duration();
@@ -647,7 +782,14 @@ const setVideoSource = (src: string, type = 'mp4', fn = () => { }, retryCount = 
         fn();
         // 隐藏loading
         isLoading.value = false;
-      })
+      }
+      // 本地视频或缓存命中时，元数据可能在 ready 回调前已经加载完成。
+      // 此时应立即执行后续逻辑，避免错过字幕轨道的添加。
+      if (player.value.readyState() >= 1) {
+        handleLoadedMetadata()
+      } else {
+        player.value.one('loadedmetadata', handleLoadedMetadata)
+      }
       // 添加错误处理
       player.value.on('error', function () {
         const error = player.value.error()
@@ -709,63 +851,74 @@ const getVolume = () => {
   return 0
 }
 
-// 添加字幕轨道
-const addTextTrack = (src: string, label: string, language: string, isDefault = false) => {
-  if (player.value) {
-    // 先移除已有的字幕轨道
-    removeAllTextTracks()
+const parseSubtitleTimestamp = (value: string): number => {
+  const parts = value.trim().replace(',', '.').split(':').map(Number)
+  if (parts.some(Number.isNaN)) return -1
+  if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2]
+  if (parts.length === 2) return parts[0] * 60 + parts[1]
+  return -1
+}
 
-    // 添加新的字幕轨道
-    const track = player.value.addRemoteTextTrack({
-      kind: 'subtitles',
-      src: src,
-      srclang: language,
-      label: label,
-      default: isDefault
-    }, true) // 注意这里改为 true，立即加载
+const decodeSubtitleText = (value: string): string => {
+  const textarea = document.createElement('textarea')
+  textarea.innerHTML = value.replace(/<[^>]+>/g, '')
+  return textarea.value
+}
 
-    // 监听字幕加载完成事件
-    if (track && track.track) {
-      // 字幕数据加载完成
-      track.track.addEventListener('load', function () {
-        //console.log('Subtitle track loaded successfully');
-      });
+const parseWebVtt = (content: string): I_subtitleCue[] => {
+  const blocks = content.replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n').split(/\n{2,}/)
+  const cues: I_subtitleCue[] = []
 
-      // 字幕数据加载错误
-      track.track.addEventListener('error', function (e: ErrorEvent) {
-        console.error('Subtitle track load error:', e);
-      });
+  for (const block of blocks) {
+    const lines = block.split('\n').map((line) => line.trimEnd())
+    const timingIndex = lines.findIndex((line) => line.includes('-->'))
+    if (timingIndex < 0) continue
 
-      // 字幕就绪状态改变
-      track.track.addEventListener('cuechange', function () {
-        //console.log('Subtitle cue changed');
-        // 强制触发字幕更新
-        player.value.trigger('texttrackchange');
-      });
-    }
+    const timing = lines[timingIndex].match(/^(\S+)\s+-->\s+(\S+)/)
+    if (!timing) continue
+    const startTime = parseSubtitleTimestamp(timing[1])
+    const endTime = parseSubtitleTimestamp(timing[2])
+    if (startTime < 0 || endTime < startTime) continue
 
-    // 强制显示字幕（如果设置为默认）
-    if (isDefault) {
-      setTimeout(() => {
-        const textTracks = player.value.textTracks();
-        for (let i = 0; i < textTracks.length; i++) {
-          if (textTracks[i].language === language) {
-            textTracks[i].mode = 'showing';
-            //console.log('Subtitle showing for language:', language);
-            // 触发更新
-            player.value.trigger('texttrackchange');
-            break;
-          }
-        }
-      }, 500);
-    }
-
-    return track
+    const text = decodeSubtitleText(lines.slice(timingIndex + 1).join('\n')).trim()
+    if (text) cues.push({ startTime, endTime, text })
   }
+
+  return cues.sort((a, b) => a.startTime - b.startTime)
+}
+
+// 字幕与视频流独立加载，统一使用自定义覆盖层显示，避免 WebView 文本轨道兼容性差异。
+const addTextTrack = async (src: string, _label: string, _language: string, _isDefault = false) => {
+  const loadVersion = ++subtitleLoadVersion
+  try {
+    const response = await fetch(src)
+    if (!response.ok) {
+      if (response.status !== 404) {
+        console.error(`Subtitle request failed: ${response.status} ${response.statusText}`)
+      }
+      return
+    }
+    const cues = parseWebVtt(await response.text())
+    if (loadVersion !== subtitleLoadVersion) return
+    subtitleCues.value = cues
+    const currentTime = player.value?.currentTime() || nativeVideoRef.value?.currentTime || 0
+    updateActiveSubtitle(currentTime)
+  } catch (error) {
+    if (loadVersion === subtitleLoadVersion) {
+      console.error('Subtitle load failed:', error)
+    }
+  }
+}
+
+const clearSubtitleCues = () => {
+  subtitleLoadVersion++
+  subtitleCues.value = []
+  activeSubtitleText.value = ''
 }
 
 // 清除所有字幕轨道
 const removeAllTextTracks = () => {
+  clearSubtitleCues()
   if (player.value) {
     const tracks = player.value.remoteTextTracks() || []
     for (let i = tracks.length - 1; i >= 0; i--) {
@@ -868,11 +1021,36 @@ const handleOpenCloudPlayer = async () => {
 
 // 组件挂载时初始化播放器
 onMounted(() => {
+  document.addEventListener('keydown', handleMaximizeKeydown)
+  document.addEventListener('fullscreenchange', handleDocumentFullscreenChange)
+  if (appStore.runtimeBridgeStatus) {
+    removeHostFullscreenListener = onHostWindowFullscreenChanged(handleHostFullscreenChange)
+  }
   //initializePlayer()
 })
 
 // 组件销毁前释放播放器资源
 onBeforeUnmount(() => {
+  const shouldExitBrowserFullscreen = browserFullscreenActive && document.fullscreenElement !== null
+  const shouldExitHostFullscreen = appStore.runtimeBridgeStatus && isFullscreen.value
+  document.removeEventListener('keydown', handleMaximizeKeydown)
+  document.removeEventListener('fullscreenchange', handleDocumentFullscreenChange)
+  removeHostFullscreenListener?.()
+  removeHostFullscreenListener = undefined
+  clearControlsHideTimer()
+  if (isFullscreenMode.value) {
+    document.body.style.overflow = bodyOverflowBeforeMaximize ?? ''
+    bodyOverflowBeforeMaximize = null
+  }
+  if (shouldExitBrowserFullscreen) {
+    void document.exitFullscreen().catch((error) => {
+      console.error('Failed to exit browser fullscreen while closing player:', error)
+    })
+  } else if (shouldExitHostFullscreen) {
+    void setHostWindowFullscreen(false).catch((error) => {
+      console.error('Failed to exit Wails fullscreen while closing player:', error)
+    })
+  }
   playerSetupVersion++;
   window.clearTimeout(playerSetupTimer);
   if (player.value) {
@@ -927,6 +1105,27 @@ defineExpose({
   position: relative;
 }
 
+.custom-subtitle-display {
+  position: absolute;
+  right: 8%;
+  bottom: 3%;
+  left: 8%;
+  z-index: 15;
+  color: #fff;
+  font-size: clamp(18px, 2.2vw, 34px);
+  font-family: Arial, Helvetica, sans-serif;
+  line-height: 1.35;
+  text-align: center;
+  white-space: pre-line;
+  pointer-events: none;
+  text-shadow:
+    -2px -2px 2px #000,
+    2px -2px 2px #000,
+    -2px 2px 2px #000,
+    2px 2px 2px #000;
+  transition: bottom 0.2s ease;
+}
+
 /* Loading样式 */
 .loading-overlay {
   position: absolute;
@@ -971,10 +1170,10 @@ defineExpose({
 /* 添加最大化模式样式 */
 .video-player-container.fullscreen-mode {
   position: fixed;
-  top: 0;
-  left: 0;
+  inset: 0;
   width: 100vw;
   height: 100vh;
+  height: 100dvh;
   z-index: 9999;
   background-color: #000;
   display: flex;
@@ -984,13 +1183,34 @@ defineExpose({
 .video-player-container.fullscreen-mode .video-js {
   flex: 1;
   width: 100%;
-  height: calc(100% - 44px);
-  /* 减去控制条的大致高度 */
+  height: 100%;
 }
 
 .video-player-container.fullscreen-mode .video-controller {
-  /* 保持控制条原有尺寸 */
-  flex-shrink: 0;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 20;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.video-player-container.fullscreen-mode.controls-hidden {
+  cursor: none;
+}
+
+.video-player-container.fullscreen-mode.controls-hidden .video-controller {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(100%);
+}
+
+.video-player-container.fullscreen-mode:not(.controls-hidden) .custom-subtitle-display {
+  bottom: 80px;
+}
+
+.video-player-container.fullscreen-mode.controls-hidden .custom-subtitle-display {
+  bottom: 24px;
 }
 
 /* 可选：自定义视频播放器样式 */

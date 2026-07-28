@@ -4,8 +4,10 @@ import (
 	"cm_collectors_server/processors"
 	"cm_collectors_server/response"
 	"fmt"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 )
 
 type Play struct{}
@@ -65,7 +67,10 @@ func (Play) PlayVideoMP4(c *gin.Context) {
 
 func (Play) VideoSubtitle(c *gin.Context) {
 	dramaSeriesId := c.Param("dramaSeriesId")
-	processors.VideoSubtitle{}.GetVideoSubtitle(c, dramaSeriesId)
+	if err := (processors.VideoSubtitle{}).GetVideoSubtitle(c, dramaSeriesId); err != nil {
+		logrus.Errorf("Video subtitle failed: %v; Api:%s", err, c.Request.URL.String())
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Unable to load subtitle"})
+	}
 }
 
 func (Play) VideoM3u8(c *gin.Context) {

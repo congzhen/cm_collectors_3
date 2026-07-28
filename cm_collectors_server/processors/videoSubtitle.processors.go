@@ -41,18 +41,14 @@ func (t VideoSubtitle) GetVideoSubtitle(c *gin.Context, dramaSeriesId string) er
 		return nil
 	}
 	// 如果请求转换为 WebVTT 或文件本身就是 WebVTT
-	if filepath.Ext(subtitleSrc) == ".vtt" {
+	if strings.EqualFold(filepath.Ext(subtitleSrc), ".vtt") {
 		c.Header("Content-Type", "text/vtt; charset=utf-8")
 		c.File(subtitleSrc)
 		return nil
 	} else {
 		err = t.convertToVTT(c, subtitleSrc)
 		if err != nil {
-			// 如果转换失败，直接返回原文件
-			contentType := "text/plain; charset=utf-8"
-			c.Header("Content-Type", contentType)
-			c.File(subtitleSrc)
-			return nil
+			return fmt.Errorf("convert subtitle to WebVTT: %w", err)
 		}
 		return nil
 	}
@@ -181,11 +177,29 @@ func (VideoSubtitle) findLocalizedSubtitleFile(videoSrc string, lang string, for
 		".idx": "text/plain; charset=utf-8",
 	}
 
-	// 按顺序查找存在的文件
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return "", "", fmt.Errorf("read subtitle directory: %w", err)
+	}
+
+	// 目录扫描后进行不区分大小写的精确文件名匹配，
+	// 保证 Windows 与 Linux/Docker 下的查找行为一致，同时保留候选项优先级。
+	filesByLowerName := make(map[string]string, len(entries))
+	for _, entry := range entries {
+		if entry.IsDir() {
+			continue
+		}
+		lowerName := strings.ToLower(entry.Name())
+		if _, exists := filesByLowerName[lowerName]; !exists {
+			filesByLowerName[lowerName] = entry.Name()
+		}
+	}
+
 	for _, candidate := range candidates {
-		fullPath := filepath.Join(dir, candidate)
-		if _, err := os.Stat(fullPath); err == nil {
-			ext := filepath.Ext(fullPath)
+		actualName, exists := filesByLowerName[strings.ToLower(candidate)]
+		if exists {
+			fullPath := filepath.Join(dir, actualName)
+			ext := strings.ToLower(filepath.Ext(fullPath))
 			contentType := contentTypes[ext]
 			if contentType == "" {
 				contentType = "text/plain; charset=utf-8"

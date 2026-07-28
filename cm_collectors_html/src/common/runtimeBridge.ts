@@ -133,6 +133,9 @@ const pendingRequests = new Map<string, {
   timeoutId: number;
 }>();
 
+const hostWindowFullscreenListeners = new Set<(fullscreen: boolean) => void>();
+let lastHostWindowFullscreenState: boolean | undefined;
+
 /**
  * 向父窗口发送异步请求并等待响应
  * 适用于 iframe 嵌入场景，代理调用 Wails/Electron 功能
@@ -179,8 +182,7 @@ export function sendToHostParentAsync(action: string, payload: unknown, timeoutM
  */
 export function listenToHostParent(callback?: (data: unknown) => void): () => void {
   const messageHandler = (event: MessageEvent<unknown>) => {
-    // 可选：验证 event.origin 以确保安全性
-    // if (event.origin !== "expected-origin") return;
+    if (event.source !== window.parent) return;
 
     // 类型守卫：确保 data 是对象且具有 source 属性
     if (
@@ -189,7 +191,23 @@ export function listenToHostParent(callback?: (data: unknown) => void): () => vo
       'source' in event.data &&
       (event.data as { source: unknown }).source === 'host-main-window'
     ) {
-      const responseData = event.data as { requestId?: string; success?: boolean; result?: unknown; error?: string };
+      const responseData = event.data as {
+        requestId?: string;
+        success?: boolean;
+        result?: unknown;
+        error?: string;
+        event?: string;
+        fullscreen?: boolean;
+      };
+
+      if (
+        responseData.event === 'wails.window.fullscreenChanged' &&
+        typeof responseData.fullscreen === 'boolean'
+      ) {
+        lastHostWindowFullscreenState = responseData.fullscreen;
+        hostWindowFullscreenListeners.forEach((listener) => listener(responseData.fullscreen!));
+        return;
+      }
 
       // 如果存在 requestId，说明是异步请求的响应
       if (responseData.requestId && pendingRequests.has(responseData.requestId)) {
@@ -242,4 +260,20 @@ export async function openDirectoryDialog(title?: string): Promise<string> {
   return sendToHostParentAsync('wails.dialog.openDirectory', {
     title
   }) as Promise<string>;
+}
+
+export async function setHostWindowFullscreen(fullscreen: boolean): Promise<void> {
+  await sendToHostParentAsync('wails.window.setFullscreen', {
+    fullscreen
+  }, 5000);
+}
+
+export function onHostWindowFullscreenChanged(
+  listener: (fullscreen: boolean) => void
+): () => void {
+  hostWindowFullscreenListeners.add(listener);
+  if (lastHostWindowFullscreenState !== undefined) {
+    listener(lastHostWindowFullscreenState);
+  }
+  return () => hostWindowFullscreenListeners.delete(listener);
 }

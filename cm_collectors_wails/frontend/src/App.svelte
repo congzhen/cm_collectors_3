@@ -20,6 +20,8 @@
   let zoomLevel = 1; // 缩放级别，默认为1 (100%)
   let webview: HTMLIFrameElement; // iframe 元素引用
   let showZoomControls = false; // 控制缩放按钮的显示状态
+  let removeIframeProxy: (() => void) | undefined;
+  let fullscreenSyncTimer: ReturnType<typeof setTimeout> | undefined;
 
   onMount(async () => {
     // 组件挂载后检查窗口状态
@@ -46,9 +48,10 @@
     // 监听鼠标按下事件，当在标题栏按下时显示覆盖层
     document.addEventListener("mousedown", handleMouseDown);
     window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("resize", handleWindowResize);
 
     // 确保在应用启动时调用代理设置
-    setupIframeProxy();
+    removeIframeProxy = setupIframeProxy();
   });
 
   function handleMouseDown(e: MouseEvent) {
@@ -106,6 +109,7 @@
     if (isFullscreen) {
       WindowUnfullscreen();
       isFullscreen = false;
+      notifyFullscreenState();
     }
     WindowToggleMaximise();
     WindowIsMaximised().then((result) => (isMaximised = result));
@@ -117,12 +121,48 @@
       WindowMaximise();
       isFullscreen = false;
       isMaximised = true;
+      notifyFullscreenState();
       return;
     }
 
     WindowFullscreen();
     isFullscreen = true;
     isMaximised = false;
+    notifyFullscreenState();
+  }
+
+  function getIframeOrigin(): string | null {
+    try {
+      return new URL(iframeSrc, window.location.href).origin;
+    } catch {
+      return null;
+    }
+  }
+
+  function notifyFullscreenState() {
+    const targetOrigin = getIframeOrigin();
+    if (!webview?.contentWindow || !targetOrigin) return;
+
+    webview.contentWindow.postMessage(
+      {
+        source: "host-main-window",
+        event: "wails.window.fullscreenChanged",
+        fullscreen: isFullscreen,
+      },
+      targetOrigin,
+    );
+  }
+
+  function handleWindowResize() {
+    clearTimeout(fullscreenSyncTimer);
+    fullscreenSyncTimer = setTimeout(async () => {
+      const actualFullscreen = await WindowIsFullscreen();
+      if (actualFullscreen === isFullscreen) return;
+
+      isFullscreen = actualFullscreen;
+      isMaximised = actualFullscreen ? false : await WindowIsMaximised();
+      notifyFullscreenState();
+    }, 100);
   }
 
   function handleKeyDown(event: KeyboardEvent) {
@@ -151,16 +191,25 @@
   onDestroy(() => {
     document.removeEventListener("mousedown", handleMouseDown);
     window.removeEventListener("keydown", handleKeyDown);
+    window.removeEventListener("resize", handleWindowResize);
+    clearTimeout(fullscreenSyncTimer);
+    removeIframeProxy?.();
   });
 
   /**
    * 监听来自 iframe 的消息并代理执行 Wails 原生功能
    */
-  function setupIframeProxy() {
+  function setupIframeProxy(): () => void {
     console.log("[Host] Setting up iframe proxy listener...");
-    window.addEventListener("message", async (event: MessageEvent) => {
-      // 安全建议：在生产环境中验证 event.origin
-      // if (event.origin !== "your-iframe-origin") return;
+    const messageHandler = async (event: MessageEvent) => {
+      const allowedOrigin = getIframeOrigin();
+      if (
+        !allowedOrigin ||
+        event.source !== webview?.contentWindow ||
+        event.origin !== allowedOrigin
+      ) {
+        return;
+      }
 
       const data = event.data;
 
@@ -182,7 +231,7 @@
                 success: true,
                 result: true,
               },
-              { targetOrigin: "*" },
+              { targetOrigin: allowedOrigin },
             );
             return; // 握手请求直接返回，不进入后续通用响应逻辑
           } else if (action === "wails.dialog.openMultipleFiles") {
@@ -215,6 +264,20 @@
               console.error("[Host] Go method call failed:", goError);
               throw new Error(`Failed to open directory dialog: ${goError}`);
             }
+          } else if (action === "wails.window.setFullscreen") {
+            const fullscreen = payload?.fullscreen === true;
+            if (fullscreen) {
+              WindowFullscreen();
+              isFullscreen = true;
+              isMaximised = false;
+            } else {
+              WindowUnfullscreen();
+              WindowMaximise();
+              isFullscreen = false;
+              isMaximised = true;
+            }
+            notifyFullscreenState();
+            result = true;
           } else {
             throw new Error(`Unknown action: ${action}`);
           }
@@ -227,7 +290,7 @@
               success: true,
               result,
             },
-            { targetOrigin: "*" },
+            { targetOrigin: allowedOrigin },
           ); // 生产环境请替换为具体的 iframe origin
         } catch (error: any) {
           console.error("[Host] Error handling iframe request:", error);
@@ -239,11 +302,13 @@
               success: false,
               error: error.message || "Internal Host Error",
             },
-            { targetOrigin: "*" },
+            { targetOrigin: allowedOrigin },
           );
         }
       }
-    });
+    };
+    window.addEventListener("message", messageHandler);
+    return () => window.removeEventListener("message", messageHandler);
   }
 
 </script>
@@ -264,7 +329,7 @@
     </div>
 
     <div class="content">
-      <iframe id="webview" bind:this={webview} src={iframeSrc} title={title}></iframe>
+      <iframe id="webview" bind:this={webview} src={iframeSrc} title={title} on:load={notifyFullscreenState}></iframe>
 
       <!-- 缩放控制按钮，通过按钮切换显示状态 -->
       {#if showZoomControls}
