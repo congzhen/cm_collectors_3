@@ -24,7 +24,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import contentList from '@/components/content/contentList.vue'
 import switchMobile from '@/components/com/form/switchMobile.vue'
 import { appStoreData } from '@/storeData/app.storeData'
@@ -47,6 +47,7 @@ const contentListRef = ref<InstanceType<typeof contentList>>()
 
 let fetchCount = true;
 let durationRefreshTimer: number | undefined;
+let dataListRequestVersion = 0;
 const loading = ref(false);
 const dataList = ref<I_resource[]>([])
 const dataCount = ref(0);
@@ -61,18 +62,32 @@ const selectedDataBase = computed({
   }
 })
 
+watch(
+  () => store.appStoreData.currentFilesBases.id,
+  () => {
+    dataListRequestVersion++;
+    window.clearTimeout(durationRefreshTimer);
+    dataList.value = [];
+    dataCount.value = 0;
+  },
+  { flush: 'sync' }
+)
+
 // 初始化数据
 const init = async () => {
   await getDataList()
 }
 
-const getDataList = debounce(async (fn: () => void = () => { }) => {
+const executeGetDataList = debounce(async (requestVersion: number, fn: () => void) => {
+  const filesBasesId = store.appStoreData.currentFilesBases.id;
+  const shouldFetchCount = fetchCount;
   try {
     loading.value = true;
-    const result = await resourceServer.dataList(store.appStoreData.currentFilesBases.id, fetchCount, currentPage.value, pageSize.value, store.searchStoreData.searchData);
+    const result = await resourceServer.dataList(filesBasesId, shouldFetchCount, currentPage.value, pageSize.value, store.searchStoreData.searchData);
+    if (requestVersion !== dataListRequestVersion || filesBasesId !== store.appStoreData.currentFilesBases.id) return;
     if (result && result.status) {
       dataList.value = result.data.dataList;
-      if (fetchCount) {
+      if (shouldFetchCount) {
         dataCount.value = result.data.total;
         fetchCount = false;
       }
@@ -84,9 +99,14 @@ const getDataList = debounce(async (fn: () => void = () => { }) => {
   } catch (error) {
     console.log(error);
   } finally {
-    loading.value = false;
+    if (requestVersion === dataListRequestVersion) loading.value = false;
   }
 }, 200)
+
+const getDataList = (fn: () => void = () => { }) => {
+  const requestVersion = ++dataListRequestVersion;
+  executeGetDataList(requestVersion, fn);
+}
 
 // 移动端同样采用“列表先返回、后台采集、稍后刷新”的策略。
 // 这样不会因为当前页视频数量多或 ffprobe 较慢而阻塞翻页/切库操作。
@@ -95,9 +115,12 @@ const scheduleDurationRefresh = () => {
     return;
   }
   window.clearTimeout(durationRefreshTimer);
+  const requestVersion = dataListRequestVersion;
+  const filesBasesId = store.appStoreData.currentFilesBases.id;
   durationRefreshTimer = window.setTimeout(async () => {
-    const result = await resourceServer.dataList(store.appStoreData.currentFilesBases.id, false, currentPage.value, pageSize.value, store.searchStoreData.searchData);
-    if (result && result.status) {
+    if (requestVersion !== dataListRequestVersion || filesBasesId !== store.appStoreData.currentFilesBases.id) return;
+    const result = await resourceServer.dataList(filesBasesId, false, currentPage.value, pageSize.value, store.searchStoreData.searchData);
+    if (requestVersion === dataListRequestVersion && filesBasesId === store.appStoreData.currentFilesBases.id && result && result.status) {
       dataList.value = result.data.dataList;
     }
   }, 2500);

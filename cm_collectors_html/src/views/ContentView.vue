@@ -21,7 +21,7 @@ import contentList from '@/components/content/contentList.vue'
 import contentListAdmin from '@/components/content/contentListAdmin.vue';
 import coverAdjuster from '@/components/setting/fileDatabaseSetting/coverAdjuster.vue';
 import playListBtn from '@/components/playList/playListBtn.vue';
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, nextTick } from 'vue'
 import { appStoreData } from '@/storeData/app.storeData';
 import { searchStoreData } from '@/storeData/search.storeData';
 import type { I_resource } from '@/dataType/resource.dataType';
@@ -43,6 +43,7 @@ const dataList = ref<I_resource[]>([]);
 const dataCount = ref(0);
 let fetchCount = true;
 let durationRefreshTimer: number | undefined;
+let dataListRequestVersion = 0;
 const currentPage = ref(1);
 const pageSize = ref(store.appStoreData.currentConfigApp.pageLimit);
 
@@ -61,6 +62,17 @@ watch(
   },
 )
 
+watch(
+  () => store.appStoreData.currentFilesBases.id,
+  () => {
+    dataListRequestVersion++;
+    window.clearTimeout(durationRefreshTimer);
+    dataList.value = [];
+    dataCount.value = 0;
+  },
+  { flush: 'sync' }
+)
+
 const init = async () => {
   isInitializing.value = true;
   dataList.value = [];
@@ -76,6 +88,7 @@ const init = async () => {
     }
     emits('selectResources', firstData, true);
     isInitializing.value = false;
+    nextTick(() => contentListRef.value?.change());
   });
 
 }
@@ -87,13 +100,16 @@ const init_DataList = async (fn: () => void = () => { }, fetch: boolean = false)
   await getDataList(fn);
 }
 
-const getDataList = debounce(async (fn: () => void = () => { }) => {
+const executeGetDataList = debounce(async (requestVersion: number, fn: () => void) => {
+  const filesBasesId = store.appStoreData.currentFilesBases.id;
+  const shouldFetchCount = fetchCount;
   try {
     loading.value = true;
-    const result = await resourceServer.dataList(store.appStoreData.currentFilesBases.id, fetchCount, currentPage.value, pageSize.value, store.searchStoreData.searchData);
+    const result = await resourceServer.dataList(filesBasesId, shouldFetchCount, currentPage.value, pageSize.value, store.searchStoreData.searchData);
+    if (requestVersion !== dataListRequestVersion || filesBasesId !== store.appStoreData.currentFilesBases.id) return;
     if (result && result.status) {
       dataList.value = result.data.dataList;
-      if (fetchCount) {
+      if (shouldFetchCount) {
         dataCount.value = result.data.total;
         fetchCount = false;
       }
@@ -105,9 +121,14 @@ const getDataList = debounce(async (fn: () => void = () => { }) => {
   } catch (error) {
     console.log(error);
   } finally {
-    loading.value = false;
+    if (requestVersion === dataListRequestVersion) loading.value = false;
   }
 }, 200)
+
+const getDataList = (fn: () => void = () => { }) => {
+  const requestVersion = ++dataListRequestVersion;
+  executeGetDataList(requestVersion, fn);
+}
 
 // 资源列表接口只负责触发后端异步采集，不会等待 ffprobe 完成。
 // 开启“显示视频时长”后，这里延迟重新拉取当前页一次，让刚写入数据库的时长能自动出现在封面角标上。
@@ -117,9 +138,12 @@ const scheduleDurationRefresh = () => {
     return;
   }
   window.clearTimeout(durationRefreshTimer);
+  const requestVersion = dataListRequestVersion;
+  const filesBasesId = store.appStoreData.currentFilesBases.id;
   durationRefreshTimer = window.setTimeout(async () => {
-    const result = await resourceServer.dataList(store.appStoreData.currentFilesBases.id, false, currentPage.value, pageSize.value, store.searchStoreData.searchData);
-    if (result && result.status) {
+    if (requestVersion !== dataListRequestVersion || filesBasesId !== store.appStoreData.currentFilesBases.id) return;
+    const result = await resourceServer.dataList(filesBasesId, false, currentPage.value, pageSize.value, store.searchStoreData.searchData);
+    if (requestVersion === dataListRequestVersion && filesBasesId === store.appStoreData.currentFilesBases.id && result && result.status) {
       dataList.value = result.data.dataList;
     }
   }, 2500);

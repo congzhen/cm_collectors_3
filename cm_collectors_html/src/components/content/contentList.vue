@@ -69,10 +69,13 @@ const isLayoutCoverPoster = (resourcesShowMode: T_resourcesShowMode) => {
 }
 
 const change = () => {
-  switch (store.appStoreData.currentConfigApp.resourcesShowMode) {
-    case 'coverPoster':
-      layoutCoverPosterRef.value?.change();
-      break;
+  const resourcesShowMode = store.appStoreData.currentConfigApp.resourcesShowMode;
+  if (isLayoutCoverPoster(resourcesShowMode)) {
+    layoutCoverPosterRef.value?.change();
+    return;
+  }
+
+  switch (resourcesShowMode) {
     case 'coverPosterWaterfall':
       layoutCoverPosterWaterfallRef.value?.change();
       break;
