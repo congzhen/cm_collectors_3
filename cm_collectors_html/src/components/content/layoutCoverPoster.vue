@@ -2,11 +2,14 @@
   <div class="layout-cover-poster-style1">
     <el-scrollbar ref="scrollbarRef">
       <moduleContent v-if="store.appStoreData.currentConfigApp.casualViewModule && !isMobileDevice"
-        :resourcesShowMode="props.resourcesShowMode" moduleType="casualView"></moduleContent>
+        :resourcesShowMode="props.resourcesShowMode" moduleType="casualView"
+        @select-resources="selectResourcesHandle"></moduleContent>
       <moduleContent v-if="store.appStoreData.currentConfigApp.historyModule && !isMobileDevice"
-        :resourcesShowMode="props.resourcesShowMode" moduleType="history"></moduleContent>
+        :resourcesShowMode="props.resourcesShowMode" moduleType="history"
+        @select-resources="selectResourcesHandle"></moduleContent>
       <moduleContent v-if="store.appStoreData.currentConfigApp.hotModule && !isMobileDevice"
-        :resourcesShowMode="props.resourcesShowMode" moduleType="hot"></moduleContent>
+        :resourcesShowMode="props.resourcesShowMode" moduleType="hot"
+        @select-resources="selectResourcesHandle"></moduleContent>
       <h2 v-if="showH2()" class="all-h" style="font-size: 16px;">全部资源</h2>
       <ul class="list-ul"
         :class="{ 'mobile-layout': isMobileDevice, 'mobile-layout-columns-two': isMobileLayoutColumnsTwo() }"
