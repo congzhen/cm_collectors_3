@@ -57,6 +57,12 @@ func (VideoFingerprint) Creates(db *gorm.DB, vfs *[]VideoFingerprint) error {
 	return db.Create(vfs).Error
 }
 
+func (VideoFingerprint) ListByResourcesID(db *gorm.DB, resourcesID string) (*[]VideoFingerprint, error) {
+	var list []VideoFingerprint
+	err := db.Where("resources_id = ?", resourcesID).Find(&list).Error
+	return &list, err
+}
+
 func (VideoFingerprint) GetByDramaSeriesID(db *gorm.DB, dramaSeriesID string) (*VideoFingerprint, error) {
 	var vf VideoFingerprint
 	err := db.Where("drama_series_id = ?", dramaSeriesID).First(&vf).Error
@@ -102,6 +108,116 @@ func (VideoFingerprint) DeleteByFilesBasesID(db *gorm.DB, filesBasesID string) e
 
 func (VideoFingerprint) DeleteAll(db *gorm.DB) error {
 	return db.Unscoped().Where("1 = 1").Delete(&VideoFingerprint{}).Error
+}
+
+// RebuildByDramaSeriesIDs 删除路径已经变化的旧指纹，并使用当前分集路径重新建立待处理记录。
+// 先删除再生成新的指纹 ID，可避免仍在运行的旧任务覆盖新路径对应的记录。
+func (VideoFingerprint) RebuildByDramaSeriesIDs(
+	db *gorm.DB,
+	dramaSeriesIDs []string,
+	newID func() string,
+) error {
+	if len(dramaSeriesIDs) == 0 {
+		return nil
+	}
+	if err := (VideoFingerprint{}).DeleteByDramaSeriesIDs(db, dramaSeriesIDs); err != nil {
+		return err
+	}
+	var seeds []VideoFingerprintSeedItem
+	err := db.Table(ResourcesDramaSeries{}.TableName()+" AS ds").
+		Select("ds.id AS drama_series_id, ds.resources_id AS resources_id, r.filesBases_id AS files_bases_id, ds.src AS src").
+		Joins("JOIN "+Resources{}.TableName()+" AS r ON r.id = ds.resources_id").
+		Where("ds.id IN ?", dramaSeriesIDs).
+		Where("r.mode IN ?", []datatype.E_resourceMode{
+			datatype.E_resourceMode_Movies,
+			datatype.E_resourceMode_VideoLink,
+		}).
+		Where("ds.src <> ''").
+		Scan(&seeds).Error
+	if err != nil {
+		return err
+	}
+	items := make([]VideoFingerprint, 0, len(seeds))
+	for _, seed := range seeds {
+		items = append(items, VideoFingerprint{
+			ID:            newID(),
+			DramaSeriesID: seed.DramaSeriesID,
+			ResourcesID:   seed.ResourcesID,
+			FilesBasesID:  seed.FilesBasesID,
+			Src:           seed.Src,
+			Status:        VideoFingerprintStatus_Pending,
+		})
+	}
+	return (VideoFingerprint{}).Creates(db, &items)
+}
+
+// SyncForResource 按资源当前类型、文件库和分集列表校准指纹记录。
+// 这同时覆盖资源类型切换、资源移动文件库以及历史缺失指纹的情况。
+func (VideoFingerprint) SyncForResource(
+	db *gorm.DB,
+	resourceID, filesBasesID string,
+	mode datatype.E_resourceMode,
+	newID func() string,
+) error {
+	if mode != datatype.E_resourceMode_Movies && mode != datatype.E_resourceMode_VideoLink {
+		return (VideoFingerprint{}).DeleteByResourcesID(db, resourceID)
+	}
+	dramaSeries, err := (ResourcesDramaSeries{}).ListByResourceID(db, resourceID)
+	if err != nil {
+		return err
+	}
+	existing, err := (VideoFingerprint{}).ListByResourcesID(db, resourceID)
+	if err != nil {
+		return err
+	}
+	existingByDramaSeriesID := make(map[string]VideoFingerprint, len(*existing))
+	for _, item := range *existing {
+		existingByDramaSeriesID[item.DramaSeriesID] = item
+	}
+
+	createItems := make([]VideoFingerprint, 0)
+	for _, ds := range *dramaSeries {
+		if ds.Src == "" {
+			continue
+		}
+		item, found := existingByDramaSeriesID[ds.ID]
+		if !found {
+			createItems = append(createItems, VideoFingerprint{
+				ID:            newID(),
+				DramaSeriesID: ds.ID,
+				ResourcesID:   resourceID,
+				FilesBasesID:  filesBasesID,
+				Src:           ds.Src,
+				Status:        VideoFingerprintStatus_Pending,
+			})
+			continue
+		}
+		delete(existingByDramaSeriesID, ds.ID)
+		if item.Src != ds.Src {
+			// 正常路径变化会先调用 RebuildByDramaSeriesIDs；这里作为数据修复兜底。
+			if err := (VideoFingerprint{}).RebuildByDramaSeriesIDs(db, []string{ds.ID}, newID); err != nil {
+				return err
+			}
+			continue
+		}
+		if item.FilesBasesID != filesBasesID || item.ResourcesID != resourceID {
+			if err := db.Model(&VideoFingerprint{}).Where("id = ?", item.ID).
+				Updates(map[string]interface{}{
+					"resources_id":   resourceID,
+					"files_bases_id": filesBasesID,
+				}).Error; err != nil {
+				return err
+			}
+		}
+	}
+	orphanIDs := make([]string, 0, len(existingByDramaSeriesID))
+	for _, item := range existingByDramaSeriesID {
+		orphanIDs = append(orphanIDs, item.DramaSeriesID)
+	}
+	if err := (VideoFingerprint{}).DeleteByDramaSeriesIDs(db, orphanIDs); err != nil {
+		return err
+	}
+	return (VideoFingerprint{}).Creates(db, &createItems)
 }
 
 func (VideoFingerprint) ListPending(db *gorm.DB, filesBasesID string, limit int) (*[]VideoFingerprint, error) {

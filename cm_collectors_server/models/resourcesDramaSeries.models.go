@@ -15,16 +15,17 @@ const (
 )
 
 type ResourcesDramaSeries struct {
-	ID                  string               `json:"id" gorm:"primaryKey;type:char(20);"`
-	ResourcesID         string               `json:"resources_id" gorm:"column:resources_id;type:char(20);index:idx_ResourcesDramaSeries_resourcesID"`
-	Type                string               `json:"type" gorm:"column:type;type:varchar(50);"`
-	Src                 string               `json:"src" gorm:"column:src;type:text;"`
-	Sort                int                  `json:"sort" gorm:"type:int;default:0"`
-	DurationSeconds     int                  `json:"durationSeconds" gorm:"column:durationSeconds;type:int;default:0"`
-	DurationProbeStatus string               `json:"durationProbeStatus" gorm:"column:durationProbeStatus;type:varchar(20);"`
-	DurationProbeTime   *datatype.CustomTime `json:"durationProbeTime" gorm:"column:durationProbeTime;type:datetime;"`
-	M3u8BuilderTime     *datatype.CustomTime `json:"m3u8BuilderTime" gorm:"column:m3u8BuilderTime;type:datetime;"`
-	M3u8BuilderStatus   bool                 `json:"m3u8BuilderStatus" gorm:"column:m3u8BuilderStatus;type:tinyint(1);default:0"`
+	ID                  string                  `json:"id" gorm:"primaryKey;type:char(20);"`
+	ResourcesID         string                  `json:"resources_id" gorm:"column:resources_id;type:char(20);index:idx_ResourcesDramaSeries_resourcesID"`
+	Type                string                  `json:"type" gorm:"column:type;type:varchar(50);"`
+	Src                 string                  `json:"src" gorm:"column:src;type:text;"`
+	Sort                int                     `json:"sort" gorm:"type:int;default:0"`
+	DurationSeconds     int                     `json:"durationSeconds" gorm:"column:durationSeconds;type:int;default:0"`
+	DurationProbeStatus string                  `json:"durationProbeStatus" gorm:"column:durationProbeStatus;type:varchar(20);"`
+	DurationProbeTime   *datatype.CustomTime    `json:"durationProbeTime" gorm:"column:durationProbeTime;type:datetime;"`
+	M3u8BuilderTime     *datatype.CustomTime    `json:"m3u8BuilderTime" gorm:"column:m3u8BuilderTime;type:datetime;"`
+	M3u8BuilderStatus   bool                    `json:"m3u8BuilderStatus" gorm:"column:m3u8BuilderStatus;type:tinyint(1);default:0"`
+	VideoMetadata       *ResourcesVideoMetadata `json:"videoMetadata,omitempty" gorm:"foreignKey:DramaSeriesID;references:ID"`
 }
 
 func (ResourcesDramaSeries) TableName() string {
@@ -70,38 +71,62 @@ func (t ResourcesDramaSeries) SearchPath(db *gorm.DB, filesBasesIds []string, se
 	return &dataList, err
 }
 
-func (t ResourcesDramaSeries) ReplacePath(db *gorm.DB, filesBasesIds []string, searchPath, replacePath string) (*[]DramaSeriesWithResource, error) {
-	dataList, err := t.SearchPath(db, filesBasesIds, searchPath)
+func (t ResourcesDramaSeries) ReplacePath(
+	db *gorm.DB,
+	filesBasesIds []string,
+	searchPath, replacePath string,
+	newID func() string,
+) (*[]DramaSeriesWithResource, error) {
+	var dataList []DramaSeriesWithResource
+	err := db.Transaction(func(tx *gorm.DB) error {
+		found, err := t.SearchPath(tx, filesBasesIds, searchPath)
+		if err != nil {
+			return err
+		}
+		dataList = *found
+		if len(dataList) == 0 {
+			return nil
+		}
+		ids := make([]string, 0, len(dataList))
+		for i, item := range dataList {
+			dataList[i].Src = strings.Replace(item.Src, searchPath, replacePath, -1)
+			ids = append(ids, item.ID)
+		}
+
+		const updateBatchSize = 200
+		for start := 0; start < len(dataList); start += updateBatchSize {
+			end := min(start+updateBatchSize, len(dataList))
+			if err := BatchUpdate(
+				tx,
+				t.TableName(),
+				"id",
+				[]string{"src"},
+				dataList[start:end],
+				func(item DramaSeriesWithResource) map[string]interface{} {
+					return map[string]interface{}{"id": item.ID, "src": item.Src}
+				},
+			); err != nil {
+				return err
+			}
+		}
+		if err := tx.Model(&ResourcesVideoMetadata{}).
+			Where("drama_series_id IN ?", ids).
+			Updates(map[string]interface{}{
+				"probe_status":     VideoMetadataStatusStale,
+				"metadata_version": 0,
+				"next_retry_time":  nil,
+				"retry_count":      0,
+				"error_code":       "",
+				"error_message":    "",
+			}).Error; err != nil {
+			return err
+		}
+		return (VideoFingerprint{}).RebuildByDramaSeriesIDs(tx, ids, newID)
+	})
 	if err != nil {
 		return nil, err
 	}
-	if len(*dataList) == 0 {
-		return nil, nil
-	}
-	// 准备批量更新的 cases
-	var cases []string
-	var ids []string
-	var args []interface{}
-	for i, v := range *dataList {
-		newSrc := strings.Replace(v.Src, searchPath, replacePath, -1)
-		(*dataList)[i].Src = newSrc // 更新返回值
-		cases = append(cases, "WHEN ? THEN ?")
-		ids = append(ids, v.ID)
-		args = append(args, v.ID, newSrc)
-	}
-	if len(ids) > 0 {
-		// 构建批量更新 SQL
-		sql := fmt.Sprintf("UPDATE %s SET src = CASE id %s END WHERE id IN (?)",
-			t.TableName(), strings.Join(cases, " "))
-		args = append(args, ids)
-
-		err = db.Exec(sql, args...).Error
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return dataList, nil
+	return &dataList, nil
 }
 
 // FilterNonExistingSrcPaths 筛选出在数据库中不存在的资源路径
@@ -179,12 +204,25 @@ func (ResourcesDramaSeries) UpdateDuration(db *gorm.DB, id string, durationSecon
 		}).Error
 }
 func (ResourcesDramaSeries) DeleteIDS(db *gorm.DB, ids []string) error {
+	if err := (ResourcesVideoMetadata{}).DeleteByDramaSeriesIDs(db, ids); err != nil {
+		return err
+	}
 	return db.Unscoped().Where("id in (?) ", ids).Delete(&ResourcesDramaSeries{}).Error
 }
 func (ResourcesDramaSeries) DeleteByResourcesID(db *gorm.DB, resourcesID string) error {
+	var ids []string
+	if err := db.Model(&ResourcesDramaSeries{}).Where("resources_id = ?", resourcesID).Pluck("id", &ids).Error; err != nil {
+		return err
+	}
+	if err := (ResourcesVideoMetadata{}).DeleteByDramaSeriesIDs(db, ids); err != nil {
+		return err
+	}
 	return db.Unscoped().Where("resources_id = ? ", resourcesID).Delete(&ResourcesDramaSeries{}).Error
 }
 func (ResourcesDramaSeries) DeleteByFilesBasesID(db *gorm.DB, filesBases_id string) error {
+	if err := (ResourcesVideoMetadata{}).DeleteByFilesBasesID(db, filesBases_id); err != nil {
+		return err
+	}
 	sqlWhere := fmt.Sprintf("resources_id in (select id from %s where filesBases_id = ?)", Resources{}.TableName())
 	return db.Unscoped().Where(sqlWhere, filesBases_id).Delete(&ResourcesDramaSeries{}).Error
 }

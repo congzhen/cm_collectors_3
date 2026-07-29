@@ -8,6 +8,7 @@ type ReqParam_SearchData struct {
 	Sort          E_searchSort             `json:"sort"`
 	Country       I_searchGroup            `json:"country"`
 	Definition    I_searchGroup            `json:"definition"`
+	VideoCodec    I_searchGroup            `json:"videoCodec"`
 	Year          I_searchGroup            `json:"year"`
 	Star          I_searchGroup            `json:"star"`
 	Performer     I_searchGroup            `json:"performer"`

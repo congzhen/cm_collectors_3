@@ -18,6 +18,7 @@ func (Resource) Info(c *gin.Context) {
 	if err := ResError(c, err); err != nil {
 		return
 	}
+	processors.VideoMetadata{}.TriggerForDetail(resourceInfo)
 	response.OkWithData(resourceInfo, c)
 }
 
@@ -145,7 +146,9 @@ func (Resource) UpdateResource(c *gin.Context) {
 	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {
 		return
 	}
-	info, err := processors.Resources{}.UpdateResource(&par, true)
+	// 兼容旧客户端：未提交 dramaSeries 表示不修改分集；
+	// 明确提交空数组时切片非 nil，表示清空全部分集。
+	info, err := processors.Resources{}.UpdateResource(&par, par.DramaSeries != nil)
 	if err := ResError(c, err); err != nil {
 		return
 	}

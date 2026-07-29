@@ -19,6 +19,10 @@ export const searchStoreData = defineStore('search', {
         logic: E_searchLogic.Single,
         options: [],
       },
+      videoCodec: {
+        logic: E_searchLogic.Single,
+        options: [],
+      },
       year: {
         logic: E_searchLogic.Single,
         options: [],
@@ -62,6 +66,7 @@ export const searchStoreData = defineStore('search', {
       this.searchData.searchTextSlc = [];
       this.searchData.country.options = [];
       this.searchData.definition.options = [];
+      this.searchData.videoCodec.options = [];
       this.searchData.year.options = [];
       this.searchData.star.options = [];
       this.searchData.performer.options = [];
@@ -82,6 +87,9 @@ export const searchStoreData = defineStore('search', {
           break;
         case E_tagType.Definition:
           result = this.searchData.definition;
+          break;
+        case E_tagType.VideoCodec:
+          result = this.searchData.videoCodec;
           break;
         case E_tagType.Year:
           result = this.searchData.year;

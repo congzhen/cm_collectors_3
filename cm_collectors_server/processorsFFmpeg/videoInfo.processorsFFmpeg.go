@@ -1,12 +1,17 @@
 package processorsffmpeg
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"math"
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 )
+
+const videoInfoProbeTimeout = 2 * time.Minute
 
 // 支持的编解码器列表
 var (
@@ -38,24 +43,34 @@ const (
 	DefinitionEmpty              VideoDefinition = ""
 )
 
+type VideoStreamInfo struct {
+	Index            int    `json:"index"`
+	CodecType        string `json:"codec_type"`
+	CodecName        string `json:"codec_name"`
+	Profile          string `json:"profile"`
+	PixelFormat      string `json:"pix_fmt,omitempty"`
+	Level            int    `json:"level,omitempty"`
+	Width            int    `json:"width,omitempty"`
+	Height           int    `json:"height,omitempty"`
+	Duration         string `json:"duration,omitempty"`
+	BitRate          string `json:"bit_rate,omitempty"`
+	BitsPerRawSample string `json:"bits_per_raw_sample,omitempty"`
+	BitsPerSample    int    `json:"bits_per_sample,omitempty"`
+	SampleRate       string `json:"sample_rate,omitempty"`
+	Channels         int    `json:"channels,omitempty"`
+	ChannelLayout    string `json:"channel_layout,omitempty"`
+	AverageFrameRate string `json:"avg_frame_rate,omitempty"`
+	RealFrameRate    string `json:"r_frame_rate,omitempty"`
+	Disposition      struct {
+		Default     int `json:"default"`
+		AttachedPic int `json:"attached_pic"`
+	} `json:"disposition"`
+}
+
 // VideoFormatInfo 保存视频格式信息的结构体
 type VideoFormatInfo struct {
-	Streams []struct {
-		CodecType        string `json:"codec_type"`
-		CodecName        string `json:"codec_name"`
-		Profile          string `json:"profile"`
-		PixelFormat      string `json:"pix_fmt,omitempty"`
-		Level            int    `json:"level,omitempty"`
-		Width            int    `json:"width,omitempty"`
-		Height           int    `json:"height,omitempty"`
-		Duration         string `json:"duration,omitempty"`
-		BitRate          string `json:"bit_rate,omitempty"`
-		BitsPerRawSample string `json:"bits_per_raw_sample,omitempty"`
-		SampleRate       string `json:"sample_rate,omitempty"`
-		Channels         int    `json:"channels,omitempty"`
-		ChannelLayout    string `json:"channel_layout,omitempty"`
-	} `json:"streams"`
-	Format struct {
+	Streams []VideoStreamInfo `json:"streams"`
+	Format  struct {
 		Filename   string `json:"filename,omitempty"`
 		Duration   string `json:"duration,omitempty"`
 		Size       string `json:"size,omitempty"`
@@ -66,11 +81,21 @@ type VideoFormatInfo struct {
 
 // VideoBasicInfo 保存视频基本信息的结构体
 type VideoBasicInfo struct {
-	Width    int    `json:"width"`
-	Height   int    `json:"height"`
-	Duration string `json:"duration"`
-	BitRate  string `json:"bit_rate"`
-	Size     string `json:"size"`
+	Width           int     `json:"width"`
+	Height          int     `json:"height"`
+	Duration        string  `json:"duration"`
+	BitRate         string  `json:"bit_rate"`
+	Size            string  `json:"size"`
+	FrameRate       float64 `json:"frameRate"`
+	FrameRateRaw    string  `json:"frameRateRaw"`
+	VideoCodec      string  `json:"videoCodec"`
+	VideoProfile    string  `json:"videoProfile"`
+	PixelFormat     string  `json:"pixelFormat"`
+	BitDepth        int     `json:"bitDepth"`
+	ContainerFormat string  `json:"containerFormat"`
+	AudioCodec      string  `json:"audioCodec"`
+	AudioChannels   int     `json:"audioChannels"`
+	AudioSampleRate int     `json:"audioSampleRate"`
 }
 
 func (v *VideoInfo) SetSupportedVideoCodecs(codecs []string) {
@@ -171,9 +196,14 @@ func (v VideoInfo) GetVideoFormatInfo(src string) (VideoFormatInfo, error) {
 	}
 
 	// 使用ffprobe获取视频信息
-	cmd := createCommand(ffprobePath, "-v", "quiet", "-print_format", "json", "-show_format", "-show_streams", src)
+	ctx, cancel := context.WithTimeout(context.Background(), videoInfoProbeTimeout)
+	defer cancel()
+	cmd := createCommandContext(ctx, ffprobePath, "-v", "quiet", "-print_format", "json", "-show_format", "-show_streams", src)
 	output, err := cmd.Output()
 	if err != nil {
+		if ctx.Err() == context.DeadlineExceeded {
+			return formatInfo, fmt.Errorf("ffprobe timeout after %s: %w", videoInfoProbeTimeout, ctx.Err())
+		}
 		return formatInfo, fmt.Errorf("无法获取视频信息: %v", err)
 	}
 
@@ -199,15 +229,26 @@ func (v VideoInfo) GetVideoBasicInfo(src string) (VideoBasicInfo, error) {
 func (v VideoInfo) GetVideoBasicInfoByVideoFormatInfo(formatInfo VideoFormatInfo) VideoBasicInfo {
 	var basicInfo VideoBasicInfo
 
-	// 查找视频流以获取宽度和高度
-	for _, stream := range formatInfo.Streams {
-		if stream.CodecType == "video" {
-			basicInfo.Width = stream.Width
-			basicInfo.Height = stream.Height
-			basicInfo.Duration = stream.Duration
-			basicInfo.BitRate = stream.BitRate
-			break
+	if stream := v.PrimaryVideoStream(formatInfo); stream != nil {
+		basicInfo.Width = stream.Width
+		basicInfo.Height = stream.Height
+		basicInfo.Duration = stream.Duration
+		basicInfo.BitRate = stream.BitRate
+		basicInfo.VideoCodec = stream.CodecName
+		basicInfo.VideoProfile = stream.Profile
+		basicInfo.PixelFormat = stream.PixelFormat
+		basicInfo.BitDepth = parseBitDepth(*stream)
+		basicInfo.FrameRateRaw = stream.AverageFrameRate
+		basicInfo.FrameRate = parseFrameRate(stream.AverageFrameRate)
+		if basicInfo.FrameRate <= 0 {
+			basicInfo.FrameRateRaw = stream.RealFrameRate
+			basicInfo.FrameRate = parseFrameRate(stream.RealFrameRate)
 		}
+	}
+	if stream := v.PrimaryAudioStream(formatInfo); stream != nil {
+		basicInfo.AudioCodec = stream.CodecName
+		basicInfo.AudioChannels = stream.Channels
+		basicInfo.AudioSampleRate, _ = strconv.Atoi(stream.SampleRate)
 	}
 
 	// 如果视频流中没有时长信息，则从format中获取
@@ -222,8 +263,73 @@ func (v VideoInfo) GetVideoBasicInfoByVideoFormatInfo(formatInfo VideoFormatInfo
 
 	// 获取视频大小
 	basicInfo.Size = formatInfo.Format.Size
+	basicInfo.ContainerFormat = formatInfo.Format.FormatName
 
 	return basicInfo
+}
+
+func (VideoInfo) PrimaryVideoStream(formatInfo VideoFormatInfo) *VideoStreamInfo {
+	var selected *VideoStreamInfo
+	for i := range formatInfo.Streams {
+		stream := &formatInfo.Streams[i]
+		if stream.CodecType != "video" || stream.Disposition.AttachedPic == 1 {
+			continue
+		}
+		if selected == nil ||
+			(stream.Disposition.Default == 1 && selected.Disposition.Default != 1) ||
+			(stream.Disposition.Default == selected.Disposition.Default && stream.Width*stream.Height > selected.Width*selected.Height) {
+			selected = stream
+		}
+	}
+	return selected
+}
+
+func (VideoInfo) PrimaryAudioStream(formatInfo VideoFormatInfo) *VideoStreamInfo {
+	var selected *VideoStreamInfo
+	for i := range formatInfo.Streams {
+		stream := &formatInfo.Streams[i]
+		if stream.CodecType != "audio" {
+			continue
+		}
+		if selected == nil || (stream.Disposition.Default == 1 && selected.Disposition.Default != 1) {
+			selected = stream
+		}
+	}
+	return selected
+}
+
+func parseFrameRate(value string) float64 {
+	if value == "" || value == "0/0" {
+		return 0
+	}
+	parts := strings.SplitN(value, "/", 2)
+	if len(parts) == 1 {
+		result, _ := strconv.ParseFloat(value, 64)
+		return result
+	}
+	numerator, errN := strconv.ParseFloat(parts[0], 64)
+	denominator, errD := strconv.ParseFloat(parts[1], 64)
+	if errN != nil || errD != nil || denominator == 0 {
+		return 0
+	}
+	return math.Round((numerator/denominator)*1000) / 1000
+}
+
+func parseBitDepth(stream VideoStreamInfo) int {
+	if stream.BitsPerRawSample != "" {
+		if value, err := strconv.Atoi(stream.BitsPerRawSample); err == nil {
+			return value
+		}
+	}
+	if stream.BitsPerSample > 0 {
+		return stream.BitsPerSample
+	}
+	for _, depth := range []int{16, 14, 12, 10, 9, 8} {
+		if strings.Contains(stream.PixelFormat, strconv.Itoa(depth)) {
+			return depth
+		}
+	}
+	return 0
 }
 func (v VideoInfo) GetVideoDuration(formatInfo VideoFormatInfo) float64 {
 	videoBasicInfo := v.GetVideoBasicInfoByVideoFormatInfo(formatInfo)

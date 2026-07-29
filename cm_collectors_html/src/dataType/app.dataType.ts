@@ -52,6 +52,7 @@ export enum E_tagType {
   Sort = 'sort',
   Country = 'country',
   Definition = 'definition',
+  VideoCodec = 'videoCodec',
   Year = 'year',
   Star = 'starRating',
   DiyTag = 'diyTag',

@@ -3,6 +3,7 @@ export interface I_searchData {
   sort: E_searchSort; // 排序
   country: I_searchGroup;  // 国家
   definition: I_searchGroup; // 清晰度
+  videoCodec: I_searchGroup; // 视频编码
   year: I_searchGroup; // 年份
   star: I_searchGroup; // 评星
   performer: I_searchGroup; // 演员

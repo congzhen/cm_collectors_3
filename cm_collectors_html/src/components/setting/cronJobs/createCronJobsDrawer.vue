@@ -4,7 +4,16 @@
       <div class="create-cron-jobs-main" :loading="loading">
         <el-form ref="ruleFormRef" :model="formData" label-width="160px" label-position="top" status-icon>
           <el-form-item v-if="requiresFilesBase" label="执行文件库">
-            <selectFilesBases v-model="formData.filesBases_id"></selectFilesBases>
+            <template v-if="isVideoMetadataJob">
+              <div class="video-metadata-scope">
+                <el-radio-group v-model="formData.scopeMode">
+                  <el-radio-button value="selected">指定文件库</el-radio-button>
+                  <el-radio-button value="all">全部文件库</el-radio-button>
+                </el-radio-group>
+                <selectFilesBases v-if="formData.scopeMode === 'selected'" v-model="formData.filesBasesIds" multiple />
+              </div>
+            </template>
+            <selectFilesBases v-else v-model="formData.filesBases_id"></selectFilesBases>
           </el-form-item>
           <el-alert v-else class="global-task-alert" title="该任务作用于全局演员头像缓存，不需要选择文件库。"
             type="info" :closable="false" show-icon />
@@ -16,12 +25,26 @@
               <el-radio-button label="清理" value="clear" />
               <el-radio-button label="视频指纹" value="videoFingerprint" />
               <el-radio-button label="AI 自动标签" value="aiTag" />
+              <el-radio-button label="视频信息补齐" value="videoMetadata" />
               <el-radio-button label="清理演员头像缓存" value="clearPerformerAvatarCache" />
             </el-radio-group>
             <el-text class="warning-text" type="warning" size="small">
               每种任务类型都依赖于预先设定的功能配置，缺少相应配置将导致任务无法执行。
             </el-text>
           </el-form-item>
+          <template v-if="isVideoMetadataJob">
+            <el-form-item label="每轮最多处理">
+              <el-input-number v-model="videoMetadataConfig.maxItemsPerRun" :min="1" :max="10000" />
+              <span class="field-unit">个视频分集</span>
+            </el-form-item>
+            <el-form-item label="处理方式">
+              <el-select v-model="videoMetadataConfig.runMode">
+                <el-option label="补齐缺失并更新失效项" value="missing_stale" />
+                <el-option label="只补齐完全缺失的信息" value="missing" />
+                <el-option label="重试已到期失败项" value="failed" />
+              </el-select>
+            </el-form-item>
+          </template>
           <el-form-item label="计划任务设定 (Cron表达式: 秒 分 时 日 月 周)">
             <div class="cron-expression-container">
               <div class="cron-expression-row">
@@ -207,11 +230,19 @@ const formData = ref<I_cronJobs>({
   id: '',
   jobs_type: 'import',
   filesBases_id: '',
+  filesBasesIds: [],
+  scopeMode: 'selected',
+  configJsonData: '',
   cron_expression: ''
 })
+const videoMetadataConfig = reactive({
+  maxItemsPerRun: 100,
+  runMode: 'missing_stale',
+});
 const loading = ref(false);
 let mode: 'add' | 'edit' = 'add';
 const requiresFilesBase = computed(() => formData.value.jobs_type !== 'clearPerformerAvatarCache');
+const isVideoMetadataJob = computed(() => formData.value.jobs_type === 'videoMetadata');
 
 const cronParts = reactive({
   second: '0',
@@ -295,6 +326,19 @@ const init = (_mode: 'add' | 'edit' = 'add', _info: I_cronJobs_info | null = nul
     formData.value.id = _info.id;
     formData.value.jobs_type = _info.jobs_type;
     formData.value.filesBases_id = requiresFilesBase.value ? _info.filesBases_id : '';
+    formData.value.scopeMode = _info.scopeMode || 'selected';
+    formData.value.filesBasesIds = (_info.filesBasesList || []).map(item => item.id);
+    if (formData.value.filesBasesIds.length === 0 && _info.filesBases_id) {
+      formData.value.filesBasesIds = [_info.filesBases_id];
+    }
+    formData.value.configJsonData = _info.configJsonData || '';
+    if (_info.jobs_type === 'videoMetadata' && _info.configJsonData) {
+      try {
+        Object.assign(videoMetadataConfig, JSON.parse(_info.configJsonData));
+      } catch {
+        Object.assign(videoMetadataConfig, { maxItemsPerRun: 100, runMode: 'missing_stale' });
+      }
+    }
 
     // 将传入的 cron 表达式拆分成 cronParts
     const parts = _info.cron_expression.split(' ');
@@ -317,7 +361,11 @@ const init = (_mode: 'add' | 'edit' = 'add', _info: I_cronJobs_info | null = nul
   } else {
     formData.value.id = '';
     formData.value.filesBases_id = '';
+    formData.value.filesBasesIds = [];
+    formData.value.scopeMode = 'selected';
+    formData.value.configJsonData = '';
     formData.value.jobs_type = 'import';
+    Object.assign(videoMetadataConfig, { maxItemsPerRun: 100, runMode: 'missing_stale' });
     // 初始化 cronParts
     cronParts.second = '0';
     cronParts.minute = '0';
@@ -335,19 +383,31 @@ const init = (_mode: 'add' | 'edit' = 'add', _info: I_cronJobs_info | null = nul
 
 const submitHandle = debounceNow(async () => {
   console.log(formData.value)
-  if (requiresFilesBase.value && formData.value.filesBases_id === '') {
+  if (isVideoMetadataJob.value && formData.value.scopeMode === 'selected' && formData.value.filesBasesIds.length === 0) {
+    messageBoxAlert({ text: '请选择至少一个执行文件库', type: 'warning' });
+    return;
+  }
+  if (requiresFilesBase.value && !isVideoMetadataJob.value && formData.value.filesBases_id === '') {
     messageBoxAlert({ text: '请选择执行文件库', type: 'warning' });
     return;
+  }
+  if (isVideoMetadataJob.value) {
+    formData.value.filesBases_id = formData.value.filesBasesIds[0] || '';
+    formData.value.configJsonData = JSON.stringify(videoMetadataConfig);
+  } else {
+    formData.value.scopeMode = requiresFilesBase.value ? 'selected' : 'all';
+    formData.value.filesBasesIds = formData.value.filesBases_id ? [formData.value.filesBases_id] : [];
+    formData.value.configJsonData = '';
   }
   try {
     loading.value = true;
     let result;
     let successText: string;
     if (mode == 'add') {
-      result = await cronJobsServer.create(formData.value.filesBases_id, formData.value.jobs_type, formData.value.cron_expression)
+      result = await cronJobsServer.create(formData.value)
       successText = '创建成功'
     } else {
-      result = await cronJobsServer.update(formData.value.id, formData.value.filesBases_id, formData.value.jobs_type, formData.value.cron_expression)
+      result = await cronJobsServer.update(formData.value)
       successText = '修改成功'
     }
     if (result && result.status) {

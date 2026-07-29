@@ -52,7 +52,8 @@ func (Resources) Preload(db *gorm.DB) *gorm.DB {
 		}).
 		Preload("ResourcesDramaSeries", func(db *gorm.DB) *gorm.DB {
 			return db.Order("sort asc, src asc, id asc")
-		})
+		}).
+		Preload("ResourcesDramaSeries.VideoMetadata")
 }
 
 func (t Resources) Info(db *gorm.DB, id string) (*Resources, error) {
@@ -240,13 +241,78 @@ func (t Resources) setDbSearchData(db *gorm.DB, searchData *datatype.ReqParam_Se
 		}
 	}
 	db = t.setDbSearchGroup(db, "country", &searchData.Country)
-	db = t.setDbSearchGroup(db, "definition", &searchData.Definition)
+	db = t.setDbSearchDefinition(db, &searchData.Definition)
+	db = t.setDbSearchVideoCodec(db, &searchData.VideoCodec)
 	db = t.setDbSearchGroup(db, "stars", &searchData.Star)
 	db = t.setDbSearchYear(db, &searchData.Year)
 	db = t.setDbSearchPerformer(db, &searchData.Performer)
 	db = t.setDbSearchCup(db, &searchData.Cup)
 	db = t.setDbSearchTags(db, &searchData.Tag)
 	return db
+}
+
+func (Resources) setDbSearchDefinition(db *gorm.DB, group *datatype.I_searchGroup) *gorm.DB {
+	if len(group.Options) == 0 {
+		return db
+	}
+	conditions := make([]string, 0, len(group.Options))
+	args := make([]interface{}, 0, len(group.Options)*3)
+	for _, option := range group.Options {
+		var minValue, maxValue int
+		switch option {
+		case "8K":
+			minValue = 4320
+		case "4K":
+			minValue, maxValue = 2160, 4320
+		case "2K":
+			minValue, maxValue = 1440, 2160
+		case "1080P":
+			minValue, maxValue = 1080, 1440
+		case "720P":
+			minValue, maxValue = 720, 1080
+		case "HighDefinition":
+			minValue, maxValue = 480, 720
+		case "StandardDefinition":
+			minValue, maxValue = 1, 480
+		default:
+			continue
+		}
+		condition := `(resources.definition = ? OR EXISTS (
+			SELECT 1 FROM resourcesDramaSeries ds
+			JOIN resources_video_metadata vm ON vm.drama_series_id = ds.id
+			WHERE ds.resources_id = resources.id
+			  AND (CASE WHEN vm.width < vm.height THEN vm.width ELSE vm.height END) >= ?`
+		args = append(args, option, minValue)
+		if maxValue > 0 {
+			condition += ` AND (CASE WHEN vm.width < vm.height THEN vm.width ELSE vm.height END) < ?`
+			args = append(args, maxValue)
+		}
+		condition += `))`
+		conditions = append(conditions, condition)
+	}
+	if len(conditions) == 0 {
+		return db
+	}
+	query := "(" + strings.Join(conditions, " OR ") + ")"
+	if group.Logic == datatype.E_searchLogic_not {
+		query = "NOT " + query
+	}
+	return db.Where(query, args...)
+}
+
+func (Resources) setDbSearchVideoCodec(db *gorm.DB, group *datatype.I_searchGroup) *gorm.DB {
+	if len(group.Options) == 0 {
+		return db
+	}
+	query := `EXISTS (
+		SELECT 1 FROM resourcesDramaSeries ds
+		JOIN resources_video_metadata vm ON vm.drama_series_id = ds.id
+		WHERE ds.resources_id = resources.id AND vm.video_codec IN ?
+	)`
+	if group.Logic == datatype.E_searchLogic_not {
+		query = "NOT " + query
+	}
+	return db.Where(query, group.Options)
 }
 func (Resources) setDbSearchGroup(db *gorm.DB, field string, searchGroup *datatype.I_searchGroup) *gorm.DB {
 	if len(searchGroup.Options) == 0 {

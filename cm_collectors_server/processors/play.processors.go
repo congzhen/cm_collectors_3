@@ -4,6 +4,7 @@ import (
 	"cm_collectors_server/core"
 	"cm_collectors_server/errorMessage"
 	"cm_collectors_server/models"
+	processorscache "cm_collectors_server/processorsCache"
 	processorsFFmpeg "cm_collectors_server/processorsFFmpeg"
 	"cm_collectors_server/utils"
 	"errors"
@@ -29,18 +30,23 @@ func (Play) AllowServerOpenFile() error {
 }
 
 func (p Play) PlayVideoInfo(dramaSeriesId string) (*PlayVideoInfo, error) {
-	playSrc, err := ResourcesDramaSeries{}.GetSrc(dramaSeriesId)
+	dramaSeries, err := ResourcesDramaSeries{}.Info(dramaSeriesId)
 	if err != nil {
 		return nil, err
 	}
+	playSrc := dramaSeries.Src
 	if !utils.FileExists(playSrc) {
 		return nil, errorMessage.Err_Resources_Play_Src_Error
+	}
+	if err := (VideoMetadata{}).EnsureForPlay(*dramaSeries); err != nil {
+		// 元数据补齐失败不应改变原有播放行为；下面仍尝试读取播放所需信息。
+		core.LogErr(err)
 	}
 	pf_videoInfo := processorsFFmpeg.VideoInfo{}
 	// 设置支持的编解码器
 	pf_videoInfo.SetSupportedVideoCodecs(core.Config.Play.PlayVideoFormats)
 	pf_videoInfo.SetSupportedAudioCodecs(core.Config.Play.PlayAudioFormats)
-	videoFormatInfo, err := pf_videoInfo.GetVideoFormatInfo(playSrc)
+	videoFormatInfo, err := (processorscache.CacheVideoInfoLastUse{}).GetVideoInfoHandle(playSrc)
 	if err != nil {
 		return nil, err
 	}

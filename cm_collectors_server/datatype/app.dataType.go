@@ -27,6 +27,7 @@ const (
 	E_cronJobsType_Clear                     E_cronJobsType = "clear"
 	E_cronJobsType_VideoFingerprint          E_cronJobsType = "videoFingerprint"
 	E_cronJobsType_AiTag                     E_cronJobsType = "aiTag"
+	E_cronJobsType_VideoMetadata             E_cronJobsType = "videoMetadata"
 	E_cronJobsType_ClearPerformerAvatarCache E_cronJobsType = "clearPerformerAvatarCache"
 )
 

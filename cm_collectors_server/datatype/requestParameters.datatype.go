@@ -322,7 +322,10 @@ type ReqParam_ScraperOnePerformerDataProcess struct {
 }
 
 type ReqParam_CreateCronJobs struct {
-	FilesBasesId   string         `json:"filesBases_id" binding:"required"`
+	FilesBasesId   string         `json:"filesBases_id"`
+	FilesBasesIds  []string       `json:"filesBasesIds"`
+	ScopeMode      string         `json:"scopeMode"`
+	ConfigJsonData string         `json:"configJsonData"`
 	JobsType       E_cronJobsType `json:"jobs_type" binding:"required"`
 	CronExpression string         `json:"cron_expression" binding:"required"`
 }

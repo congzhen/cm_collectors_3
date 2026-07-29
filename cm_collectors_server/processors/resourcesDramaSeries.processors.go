@@ -6,6 +6,7 @@ import (
 	"cm_collectors_server/errorMessage"
 	"cm_collectors_server/models"
 	"cm_collectors_server/utils"
+	"fmt"
 
 	"gorm.io/gorm"
 )
@@ -37,7 +38,9 @@ func (ResourcesDramaSeries) SearchPath(filesBasesIds []string, searchPath string
 	return models.ResourcesDramaSeries{}.SearchPath(core.DBS(), filesBasesIds, searchPath)
 }
 func (ResourcesDramaSeries) ReplacePath(filesBasesIds []string, searchPath, replacePath string) (*[]models.DramaSeriesWithResource, error) {
-	return models.ResourcesDramaSeries{}.ReplacePath(core.DBS(), filesBasesIds, searchPath, replacePath)
+	return models.ResourcesDramaSeries{}.ReplacePath(
+		core.DBS(), filesBasesIds, searchPath, replacePath, core.GenerateUniqueID,
+	)
 }
 
 func (ResourcesDramaSeries) Info(id string) (*models.ResourcesDramaSeries, error) {
@@ -91,77 +94,137 @@ func (ResourcesDramaSeries) FindDramaSeriesSlcBySearchPath(filesBasesId string, 
 	return &dataList, nil
 }
 func (t ResourcesDramaSeries) SetResourcesDramaSeries(db *gorm.DB, resourceID string, dramaSeriesSlc []datatype.ReqParam_resourceDramaSeries_Base) error {
-	if len(dramaSeriesSlc) == 0 {
-		return nil
-	}
 	return db.Transaction(func(tx *gorm.DB) error {
 		vfM := models.VideoFingerprint{}
 		dsM := models.ResourcesDramaSeries{}
 
-		// 当前保存资源时会先删除旧分集再重建新分集。
-		// 为了让“未改路径且已采集时长”的视频不因为保存而丢失时长，
-		// 删除旧分集前先按 src 建立旧时长索引，后面创建新分集时再回填。
 		oldDramaSeries, err := dsM.ListByResourceID(tx, resourceID)
 		if err != nil {
 			return err
 		}
-		durationBySrc := map[string]models.ResourcesDramaSeries{}
+		oldByID := make(map[string]models.ResourcesDramaSeries, len(*oldDramaSeries))
+		oldBySrc := make(map[string][]models.ResourcesDramaSeries, len(*oldDramaSeries))
 		for _, oldDS := range *oldDramaSeries {
-			if oldDS.Src == "" || oldDS.DurationSeconds <= 0 {
-				continue
-			}
-			durationBySrc[oldDS.Src] = oldDS
+			oldByID[oldDS.ID] = oldDS
+			oldBySrc[oldDS.Src] = append(oldBySrc[oldDS.Src], oldDS)
 		}
 
-		// 删除旧分集前先清理对应指纹
-		err = vfM.DeleteByResourcesID(tx, resourceID)
-		if err != nil {
-			return err
-		}
-		err = dsM.DeleteByResourcesID(tx, resourceID)
-		if err != nil {
-			return err
-		}
-		newSlc := make([]models.ResourcesDramaSeries, 0, len(dramaSeriesSlc))
-		for i, v := range dramaSeriesSlc {
-			// 相同路径视为同一个视频，保留旧分集已经成功采集到的时长。
-			// 新增路径或路径变更时 durationSeconds 为 0，后续由 VideoDuration 异步采集。
-			newSlc = append(newSlc, models.ResourcesDramaSeries{
-				ID:                  core.GenerateUniqueID(),
-				ResourcesID:         resourceID,
-				Src:                 v.Src,
-				Sort:                i,
-				DurationSeconds:     durationBySrc[v.Src].DurationSeconds,
-				DurationProbeStatus: durationBySrc[v.Src].DurationProbeStatus,
-				DurationProbeTime:   durationBySrc[v.Src].DurationProbeTime,
-			})
-		}
-		err = dsM.Creates(tx, &newSlc)
-		if err != nil {
-			return err
-		}
-		// 获取 filesBasesID
 		var res models.Resources
 		err = tx.Select("id, filesBases_id, mode").Where("id = ?", resourceID).First(&res).Error
 		if err != nil {
 			return err
 		}
-		// 为新分集插入待计算指纹记录
-		if res.Mode != datatype.E_resourceMode_Movies && res.Mode != datatype.E_resourceMode_VideoLink {
-			return nil
+
+		matched := make(map[string]struct{}, len(dramaSeriesSlc))
+		submittedIDs := make(map[string]struct{}, len(dramaSeriesSlc))
+		newDramaSeries := make([]models.ResourcesDramaSeries, 0)
+		existingUpdates := make([]models.ResourcesDramaSeries, 0, len(dramaSeriesSlc))
+		resetFingerprintIDs := make([]string, 0)
+
+		for sort, submitted := range dramaSeriesSlc {
+			var current models.ResourcesDramaSeries
+			found := false
+			if submitted.ID != "" {
+				if _, duplicated := submittedIDs[submitted.ID]; duplicated {
+					return fmt.Errorf("分集 ID 重复：%s", submitted.ID)
+				}
+				submittedIDs[submitted.ID] = struct{}{}
+				var belongs bool
+				current, belongs = oldByID[submitted.ID]
+				if !belongs {
+					return fmt.Errorf("分集 %s 不属于当前资源", submitted.ID)
+				}
+				found = true
+			} else {
+				// 兼容旧客户端：没有 ID 时以完全相同的路径复用尚未匹配的旧分集。
+				for _, candidate := range oldBySrc[submitted.Src] {
+					if _, used := matched[candidate.ID]; !used {
+						current = candidate
+						found = true
+						break
+					}
+				}
+			}
+
+			if !found {
+				current = models.ResourcesDramaSeries{
+					ID:          core.GenerateUniqueID(),
+					ResourcesID: resourceID,
+					Src:         submitted.Src,
+					Sort:        sort,
+				}
+				newDramaSeries = append(newDramaSeries, current)
+				matched[current.ID] = struct{}{}
+				continue
+			}
+
+			matched[current.ID] = struct{}{}
+			pathChanged := current.Src != submitted.Src
+			current.Src = submitted.Src
+			current.Sort = sort
+			existingUpdates = append(existingUpdates, current)
+			if !pathChanged {
+				continue
+			}
+			resetFingerprintIDs = append(resetFingerprintIDs, current.ID)
 		}
-		vfSlc := make([]models.VideoFingerprint, 0, len(newSlc))
-		for _, ds := range newSlc {
-			vfSlc = append(vfSlc, models.VideoFingerprint{
-				ID:            core.GenerateUniqueID(),
-				DramaSeriesID: ds.ID,
-				ResourcesID:   resourceID,
-				FilesBasesID:  res.FilesBasesID,
-				Src:           ds.Src,
-				Status:        models.VideoFingerprintStatus_Pending,
-			})
+
+		// 资源可能包含大量分集，按块批量更新路径和排序，避免逐条执行 SQL。
+		const updateBatchSize = 200
+		for start := 0; start < len(existingUpdates); start += updateBatchSize {
+			end := min(start+updateBatchSize, len(existingUpdates))
+			if err := models.BatchUpdate(
+				tx,
+				models.ResourcesDramaSeries{}.TableName(),
+				"id",
+				[]string{"src", "sort"},
+				existingUpdates[start:end],
+				func(item models.ResourcesDramaSeries) map[string]interface{} {
+					return map[string]interface{}{"id": item.ID, "src": item.Src, "sort": item.Sort}
+				},
+			); err != nil {
+				return err
+			}
 		}
-		return vfM.Creates(tx, &vfSlc)
+		if len(resetFingerprintIDs) > 0 {
+			// 路径变化时保留上一次采集值，仅将可重新生成的视频信息标记为失效。
+			if err := tx.Model(&models.ResourcesVideoMetadata{}).
+				Where("drama_series_id IN ?", resetFingerprintIDs).
+				Updates(map[string]interface{}{
+					"probe_status":     models.VideoMetadataStatusStale,
+					"metadata_version": 0,
+					"next_retry_time":  nil,
+					"retry_count":      0,
+					"error_code":       "",
+					"error_message":    "",
+				}).Error; err != nil {
+				return err
+			}
+		}
+
+		deletedIDs := make([]string, 0)
+		for _, oldDS := range *oldDramaSeries {
+			if _, keep := matched[oldDS.ID]; !keep {
+				deletedIDs = append(deletedIDs, oldDS.ID)
+			}
+		}
+		if err := vfM.DeleteByDramaSeriesIDs(tx, deletedIDs); err != nil {
+			return err
+		}
+		if err := dsM.DeleteIDS(tx, deletedIDs); err != nil {
+			return err
+		}
+		if len(newDramaSeries) > 0 {
+			if err := dsM.Creates(tx, &newDramaSeries); err != nil {
+				return err
+			}
+		}
+		if err := vfM.RebuildByDramaSeriesIDs(tx, resetFingerprintIDs, core.GenerateUniqueID); err != nil {
+			return err
+		}
+		return vfM.SyncForResource(
+			tx, resourceID, res.FilesBasesID, res.Mode, core.GenerateUniqueID,
+		)
 	})
 }
 

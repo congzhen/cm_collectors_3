@@ -54,6 +54,7 @@ export default {
     sort: '排序',
     country: '国家',
     definition: '清晰度',
+    videoCodec: '视频编码',
     year: '年份',
     starRating: '评星',
     score: '评分',

@@ -1,9 +1,15 @@
 
-export type jobsType = 'import' | 'scraperResource' | 'scraperPerformer' | 'clear' | 'videoFingerprint' | 'aiTag' | 'clearPerformerAvatarCache';
+import type { I_filesBases } from './filesBases.dataType';
+
+export type jobsType = 'import' | 'scraperResource' | 'scraperPerformer' | 'clear' | 'videoFingerprint' | 'aiTag' | 'videoMetadata' | 'clearPerformerAvatarCache';
 
 export interface I_cronJobs {
   id: string;
   filesBases_id: string;
+  filesBasesIds: string[];
+  filesBasesList?: I_filesBases[];
+  scopeMode: 'selected' | 'all';
+  configJsonData: string;
   jobs_type: jobsType;
   cron_expression: string;
 }

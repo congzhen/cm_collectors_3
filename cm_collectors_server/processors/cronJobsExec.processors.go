@@ -4,7 +4,9 @@ import (
 	"cm_collectors_server/datatype"
 	"cm_collectors_server/errorMessage"
 	"cm_collectors_server/models"
+	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/robfig/cron/v3"
@@ -121,6 +123,8 @@ func (t CronJobsExec) executeJobTask(data models.CronJobs) error {
 	case datatype.E_cronJobsType_AiTag:
 		// AI自动标签任务
 		return t.cronJobs_AiTag(data)
+	case datatype.E_cronJobsType_VideoMetadata:
+		return t.cronJobs_VideoMetadata(data)
 	case datatype.E_cronJobsType_ClearPerformerAvatarCache:
 		return t.cronJobs_ClearPerformerAvatarCache(data)
 	default:
@@ -131,6 +135,16 @@ func (t CronJobsExec) executeJobTask(data models.CronJobs) error {
 func cronJobScopeName(data models.CronJobs) string {
 	if !cronJobRequiresFilesBase(data.JobsType) {
 		return "全局任务"
+	}
+	if data.ScopeMode == models.VideoMetadataScopeAll {
+		return "全部文件库"
+	}
+	if len(data.FilesBasesList) > 1 {
+		names := make([]string, 0, len(data.FilesBasesList))
+		for _, item := range data.FilesBasesList {
+			names = append(names, item.Name)
+		}
+		return strings.Join(names, "、")
 	}
 	if data.FilesBases.Name != "" {
 		return data.FilesBases.Name
@@ -243,6 +257,35 @@ func (t CronJobsExec) cronJobs_VideoFingerprint(data models.CronJobs) error {
 func (t CronJobsExec) cronJobs_AiTag(data models.CronJobs) error {
 	fmt.Println("执行计划任务:", data.FilesBases.Name, data.JobsType, data.CronExpression)
 	return AiTag{}.RunForCron(data.FilesBasesId)
+}
+
+func (t CronJobsExec) cronJobs_VideoMetadata(data models.CronJobs) error {
+	request := VideoMetadataRunRequest{
+		ScopeMode:      data.ScopeMode,
+		RunMode:        VideoMetadataRunMissingStale,
+		MaxItemsPerRun: 100,
+	}
+	for _, filesBases := range data.FilesBasesList {
+		request.FilesBasesIDs = append(request.FilesBasesIDs, filesBases.ID)
+	}
+	if len(request.FilesBasesIDs) == 0 && data.FilesBasesId != "" {
+		request.FilesBasesIDs = append(request.FilesBasesIDs, data.FilesBasesId)
+	}
+	if data.ConfigJsonData != "" {
+		if err := json.Unmarshal([]byte(data.ConfigJsonData), &request); err != nil {
+			return fmt.Errorf("解析视频信息计划任务配置失败: %w", err)
+		}
+		request.ScopeMode = data.ScopeMode
+		request.FilesBasesIDs = request.FilesBasesIDs[:0]
+		for _, filesBases := range data.FilesBasesList {
+			request.FilesBasesIDs = append(request.FilesBasesIDs, filesBases.ID)
+		}
+		if len(request.FilesBasesIDs) == 0 && data.FilesBasesId != "" {
+			request.FilesBasesIDs = append(request.FilesBasesIDs, data.FilesBasesId)
+		}
+	}
+	fmt.Println("执行计划任务:", cronJobScopeName(data), data.JobsType, data.CronExpression)
+	return (VideoMetadata{}).RunForCron(request)
 }
 
 // 导入任务处理

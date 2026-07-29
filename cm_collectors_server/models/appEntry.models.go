@@ -41,6 +41,12 @@ func autoMigrate(db *gorm.DB) error {
 		&AiTagSetting{},
 		&AiTagEnabledFilesBases{},
 		&AiTagAnalysisRecord{},
+		&ResourcesVideoMetadata{},
+		&VideoMetadataSetting{},
+		&VideoMetadataSettingFilesBases{},
+		&VideoMetadataBatchTask{},
+		&VideoMetadataBatchTaskFilesBases{},
+		&CronJobsFilesBases{},
 		&TvboxRecommend{},
 		&AutoBackupState{},
 	)
@@ -385,6 +391,42 @@ func AutoDatabase(db *gorm.DB) error {
 					return err
 				}
 				return tx.Model(&Tag{}).Where("aiEnabled IS NULL").Update("aiEnabled", true).Error
+			},
+		},
+		{
+			ID: "video_metadata_collection",
+			Migrate: func(tx *gorm.DB) error {
+				if err := tx.AutoMigrate(
+					&CronJobs{},
+					&ResourcesVideoMetadata{},
+					&VideoMetadataSetting{},
+					&VideoMetadataSettingFilesBases{},
+					&VideoMetadataBatchTask{},
+					&VideoMetadataBatchTaskFilesBases{},
+					&CronJobsFilesBases{},
+				); err != nil {
+					core.LogErr(err)
+					return err
+				}
+				if err := tx.Exec(`
+					INSERT INTO cron_jobs_files_bases (cron_jobs_id, files_bases_id)
+					SELECT id, filesBases_id FROM cronJobs
+					WHERE filesBases_id <> ''
+					  AND NOT EXISTS (
+						SELECT 1 FROM cron_jobs_files_bases scope
+						WHERE scope.cron_jobs_id = cronJobs.id
+						  AND scope.files_bases_id = cronJobs.filesBases_id
+					  )
+				`).Error; err != nil {
+					return err
+				}
+				if err := tx.Model(&CronJobs{}).
+					Where("scope_mode IS NULL OR scope_mode = ''").
+					Update("scope_mode", VideoMetadataScopeSelected).Error; err != nil {
+					return err
+				}
+				_, err := (VideoMetadataSetting{}).Ensure(tx)
+				return err
 			},
 		},
 	})

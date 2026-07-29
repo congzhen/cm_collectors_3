@@ -1,5 +1,5 @@
 import request from "@/assets/request";
-import type { I_cronJobs_info } from "@/dataType/cronJobs.dataType";
+import type { I_cronJobs, I_cronJobs_info } from "@/dataType/cronJobs.dataType";
 const routerGroupUri = '/cronJobs';
 export const cronJobsServer = {
   list: async () => {
@@ -14,27 +14,18 @@ export const cronJobsServer = {
       method: 'get',
     })
   },
-  create: async (filesBases_id: string, jobs_type: string, cron_expression: string) => {
+  create: async (data: I_cronJobs) => {
     return await request<I_cronJobs_info>({
       url: `${routerGroupUri}/create`,
       method: 'post',
-      data: {
-        filesBases_id,
-        jobs_type,
-        cron_expression,
-      },
+      data,
     });
   },
-  update: async (id: string, filesBases_id: string, jobs_type: string, cron_expression: string) => {
+  update: async (data: I_cronJobs) => {
     return await request<I_cronJobs_info>({
       url: `${routerGroupUri}/update`,
       method: 'put',
-      data: {
-        id,
-        filesBases_id,
-        jobs_type,
-        cron_expression,
-      },
+      data,
     });
   },
   delete: async (id: string) => {

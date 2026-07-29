@@ -21,9 +21,8 @@ type Resources struct{}
 func (Resources) DataList(par *datatype.ReqParam_ResourcesList) (*[]models.Resources, int64, error) {
 	dataList, total, err := models.Resources{}.DataList(core.DBS(), par)
 	if err == nil {
-		// 列表接口只触发当前页缺失时长的后台采集，不等待采集完成。
-		// 前端会在开启显示时长时稍后静默刷新一次当前页。
-		VideoDuration{}.TriggerForResources(par.FilesBasesId, dataList)
+		// 是否补齐当前页由统一视频信息采集设置控制，接口不等待后台 FFprobe。
+		VideoMetadata{}.TriggerForResources(dataList)
 	}
 	return dataList, total, err
 }
@@ -32,7 +31,7 @@ func (Resources) DataList(par *datatype.ReqParam_ResourcesList) (*[]models.Resou
 func (Resources) DataListCasualView(filesBasesId string, quantity int) (*[]models.Resources, error) {
 	dataList, err := models.Resources{}.DataListCasualView(core.DBS(), filesBasesId, quantity)
 	if err == nil {
-		VideoDuration{}.TriggerForResources(filesBasesId, dataList)
+		VideoMetadata{}.TriggerForResources(dataList)
 	}
 	return dataList, err
 }
@@ -41,7 +40,7 @@ func (Resources) DataListCasualView(filesBasesId string, quantity int) (*[]model
 func (Resources) DataListHistory(filesBasesId string, quantity int) (*[]models.Resources, error) {
 	dataList, err := models.Resources{}.DataListHistory(core.DBS(), filesBasesId, quantity)
 	if err == nil {
-		VideoDuration{}.TriggerForResources(filesBasesId, dataList)
+		VideoMetadata{}.TriggerForResources(dataList)
 	}
 	return dataList, err
 }
@@ -50,7 +49,7 @@ func (Resources) DataListHistory(filesBasesId string, quantity int) (*[]models.R
 func (Resources) DataListHot(filesBasesId string, quantity int) (*[]models.Resources, error) {
 	dataList, err := models.Resources{}.DataListHot(core.DBS(), filesBasesId, quantity)
 	if err == nil {
-		VideoDuration{}.TriggerForResources(filesBasesId, dataList)
+		VideoMetadata{}.TriggerForResources(dataList)
 	}
 	return dataList, err
 }
@@ -185,8 +184,8 @@ func (t Resources) CreateResource(par *datatype.ReqParam_Resource) (*models.Reso
 	AutoBackup{}.RecordResourceChanges(1)
 	info, err := t.Info(id)
 	if err == nil {
-		// 新建资源成功后，如果文件库开启了时长显示，立即让新分集进入后台采集队列。
-		VideoDuration{}.TriggerForResource(info)
+		// 新建资源成功后按统一视频信息设置让新分集进入后台采集队列。
+		VideoMetadata{}.TriggerForResource(info)
 	}
 	return info, err
 }
@@ -208,8 +207,8 @@ func (t Resources) UpdateResource(par *datatype.ReqParam_Resource, setResourcesD
 	AutoBackup{}.RecordResourceChanges(1)
 	info, err := t.Info(id)
 	if err == nil {
-		// 修改资源可能新增分集或变更路径；已有时长会在重建分集时保留，缺失项在这里后台补齐。
-		VideoDuration{}.TriggerForResource(info)
+		// 修改资源可能新增分集或变更路径；已有时长保留，完整元数据在这里后台补齐。
+		VideoMetadata{}.TriggerForResource(info)
 	}
 	return info, err
 }
@@ -445,6 +444,19 @@ func (Resources) SetResources(db *gorm.DB, resourceID string, par *datatype.ReqP
 		}
 		if setResourcesDramaSeries {
 			err = ResourcesDramaSeries{}.SetResourcesDramaSeries(tx, resourceID, par.DramaSeries)
+			if err != nil {
+				return err
+			}
+		} else {
+			// 即使旧客户端没有提交分集，也要按资源当前类型和文件库校准指纹归属。
+			// 这里只处理指纹，不修改原有分集。
+			err = (models.VideoFingerprint{}).SyncForResource(
+				tx,
+				resourceID,
+				par.Resource.FilesBasesID,
+				par.Resource.Mode,
+				core.GenerateUniqueID,
+			)
 			if err != nil {
 				return err
 			}

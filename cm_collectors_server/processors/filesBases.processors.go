@@ -412,6 +412,13 @@ func (FilesBases) DeleteByID(id string) error {
 		if err := (models.CronJobs{}).DeleteByFilesBasesID(tx, id); err != nil {
 			return err
 		}
+		if err := (models.VideoMetadataSettingFilesBases{}).DeleteByFilesBasesID(tx, id); err != nil {
+			return err
+		}
+		if err := tx.Unscoped().Where("files_bases_id = ?", id).
+			Delete(&models.VideoMetadataBatchTaskFilesBases{}).Error; err != nil {
+			return err
+		}
 		if err := (models.FilesRelatedPerformerBases{}).DeleteByFilesBasesID(tx, id); err != nil {
 			return err
 		}

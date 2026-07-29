@@ -31,7 +31,7 @@ func (CronJobs) Create(c *gin.Context) {
 	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {
 		return
 	}
-	info, err := processors.CronJobs{}.Create(par.FilesBasesId, par.JobsType, par.CronExpression)
+	info, err := processors.CronJobs{}.CreateScoped(par)
 	if err := ResError(c, err); err != nil {
 		return
 	}
@@ -42,7 +42,7 @@ func (CronJobs) Update(c *gin.Context) {
 	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {
 		return
 	}
-	info, err := processors.CronJobs{}.Update(par.ID, par.FilesBasesId, par.JobsType, par.CronExpression)
+	info, err := processors.CronJobs{}.UpdateScoped(par.ID, par.ReqParam_CreateCronJobs)
 	if err := ResError(c, err); err != nil {
 		return
 	}

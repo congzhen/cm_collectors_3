@@ -98,7 +98,7 @@ export interface I_config_app {
 }
 
 export const defualtConfigApp: I_config_app = {
-  leftDisplay: ['sort', 'country', 'definition', 'year', 'starRating', 'performer', 'diyTag'] as E_tagType[],
+  leftDisplay: ['sort', 'country', 'definition', 'videoCodec', 'year', 'starRating', 'performer', 'diyTag'] as E_tagType[],
   leftColumnWidth: 319,
   leftColumnMode: 'fixed',
   leftColumnFloatAutoHide: false,

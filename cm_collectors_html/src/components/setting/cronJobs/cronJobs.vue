@@ -191,6 +191,7 @@ const getJobTypeName = (type: string): string => {
     case 'clear': return '清理';
     case 'videoFingerprint': return '视频指纹';
     case 'aiTag': return 'AI 自动标签';
+    case 'videoMetadata': return '视频信息补齐';
     case 'clearPerformerAvatarCache': return '清理演员头像缓存';
     default: return type;
   }
@@ -205,6 +206,7 @@ const getJobTypeClass = (type: string): string => {
     case 'clear': return 'job-type--clear';
     case 'videoFingerprint': return 'job-type--fingerprint';
     case 'aiTag': return 'job-type--ai-tag';
+    case 'videoMetadata': return 'job-type--video-metadata';
     case 'clearPerformerAvatarCache': return 'job-type--avatar-cache';
     default: return '';
   }
@@ -212,6 +214,10 @@ const getJobTypeClass = (type: string): string => {
 
 const getJobScopeName = (job: I_cronJobs_info): string => {
   if (job.jobs_type === 'clearPerformerAvatarCache') return '全局任务';
+  if (job.scopeMode === 'all') return '全部文件库';
+  if (job.filesBasesList && job.filesBasesList.length > 0) {
+    return job.filesBasesList.map(item => item.name).join('、');
+  }
   return store.filesBasesStoreData.getFilesBasesNameById(job.filesBases_id) || '文件库名称';
 };
 

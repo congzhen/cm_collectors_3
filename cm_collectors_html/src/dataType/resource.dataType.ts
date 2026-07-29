@@ -1,6 +1,7 @@
 import type { E_resourceDramaSeriesType, E_resourceStorageLocation } from "./app.dataType";
 import type { I_performer } from "./performer.dataType";
 import type { I_tag } from "./tag.dataType";
+import type { I_videoMetadata } from "./videoMetadata.dataType";
 
 export interface I_resource_base {
   id: string;
@@ -49,6 +50,7 @@ export interface I_resourceDramaSeries extends I_resourceDramaSeries_base {
   durationProbeTime: string;
   m3u8BuilderTime: string;
   m3u8BuilderStatus: boolean;
+  videoMetadata?: I_videoMetadata;
 }
 
 export interface I_resourceDisplayTag {

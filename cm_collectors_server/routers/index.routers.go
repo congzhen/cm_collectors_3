@@ -233,6 +233,16 @@ func AdminRouter(router *gin.Engine) {
 	routerGroup.POST("aiTag/rescan", controllers.AiTag{}.Rescan)
 	routerGroup.POST("aiTag/testService", controllers.AiTag{}.TestService)
 	routerGroup.POST("aiTag/testConnection", controllers.AiTag{}.TestConnection)
+
+	routerGroup.GET("videoMetadata/setting", controllers.VideoMetadata{}.Setting)
+	routerGroup.PUT("videoMetadata/setting", controllers.VideoMetadata{}.SaveSetting)
+	routerGroup.GET("videoMetadata/stats", controllers.VideoMetadata{}.Stats)
+	routerGroup.GET("videoMetadata/info/:dramaSeriesId", controllers.VideoMetadata{}.Info)
+	routerGroup.POST("videoMetadata/run", controllers.VideoMetadata{}.Run)
+	routerGroup.GET("videoMetadata/taskStatus", controllers.VideoMetadata{}.TaskStatus)
+	routerGroup.POST("videoMetadata/pause", controllers.VideoMetadata{}.Pause)
+	routerGroup.POST("videoMetadata/resume", controllers.VideoMetadata{}.Resume)
+	routerGroup.POST("videoMetadata/stop", controllers.VideoMetadata{}.Stop)
 }
 func SFMRouter(router *gin.Engine) {
 	routerGroup := router.Group("/api", middleware.AdminLoginApiMiddleware())

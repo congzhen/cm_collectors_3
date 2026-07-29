@@ -157,6 +157,15 @@ const getTagDataList = (type: E_tagType): I_tagData[] => {
         });
       });
       return resultDefinitionArr;
+    case E_tagType.VideoCodec:
+      return [
+        { id: allId, name: allName, status: store.searchStoreData.checkSelected(type, allId) },
+        ...dataset.videoCodec.map(codec => ({
+          id: codec,
+          name: codec.toUpperCase(),
+          status: store.searchStoreData.checkSelected(type, codec),
+        })),
+      ];
     case E_tagType.Year:
       const currentYear = new Date().getFullYear();
       const years: I_tagData[] = [
@@ -208,6 +217,7 @@ const getLogic = (type: E_tagType) => {
       return [E_searchLogic.Single];
     case E_tagType.Country:
     case E_tagType.Definition:
+    case E_tagType.VideoCodec:
     case E_tagType.Year:
     case E_tagType.Star:
       return [E_searchLogic.Single, E_searchLogic.MultiOr];
