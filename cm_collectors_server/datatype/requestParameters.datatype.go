@@ -19,6 +19,11 @@ type ReqParam_ResourcesList struct {
 	SearchData   ReqParam_SearchData `json:"searchData"`
 }
 
+type ReqParam_ResourceFileSizeStats struct {
+	FilesBasesId string              `json:"filesBasesId" binding:"required"`
+	SearchData   ReqParam_SearchData `json:"searchData"`
+}
+
 type ReqParam_ResourcesListIds struct {
 	Ids []string `json:"ids"`
 }

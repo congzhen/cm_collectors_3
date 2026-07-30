@@ -3,8 +3,18 @@ package datatype
 import "cm_collectors_server/config"
 
 type ResDataList struct {
-	DataList any   `json:"dataList"  `
-	Total    int64 `json:"total"  `
+	DataList any   `json:"dataList"`
+	Total    int64 `json:"total"`
+}
+
+// ResourceFileSizeStats 统计当前资源筛选结果中可采集视频信息的全部分集。
+// CountedFiles 只包含当前版本采集成功且文件大小有效的分集，
+// 因此 stale、failed、processing 和尚未采集的分集都归入 UncountedFiles。
+type ResourceFileSizeStats struct {
+	TotalSize      int64 `json:"totalSize"`
+	TotalFiles     int64 `json:"totalFiles"`
+	CountedFiles   int64 `json:"countedFiles"`
+	UncountedFiles int64 `json:"uncountedFiles"`
 }
 
 type E_resourceMode string

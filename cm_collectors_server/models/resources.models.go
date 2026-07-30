@@ -222,6 +222,44 @@ func (t Resources) DataList(db *gorm.DB, par *datatype.ReqParam_ResourcesList) (
 	return &dataList, total, err
 }
 
+// FileSizeStats 聚合当前筛选结果的全部视频分集，不受分页参数影响。
+// 只统计当前元数据版本且探测成功的文件大小，避免把路径已变化后的旧大小计入总量。
+func (t Resources) FileSizeStats(db *gorm.DB, par *datatype.ReqParam_ResourceFileSizeStats, metadataVersion int) (*datatype.ResourceFileSizeStats, error) {
+	stats := &datatype.ResourceFileSizeStats{}
+	resourceIDs := db.Model(&Resources{}).
+		Select("resources.id").
+		Where("filesBases_id = ?", par.FilesBasesId)
+	resourceIDs = t.setDbSearchData(resourceIDs, &par.SearchData)
+
+	err := db.Table("resourcesDramaSeries AS ds").
+		Select(`
+			COUNT(ds.id) AS total_files,
+			COALESCE(SUM(CASE
+				WHEN vm.probe_status = ? AND vm.metadata_version >= ? AND vm.file_size > 0
+				THEN 1 ELSE 0 END), 0) AS counted_files,
+			COALESCE(SUM(CASE
+				WHEN vm.probe_status = ? AND vm.metadata_version >= ? AND vm.file_size > 0
+				THEN vm.file_size ELSE 0 END), 0) AS total_size`,
+			VideoMetadataStatusSuccess, metadataVersion,
+			VideoMetadataStatusSuccess, metadataVersion).
+		Joins("JOIN resources AS r ON r.id = ds.resources_id").
+		Joins("LEFT JOIN resources_video_metadata AS vm ON vm.drama_series_id = ds.id").
+		Where("r.mode IN ?", []datatype.E_resourceMode{
+			datatype.E_resourceMode_Movies,
+			datatype.E_resourceMode_VideoLink,
+		}).
+		Where("r.id IN (?)", resourceIDs).
+		Scan(stats).Error
+	if err != nil {
+		return stats, err
+	}
+	stats.UncountedFiles = stats.TotalFiles - stats.CountedFiles
+	if stats.UncountedFiles < 0 {
+		stats.UncountedFiles = 0
+	}
+	return stats, nil
+}
+
 func (t Resources) setDbSearchData(db *gorm.DB, searchData *datatype.ReqParam_SearchData) *gorm.DB {
 	if len(searchData.SearchTextSlc) > 0 {
 		// 使用参数化查询避免SQL注入风险

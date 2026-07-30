@@ -27,6 +27,10 @@ func (Resources) DataList(par *datatype.ReqParam_ResourcesList) (*[]models.Resou
 	return dataList, total, err
 }
 
+func (Resources) FileSizeStats(par *datatype.ReqParam_ResourceFileSizeStats) (*datatype.ResourceFileSizeStats, error) {
+	return (models.Resources{}).FileSizeStats(core.DBS(), par, CurrentVideoMetadataVersion)
+}
+
 // 获取随机的指定数量的记录
 func (Resources) DataListCasualView(filesBasesId string, quantity int) (*[]models.Resources, error) {
 	dataList, err := models.Resources{}.DataListCasualView(core.DBS(), filesBasesId, quantity)

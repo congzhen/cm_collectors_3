@@ -1,5 +1,5 @@
 import request, { type IRequest } from "@/assets/request";
-import type { I_dramaSeriesWithResource, I_resource, I_resource_base, I_resourceDramaSeries, I_resourceDramaSeries_base } from "@/dataType/resource.dataType";
+import type { I_dramaSeriesWithResource, I_resource, I_resource_base, I_resourceDramaSeries, I_resourceDramaSeries_base, I_resourceFileSizeStats } from "@/dataType/resource.dataType";
 import type { I_searchData } from "@/dataType/search.dataType";
 const routerGroupUri = '';
 export const resourceServer = {
@@ -17,6 +17,16 @@ export const resourceServer = {
         fetchCount,
         page,
         limit,
+        filesBasesId,
+        searchData,
+      }
+    })
+  },
+  fileSizeStats: async (filesBasesId: string, searchData: I_searchData) => {
+    return await request<I_resourceFileSizeStats>({
+      url: `${routerGroupUri}/resource/fileSizeStats`,
+      method: 'post',
+      data: {
         filesBasesId,
         searchData,
       }

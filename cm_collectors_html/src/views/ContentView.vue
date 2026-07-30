@@ -7,8 +7,48 @@
         @update-data="init_DataList"></contentListAdmin>
     </div>
     <div class="paging">
-      <el-pagination background layout="total, prev, pager, next, jumper" v-model:current-page="currentPage"
-        :total="dataCount" :page-size="pageSize" :pager-count="5" size="small" @change="changePageHandle" />
+      <div class="paging-main">
+        <div class="paging-summary">
+          <span>Total {{ dataCount }}</span>
+          <el-popover trigger="hover" :width="260" :show-after="250" @before-enter="handleFileSizeStatsShow">
+            <template #reference>
+              <el-icon class="file-size-stats-trigger" title="当前筛选结果的视频文件统计">
+                <InfoFilled />
+              </el-icon>
+            </template>
+            <div v-if="fileSizeStatsLoading" class="file-size-stats-state">
+              <span class="file-size-stats-spinner"></span>
+              <span>正在统计当前筛选结果…</span>
+            </div>
+            <div v-else-if="fileSizeStatsError" class="file-size-stats-state file-size-stats-state--error">
+              <span>{{ fileSizeStatsError }}</span>
+              <el-button link type="primary" size="small" @click="loadFileSizeStats(true)">重新统计</el-button>
+            </div>
+            <div v-else-if="fileSizeStats" class="file-size-stats">
+              <div class="file-size-stats__title">当前筛选结果</div>
+              <div>
+                <span>已统计文件大小</span>
+                <strong>{{ formatFileSize(fileSizeStats.totalSize) }}</strong>
+              </div>
+              <div>
+                <span>视频文件</span>
+                <strong>{{ fileSizeStats.totalFiles }}</strong>
+              </div>
+              <div>
+                <span>已统计</span>
+                <strong>{{ fileSizeStats.countedFiles }}</strong>
+              </div>
+              <div>
+                <span>未统计 / 待更新</span>
+                <strong>{{ fileSizeStats.uncountedFiles }}</strong>
+              </div>
+            </div>
+            <div v-else class="file-size-stats-state">将鼠标停留片刻后开始统计</div>
+          </el-popover>
+        </div>
+        <el-pagination background layout="prev, pager, next, jumper" v-model:current-page="currentPage"
+          :total="dataCount" :page-size="pageSize" :pager-count="5" size="small" @change="changePageHandle" />
+      </div>
       <div class="bottom-btns">
         <playListBtn></playListBtn>
         <coverAdjuster v-admin></coverAdjuster>
@@ -24,7 +64,7 @@ import playListBtn from '@/components/playList/playListBtn.vue';
 import { ref, onMounted, watch, nextTick } from 'vue'
 import { appStoreData } from '@/storeData/app.storeData';
 import { searchStoreData } from '@/storeData/search.storeData';
-import type { I_resource } from '@/dataType/resource.dataType';
+import type { I_resource, I_resourceFileSizeStats } from '@/dataType/resource.dataType';
 import { ElMessage } from 'element-plus';
 import { resourceServer } from '@/server/resource.server';
 import { debounce } from '@/assets/debounce';
@@ -41,6 +81,11 @@ const isInitializing = ref(false);
 const loading = ref(false);
 const dataList = ref<I_resource[]>([]);
 const dataCount = ref(0);
+const fileSizeStats = ref<I_resourceFileSizeStats | null>(null);
+const fileSizeStatsLoading = ref(false);
+const fileSizeStatsError = ref('');
+let fileSizeStatsCacheKey = '';
+let fileSizeStatsRequestVersion = 0;
 let fetchCount = true;
 let durationRefreshTimer: number | undefined;
 let dataListRequestVersion = 0;
@@ -69,6 +114,7 @@ watch(
     window.clearTimeout(durationRefreshTimer);
     dataList.value = [];
     dataCount.value = 0;
+    resetFileSizeStats();
   },
   { flush: 'sync' }
 )
@@ -77,6 +123,7 @@ const init = async () => {
   isInitializing.value = true;
   dataList.value = [];
   dataCount.value = 0;
+  resetFileSizeStats();
   fetchCount = true;
   currentPage.value = 1;
   pageSize.value = store.appStoreData.currentConfigApp.pageLimit;
@@ -149,6 +196,68 @@ const scheduleDurationRefresh = () => {
   }, 2500);
 }
 
+const resetFileSizeStats = () => {
+  fileSizeStatsRequestVersion++;
+  fileSizeStats.value = null;
+  fileSizeStatsLoading.value = false;
+  fileSizeStatsError.value = '';
+  fileSizeStatsCacheKey = '';
+}
+
+const currentFileSizeStatsKey = () => JSON.stringify({
+  filesBasesId: store.appStoreData.currentFilesBases.id,
+  searchData: store.searchStoreData.searchData,
+});
+
+const handleFileSizeStatsShow = () => {
+  loadFileSizeStats();
+}
+
+const loadFileSizeStats = async (force = false) => {
+  const filesBasesId = store.appStoreData.currentFilesBases.id;
+  if (!filesBasesId) return;
+  const cacheKey = currentFileSizeStatsKey();
+  if (!force && (fileSizeStatsLoading.value || (fileSizeStatsCacheKey === cacheKey && fileSizeStats.value))) {
+    return;
+  }
+
+  const requestVersion = ++fileSizeStatsRequestVersion;
+  fileSizeStatsLoading.value = true;
+  fileSizeStatsError.value = '';
+  try {
+    const result = await resourceServer.fileSizeStats(filesBasesId, store.searchStoreData.searchData);
+    if (requestVersion !== fileSizeStatsRequestVersion || cacheKey !== currentFileSizeStatsKey()) return;
+    if (result && result.status) {
+      fileSizeStats.value = result.data;
+      fileSizeStatsCacheKey = cacheKey;
+    } else {
+      fileSizeStatsError.value = result?.msg || '统计失败，请稍后重试';
+    }
+  } catch (error) {
+    if (requestVersion === fileSizeStatsRequestVersion) {
+      fileSizeStatsError.value = '统计失败，请稍后重试';
+    }
+    console.log(error);
+  } finally {
+    if (requestVersion === fileSizeStatsRequestVersion) {
+      fileSizeStatsLoading.value = false;
+    }
+  }
+}
+
+const formatFileSize = (size: number) => {
+  if (!size || size < 0) return '0 B';
+  const units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
+  let value = size;
+  let unitIndex = 0;
+  while (value >= 1024 && unitIndex < units.length - 1) {
+    value /= 1024;
+    unitIndex++;
+  }
+  const digits = unitIndex >= 3 ? 2 : 1;
+  return `${value.toFixed(digits)} ${units[unitIndex]}`;
+}
+
 const showDataList = () => {
   return dataList.value;
 }
@@ -189,11 +298,89 @@ defineExpose({ init, init_DataList, showDataList });
     display: flex;
     justify-content: space-between;
 
+    .paging-main {
+      display: flex;
+      align-items: center;
+      min-width: 0;
+    }
+
+    .paging-summary {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding-right: 8px;
+      color: var(--el-text-color-regular);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .file-size-stats-trigger {
+      color: inherit;
+      cursor: help;
+    }
+
     .bottom-btns {
       display: flex;
       gap: 5px;
       align-items: center;
     }
+  }
+}
+
+.file-size-stats {
+  display: grid;
+  gap: 9px;
+
+  .file-size-stats__title {
+    padding-bottom: 7px;
+    border-bottom: 1px solid var(--el-border-color-lighter);
+    color: var(--el-text-color-primary);
+    font-weight: 600;
+  }
+
+  > div:not(.file-size-stats__title) {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+
+    span {
+      color: var(--el-text-color-secondary);
+    }
+
+    strong {
+      color: var(--el-text-color-primary);
+      font-weight: 500;
+      white-space: nowrap;
+    }
+  }
+}
+
+.file-size-stats-state {
+  min-height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--el-text-color-secondary);
+}
+
+.file-size-stats-state--error {
+  flex-direction: column;
+  color: var(--el-color-danger);
+}
+
+.file-size-stats-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--el-border-color);
+  border-top-color: var(--el-text-color-secondary);
+  border-radius: 50%;
+  animation: file-size-stats-spin 0.8s linear infinite;
+}
+
+@keyframes file-size-stats-spin {
+  to {
+    transform: rotate(360deg);
   }
 }
 </style>

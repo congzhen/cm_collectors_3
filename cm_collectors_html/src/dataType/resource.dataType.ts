@@ -34,6 +34,12 @@ export interface I_resource extends I_resource_base {
   dramaSeries: I_resourceDramaSeries[];
 }
 
+export interface I_resourceFileSizeStats {
+  totalSize: number;
+  totalFiles: number;
+  countedFiles: number;
+  uncountedFiles: number;
+}
 
 export interface I_resourceDramaSeries_base {
   id: string;

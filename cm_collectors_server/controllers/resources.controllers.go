@@ -37,6 +37,18 @@ func (Resource) DataList(c *gin.Context) {
 	}
 	response.OkWithData(resDataList, c)
 }
+
+func (Resource) FileSizeStats(c *gin.Context) {
+	var par datatype.ReqParam_ResourceFileSizeStats
+	if err := ParameterHandleShouldBindJSON(c, &par); err != nil {
+		return
+	}
+	stats, err := processors.Resources{}.FileSizeStats(&par)
+	if err := ResError(c, err); err != nil {
+		return
+	}
+	response.OkWithData(stats, c)
+}
 func (Resource) DataListCasualView(c *gin.Context) {
 	filesBasesId := c.Param("filesBasesId")
 	var quantity int
