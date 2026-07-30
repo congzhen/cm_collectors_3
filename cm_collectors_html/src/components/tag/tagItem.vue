@@ -29,9 +29,10 @@ const emits = defineEmits(['edit', 'delete', 'disable', 'enable'])
 
 .tag-item {
   font-size: 12px;
-  height: 30px;
-  line-height: 30px;
-  padding: 0 20px;
+  min-height: 30px;
+  max-width: 100%;
+  padding: 5px 20px;
+  box-sizing: border-box;
   border-radius: 5px;
   border: 1px solid #4c4d4f;
   cursor: pointer;
@@ -40,6 +41,8 @@ const emits = defineEmits(['edit', 'delete', 'disable', 'enable'])
   -ms-user-select: none;
   user-select: none;
   position: relative;
+  display: flex;
+  align-items: center;
 
   &:hover {
     border: 1px solid #616264;
@@ -54,6 +57,11 @@ const emits = defineEmits(['edit', 'delete', 'disable', 'enable'])
   }
 
   label {
+    display: block;
+    min-width: 0;
+    line-height: 18px;
+    overflow-wrap: anywhere;
+    word-break: break-word;
     cursor: pointer;
   }
 

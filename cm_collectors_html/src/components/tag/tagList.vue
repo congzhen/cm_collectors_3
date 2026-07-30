@@ -3,7 +3,10 @@
     <div v-if="tagClass">
       <div :class="['tag-list-block', item.status ? '' : 'disable']" v-for="item, key in tagClass" :key="key">
         <div class="tag-list-header">
-          <label class="title">{{ item.name }}</label>
+          <div class="title">
+            <span class="title-name">{{ item.name }}</span>
+            <span class="tag-count">（{{ tagObjectList[item.id]?.length || 0 }}个）</span>
+          </div>
           <div class="tool">
             <el-button-group>
               <el-button icon="ArrowUpBold" size="small" @click="moveTagClassUp(key)" :disabled="key === 0" />
@@ -332,12 +335,32 @@ defineExpose({ init })
       justify-content: space-between;
 
       .title {
+        min-width: 0;
         font-size: 1.2em;
         padding: 0 1em;
         font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.5em;
+
+        .title-name {
+          min-width: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .tag-count {
+          flex-shrink: 0;
+          color: var(--el-text-color-secondary);
+          font-size: 0.72em;
+          font-weight: 400;
+          white-space: nowrap;
+        }
       }
 
       .tool {
+        flex-shrink: 0;
         padding: 0 0.5em;
         display: flex;
         gap: 0.8em;
@@ -357,6 +380,9 @@ defineExpose({ init })
 
       .tag-list-draggable {
         display: flex;
+        flex: 1 1 auto;
+        min-width: 0;
+        max-width: 100%;
         flex-wrap: wrap;
         gap: 0.5em;
       }

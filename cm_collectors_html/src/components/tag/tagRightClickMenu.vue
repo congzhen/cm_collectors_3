@@ -62,3 +62,9 @@ const tagMenuItems_C = computed(() => {
 })
 
 </script>
+<style lang="scss" scoped>
+.tag-right-click-menu {
+  min-width: 0;
+  max-width: 100%;
+}
+</style>
