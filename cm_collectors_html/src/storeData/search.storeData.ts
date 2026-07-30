@@ -62,6 +62,39 @@ export const searchStoreData = defineStore('search', {
         this.searchData.sort = E_searchSort.AddTimeDesc;
       }
     },
+    applySearchData: function (value: I_searchData) {
+      const data = JSON.parse(JSON.stringify(value || {})) as Partial<I_searchData>;
+      const normalizeGroup = (group?: Partial<I_searchGroup>): I_searchGroup => ({
+        logic: Object.values(E_searchLogic).includes(group?.logic as E_searchLogic)
+          ? group!.logic as E_searchLogic
+          : E_searchLogic.Single,
+        options: Array.isArray(group?.options)
+          ? [...new Set(group.options.filter(option => typeof option === 'string' && option !== ''))]
+          : [],
+      });
+      const tag: Record<string, I_searchGroup> = {};
+      if (data.tag && typeof data.tag === 'object') {
+        Object.entries(data.tag).forEach(([id, group]) => {
+          tag[id] = normalizeGroup(group);
+        });
+      }
+      this.searchData = {
+        searchTextSlc: Array.isArray(data.searchTextSlc)
+          ? [...new Set(data.searchTextSlc.filter(text => typeof text === 'string' && text !== ''))]
+          : [],
+        sort: Object.values(E_searchSort).includes(data.sort as E_searchSort)
+          ? data.sort as E_searchSort
+          : E_searchSort.AddTimeDesc,
+        country: normalizeGroup(data.country),
+        definition: normalizeGroup(data.definition),
+        videoCodec: normalizeGroup(data.videoCodec),
+        year: normalizeGroup(data.year),
+        star: normalizeGroup(data.star),
+        performer: normalizeGroup(data.performer),
+        cup: normalizeGroup(data.cup),
+        tag,
+      };
+    },
     clear: function () {
       this.searchData.searchTextSlc = [];
       this.searchData.country.options = [];

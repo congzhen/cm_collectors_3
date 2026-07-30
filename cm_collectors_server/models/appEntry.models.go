@@ -49,6 +49,7 @@ func autoMigrate(db *gorm.DB) error {
 		&VideoTranscodeTask{},
 		&CronJobsFilesBases{},
 		&TvboxRecommend{},
+		&SearchFavorite{},
 		&AutoBackupState{},
 	)
 }
@@ -456,6 +457,31 @@ func AutoDatabase(db *gorm.DB) error {
 				// 开发阶段曾有数据库只执行了初始队列迁移。使用新的迁移 ID
 				// 再次按最终模型补齐所有源/输出媒体快照列，避免旧迁移记录跳过补列。
 				return tx.AutoMigrate(&VideoTranscodeTask{})
+			},
+		},
+		{
+			ID: "search_favorites",
+			Migrate: func(tx *gorm.DB) error {
+				return tx.AutoMigrate(&SearchFavorite{})
+			},
+		},
+		{
+			ID: "search_favorites_remove_name",
+			Migrate: func(tx *gorm.DB) error {
+				if tx.Migrator().HasIndex(&SearchFavorite{}, "idx_search_favorite_library_name") {
+					if err := tx.Migrator().DropIndex(&SearchFavorite{}, "idx_search_favorite_library_name"); err != nil {
+						return err
+					}
+				}
+				if tx.Migrator().HasColumn(&SearchFavorite{}, "name") {
+					if err := tx.Migrator().DropColumn(&SearchFavorite{}, "name"); err != nil {
+						return err
+					}
+				}
+				if tx.Migrator().HasColumn(&SearchFavorite{}, "auto_name") {
+					return tx.Migrator().DropColumn(&SearchFavorite{}, "auto_name")
+				}
+				return nil
 			},
 		},
 	})

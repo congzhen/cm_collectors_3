@@ -425,6 +425,9 @@ func (FilesBases) DeleteByID(id string) error {
 		if err := (models.FilesBasesSetting{}).DeleteByFilesBasesID(tx, id); err != nil {
 			return err
 		}
+		if err := (models.SearchFavorite{}).DeleteByFilesBasesID(tx, id); err != nil {
+			return err
+		}
 		// 最后删除主表记录。前面的清理都成功后才走到这里，事务失败会整体回滚。
 		return (models.FilesBases{}).DeleteByID(tx, id)
 	})

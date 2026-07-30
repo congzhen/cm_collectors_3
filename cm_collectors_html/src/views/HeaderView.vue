@@ -6,8 +6,13 @@
       <switchMobile></switchMobile>
     </div>
     <div class="right" v-if="props.mode === E_headerMode.Index">
-      <div class="search">
-        <searchInputTagByStore />
+      <div class="search-area">
+        <div class="search-favorite">
+          <searchFavoritePopover />
+        </div>
+        <div class="search">
+          <searchInputTagByStore />
+        </div>
       </div>
       <div class="setting">
         <div class="menu-item" v-admin @click="oepnResourceForm">
@@ -148,6 +153,7 @@ import resourceFormDrawer from '@/components/resource/resourceFormDrawer.vue'
 import importResourceDrawer from '@/components/importResource/importResourceDrawer.vue'
 import updateSoftDialog from '@/components/setting/updateSoft/updateSoftDialog.vue'
 import playListDrawer from '@/components/playList/playListDrawer.vue'
+import searchFavoritePopover from '@/components/search/searchFavoritePopover.vue'
 import { appStoreData } from '@/storeData/app.storeData'
 import type { I_resource } from '@/dataType/resource.dataType'
 import { AppLang } from '@/language/app.lang'
@@ -249,9 +255,27 @@ const createResouceSuccessHandle = (data: I_resource) => {
     padding-right: 0.5em;
     flex-grow: 1;
 
-    .search {
+    .search-area {
       margin: 0 1em;
       width: 70%;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .search {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .search-favorite {
+      flex-shrink: 0;
+      font-size: 20px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      align-self: center;
     }
 
 
