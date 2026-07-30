@@ -140,6 +140,10 @@ const formatBitRate = (bitRate: number) => {
 </script>
 <style lang="scss" scoped>
 .resourceDramaSeries-list {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
   padding-bottom: 0.5em;
 }
 
@@ -185,13 +189,20 @@ const formatBitRate = (bitRate: number) => {
 }
 
 .resourceDramaSeries-list-name {
+  min-width: 0;
+
   ul {
     width: calc(100% - 0.4em);
+    min-width: 0;
+    box-sizing: border-box;
     margin: 0 0.2em;
+    padding: 0;
     list-style-type: none;
 
     li {
       width: calc(100% - 2em);
+      min-width: 0;
+      box-sizing: content-box;
       line-height: 1.2em;
       font-weight: 500;
       font-style: italic;

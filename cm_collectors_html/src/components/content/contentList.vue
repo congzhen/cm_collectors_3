@@ -9,6 +9,14 @@
       v-else-if="store.appStoreData.currentConfigApp.resourcesShowMode == 'coverPosterWaterfall'"
       :data-list="props.dataList" @select-resources="selectResourcesHandle">
     </layoutCoverPosterWaterfall>
+    <layoutCoverPosterMosaic ref="layoutCoverPosterMosaicRef"
+      v-else-if="store.appStoreData.currentConfigApp.resourcesShowMode == 'coverPosterMosaic'"
+      :data-list="props.dataList" @select-resources="selectResourcesHandle">
+    </layoutCoverPosterMosaic>
+    <layoutCoverPosterMosaicShortVideo ref="layoutCoverPosterMosaicShortVideoRef"
+      v-else-if="store.appStoreData.currentConfigApp.resourcesShowMode == 'coverPosterMosaicShortVideo'"
+      :data-list="props.dataList" @select-resources="selectResourcesHandle">
+    </layoutCoverPosterMosaicShortVideo>
     <layoutShortVideo ref="layoutShortVideoRef"
       v-else-if="store.appStoreData.currentConfigApp.resourcesShowMode == 'shortVideo'" :data-list="props.dataList"
       @select-resources="selectResourcesHandle">
@@ -25,6 +33,8 @@
 <script lang="ts" setup>
 import layoutCoverPoster from './layoutCoverPoster.vue';
 import layoutCoverPosterWaterfall from './layoutCoverPosterWaterfall.vue';
+import layoutCoverPosterMosaic from './layoutCoverPosterMosaic.vue';
+import layoutCoverPosterMosaicShortVideo from './layoutCoverPosterMosaicShortVideo.vue';
 import layoutShortVideo from './layoutShortVideo.vue';
 import layoutShortVideoTopBottom from './layoutShortVideoTopBottom.vue';
 import layoutTable from './layoutTable.vue';
@@ -46,6 +56,8 @@ const emits = defineEmits(['selectResources']);
 
 const layoutCoverPosterRef = ref<typeof layoutCoverPoster>();
 const layoutCoverPosterWaterfallRef = ref<typeof layoutCoverPosterWaterfall>();
+const layoutCoverPosterMosaicRef = ref<typeof layoutCoverPosterMosaic>();
+const layoutCoverPosterMosaicShortVideoRef = ref<typeof layoutCoverPosterMosaicShortVideo>();
 const layoutShortVideoRef = ref<typeof layoutShortVideo>();
 const layoutShortVideoTopBottomRef = ref<typeof layoutShortVideoTopBottom>();
 const layoutTableRef = ref<typeof layoutTable>();
@@ -78,6 +90,12 @@ const change = () => {
   switch (resourcesShowMode) {
     case 'coverPosterWaterfall':
       layoutCoverPosterWaterfallRef.value?.change();
+      break;
+    case 'coverPosterMosaic':
+      layoutCoverPosterMosaicRef.value?.change();
+      break;
+    case 'coverPosterMosaicShortVideo':
+      layoutCoverPosterMosaicShortVideoRef.value?.change();
       break;
     case 'shortVideo':
       layoutShortVideoRef.value?.change();

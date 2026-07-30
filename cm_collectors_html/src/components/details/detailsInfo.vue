@@ -122,8 +122,13 @@ const playResourceDramaSeriesHandle = (ds: I_resourceDramaSeries) => {
 <style lang="scss" scoped>
 .details-container {
   width: 100%;
+  min-width: 0;
   height: 100%;
   overflow: hidden;
+
+  :deep(.el-scrollbar__view) {
+    min-width: 0;
+  }
 }
 
 .title {
@@ -159,10 +164,19 @@ const playResourceDramaSeriesHandle = (ds: I_resourceDramaSeries) => {
 }
 
 .info-block {
+  min-width: 0;
   padding: 5px 0;
 
   .el-alert {
+    width: 100%;
+    box-sizing: border-box;
     padding: 4px 8px;
+  }
+
+  .resource {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
   }
 
   .performer-list {
