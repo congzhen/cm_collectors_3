@@ -25,6 +25,8 @@ func (v Video) VideoMP4Stream(c *gin.Context, dramaSeriesId string, needEncoding
 	if err != nil {
 		return err
 	}
+	unlockMedia := lockMediaForRead(src)
+	defer unlockMedia()
 	// 检查文件是否存在
 	fileInfo, err := os.Stat(src)
 	if err != nil {
@@ -182,27 +184,18 @@ func (v Video) VideoMP4Stream_Play(c *gin.Context, fileInfo fs.FileInfo, src str
 		// 设置状态码为206 Partial Content
 		c.Status(http.StatusPartialContent)
 
-		// 使用文件句柄缓存优化并发读取
-		file, err := processorscache.CacheFileLastUse{}.GetFileHandle(src)
+		// 每个请求独立持有文件句柄。Windows 不允许重命名仍被打开的视频文件，
+		// 请求结束时必须立即关闭，不能依赖带过期时间的句柄缓存。
+		file, err := os.Open(src)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Failed to open file"})
 			return nil
 		}
-
-		/*
-			// 打开文件并读取指定范围内容
-			file, err := os.Open(src)
-			if err != nil {
-				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Failed to open file"})
-				return nil
+		defer func() {
+			if closeErr := file.Close(); closeErr != nil {
+				fmt.Printf("Warning: failed to close video file: %v\n", closeErr)
 			}
-			defer func() {
-				// 确保文件被正确关闭
-				if cerr := file.Close(); cerr != nil {
-					fmt.Printf("Warning: failed to close file: %v\n", cerr)
-				}
-			}()
-		*/
+		}()
 
 		// 设置读取范围
 		_, err = file.Seek(start, io.SeekStart)
@@ -325,6 +318,8 @@ func (v Video) VideoM3u8StreamHLS(c *gin.Context, dramaSeriesId string, start, d
 	if err != nil {
 		return err
 	}
+	unlockMedia := lockMediaForRead(dramaSeries.Src)
+	defer unlockMedia()
 
 	formatInfo, err := processorscache.CacheVideoInfoLastUse{}.GetVideoInfoHandle(dramaSeries.Src)
 	if err != nil {

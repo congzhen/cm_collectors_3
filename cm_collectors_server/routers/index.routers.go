@@ -243,6 +243,19 @@ func AdminRouter(router *gin.Engine) {
 	routerGroup.POST("videoMetadata/pause", controllers.VideoMetadata{}.Pause)
 	routerGroup.POST("videoMetadata/resume", controllers.VideoMetadata{}.Resume)
 	routerGroup.POST("videoMetadata/stop", controllers.VideoMetadata{}.Stop)
+
+	routerGroup.GET("videoTranscode/list", controllers.VideoTranscode{}.List)
+	routerGroup.GET("videoTranscode/capabilities", controllers.VideoTranscode{}.Capabilities)
+	routerGroup.POST("videoTranscode/add", controllers.VideoTranscode{}.Add)
+	routerGroup.PUT("videoTranscode/config", controllers.VideoTranscode{}.UpdateConfig)
+	routerGroup.POST("videoTranscode/start", controllers.VideoTranscode{}.Start)
+	routerGroup.POST("videoTranscode/resetBatch", controllers.VideoTranscode{}.ResetBatch)
+	routerGroup.POST("videoTranscode/pause", controllers.VideoTranscode{}.Pause)
+	routerGroup.POST("videoTranscode/resume", controllers.VideoTranscode{}.Resume)
+	routerGroup.GET("videoTranscode/status", controllers.VideoTranscode{}.QueueStatus)
+	routerGroup.POST("videoTranscode/cancel/:id", controllers.VideoTranscode{}.Cancel)
+	routerGroup.POST("videoTranscode/deleteBatch", controllers.VideoTranscode{}.DeleteBatch)
+	routerGroup.DELETE("videoTranscode/delete/:id", controllers.VideoTranscode{}.Delete)
 }
 func SFMRouter(router *gin.Engine) {
 	routerGroup := router.Group("/api", middleware.AdminLoginApiMiddleware())

@@ -46,6 +46,7 @@ func autoMigrate(db *gorm.DB) error {
 		&VideoMetadataSettingFilesBases{},
 		&VideoMetadataBatchTask{},
 		&VideoMetadataBatchTaskFilesBases{},
+		&VideoTranscodeTask{},
 		&CronJobsFilesBases{},
 		&TvboxRecommend{},
 		&AutoBackupState{},
@@ -427,6 +428,34 @@ func AutoDatabase(db *gorm.DB) error {
 				}
 				_, err := (VideoMetadataSetting{}).Ensure(tx)
 				return err
+			},
+		},
+		{
+			ID: "video_transcode_queue",
+			Migrate: func(tx *gorm.DB) error {
+				return tx.AutoMigrate(&VideoTranscodeTask{})
+			},
+		},
+		{
+			ID: "video_transcode_source_metadata",
+			Migrate: func(tx *gorm.DB) error {
+				// video_transcode_queue 已在旧版本执行过，新增源视频快照字段必须使用
+				// 独立迁移 ID，才能为现有数据库补齐列。
+				return tx.AutoMigrate(&VideoTranscodeTask{})
+			},
+		},
+		{
+			ID: "video_transcode_output_metadata",
+			Migrate: func(tx *gorm.DB) error {
+				return tx.AutoMigrate(&VideoTranscodeTask{})
+			},
+		},
+		{
+			ID: "video_transcode_task_schema_v2",
+			Migrate: func(tx *gorm.DB) error {
+				// 开发阶段曾有数据库只执行了初始队列迁移。使用新的迁移 ID
+				// 再次按最终模型补齐所有源/输出媒体快照列，避免旧迁移记录跳过补列。
+				return tx.AutoMigrate(&VideoTranscodeTask{})
 			},
 		},
 	})

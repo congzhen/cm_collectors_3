@@ -32,3 +32,12 @@ func (CacheFileLastUse) GetFileHandle(src string) (*os.File, error) {
 	cacheFileLastUseHandle.Set(src, file)
 	return file, nil
 }
+
+// Invalidate 关闭并移除指定路径的缓存句柄，供需要替换真实文件的流程使用。
+func (CacheFileLastUse) Invalidate(src string) error {
+	file, ok := cacheFileLastUseHandle.Take(src)
+	if !ok || file == nil {
+		return nil
+	}
+	return file.Close()
+}

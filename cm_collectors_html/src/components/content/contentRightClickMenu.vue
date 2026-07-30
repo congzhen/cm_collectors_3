@@ -16,6 +16,8 @@ import { appStoreData } from '@/storeData/app.storeData';
 import { playListAdd } from '@/common/playList'
 import { tvboxRecommendServer } from '@/server/tvboxRecommend.server'
 import { ElMessage } from 'element-plus'
+import { ElMessageBox } from 'element-plus'
+import { videoTranscodeServer } from '@/server/videoTranscode.server'
 const store = {
   appStoreData: appStoreData(),
 }
@@ -110,6 +112,32 @@ const contentMenuItems_C = computed(() => {
             ElMessage.success('已添加到TVBox推荐')
           } else {
             ElMessage.error(result.msg || '添加失败')
+          }
+        }
+      },
+      {
+        label: '加入视频转码列表',
+        icon: 'VideoCamera',
+        handler: async () => {
+          try {
+            const count = props.resource.dramaSeries?.length || 0
+            if (count === 0) {
+              ElMessage.warning('当前资源没有可加入的视频')
+              return
+            }
+            await ElMessageBox.confirm(
+              `将资源下的 ${count} 个视频加入转码列表，系统会自动跳过重复项和不存在的文件。`,
+              '加入视频转码列表',
+              { type: 'warning' },
+            )
+            const result = await videoTranscodeServer.add({ resourceIds: [props.resource.id] })
+            if (result.status) {
+              ElMessage.success(`已加入 ${result.data.added} 个，跳过 ${result.data.skippedDuplicate + result.data.skippedMissing} 个`)
+            } else {
+              ElMessage.error(result.msg || '加入失败')
+            }
+          } catch {
+            // 用户取消确认。
           }
         }
       },

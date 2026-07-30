@@ -24,6 +24,9 @@
         <el-tab-pane label="视频信息采集" name="videoMetadata">
           <videoMetadataSetting v-if="activeName === 'videoMetadata'" />
         </el-tab-pane>
+        <el-tab-pane label="视频转码" name="videoTranscode">
+          <videoTranscodeSetting v-if="activeName === 'videoTranscode'" />
+        </el-tab-pane>
         <el-tab-pane label="计划任务" name="cronJobs">
           <cronJobs v-if="activeName === 'cronJobs'"></cronJobs>
         </el-tab-pane>
@@ -54,6 +57,7 @@ import performerAvatarLibrarySetting from '@/components/setting/performerAvatarL
 import tagSetting from '@/components/setting/tagSetting/tagSetting.vue';
 import aiTagSetting from '@/components/setting/aiTag/aiTagSetting.vue';
 import videoMetadataSetting from '@/components/setting/videoMetadata/videoMetadataSetting.vue';
+import videoTranscodeSetting from '@/components/setting/videoTranscode/videoTranscodeSetting.vue';
 import cronJobs from '@/components/setting/cronJobs/cronJobs.vue';
 import duplicateDetection from '@/components/setting/duplicateDetection/duplicateDetection.vue';
 import databaseCleanup from '@/components/setting/databaseCleanup/databaseCleanup.vue';

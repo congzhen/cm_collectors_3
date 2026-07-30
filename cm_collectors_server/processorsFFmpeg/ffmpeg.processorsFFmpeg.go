@@ -32,6 +32,11 @@ func createCommandContext(ctx context.Context, name string, arg ...string) *exec
 	return cmd
 }
 
+// CreateCommandContext 供需要管理 FFmpeg 生命周期和进度的业务处理器创建跨平台隐藏窗口命令。
+func CreateCommandContext(ctx context.Context, name string, arg ...string) *exec.Cmd {
+	return createCommandContext(ctx, name, arg...)
+}
+
 // IsFFmpegAvailable 检查系统中FFmpeg是否可用
 //
 // 该函数会根据不同的操作系统查找ffmpeg可执行文件：

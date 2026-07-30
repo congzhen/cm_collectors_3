@@ -70,6 +70,7 @@ func appInit() {
 	processors.InitCronjob()
 	processors.InitAutoBackup()
 	processors.InitVideoMetadata()
+	processors.InitVideoTranscode()
 }
 
 // startTrayMode 根据构建标签决定是否启用系统托盘

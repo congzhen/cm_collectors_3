@@ -32,3 +32,7 @@ func (CacheVideoInfoLastUse) GetVideoInfoHandle(src string) (processorsffmpeg.Vi
 	videoInfoLastUseHandle.Set(src, videoFormatInfo)
 	return videoFormatInfo, nil
 }
+
+func (CacheVideoInfoLastUse) Invalidate(src string) {
+	videoInfoLastUseHandle.Delete(src)
+}

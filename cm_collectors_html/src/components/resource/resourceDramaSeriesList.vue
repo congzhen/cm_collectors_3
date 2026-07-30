@@ -3,6 +3,7 @@
     <div class="resourceDramaSeries-list-index" v-if="props.showMode === E_detailsDramaSeriesMode.digit">
       <ul>
         <li :class="[selectedClass(item.id)]" v-for="(item, key) in props.dramaSeries" :key="key"
+          @contextmenu.prevent.stop="addToTranscode(item)"
           @click="emits('playResourceDramaSeries', item)">
           {{ (key + 1) }}
         </li>
@@ -11,6 +12,7 @@
     <div class="resourceDramaSeries-list-name" v-else>
       <ul>
         <li :class="[selectedClass(item.id)]" v-for="(item, key) in props.dramaSeries" :key="key"
+          @contextmenu.prevent.stop="addToTranscode(item)"
           @click="emits('playResourceDramaSeries', item)">
           <label>{{ (key + 1) }}.</label>
           <div class="series-content">
@@ -51,6 +53,9 @@ import type { PropType } from 'vue'
 import { E_detailsDramaSeriesMode } from '@/dataType/app.dataType'
 import type { I_resourceDramaSeries } from '@/dataType/resource.dataType';
 import { getFinalPathSegment } from '@/assets/tool'
+import { appStoreData } from '@/storeData/app.storeData'
+import { videoTranscodeServer } from '@/server/videoTranscode.server'
+import { ElMessage, ElMessageBox } from 'element-plus'
 const props = defineProps({
   showMode: {
     type: String as PropType<(typeof E_detailsDramaSeriesMode)[keyof typeof E_detailsDramaSeriesMode]>,
@@ -68,6 +73,28 @@ const props = defineProps({
 })
 
 const emits = defineEmits(['playResourceDramaSeries']);
+const store = { appStoreData: appStoreData() };
+
+const addToTranscode = async (item: I_resourceDramaSeries) => {
+  if (!store.appStoreData.displayAdminFn) return;
+  try {
+    await ElMessageBox.confirm(
+      `将“${getFinalPathSegment(item.src)}”加入视频转码列表？`,
+      '加入视频转码列表',
+      { type: 'warning' },
+    );
+    const result = await videoTranscodeServer.add({ dramaSeriesIds: [item.id] });
+    if (result.status && result.data.added > 0) {
+      ElMessage.success('已加入视频转码列表');
+    } else if (result.status && result.data.skippedDuplicate > 0) {
+      ElMessage.info('该视频已在转码列表中');
+    } else {
+      ElMessage.error(result.msg || '视频文件不存在或无法加入');
+    }
+  } catch {
+    // 用户取消确认。
+  }
+};
 
 const selectedClass = (id: string) => {
   if (props.selectedId != '' && id === props.selectedId) {
