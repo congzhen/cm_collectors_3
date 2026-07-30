@@ -53,6 +53,8 @@ type performerResourceCount struct {
 
 const (
 	PerformerSortCreatedAtDesc     = "createdAtDesc"
+	PerformerSortNameAsc           = "nameAsc"
+	PerformerSortNameDesc          = "nameDesc"
 	PerformerSortResourceCountAsc  = "resourceCountAsc"
 	PerformerSortResourceCountDesc = "resourceCountDesc"
 )
@@ -328,7 +330,14 @@ func (t Performer) DataList(db *gorm.DB, performerBasesId string, fetchCount boo
 		}
 		query = query.Order("performer.addTime desc").Order("performer.id desc")
 	} else {
-		query = query.Order("addTime desc").Order("id desc")
+		switch sortMode {
+		case PerformerSortNameAsc:
+			query = query.Order("performer.name asc").Order("performer.id asc")
+		case PerformerSortNameDesc:
+			query = query.Order("performer.name desc").Order("performer.id desc")
+		default:
+			query = query.Order("performer.addTime desc").Order("performer.id desc")
+		}
 	}
 	query = query.Limit(limit).Offset(offset)
 	err := query.Find(&dataList).Error

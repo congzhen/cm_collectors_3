@@ -8,6 +8,8 @@
       @change="changeCupHandle" />
     <el-select v-model="searchData.sort" style="width: 180px" @change="changeSortHandle">
       <el-option label="最新创建" value="createdAtDesc" />
+      <el-option label="姓名正序" value="nameAsc" />
+      <el-option label="姓名倒序" value="nameDesc" />
       <el-option label="影片数从多到少" value="resourceCountDesc" />
       <el-option label="影片数从少到多" value="resourceCountAsc" />
     </el-select>
