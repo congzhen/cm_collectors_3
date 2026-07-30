@@ -2,11 +2,21 @@
   <div class="resourceDramaSeries-list">
     <div class="resourceDramaSeries-list-index" v-if="props.showMode === E_detailsDramaSeriesMode.digit">
       <ul>
-        <li :class="[selectedClass(item.id)]" v-for="(item, key) in props.dramaSeries" :key="key"
-          @contextmenu.prevent.stop="addToTranscode(item)"
-          @click="emits('playResourceDramaSeries', item)">
-          {{ (key + 1) }}
-        </li>
+        <el-popover v-for="(item, key) in props.dramaSeries" :key="item.id || key" trigger="hover" :width="380"
+          :show-after="1000" :disabled="metadataDetails(item).length === 0">
+          <template #reference>
+            <li :class="[selectedClass(item.id)]" @contextmenu.prevent.stop="addToTranscode(item)"
+              @click="emits('playResourceDramaSeries', item)">
+              {{ (key + 1) }}
+            </li>
+          </template>
+          <div class="metadata-detail">
+            <div v-for="detail in metadataDetails(item)" :key="detail.label">
+              <span>{{ detail.label }}</span>
+              <strong>{{ detail.value }}</strong>
+            </div>
+          </div>
+        </el-popover>
       </ul>
     </div>
     <div class="resourceDramaSeries-list-name" v-else>
@@ -182,6 +192,8 @@ const formatBitRate = (bitRate: number) => {
 }
 
 .resourceDramaSeries-list-index {
+  padding-top: 0.5em;
+
   ul {
     width: 100%;
     list-style-type: none;
