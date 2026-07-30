@@ -98,6 +98,7 @@ const setVideoSource = async (dramaSeriesId: string) => {
   const vp = videoPlayRef.value;
   if (!vp) return;
   const { playUrl, playType } = await getPlayVideoURLAndType(dramaSeriesId)
+  const dramaSeries = resourceInfo.value?.dramaSeries.find((item) => item.id === dramaSeriesId)
   vp.setVideoSource(playUrl, playType, () => {
     vp.addTextTrack(
       `/api/video/subtitle/${dramaSeriesId}`,
@@ -114,7 +115,7 @@ const setVideoSource = async (dramaSeriesId: string) => {
     if (isPlaying.value) {
       vp.play();
     }
-  });
+  }, dramaSeries?.src || resourceInfo.value?.title || '');
 }
 
 const setVideoDimensions = (w: number, h: number) => {

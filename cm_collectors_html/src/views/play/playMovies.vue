@@ -190,6 +190,7 @@ const setVideoSource = async (dramaSeriesId: string) => {
   const vp = videoPlayRef.value;
   if (!vp) return;
   const { playUrl, playType } = await getPlayVideoURLAndType(dramaSeriesId)
+  const dramaSeries = resourceInfo.value?.dramaSeries.find((item) => item.id === dramaSeriesId)
   vp.setVideoSource(playUrl, playType, () => {
     vp.addTextTrack(
       `/api/video/subtitle/${dramaSeriesId}`,
@@ -198,7 +199,7 @@ const setVideoSource = async (dramaSeriesId: string) => {
       true // 设为默认字幕
     )
     //vp.play();
-  });
+  }, dramaSeries?.src || resourceInfo.value?.title || '');
 }
 
 const noPlayList = () => {

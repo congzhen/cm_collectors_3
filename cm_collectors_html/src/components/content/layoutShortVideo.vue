@@ -218,6 +218,10 @@ const setVideoSource = async (dramaSeriesId: string) => {
   vp.pause();
   const { playUrl, playType } = await getPlayVideoURLAndType(dramaSeriesId)
   if (requestVersion !== sourceRequestVersion) return;
+  const resource = dataListWrapper.value.find((item) =>
+    item.dramaSeries.some((dramaSeries) => dramaSeries.id === dramaSeriesId)
+  )
+  const dramaSeries = resource?.dramaSeries.find((item) => item.id === dramaSeriesId)
   vp.setVideoSource(playUrl, playType, () => {
     if (requestVersion !== sourceRequestVersion) return;
     vp.addTextTrack(
@@ -229,7 +233,7 @@ const setVideoSource = async (dramaSeriesId: string) => {
     if (isPlaying) {
       vp.play();
     }
-  });
+  }, dramaSeries?.src || resource?.title || '');
 }
 
 

@@ -137,12 +137,16 @@ async function setVideoSource(dramaSeriesId: string) {
   videoPlayer.pause();
   const { playUrl, playType } = await getPlayVideoURLAndType(dramaSeriesId);
   if (requestVersion !== sourceRequestVersion) return;
+  const resource = dataListWrapper.value.find((item) =>
+    item.dramaSeries.some((dramaSeries) => dramaSeries.id === dramaSeriesId)
+  );
+  const dramaSeries = resource?.dramaSeries.find((item) => item.id === dramaSeriesId);
 
   videoPlayer.setVideoSource(playUrl, playType, () => {
     if (requestVersion !== sourceRequestVersion) return;
     videoPlayer.addTextTrack(`/api/video/subtitle/${dramaSeriesId}`, '默认字幕', 'zh', true);
     if (shouldResume) videoPlayer.play();
-  });
+  }, dramaSeries?.src || resource?.title || '');
 }
 
 function clickResourceHandle(index: number) {

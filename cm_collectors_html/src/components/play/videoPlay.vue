@@ -1,8 +1,19 @@
 <template>
   <Teleport to="body" :disabled="!isFullscreenMode">
     <div ref="videoPlayContainerElementRef" class="video-player-container"
-      :class="{ 'fullscreen-mode': isFullscreenMode, 'controls-hidden': isControlsHidden }"
+      :class="{
+        'fullscreen-mode': isFullscreenMode,
+        'actual-fullscreen': isFullscreen,
+        'controls-hidden': isFullscreen && isControlsHidden
+      }"
       @mousemove="handlePlayerActivity" @mousedown="handlePlayerActivity">
+    <div v-if="isFullscreenMode && !isFullscreen" class="maximized-player-header">
+      <div class="maximized-player-title" :title="videoTitle">{{ videoTitle }}</div>
+      <button class="maximized-player-back" type="button" title="返回" aria-label="关闭最大化"
+        @click="handleMaximize(false)">
+        <el-icon><Back /></el-icon>
+      </button>
+    </div>
     <div class="video-player-windows" :key="indexkey">
       <div v-if="isLoading && !isMobile()" class="loading-overlay">
         <div class="loading-spinner"></div>
@@ -26,9 +37,7 @@
       @pause="handlePause" @seek="handleSeek" @volume-change="handleVolumeChange" @mute-toggle="handleMuteToggle"
       @playback-rate-change="handlePlaybackRateChange" @rotate="handleRotate" @fullscreen="handleFullscreen"
       @picture-in-picture="handlePictureInPicture" @maximize="handleMaximize" @open-in-player="handleOpenInPlayer"
-      @open-cloud-player="handleOpenCloudPlayer" @mouseenter="handleControlsInteractionStart"
-      @mouseleave="handleControlsInteractionEnd" @focusin="handleControlsInteractionStart"
-      @focusout="handleControlsInteractionEnd" />
+      @open-cloud-player="handleOpenCloudPlayer" />
     <playCloudCheckPromptDialog ref="playCloudCheckPromptDialogRef" />
     </div>
   </Teleport>
@@ -49,6 +58,7 @@ import '@videojs/themes/dist/city/index.css';
 
 import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { ElMessage } from 'element-plus';
+import { Back } from '@element-plus/icons-vue';
 import { isMobile } from '@/assets/mobile';
 import { openInPlayerDramaSeries } from '@/common/play';
 import { onHostWindowFullscreenChanged, setHostWindowFullscreen } from '@/common/runtimeBridge';
@@ -95,6 +105,7 @@ let playerSetupVersion = 0;
 let playerSetupTimer: number | undefined;
 const videoId = ref('');
 const videoSrc = ref('');
+const videoTitle = ref('视频播放器');
 const isHls = ref(false)
 const subtitleCues = ref<I_subtitleCue[]>([])
 const activeSubtitleText = ref('')
@@ -109,7 +120,6 @@ const isControlsHidden = ref(false)
 let browserFullscreenActive = false
 let bodyOverflowBeforeMaximize: string | null = null
 let controlsHideTimer: number | undefined
-let controlsInteractionDepth = 0
 let removeHostFullscreenListener: (() => void) | undefined
 const controlsHideDelay = 3000
 const videoOptions = (isMobileDevice: boolean) => {
@@ -392,27 +402,13 @@ const showControls = (autoHide = true) => {
   clearControlsHideTimer()
   if (
     autoHide &&
-    controlsInteractionDepth === 0 &&
-    isFullscreenMode.value &&
+    isFullscreen.value &&
     player.value &&
     !player.value.paused()
   ) {
     controlsHideTimer = window.setTimeout(() => {
-      if (controlsInteractionDepth > 0) return
       isControlsHidden.value = true
     }, controlsHideDelay)
-  }
-}
-
-const handleControlsInteractionStart = () => {
-  controlsInteractionDepth++
-  showControls(false)
-}
-
-const handleControlsInteractionEnd = () => {
-  controlsInteractionDepth = Math.max(0, controlsInteractionDepth - 1)
-  if (controlsInteractionDepth === 0) {
-    showControls()
   }
 }
 
@@ -483,7 +479,9 @@ const handleDocumentFullscreenChange = () => {
   const fullscreen = document.fullscreenElement !== null
   isFullscreen.value = fullscreen
   videoControlsRef.value?.setFullscreen(fullscreen)
-  if (!fullscreen) {
+  if (fullscreen) {
+    showControls()
+  } else {
     browserFullscreenActive = false
     toggleFullscreenMode(false)
   }
@@ -729,11 +727,32 @@ const extractVideoIdFromPath = (path: string): string => {
   return match ? match[1] : '';
 };
 
+const normalizeVideoTitle = (title: string, fallbackSrc: string): string => {
+  const source = title.trim() || fallbackSrc
+  if (!source) return '视频播放器'
+
+  const pathWithoutQuery = source.split(/[?#]/, 1)[0]
+  const segments = pathWithoutQuery.split(/[\\/]/)
+  const filename = segments[segments.length - 1] || source
+  try {
+    return decodeURIComponent(filename)
+  } catch {
+    return filename
+  }
+}
+
 // 设置视频源
-const setVideoSource = (src: string, type = 'mp4', fn = () => { }, retryCount = 0) => {
+const setVideoSource = (
+  src: string,
+  type = 'mp4',
+  fn = () => { },
+  title = '',
+  retryCount = 0
+) => {
   clearSubtitleCues()
   videoId.value = extractVideoIdFromPath(src)
   videoSrc.value = src
+  videoTitle.value = normalizeVideoTitle(title, src)
   isHls.value = type === 'm3u8' || type === 'hls'
   const source: I_playerSource = {
     src: src,
@@ -798,7 +817,7 @@ const setVideoSource = (src: string, type = 'mp4', fn = () => { }, retryCount = 
           console.log('重试加载视频：', retryCount)
           // 添加延迟重试，避免频繁请求
           setTimeout(() => {
-            setVideoSource(src, type, fn, retryCount)
+            setVideoSource(src, type, fn, title, retryCount)
           }, 1000)
           return
         }
@@ -1102,6 +1121,7 @@ defineExpose({
 
 .video-player-windows {
   flex: 1;
+  min-height: 0;
   position: relative;
 }
 
@@ -1180,13 +1200,60 @@ defineExpose({
   flex-direction: column;
 }
 
+.maximized-player-header {
+  display: flex;
+  align-items: center;
+  min-height: 42px;
+  padding: 0 8px 0 16px;
+  flex-shrink: 0;
+  color: #f5f5f5;
+  background: #181818;
+  border-bottom: 1px solid #353535;
+}
+
+.maximized-player-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.maximized-player-back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  color: #f5f5f5;
+  font-size: 20px;
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  border-radius: 4px;
+}
+
+.maximized-player-back:hover,
+.maximized-player-back:focus-visible {
+  background: rgba(255, 255, 255, 0.14);
+  outline: none;
+}
+
 .video-player-container.fullscreen-mode .video-js {
   flex: 1;
   width: 100%;
   height: 100%;
 }
 
-.video-player-container.fullscreen-mode .video-controller {
+.video-player-container.fullscreen-mode:not(.actual-fullscreen) .video-controller {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.video-player-container.fullscreen-mode.actual-fullscreen .video-controller {
   position: absolute;
   right: 0;
   bottom: 0;
@@ -1195,21 +1262,21 @@ defineExpose({
   transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
-.video-player-container.fullscreen-mode.controls-hidden {
+.video-player-container.fullscreen-mode.actual-fullscreen.controls-hidden {
   cursor: none;
 }
 
-.video-player-container.fullscreen-mode.controls-hidden .video-controller {
+.video-player-container.fullscreen-mode.actual-fullscreen.controls-hidden .video-controller {
   opacity: 0;
   pointer-events: none;
   transform: translateY(100%);
 }
 
-.video-player-container.fullscreen-mode:not(.controls-hidden) .custom-subtitle-display {
+.video-player-container.fullscreen-mode.actual-fullscreen:not(.controls-hidden) .custom-subtitle-display {
   bottom: 80px;
 }
 
-.video-player-container.fullscreen-mode.controls-hidden .custom-subtitle-display {
+.video-player-container.fullscreen-mode.actual-fullscreen.controls-hidden .custom-subtitle-display {
   bottom: 24px;
 }
 
