@@ -1,5 +1,5 @@
 <template>
-  <el-select v-model="selectVal" clearable :style="{ width: props.width }" placeholder="详情显示模式" @change="changeHandle"
+  <el-select v-model="selectVal" clearable :style="{ width: props.width }" :teleported="props.teleported" placeholder="详情显示模式" @change="changeHandle"
     @clear="handleClear" :multiple="props.multiple">
     <el-option v-for="item, index in dataset.resourceDetailsShowMode" :key="index"
       :label="$t(`resourceDetailsShowMode.${item}`)" :value="item"></el-option>
@@ -16,6 +16,10 @@ const props = defineProps({
   multiple: {
     type: Boolean,
     default: false
+  },
+  teleported: {
+    type: Boolean,
+    default: true
   }
 })
 const emit = defineEmits(['change'])

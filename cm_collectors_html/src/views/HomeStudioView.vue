@@ -24,6 +24,12 @@
         </section>
       </main>
     </div>
+    <DetailsView ref="detailsViewRef"
+      v-if="store.appStoreData.detailsViewStatus && resDetails
+        && store.appStoreData.currentConfigApp.resourceDetailsShowMode == 'popup'"
+      :resource="resDetails" @update-resouce-success="updateResouceSuccessHandle"
+      @delete-resource-success="deleteResouceSuccessHandle">
+    </DetailsView>
     <videoPlayDialog ref="videoPlayDialogRef"></videoPlayDialog>
     <resourceFormDrawer ref="resourceFormDrawerRef" @success="updateResouceSuccessHandle"></resourceFormDrawer>
     <resourceSetTagDialog ref="resourceSetTagDialogRef" @success="updateResouceSuccessHandle"></resourceSetTagDialog>
@@ -44,7 +50,7 @@ import DetailsView from './DetailsView.vue'
 import videoPlayDialog from '@/components/play/videoPlayDialog.vue'
 import resourceFormDrawer from '@/components/resource/resourceFormDrawer.vue'
 import type { I_resource } from '@/dataType/resource.dataType'
-import { computed, ref, onMounted } from 'vue'
+import { computed, ref, onMounted, nextTick } from 'vue'
 import type { I_filesBases } from '@/dataType/filesBases.dataType'
 import { appStoreData } from '@/storeData/app.storeData'
 import { filesBasesStoreData } from '@/storeData/filesBases.storeData'
@@ -130,7 +136,7 @@ const selectFilesBaseHandle = async (filesBases: I_filesBases) => {
 const selectResourcesHandle = (resource: I_resource | undefined, isInit: boolean) => {
   resDetails.value = resource;
   if (!isInit) {
-    detailsViewRef.value?.init();
+    nextTick(() => detailsViewRef.value?.init());
   }
 }
 
@@ -208,6 +214,8 @@ onMounted(() => {
   --home-accent: #409eff;
   --home-accent-soft: rgba(64, 158, 255, 0.14);
   --home-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
+  --home-scrollbar-thumb: rgba(255, 255, 255, 0.16);
+  --home-scrollbar-thumb-hover: rgba(255, 255, 255, 0.28);
 
   width: 100%;
   height: 100%;
@@ -348,6 +356,8 @@ onMounted(() => {
   --home-accent: #409eff;
   --home-accent-soft: #ecf5ff;
   --home-shadow: 0 10px 28px rgba(31, 45, 61, 0.08);
+  --home-scrollbar-thumb: rgba(96, 98, 102, 0.24);
+  --home-scrollbar-thumb-hover: rgba(96, 98, 102, 0.38);
 
   color: var(--home-text);
   background: var(--home-bg);

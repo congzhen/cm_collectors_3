@@ -4,13 +4,15 @@
       <span>LIBRARY</span>
       <strong>{{ filesBasesList.length }}</strong>
     </div>
-    <div class="rail-list">
-      <button v-for="filesBases in filesBasesList" :key="filesBases.id" class="rail-item"
-        :class="{ active: filesBases.id == currentFilesBasesId }" @click="emits('select', filesBases)">
-        <span class="rail-mark">{{ filesBases.name.slice(0, 1).toUpperCase() }}</span>
-        <span class="rail-name">{{ filesBases.name }}</span>
-      </button>
-    </div>
+    <el-scrollbar class="rail-scrollbar" height="100%">
+      <div class="rail-list">
+        <button v-for="filesBases in filesBasesList" :key="filesBases.id" class="rail-item"
+          :class="{ active: filesBases.id == currentFilesBasesId }" @click="emits('select', filesBases)">
+          <span class="rail-mark">{{ filesBases.name.slice(0, 1).toUpperCase() }}</span>
+          <span class="rail-name">{{ filesBases.name }}</span>
+        </button>
+      </div>
+    </el-scrollbar>
     <div class="rail-stats">
       <div>
         <span>标签组</span>
@@ -88,13 +90,31 @@ const emits = defineEmits<{
   }
 }
 
-.rail-list {
+.rail-scrollbar {
   flex: 1;
   min-height: 0;
+  margin-right: -8px;
+}
+
+.rail-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  overflow: auto;
+  padding-right: 8px;
+}
+
+.rail-scrollbar :deep(.el-scrollbar__bar.is-vertical) {
+  right: 1px;
+  width: 5px;
+}
+
+.rail-scrollbar :deep(.el-scrollbar__thumb) {
+  opacity: 1;
+  background-color: var(--home-scrollbar-thumb);
+
+  &:hover {
+    background-color: var(--home-scrollbar-thumb-hover);
+  }
 }
 
 .rail-item {
@@ -175,8 +195,11 @@ const emits = defineEmits<{
   }
 
   .rail-list {
+    width: max-content;
+    min-width: 100%;
     flex-direction: row;
-    overflow-x: auto;
+    padding-right: 0;
+    padding-bottom: 8px;
   }
 
   .rail-item {

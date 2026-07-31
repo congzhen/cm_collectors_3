@@ -87,12 +87,14 @@
         </el-form-item>
       </el-form>
 
-      <el-alert v-if="task.id" :title="taskStatusText" :type="task.lastError ? 'error' : 'info'" :closable="false">
+      <el-alert v-if="task.id && taskPanelVisible" class="task-alert" :title="taskStatusText"
+        :type="task.lastError ? 'error' : 'info'" :closable="false">
         <template #default>
-          <el-progress v-if="task.total > 0" :percentage="taskProgress" :status="task.failed > 0 ? 'warning' : undefined" />
+          <el-progress v-if="task.total > 0" :percentage="taskProgress"
+            :color="task.failed > 0 ? 'var(--el-color-warning)' : undefined" />
           <div class="task-summary">
-            成功 {{ task.success }}，失败 {{ task.failed }}，跳过 {{ task.skipped }}
-            <span v-if="task.currentSrc">；当前：{{ task.currentSrc }}</span>
+            <div>成功 {{ task.success }}，失败 {{ task.failed }}，跳过 {{ task.skipped }}</div>
+            <div v-if="task.currentSrc" class="task-current" :title="task.currentSrc">当前：{{ task.currentSrc }}</div>
           </div>
           <div v-if="task.lastError" class="task-error">{{ task.lastError }}</div>
         </template>
@@ -160,6 +162,7 @@ const emptyTask = (): I_videoMetadataBatchTask => ({
 
 const loading = ref(false);
 const saving = ref(false);
+const taskPanelVisible = ref(false);
 const settingData = reactive<I_videoMetadataSettingData>(defaultSettingData());
 const stats = ref<I_videoMetadataStats[]>([]);
 const task = reactive<I_videoMetadataBatchTask>(emptyTask());
@@ -201,7 +204,12 @@ const refreshAll = async () => {
     videoMetadataServer.taskStatus(),
   ]);
   if (statsResult.status) stats.value = statsResult.data || [];
-  if (taskResult.status) assignTask(taskResult.data);
+  if (taskResult.status) {
+    if (taskResult.data && ['running', 'paused'].includes(taskResult.data.status)) {
+      taskPanelVisible.value = true;
+    }
+    assignTask(taskResult.data);
+  }
 };
 
 const load = async () => {
@@ -256,6 +264,7 @@ const startTask = async () => {
     runMode: manual.runMode,
   });
   if (result.status) {
+    taskPanelVisible.value = true;
     assignTask(result.data);
     ElMessage.success('补齐任务已开始');
   } else {
@@ -341,8 +350,28 @@ onUnmounted(() => {
     margin-bottom: 0;
   }
 
+  .task-alert {
+    width: min(100%, 920px);
+    box-sizing: border-box;
+
+    :deep(.el-alert__content) {
+      flex: 1;
+      min-width: 0;
+    }
+
+    :deep(.el-progress) {
+      width: 100%;
+    }
+  }
+
   .task-summary {
-    word-break: break-all;
+    min-width: 0;
+  }
+
+  .task-current {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .task-error {

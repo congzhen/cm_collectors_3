@@ -1,5 +1,5 @@
 <template>
-  <el-select v-model="selectVal" :clearable="props.clearable" :style="{ width: props.width }" placeholder="左侧边栏显示模式"
+  <el-select v-model="selectVal" :clearable="props.clearable" :style="{ width: props.width }" :teleported="props.teleported" placeholder="左侧边栏显示模式"
     @change="changeHandle" @clear="handleClear">
     <el-option v-for="item, index in dataset.leftColumnMode" :key="index" :label="$t(`leftColumnMode.${item}`)"
       :value="item"></el-option>
@@ -20,6 +20,10 @@ const props = defineProps({
   clearable: {
     type: Boolean,
     default: false
+  },
+  teleported: {
+    type: Boolean,
+    default: true
   }
 })
 const emit = defineEmits(['change'])
