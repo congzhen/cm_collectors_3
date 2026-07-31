@@ -27,6 +27,8 @@ func (App) InitData() (*App, error) {
 			IsAdminLogin:         core.Config.General.IsAdminLogin,
 			Theme:                core.Config.General.Theme,
 			HomeMode:             core.Config.General.HomeMode,
+			DetailsDialogStyle:   core.Config.General.DetailsDialogStyle,
+			HeaderStyle:          core.Config.General.HeaderStyle,
 			CloseMobileDisplay:   core.Config.General.CloseMobileDisplay,
 			ClosePlayCloud:       core.Config.General.ClosePlayCloud,
 			ClosePlayCloudDialog: core.Config.General.ClosePlayCloudDialog,
@@ -43,6 +45,8 @@ func (App) GetConfig() datatype.App_SystemConfig {
 			LogoName:             core.Config.General.LogoName,
 			IsAdminLogin:         core.Config.General.IsAdminLogin,
 			HomeMode:             core.Config.General.HomeMode,
+			DetailsDialogStyle:   core.Config.General.DetailsDialogStyle,
+			HeaderStyle:          core.Config.General.HeaderStyle,
 			CloseMobileDisplay:   core.Config.General.CloseMobileDisplay,
 			ClosePlayCloud:       core.Config.General.ClosePlayCloud,
 			ClosePlayCloudDialog: core.Config.General.ClosePlayCloudDialog,
@@ -96,6 +100,14 @@ func (App) SetConfig(config datatype.App_SystemConfig) error {
 	core.Config.General.AllowAppCloseServer = config.AllowAppCloseServer
 	core.Config.General.Theme = config.Theme
 	core.Config.General.HomeMode = config.HomeMode
+	if config.DetailsDialogStyle == "" {
+		config.DetailsDialogStyle = "classic"
+	}
+	core.Config.General.DetailsDialogStyle = config.DetailsDialogStyle
+	if config.HeaderStyle == "" {
+		config.HeaderStyle = "modern"
+	}
+	core.Config.General.HeaderStyle = config.HeaderStyle
 	core.Config.General.CloseMobileDisplay = config.CloseMobileDisplay
 	core.Config.General.ClosePlayCloud = config.ClosePlayCloud
 	core.Config.General.ClosePlayCloudDialog = config.ClosePlayCloudDialog

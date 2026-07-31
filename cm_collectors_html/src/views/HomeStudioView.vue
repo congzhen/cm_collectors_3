@@ -17,10 +17,15 @@
         <HomeStageHero :title="currentFilesBaseName" :subtitle="contentSubtitle" :filter-visible="filterPanelVisible"
           @toggle-filter="setFilterPanelVisible(!filterPanelVisible)" />
 
-        <section class="workspace-grid">
+        <section class="workspace-grid" :class="{ 'has-right-details': showRightDetails }">
           <section class="stage-canvas">
             <ContentView ref="contentViewRef" class="content" @select-resources="selectResourcesHandle"></ContentView>
           </section>
+          <aside v-if="showRightDetails" class="studio-details">
+            <DetailsView :resource="resDetails" @update-resouce-success="updateResouceSuccessHandle"
+              @delete-resource-success="deleteResouceSuccessHandle">
+            </DetailsView>
+          </aside>
         </section>
       </main>
     </div>
@@ -101,6 +106,11 @@ const currentFilesBaseName = computed(() => {
 })
 
 const isBrightTheme = computed(() => store.appStoreData.appConfig.theme == 'bright')
+const showRightDetails = computed(() => {
+  return store.appStoreData.detailsViewStatus
+    && !!resDetails.value
+    && store.appStoreData.currentConfigApp.resourceDetailsShowMode == 'right'
+})
 const performerBasesCount = computed(() => store.appStoreData.currentPerformerBasesIds.length)
 const tagClassCount = computed(() => store.appStoreData.currentTagClass.filter(item => item.status).length)
 const studioShellStyle = computed(() => {
@@ -270,6 +280,11 @@ onMounted(() => {
     overflow: hidden;
   }
 
+  .workspace-grid.has-right-details {
+    grid-template-columns: minmax(0, 1fr) clamp(278px, 22vw, 320px);
+    gap: 8px;
+  }
+
   .stage-canvas {
     min-width: 0;
     min-height: 0;
@@ -277,6 +292,20 @@ onMounted(() => {
     border-radius: 8px;
     background: var(--home-content-bg);
     box-shadow: inset 0 0 0 1px var(--home-border);
+  }
+
+  .studio-details {
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    border-radius: 8px;
+    background: var(--home-panel-bg);
+    box-shadow: inset 0 0 0 1px var(--home-border);
+
+    :deep(.details-view-k) {
+      width: 100%;
+      padding-left: 0;
+    }
   }
 
   .content {
@@ -459,6 +488,10 @@ onMounted(() => {
     .studio-shell:not(.filter-open),
     .workspace-grid {
       grid-template-columns: 1fr;
+    }
+
+    .workspace-grid.has-right-details {
+      grid-template-columns: minmax(0, 1fr) 278px;
     }
   }
 }

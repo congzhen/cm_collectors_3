@@ -3,6 +3,11 @@
     :resource="props.resource" @update-resouce-success="updateResourceSuccessHandle"
     @delete-resource-success="deleteResourceSuccessHandle">
   </detailsShowRight>
+  <detailsShowDialogModern ref="detailsShowDialogModernRef"
+    v-else-if="store.appStoreData.currentConfigApp.resourceDetailsShowMode == 'popup'
+      && store.appStoreData.appConfig.detailsDialogStyle == 'modern'" :resource="props.resource"
+    @update-resouce-success="updateResourceSuccessHandle" @delete-resource-success="deleteResourceSuccessHandle">
+  </detailsShowDialogModern>
   <detailsShowDialog ref="detailsShowDialogRef"
     v-else-if="store.appStoreData.currentConfigApp.resourceDetailsShowMode == 'popup'" :resource="props.resource"
     @update-resouce-success="updateResourceSuccessHandle" @delete-resource-success="deleteResourceSuccessHandle">
@@ -14,6 +19,7 @@ import type { I_resource } from '@/dataType/resource.dataType'
 import { appStoreData } from '@/storeData/app.storeData';
 import detailsShowRight from '@/components/details/detailsShowRight.vue';
 import detailsShowDialog from '@/components/details/detailsShowDialog.vue';
+import detailsShowDialogModern from '@/components/details/detailsShowDialogModern.vue';
 const store = {
   appStoreData: appStoreData(),
 }
@@ -26,10 +32,15 @@ const props = defineProps({
 const emits = defineEmits(['updateResouceSuccess', 'deleteResourceSuccess'])
 
 const detailsShowDialogRef = ref<InstanceType<typeof detailsShowDialog>>();
+const detailsShowDialogModernRef = ref<InstanceType<typeof detailsShowDialogModern>>();
 
 const init = () => {
   if (store.appStoreData.currentConfigApp.resourceDetailsShowMode == 'popup') {
-    detailsShowDialogRef.value?.open();
+    if (store.appStoreData.appConfig.detailsDialogStyle == 'modern') {
+      detailsShowDialogModernRef.value?.open();
+    } else {
+      detailsShowDialogRef.value?.open();
+    }
   }
 }
 

@@ -1,5 +1,5 @@
 <template>
-  <div class="resourceDramaSeries-list">
+  <div class="resourceDramaSeries-list" :class="{ 'resourceDramaSeries-list--modern': props.modern }">
     <div class="resourceDramaSeries-list-index" v-if="props.showMode === E_detailsDramaSeriesMode.digit">
       <ul>
         <el-popover v-for="(item, key) in props.dramaSeries" :key="item.id || key" trigger="hover" :width="380"
@@ -7,7 +7,7 @@
           <template #reference>
             <li :class="[selectedClass(item.id)]" @contextmenu.prevent.stop="addToTranscode(item)"
               @click="emits('playResourceDramaSeries', item)">
-              {{ (key + 1) }}
+              <span class="digit-index">{{ (key + 1) }}</span>
             </li>
           </template>
           <div class="metadata-detail">
@@ -27,7 +27,7 @@
           <label>{{ (key + 1) }}.</label>
           <div class="series-content">
             <span class="file-name">{{ getFinalPathSegment(item.src) }}</span>
-            <div v-if="metadataText(item) || metadataStatusText(item) ||
+            <div v-if="props.showVideoInfo || metadataText(item) || metadataStatusText(item) ||
               item.videoMetadata?.probeStatus === 'failed'" class="metadata-line">
               <el-popover v-if="metadataText(item)" trigger="hover" :width="380">
                 <template #reference>
@@ -42,7 +42,9 @@
                   </div>
                 </div>
               </el-popover>
-              <span v-if="metadataText(item)" class="metadata">{{ metadataText(item) }}</span>
+              <span class="metadata">
+                {{ metadataText(item) || (props.showVideoInfo ? '视频信息尚未采集' : '') }}
+              </span>
               <span v-if="metadataStatusText(item)" class="metadata metadata-status"
                 :class="`metadata-status--${item.videoMetadata?.probeStatus}`">
                 {{ metadataStatusText(item) }}
@@ -79,6 +81,14 @@ const props = defineProps({
   selectedId: {
     type: String,
     default: '',
+  },
+  showVideoInfo: {
+    type: Boolean,
+    default: false,
+  },
+  modern: {
+    type: Boolean,
+    default: false,
   },
 })
 
@@ -222,6 +232,52 @@ const formatBitRate = (bitRate: number) => {
         color: var(--el-color-primary);
         background-color: var(--el-color-primary-light-9);
         border-color: var(--el-color-primary);
+      }
+
+    }
+  }
+}
+
+.resourceDramaSeries-list--modern {
+  .resourceDramaSeries-list-index {
+    padding: 4px 8px 10px;
+
+    ul {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(58px, 1fr));
+      gap: 8px;
+
+      li {
+        width: 100%;
+        height: 34px;
+        padding: 0;
+        display: grid;
+        place-items: center;
+        box-sizing: border-box;
+        border-color: var(--modern-details-border);
+        border-radius: 999px;
+        color: var(--modern-details-text-muted);
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.045), transparent),
+          var(--modern-details-soft-bg);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+        font-size: 12px;
+        font-style: normal;
+        line-height: 34px;
+
+        &:hover {
+          color: #ffffff;
+          border-color: var(--el-color-primary);
+          background: var(--el-color-primary);
+          box-shadow: 0 4px 12px rgba(64, 158, 255, 0.2);
+          transform: translateY(-1px);
+        }
+
+        &.selected {
+          color: #ffffff;
+          border-color: #d89435;
+          background: #d89435;
+        }
       }
     }
   }

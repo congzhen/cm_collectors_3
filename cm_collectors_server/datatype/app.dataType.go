@@ -46,6 +46,8 @@ type App_Config struct {
 	IsAdminLogin         bool   `json:"isAdminLogin"`
 	Theme                string `json:"theme"`
 	HomeMode             string `json:"homeMode"`
+	DetailsDialogStyle   string `json:"detailsDialogStyle"`
+	HeaderStyle          string `json:"headerStyle"`
 	CloseMobileDisplay   bool   `json:"closeMobileDisplay"`
 	ClosePlayCloud       bool   `json:"closePlayCloud"`
 	ClosePlayCloudDialog bool   `json:"closePlayCloudDialog"`

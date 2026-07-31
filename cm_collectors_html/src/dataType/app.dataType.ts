@@ -69,6 +69,8 @@ export enum E_performerCareerType {
 
 export type T_VideoPlayMode = 'mp4' | 'm3u8';
 export type T_homeMode = 'classic' | 'studio';
+export type T_detailsDialogStyle = 'classic' | 'modern';
+export type T_headerStyle = 'classic' | 'modern';
 
 // 标签数据
 export interface I_tagData {
@@ -90,6 +92,8 @@ export interface I_appConfig {
   isAdminLogin: boolean;
   theme: string;
   homeMode: T_homeMode;
+  detailsDialogStyle: T_detailsDialogStyle;
+  headerStyle: T_headerStyle;
   closeMobileDisplay: boolean;
   closePlayCloud: boolean;
   closePlayCloudDialog: boolean;

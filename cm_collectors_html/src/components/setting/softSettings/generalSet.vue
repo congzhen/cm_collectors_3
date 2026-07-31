@@ -15,6 +15,18 @@
           <el-option v-for="item in homeModeOptions" :key="item.value" :label="item.label" :value="item.value" />
         </el-select>
       </el-form-item>
+      <el-form-item label="详情弹窗样式">
+        <el-select v-model="formData.detailsDialogStyle">
+          <el-option label="经典弹窗" value="classic" />
+          <el-option label="现代弹窗" value="modern" />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="顶部栏样式">
+        <el-select v-model="formData.headerStyle">
+          <el-option label="经典顶部栏" value="classic" />
+          <el-option label="新版顶部栏" value="modern" />
+        </el-select>
+      </el-form-item>
       <el-form-item label="关闭移动端显示">
         <el-switch v-model="formData.closeMobileDisplay" />
       </el-form-item>
@@ -182,6 +194,8 @@ const formData = ref<I_appSystemConfig>({
   allowAppCloseServer: false,
   theme: 'default',
   homeMode: 'classic',
+  detailsDialogStyle: 'classic',
+  headerStyle: 'modern',
   closeMobileDisplay: false,
   closePlayCloud: true,
   closePlayCloudDialog: true,
@@ -235,6 +249,12 @@ const getAppConfig = async () => {
     formData.value = result.data;
     if (!formData.value.homeMode) {
       formData.value.homeMode = 'classic'
+    }
+    if (!formData.value.detailsDialogStyle) {
+      formData.value.detailsDialogStyle = 'classic'
+    }
+    if (!formData.value.headerStyle) {
+      formData.value.headerStyle = 'modern'
     }
     formData.value.closeMobileDisplay = formData.value.closeMobileDisplay === true
     console.log(formData.value);
@@ -290,6 +310,8 @@ const saveHandle = debounceNow(async () => {
       isAdminLogin: formData.value.isAdminLogin,
       theme: formData.value.theme,
       homeMode: formData.value.homeMode,
+      detailsDialogStyle: formData.value.detailsDialogStyle,
+      headerStyle: formData.value.headerStyle,
       closeMobileDisplay: formData.value.closeMobileDisplay,
       closePlayCloud: formData.value.closePlayCloud,
       closePlayCloudDialog: formData.value.closePlayCloudDialog,

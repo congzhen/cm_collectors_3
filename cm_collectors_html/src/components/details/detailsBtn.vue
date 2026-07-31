@@ -1,11 +1,19 @@
 <template>
-  <div class="tool" v-if="props.resource">
+  <div class="tool" :class="{ 'tool--labels': props.showLabels }" v-if="props.resource">
     <el-button-group>
-      <el-button icon="VideoPlay" @click="playResourceHandle" :style="{ width: buttonWidth }" />
+      <el-button icon="VideoPlay" @click="playResourceHandle" :style="{ width: buttonWidth }">
+        <span v-if="props.showLabels">播放</span>
+      </el-button>
       <el-button icon="Folder" v-admin @click="playOpenResourceFolder(props.resource.id)"
-        :style="{ width: buttonWidth }" />
-      <el-button icon="Edit" v-admin @click="editResourceHandle" :style="{ width: buttonWidth }" />
-      <el-button icon="Delete" v-admin @click="resourceDeleteHandle" :style="{ width: buttonWidth }" />
+        :style="{ width: buttonWidth }">
+        <span v-if="props.showLabels">打开文件夹</span>
+      </el-button>
+      <el-button icon="Edit" v-admin @click="editResourceHandle" :style="{ width: buttonWidth }">
+        <span v-if="props.showLabels">编辑</span>
+      </el-button>
+      <el-button icon="Delete" v-admin @click="resourceDeleteHandle" :style="{ width: buttonWidth }">
+        <span v-if="props.showLabels">删除</span>
+      </el-button>
     </el-button-group>
   </div>
 </template>
@@ -26,6 +34,10 @@ const props = defineProps({
     type: String,
     default: '100%'
   },
+  showLabels: {
+    type: Boolean,
+    default: false,
+  },
 })
 const emits = defineEmits(['paly', 'updateResouceSuccess', 'deleteResourceSuccess'])
 
@@ -45,6 +57,9 @@ const visibleButtonCount = computed(() => {
 
 // 计算按钮宽度
 const buttonWidth = computed(() => {
+  if (props.showLabels) {
+    return 'auto';
+  }
   // 如果只有一个按钮可见，它占据50%宽度
   if (visibleButtonCount.value === 1) {
     return '70%';
@@ -78,6 +93,20 @@ const resourceDeleteHandle = () => {
     width: 100%;
     display: flex;
     justify-content: center;
+  }
+
+  &.tool--labels {
+    padding-bottom: 0;
+
+    .el-button-group {
+      justify-content: flex-start;
+      gap: 8px;
+    }
+
+    :deep(.el-button) {
+      margin-left: 0;
+      border-radius: 6px;
+    }
   }
 }
 </style>

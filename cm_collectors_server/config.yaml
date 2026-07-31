@@ -7,6 +7,8 @@ general:
     allowAppCloseServer: false
     theme: default
     homeMode: studio
+    detailsDialogStyle: modern
+    headerStyle: modern
     closeMobileDisplay: false
     closePlayCloud: false
     closePlayCloudDialog: false
