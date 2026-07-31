@@ -17,6 +17,10 @@
       v-else-if="store.appStoreData.currentConfigApp.resourcesShowMode == 'coverPosterMosaicShortVideo'"
       :data-list="props.dataList" @select-resources="selectResourcesHandle">
     </layoutCoverPosterMosaicShortVideo>
+    <layoutCoverPosterCompactWall ref="layoutCoverPosterCompactWallRef"
+      v-else-if="store.appStoreData.currentConfigApp.resourcesShowMode == 'coverPosterCompactWall'"
+      :data-list="props.dataList" @select-resources="selectResourcesHandle">
+    </layoutCoverPosterCompactWall>
     <layoutShortVideo ref="layoutShortVideoRef"
       v-else-if="store.appStoreData.currentConfigApp.resourcesShowMode == 'shortVideo'" :data-list="props.dataList"
       @select-resources="selectResourcesHandle">
@@ -35,6 +39,7 @@ import layoutCoverPoster from './layoutCoverPoster.vue';
 import layoutCoverPosterWaterfall from './layoutCoverPosterWaterfall.vue';
 import layoutCoverPosterMosaic from './layoutCoverPosterMosaic.vue';
 import layoutCoverPosterMosaicShortVideo from './layoutCoverPosterMosaicShortVideo.vue';
+import layoutCoverPosterCompactWall from './layoutCoverPosterCompactWall.vue';
 import layoutShortVideo from './layoutShortVideo.vue';
 import layoutShortVideoTopBottom from './layoutShortVideoTopBottom.vue';
 import layoutTable from './layoutTable.vue';
@@ -58,6 +63,7 @@ const layoutCoverPosterRef = ref<typeof layoutCoverPoster>();
 const layoutCoverPosterWaterfallRef = ref<typeof layoutCoverPosterWaterfall>();
 const layoutCoverPosterMosaicRef = ref<typeof layoutCoverPosterMosaic>();
 const layoutCoverPosterMosaicShortVideoRef = ref<typeof layoutCoverPosterMosaicShortVideo>();
+const layoutCoverPosterCompactWallRef = ref<typeof layoutCoverPosterCompactWall>();
 const layoutShortVideoRef = ref<typeof layoutShortVideo>();
 const layoutShortVideoTopBottomRef = ref<typeof layoutShortVideoTopBottom>();
 const layoutTableRef = ref<typeof layoutTable>();
@@ -96,6 +102,9 @@ const change = () => {
       break;
     case 'coverPosterMosaicShortVideo':
       layoutCoverPosterMosaicShortVideoRef.value?.change();
+      break;
+    case 'coverPosterCompactWall':
+      layoutCoverPosterCompactWallRef.value?.change();
       break;
     case 'shortVideo':
       layoutShortVideoRef.value?.change();

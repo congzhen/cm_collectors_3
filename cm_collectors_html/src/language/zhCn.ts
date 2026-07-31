@@ -26,6 +26,7 @@ export default {
     coverPosterWaterfall: '封面海报瀑布流',
     coverPosterMosaic: '智能拼贴墙',
     coverPosterMosaicShortVideo: '智能拼贴墙短视频',
+    coverPosterCompactWall: '紧凑影墙',
     shortVideo: '短视频',
     shortVideoTopBottom: '影廊模式',
     table: '表格'

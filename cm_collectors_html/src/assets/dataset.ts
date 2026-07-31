@@ -16,7 +16,7 @@ export default {
   sortMode: ['desc', 'asc', 'issuingDateDesc', 'issuingDateAsc', 'titleDesc', 'titleAsc'],
   cup: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'Max'],
   resMode: ['movies', 'comic', 'atlas', 'files', 'videoLink'],
-  resourcesShowMode: ['coverPoster', 'coverPosterBox', 'coverPosterBoxWideSeparate', 'coverPosterSimple', 'coverPosterSimpleExpand', 'coverPosterWaterfall', 'coverPosterMosaic', 'coverPosterMosaicShortVideo', 'shortVideo', 'shortVideoTopBottom', 'table'],
+  resourcesShowMode: ['coverPoster', 'coverPosterBox', 'coverPosterBoxWideSeparate', 'coverPosterSimple', 'coverPosterSimpleExpand', 'coverPosterWaterfall', 'coverPosterMosaic', 'coverPosterMosaicShortVideo', 'coverPosterCompactWall', 'shortVideo', 'shortVideoTopBottom', 'table'],
   coverImageFit: ['fill', 'contain', 'cover', 'none', 'scale-down'],
   coverTitleAlign: ['left', 'center', 'right'],
   detailsDramaSeriesMode: ['fileName', 'digit'],
