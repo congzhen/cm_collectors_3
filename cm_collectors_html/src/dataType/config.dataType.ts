@@ -186,6 +186,12 @@ export const defualtConfigApp: I_config_app = {
   sampleFolder: '',
 }
 
+/**
+ * 为未保存配置的资源库创建独立的默认配置，避免不同资源库共享并修改同一个对象。
+ */
+export const createDefaultConfigApp = (): I_config_app =>
+  JSON.parse(JSON.stringify(defualtConfigApp)) as I_config_app;
+
 export interface I_coverPosterData {
   name: string;
   width: number;

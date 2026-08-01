@@ -1,7 +1,7 @@
 import type { I_filesBases } from "@/dataType/filesBases.dataType";
 import { defineStore } from "pinia";
 import type { I_tagClass, I_tag } from "@/dataType/tag.dataType";
-import { defualtConfigApp, type I_config_app } from "@/dataType/config.dataType";
+import { createDefaultConfigApp, type I_config_app } from "@/dataType/config.dataType";
 import { tagServer } from "@/server/tag.server";
 import { filesBasesServer } from "@/server/filesBases.server";
 import type { I_performer } from "@/dataType/performer.dataType";
@@ -112,9 +112,9 @@ export const appStoreData = defineStore('app', {
       // 解析配置文件
       if (info.data.filesBasesSetting.config_json_data != '') {
         const configApp = JSON.parse(info.data.filesBasesSetting.config_json_data);
-        this.currentConfigApp = { ...defualtConfigApp, ...configApp };
+        this.currentConfigApp = { ...createDefaultConfigApp(), ...configApp };
       } else {
-        this.currentConfigApp = defualtConfigApp;
+        this.currentConfigApp = createDefaultConfigApp();
       }
       /*
       if (info.data.filesBasesSetting.nfo_json_data != '') {

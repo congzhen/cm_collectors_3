@@ -371,7 +371,7 @@ import alertMsg from '@/components/com/feedback/alertMsg.vue';
 import { filesBasesServer } from '@/server/filesBases.server';
 import { ElMessage } from 'element-plus';
 import type { I_filesBases_base } from '@/dataType/filesBases.dataType';
-import { defualtConfigApp, type I_config_app } from '@/dataType/config.dataType';
+import { createDefaultConfigApp, defualtConfigApp, type I_config_app } from '@/dataType/config.dataType';
 import { filesBasesStoreData } from '@/storeData/filesBases.storeData';
 import { performerBasesStoreData } from '@/storeData/performerBases.storeData';
 import { debounceNow } from '@/assets/debounce';
@@ -445,7 +445,7 @@ const getFielsBasesInfo = async () => {
   // 解析配置数据
   if (result.data.filesBasesSetting.config_json_data != '') {
     const parsedConfig = JSON.parse(result.data.filesBasesSetting.config_json_data);
-    const mergedConfig: I_config_app = { ...defualtConfigApp };
+    const mergedConfig: I_config_app = createDefaultConfigApp();
     // 如果配置数据不存在，则使用默认配置值
     for (const key in defualtConfigApp) {
       if (parsedConfig.hasOwnProperty(key)) {
@@ -455,7 +455,7 @@ const getFielsBasesInfo = async () => {
     }
     filesConfig.value = mergedConfig;
   } else {
-    filesConfig.value = defualtConfigApp;
+    filesConfig.value = createDefaultConfigApp();
   }
   finish.value = true
   // 加载完成后设置加载状态为false
@@ -520,7 +520,7 @@ const importHandle = debounceNow(async () => {
   }
   console.log(data);
   // 更新配置
-  filesConfig.value = { ...defualtConfigApp, ...data }
+  filesConfig.value = { ...createDefaultConfigApp(), ...data }
 })
 
 onMounted(() => {
