@@ -1,24 +1,36 @@
 <template>
-  <div ref="tagContainerRef" class="tag-container" :style="{ ...tagContainerStyle_C }">
+  <div ref="tagContainerRef" class="tag-container"
+    :class="[`tag-container--${appearanceStyle}`, `tag-container--tags-${tagMode}`,
+      { 'tag-container--bright': isBrightTheme }]"
+    :style="{ ...tagContainerStyle_C }">
+    <div v-if="appearanceStyle === 'modern' && props.showModernHeader" class="modern-filter-header">
+      <div class="modern-filter-title">
+        <el-icon><Filter /></el-icon>
+        <span>筛选</span>
+      </div>
+      <span class="modern-filter-subtitle">标签 / 演员 / 排序</span>
+    </div>
     <el-scrollbar>
       <div class="tag-block-list">
         <el-collapse v-model="activeNames">
           <div v-for="leftDisplay, key in store.appStoreData.currentFilesBasesAppConfig.leftDisplay" :key="key">
             <tagCollapseItem v-if="leftDisplay !== E_tagType.DiyTag" :name="leftDisplay"
               :title="appLang.attributeTags(leftDisplay)" :tag-type="leftDisplay"
-              :data-list="getTagDataList(leftDisplay)" :logic="getLogic(leftDisplay)">
+              :data-list="getTagDataList(leftDisplay)" :logic="getLogic(leftDisplay)"
+              :appearance-style="appearanceStyle">
             </tagCollapseItem>
             <div v-else>
               <tagCollapseItem
                 v-for="tagClass in store.appStoreData.currentTagClass.filter(item => item.leftShow && item.status)"
                 :key="tagClass.id" :name="tagClass.id" :tag-type="E_tagType.DiyTag" :title="tagClass.name"
-                :data-list="getDiyTagDataList(tagClass.id)" :diyTagClassId="tagClass.id">
+                :data-list="getDiyTagDataList(tagClass.id)" :diyTagClassId="tagClass.id"
+                :appearance-style="appearanceStyle">
               </tagCollapseItem>
             </div>
             <div
               v-if="leftDisplay == E_tagType.Performer && store.appStoreData.currentFilesBasesAppConfig.plugInUnit_Cup">
               <tagCollapseItem name="Cup" :title="store.appStoreData.currentCupText" :tag-type="E_tagType.Cup"
-                :data-list="getTagDataList(E_tagType.Cup)">
+                :data-list="getTagDataList(E_tagType.Cup)" :appearance-style="appearanceStyle">
               </tagCollapseItem>
             </div>
           </div>
@@ -45,7 +57,15 @@ import { searchStoreData } from '@/storeData/search.storeData'
 import { ref, onMounted, onUnmounted, watch, computed, type CSSProperties } from 'vue'
 import { E_searchLogic } from '@/dataType/search.dataType'
 import { AppLang } from '@/language/app.lang'
+import type { T_appearanceStyle } from '@/dataType/app.dataType'
 const appLang = AppLang()
+
+const props = defineProps({
+  showModernHeader: {
+    type: Boolean,
+    default: true,
+  },
+})
 
 const store = {
   appStoreData: appStoreData(),
@@ -58,6 +78,13 @@ const tagContainerRef = ref<HTMLDivElement | null>(null)
 
 const allId = store.searchStoreData.allId;
 const allName = store.searchStoreData.allName;
+const appearanceStyle = computed<T_appearanceStyle>(() =>
+  store.appStoreData.appConfig.appearanceStyle
+  || store.appStoreData.appConfig.headerStyle
+  || 'modern'
+)
+const isBrightTheme = computed(() => store.appStoreData.appConfig.theme === 'bright')
+const tagMode = computed(() => store.appStoreData.currentConfigApp.tagMode === 'fixed' ? 'fixed' : 'auto')
 
 watch(
   () => [
@@ -80,6 +107,7 @@ const tagContainerStyle_C = computed<CSSProperties>(() => {
     top: store.appStoreData.currentConfigApp.leftColumnMode == 'fixed' ? 'auto' : '0px',
     zIndex: 90,
     transition: 'left 0.3s ease',
+    '--tag-row-num': store.appStoreData.currentConfigApp.tagFixedModeRowShowNum || 4,
   }
 })
 
@@ -294,6 +322,10 @@ defineExpose({ init });
     }
   }
 
+  :deep(.tag-logic-container) {
+    width: 100%;
+  }
+
   .tag-block-list {
     padding-right: 6px;
     padding-bottom: 10px;
@@ -325,5 +357,233 @@ defineExpose({ init });
     }
   }
 
+}
+
+.tag-container--modern {
+  --filter-bg: var(--home-panel-bg, #1f1f1f);
+  --filter-panel-bg: var(--home-panel-bg, #1f1f1f);
+  --filter-chip-bg: rgba(255, 255, 255, 0.035);
+  --filter-chip-hover: rgba(48, 205, 211, 0.12);
+  --filter-border: rgba(255, 255, 255, 0.09);
+  --filter-text: #e4e7ed;
+  --filter-muted: #a8abb2;
+  --filter-accent: #37c6ca;
+  --filter-accent-soft: rgba(55, 198, 202, 0.14);
+
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  margin-right: 8px;
+  overflow: hidden;
+  color: var(--filter-text);
+  background: var(--filter-panel-bg);
+  border: 1px solid var(--filter-border);
+  border-radius: 8px;
+
+  .modern-filter-header {
+    flex-shrink: 0;
+    padding: 18px 16px 13px;
+    border-bottom: 1px solid var(--filter-border);
+  }
+
+  .modern-filter-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--filter-text);
+    font-size: 16px;
+    font-weight: 650;
+  }
+
+  .modern-filter-subtitle {
+    display: block;
+    margin-top: 5px;
+    color: var(--filter-muted);
+    font-size: 11px;
+  }
+
+  :deep(.el-scrollbar) {
+    flex: 1;
+    min-height: 0;
+  }
+
+  .tag-block-list {
+    box-sizing: border-box;
+    padding: 4px 15px 18px;
+    background: transparent;
+  }
+
+  .el-collapse {
+    background: transparent;
+
+    :deep(.el-collapse-item) {
+      border-bottom: 1px solid var(--filter-border);
+    }
+
+    :deep(.el-collapse-item__header) {
+      height: 46px;
+      color: var(--filter-text);
+      background: transparent;
+      border: 0;
+      font-size: 13px;
+    }
+
+    :deep(.el-collapse-item__arrow) {
+      order: -1;
+      margin: 0 5px 0 0;
+      color: var(--filter-muted);
+    }
+
+    :deep(.el-collapse-item__wrap) {
+      background: transparent;
+      border: 0;
+    }
+
+    :deep(.el-collapse-item__content) {
+      padding: 0 0 14px;
+      color: var(--filter-text);
+    }
+  }
+
+  :deep(.tag-block .tag-content),
+  :deep(.tag-block-performer .tag-content) {
+    display: grid;
+    grid-template-columns: repeat(var(--tag-row-num), minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  :deep(.tag-span) {
+    box-sizing: border-box;
+    width: auto !important;
+    min-width: 0;
+    padding: 8px 7px;
+    color: var(--filter-muted);
+    background: var(--filter-chip-bg);
+    border: 1px solid var(--filter-border);
+    border-radius: 5px;
+    line-height: 1;
+  }
+
+  :deep(.tag-span:hover) {
+    color: var(--filter-accent);
+    background: var(--filter-chip-hover);
+    border-color: color-mix(in srgb, var(--filter-accent) 42%, transparent);
+  }
+
+  :deep(.tag-content .check),
+  :deep(.tag-performer .check),
+  :deep(.tag-stars .check) {
+    color: var(--filter-accent) !important;
+    background: var(--filter-accent-soft) !important;
+    border-color: var(--filter-accent) !important;
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--filter-accent) 18%, transparent);
+  }
+
+  :deep(.tag-block-performer .tag-performer) {
+    display: grid;
+    grid-template-columns: repeat(var(--tag-row-num), minmax(0, 1fr));
+    gap: 6px;
+    padding-top: 7px;
+  }
+
+  :deep(.tag-block-performer .tag-performer-item),
+  :deep(.tag-block-performer .tag-performer .tag-span) {
+    box-sizing: border-box;
+    width: auto !important;
+    min-width: 0;
+    border: 1px solid var(--filter-border);
+    border-radius: 5px;
+    overflow: hidden;
+  }
+
+  &.tag-container--tags-auto {
+    :deep(.tag-block .tag-content),
+    :deep(.tag-block-performer .tag-content),
+    :deep(.tag-block-performer .tag-performer) {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      gap: 6px;
+    }
+
+    :deep(.tag-block .tag-span),
+    :deep(.tag-block-performer .tag-content .tag-span),
+    :deep(.tag-block-performer .tag-performer .tag-span) {
+      width: auto !important;
+      max-width: 100%;
+      flex: 0 0 auto;
+    }
+
+    :deep(.tag-block-performer--photo .tag-performer) {
+      display: grid;
+      grid-template-columns: repeat(var(--tag-row-num), minmax(0, 1fr));
+    }
+  }
+
+  :deep(.tag-block-stars) {
+    display: block;
+  }
+
+  :deep(.tag-block-stars .tag-content) {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  :deep(.tag-block-stars .tag-stars) {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 5px;
+    margin: 7px 0 0;
+    padding: 0;
+  }
+
+  :deep(.tag-block-stars .tag-stars li) {
+    box-sizing: border-box;
+    min-height: 30px;
+    margin: 0;
+    padding: 5px 7px;
+    display: flex;
+    align-items: center;
+    background: transparent !important;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none !important;
+    opacity: 0.72;
+    transition: opacity 0.16s ease, transform 0.16s ease, filter 0.16s ease;
+  }
+
+  :deep(.tag-block-stars .tag-stars li:hover),
+  :deep(.tag-block-stars .tag-stars li.check) {
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  :deep(.tag-block-stars .tag-stars li.check .el-rate) {
+    filter: hue-rotate(135deg) saturate(1.65) brightness(1.18)
+      drop-shadow(0 0 3px color-mix(in srgb, var(--filter-accent) 58%, transparent));
+  }
+
+  :deep(.tag-block-stars .tag-stars li:hover),
+  :deep(.tag-block-stars .tag-stars li.check) {
+    opacity: 1;
+  }
+
+  :deep(.tag-block-stars .tag-stars li.check) {
+    transform: translateX(3px);
+  }
+}
+
+.tag-container--modern.tag-container--bright {
+  --filter-bg: #ffffff;
+  --filter-panel-bg: #ffffff;
+  --filter-chip-bg: #fbfcfd;
+  --filter-chip-hover: rgba(28, 174, 181, 0.08);
+  --filter-border: #e4e9ed;
+  --filter-text: #28343c;
+  --filter-muted: #77838c;
+  --filter-accent: #1baeb5;
+  --filter-accent-soft: rgba(27, 174, 181, 0.1);
+  box-shadow: 0 8px 26px rgba(44, 62, 74, 0.06);
 }
 </style>

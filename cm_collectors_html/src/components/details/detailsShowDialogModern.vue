@@ -103,16 +103,16 @@ defineExpose({ open, close })
 
 <style lang="scss">
 .modern-details-overlay {
-  background: rgba(2, 9, 15, 0.6);
+  background: rgba(8, 9, 11, 0.68);
   backdrop-filter: blur(3px);
 }
 
 .modern-details-dialog {
-  --modern-details-bg: #0d1b28;
-  --modern-details-soft-bg: rgba(255, 255, 255, 0.035);
-  --modern-details-text: #edf5fb;
-  --modern-details-text-muted: #9caebe;
-  --modern-details-border: rgba(151, 176, 195, 0.14);
+  --modern-details-bg: #1f1f1f;
+  --modern-details-soft-bg: #27292d;
+  --modern-details-text: #e4e7ed;
+  --modern-details-text-muted: #a8abb2;
+  --modern-details-border: rgba(255, 255, 255, 0.11);
 
   max-width: calc(100vw - 32px);
   padding: 0;
@@ -192,7 +192,7 @@ defineExpose({ open, close })
   overflow: hidden;
   border: 1px solid var(--modern-details-border);
   border-radius: 8px;
-  background: #07111a;
+  background: #15171a;
 
   .modern-details-cover-image {
     position: relative;
@@ -218,7 +218,7 @@ defineExpose({ open, close })
   &::after {
     position: absolute;
     inset: 0;
-    background: rgba(3, 11, 18, 0.2);
+    background: rgba(0, 0, 0, 0.18);
     content: "";
   }
 }

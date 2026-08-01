@@ -37,6 +37,7 @@ func getDefaultConfig() *config.Config {
 			AllowAppCloseServer:    false,
 			Theme:                  "default",
 			HomeMode:               "classic",
+			AppearanceStyle:        "",
 			DetailsDialogStyle:     "classic",
 			HeaderStyle:            "modern",
 			CloseMobileDisplay:     false,

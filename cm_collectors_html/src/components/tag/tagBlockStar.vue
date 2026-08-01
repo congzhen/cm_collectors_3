@@ -10,8 +10,9 @@
       </tagSpan>
     </div>
     <ul class="tag-stars">
-      <li v-for="(star, index) in starData" :key="index" :class="[checkStatus(star.toString()) ? 'check' : '']">
-        <el-rate v-model="starData[index]" disabled @click="starItemClickHandle(star.toString())" />
+      <li v-for="(star, index) in starData" :key="index" :class="[checkStatus(star.toString()) ? 'check' : '']"
+        @click="starItemClickHandle(star.toString())">
+        <el-rate v-model="starData[index]" disabled />
       </li>
     </ul>
   </div>

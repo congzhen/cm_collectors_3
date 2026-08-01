@@ -9,7 +9,7 @@
 
       <HomeToolDrawer v-if="filterPanelVisible" title="筛选" subtitle="标签 / 演员 / 排序"
         @close="setFilterPanelVisible(false)">
-        <TagView ref="tagViewRef" class="tag"></TagView>
+        <TagView ref="tagViewRef" class="tag" :show-modern-header="false"></TagView>
       </HomeToolDrawer>
 
       <main class="media-stage"
@@ -302,7 +302,8 @@ onMounted(() => {
     background: var(--home-panel-bg);
     box-shadow: inset 0 0 0 1px var(--home-border);
 
-    :deep(.details-view-k) {
+    :deep(.details-view-k),
+    :deep(.modern-right-details) {
       width: 100%;
       padding-left: 0;
     }
@@ -363,7 +364,8 @@ onMounted(() => {
     }
   }
 
-  :deep(.details-view-k) {
+  :deep(.details-view-k),
+  :deep(.modern-right-details) {
     width: 100%;
     padding-left: 0;
   }

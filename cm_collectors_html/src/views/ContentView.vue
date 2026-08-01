@@ -6,10 +6,13 @@
       <contentListAdmin v-else :data-list="dataList" @select-resources="selectResourcesHandle"
         @update-data="init_DataList"></contentListAdmin>
     </div>
-    <div class="paging">
+    <div class="paging" :class="{
+      'paging--modern': isModernAppearance,
+      'paging--bright': isModernAppearance && isBrightTheme,
+    }">
       <div class="paging-main">
         <div class="paging-summary">
-          <span>Total {{ dataCount }}</span>
+          <span>{{ isModernAppearance ? `共 ${dataCount} 项` : `Total ${dataCount}` }}</span>
           <el-popover trigger="hover" :width="260" :show-after="250" @before-enter="handleFileSizeStatsShow">
             <template #reference>
               <el-icon class="file-size-stats-trigger" title="当前筛选结果的视频文件统计">
@@ -50,7 +53,7 @@
           :total="dataCount" :page-size="pageSize" :pager-count="5" size="small" @change="changePageHandle" />
       </div>
       <div class="bottom-btns">
-        <playListBtn></playListBtn>
+        <playListBtn :modern="isModernAppearance"></playListBtn>
         <coverAdjuster v-admin></coverAdjuster>
       </div>
     </div>
@@ -61,7 +64,7 @@ import contentList from '@/components/content/contentList.vue'
 import contentListAdmin from '@/components/content/contentListAdmin.vue';
 import coverAdjuster from '@/components/setting/fileDatabaseSetting/coverAdjuster.vue';
 import playListBtn from '@/components/playList/playListBtn.vue';
-import { ref, onMounted, watch, nextTick } from 'vue'
+import { ref, onMounted, watch, nextTick, computed } from 'vue'
 import { appStoreData } from '@/storeData/app.storeData';
 import { searchStoreData } from '@/storeData/search.storeData';
 import type { I_resource, I_resourceFileSizeStats } from '@/dataType/resource.dataType';
@@ -72,6 +75,10 @@ const store = {
   appStoreData: appStoreData(),
   searchStoreData: searchStoreData(),
 }
+const isModernAppearance = computed(() =>
+  (store.appStoreData.appConfig.appearanceStyle || store.appStoreData.appConfig.headerStyle || 'modern') === 'modern'
+);
+const isBrightTheme = computed(() => store.appStoreData.appConfig.theme === 'bright');
 const emits = defineEmits(['selectResources']);
 
 const contentListRef = ref<InstanceType<typeof contentList>>();
@@ -376,6 +383,141 @@ defineExpose({ init, init_DataList, showDataList });
   border-top-color: var(--el-text-color-secondary);
   border-radius: 50%;
   animation: file-size-stats-spin 0.8s linear infinite;
+}
+
+.paging.paging--modern {
+  --paging-accent: #20aaa9;
+  --paging-accent-soft: rgba(32, 170, 169, 0.15);
+  --paging-bg: rgba(31, 31, 31, 0.96);
+  --paging-control-bg: rgba(255, 255, 255, 0.045);
+  --paging-border: rgba(255, 255, 255, 0.1);
+  --paging-text: #d9dce1;
+  width: 100%;
+  min-height: 44px;
+  padding: 6px 10px;
+  box-sizing: border-box;
+  align-items: center;
+  border-top: 1px solid var(--paging-border);
+  color: var(--paging-text);
+  background: var(--paging-bg);
+
+  .paging-main {
+    gap: 11px;
+  }
+
+  .paging-summary {
+    height: 30px;
+    padding: 0 10px;
+    gap: 5px;
+    border: 1px solid var(--paging-border);
+    border-radius: 7px;
+    color: var(--paging-text);
+    background: var(--paging-control-bg);
+  }
+
+  .file-size-stats-trigger {
+    color: var(--paging-accent);
+  }
+
+  :deep(.el-pagination) {
+    --el-pagination-bg-color: var(--paging-control-bg);
+    --el-pagination-button-bg-color: var(--paging-control-bg);
+    --el-pagination-hover-color: var(--paging-accent);
+    --el-pagination-button-color: var(--paging-text);
+    gap: 6px;
+  }
+
+  :deep(.el-pagination .el-pager) {
+    gap: 5px;
+  }
+
+  :deep(.el-pagination.is-background .btn-prev),
+  :deep(.el-pagination.is-background .btn-next),
+  :deep(.el-pagination.is-background .el-pager li) {
+    min-width: 30px;
+    height: 30px;
+    margin: 0;
+    border: 1px solid var(--paging-border);
+    border-radius: 7px;
+    color: var(--paging-text);
+    background: var(--paging-control-bg);
+  }
+
+  :deep(.el-pagination.is-background .el-pager li.is-active) {
+    color: var(--paging-accent);
+    border-color: var(--paging-accent);
+    background: var(--paging-accent-soft);
+    box-shadow: inset 0 0 0 1px rgba(32, 170, 169, 0.12);
+  }
+
+  :deep(.el-pagination__jump) {
+    height: 30px;
+    margin-left: 5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--paging-text);
+    font-size: 0;
+  }
+
+  :deep(.el-pagination__goto),
+  :deep(.el-pagination__classifier) {
+    display: none;
+  }
+
+  :deep(.el-pagination__jump::before) {
+    content: '前往';
+    font-size: 12px;
+  }
+
+  :deep(.el-pagination__jump::after) {
+    content: '页';
+    font-size: 12px;
+  }
+
+  :deep(.el-pagination__editor) {
+    width: 54px;
+    height: 30px;
+    margin: 0 2px;
+    font-size: 12px;
+  }
+
+  :deep(.el-pagination__editor .el-input__wrapper) {
+    border-radius: 7px;
+    background: var(--paging-control-bg);
+    box-shadow: 0 0 0 1px var(--paging-border) inset;
+  }
+
+  .bottom-btns {
+    gap: 7px;
+
+    :deep(.el-button) {
+      min-width: 92px;
+      height: 30px;
+      margin: 0;
+      padding: 0 11px;
+      border-color: var(--paging-border);
+      border-radius: 7px;
+      color: var(--paging-text);
+      background: var(--paging-control-bg);
+    }
+
+    :deep(.el-button:hover) {
+      color: var(--paging-accent);
+      border-color: var(--paging-accent);
+      background: var(--paging-accent-soft);
+    }
+  }
+}
+
+.paging.paging--modern.paging--bright,
+:global(.bright) .paging.paging--modern {
+  --paging-accent: #159a9a;
+  --paging-accent-soft: rgba(21, 154, 154, 0.11);
+  --paging-bg: rgba(255, 255, 255, 0.97);
+  --paging-control-bg: #f7f9fa;
+  --paging-border: #dfe5e9;
+  --paging-text: #4d5c66;
 }
 
 @keyframes file-size-stats-spin {

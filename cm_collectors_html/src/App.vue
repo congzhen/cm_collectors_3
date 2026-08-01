@@ -18,6 +18,7 @@ import { ElMessage } from 'element-plus'
 import { runRuntimeBridge } from "@/common/runtimeBridge"
 import router from '@/router'
 import { setCloseMobileDisplay } from '@/assets/mobile'
+import { applyTheme } from '@/common/theme'
 
 const initStatus = ref(false)
 
@@ -29,17 +30,6 @@ const store = {
 }
 
 // 切换主题函数
-const toggleTheme = (theme: string) => {
-  const htmlElement = document.documentElement
-  if (theme === 'bright') {
-    htmlElement.classList.add('bright')
-    htmlElement.classList.remove('dark')
-  } else {
-    htmlElement.classList.remove('bright')
-    htmlElement.classList.add('dark')
-  }
-}
-
 const init = async () => {
   try {
     LoadingService.show()
@@ -55,7 +45,7 @@ const init = async () => {
       await router.replace('/')
     }
     // 根据存储的主题设置初始化主题
-    toggleTheme(store.appStoreData.appConfig.theme)
+    applyTheme(store.appStoreData.appConfig.theme)
     const firstFilesBases = store.filesBasesStoreData.filesBasesFirst
     if (firstFilesBases) {
       const result = await store.appStoreData.initCurrentFilesBases(firstFilesBases.id)

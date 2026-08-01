@@ -12,6 +12,19 @@ type App struct {
 	PerformerBases *[]models.PerformerBases `json:"performerBases"`
 }
 
+func resolveAppearanceStyle() string {
+	if core.Config.General.AppearanceStyle == "classic" || core.Config.General.AppearanceStyle == "modern" {
+		return core.Config.General.AppearanceStyle
+	}
+	if core.Config.General.HeaderStyle == "classic" || core.Config.General.HeaderStyle == "modern" {
+		return core.Config.General.HeaderStyle
+	}
+	if core.Config.General.DetailsDialogStyle == "modern" {
+		return "modern"
+	}
+	return "classic"
+}
+
 func (App) InitData() (*App, error) {
 	filesBases, err := FilesBases{}.DataList()
 	if err != nil {
@@ -27,6 +40,7 @@ func (App) InitData() (*App, error) {
 			IsAdminLogin:         core.Config.General.IsAdminLogin,
 			Theme:                core.Config.General.Theme,
 			HomeMode:             core.Config.General.HomeMode,
+			AppearanceStyle:      resolveAppearanceStyle(),
 			DetailsDialogStyle:   core.Config.General.DetailsDialogStyle,
 			HeaderStyle:          core.Config.General.HeaderStyle,
 			CloseMobileDisplay:   core.Config.General.CloseMobileDisplay,
@@ -45,6 +59,7 @@ func (App) GetConfig() datatype.App_SystemConfig {
 			LogoName:             core.Config.General.LogoName,
 			IsAdminLogin:         core.Config.General.IsAdminLogin,
 			HomeMode:             core.Config.General.HomeMode,
+			AppearanceStyle:      resolveAppearanceStyle(),
 			DetailsDialogStyle:   core.Config.General.DetailsDialogStyle,
 			HeaderStyle:          core.Config.General.HeaderStyle,
 			CloseMobileDisplay:   core.Config.General.CloseMobileDisplay,
@@ -100,6 +115,13 @@ func (App) SetConfig(config datatype.App_SystemConfig) error {
 	core.Config.General.AllowAppCloseServer = config.AllowAppCloseServer
 	core.Config.General.Theme = config.Theme
 	core.Config.General.HomeMode = config.HomeMode
+	if config.AppearanceStyle != "classic" && config.AppearanceStyle != "modern" {
+		config.AppearanceStyle = resolveAppearanceStyle()
+	}
+	core.Config.General.AppearanceStyle = config.AppearanceStyle
+	// 兼容旧版本配置字段，确保回退到旧程序时仍能保持相同外观。
+	config.DetailsDialogStyle = config.AppearanceStyle
+	config.HeaderStyle = config.AppearanceStyle
 	if config.DetailsDialogStyle == "" {
 		config.DetailsDialogStyle = "classic"
 	}

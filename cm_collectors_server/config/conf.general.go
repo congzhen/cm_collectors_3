@@ -9,6 +9,7 @@ type General struct {
 	AllowAppCloseServer    bool           `yaml:"allowAppCloseServer"`
 	Theme                  string         `yaml:"theme"`
 	HomeMode               string         `yaml:"homeMode"`
+	AppearanceStyle        string         `yaml:"appearanceStyle"`
 	DetailsDialogStyle     string         `yaml:"detailsDialogStyle"`
 	HeaderStyle            string         `yaml:"headerStyle"`
 	CloseMobileDisplay     bool           `yaml:"closeMobileDisplay"`

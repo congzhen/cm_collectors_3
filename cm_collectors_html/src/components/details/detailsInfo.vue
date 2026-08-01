@@ -47,7 +47,7 @@
           <span>{{ appLang.director() }}</span>
         </div>
         <el-alert v-else class="tagAlert" :title="appLang.director()" type="success" :closable="false" />
-        <div class="performer-list">
+        <div class="performer-list" :class="{ 'performer-list--legacy': props.modern && !props.modernPerformers }">
           <div class="performer-item" v-for="performer, key in props.resource.directors" :key="key">
             <performerPopoverBlock :performer="performer" :issuing-date="props.resource.issuingDate">
             </performerPopoverBlock>
@@ -59,7 +59,7 @@
           <span>{{ appLang.performer() }}</span>
         </div>
         <el-alert v-else class="tagAlert" :title="appLang.performer()" type="success" :closable="false" />
-        <div class="performer-list">
+        <div class="performer-list" :class="{ 'performer-list--legacy': props.modern && !props.modernPerformers }">
           <div class="performer-item" v-for="performer, key in props.resource.performers" :key="key">
             <performerPopoverBlock :performer="performer" :issuing-date="props.resource.issuingDate">
             </performerPopoverBlock>
@@ -72,7 +72,8 @@
         </div>
         <el-alert v-else class="tagAlert" title="剧照" type="primary" :closable="false" />
         <div class="sample-list">
-          <detailsSampleImages :resource="props.resource" :columns="props.modern ? 5 : 3"></detailsSampleImages>
+          <detailsSampleImages :resource="props.resource"
+            :columns="props.sampleColumns || (props.modern ? 5 : 3)"></detailsSampleImages>
         </div>
       </div>
 
@@ -120,6 +121,14 @@ const props = defineProps({
   modern: {
     type: Boolean,
     default: false,
+  },
+  modernPerformers: {
+    type: Boolean,
+    default: true,
+  },
+  sampleColumns: {
+    type: Number,
+    default: 0,
   },
 })
 // 本地响应式变量，用于替代直接修改 props.resource.stars
@@ -273,16 +282,11 @@ const playResourceDramaSeriesHandle = (ds: I_resourceDramaSeries) => {
     }
   }
 
-  :deep(.performer-block) {
+  .performer-list :deep(.performer-block) {
     height: 100%;
-    padding: 5px;
-    border: 1px solid var(--modern-details-border);
-    border-radius: 7px;
-    color: var(--modern-details-text-muted);
-    background: var(--modern-details-soft-bg);
   }
 
-  :deep(.performer-block-name) {
+  .performer-list :deep(.performer-block-name) {
     padding: 7px 2px 3px;
     line-height: 16px;
   }
@@ -297,6 +301,18 @@ const playResourceDramaSeriesHandle = (ds: I_resourceDramaSeries) => {
     color: var(--modern-details-text-muted);
     background: var(--modern-details-soft-bg);
     font-style: normal;
+  }
+
+  .performer-list.performer-list--legacy {
+    padding: 0 4px 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+
+    .performer-item {
+      width: 32%;
+      max-width: none;
+    }
   }
 
   :deep(.details-sample-images),

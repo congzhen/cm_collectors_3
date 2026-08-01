@@ -1,11 +1,16 @@
 <template>
-  <detailsShowRight v-if="store.appStoreData.currentConfigApp.resourceDetailsShowMode == 'right'"
+  <detailsShowRightModern v-if="store.appStoreData.currentConfigApp.resourceDetailsShowMode == 'right'
+    && appearanceStyle == 'modern'" :resource="props.resource"
+    @update-resouce-success="updateResourceSuccessHandle"
+    @delete-resource-success="deleteResourceSuccessHandle">
+  </detailsShowRightModern>
+  <detailsShowRight v-else-if="store.appStoreData.currentConfigApp.resourceDetailsShowMode == 'right'"
     :resource="props.resource" @update-resouce-success="updateResourceSuccessHandle"
     @delete-resource-success="deleteResourceSuccessHandle">
   </detailsShowRight>
   <detailsShowDialogModern ref="detailsShowDialogModernRef"
     v-else-if="store.appStoreData.currentConfigApp.resourceDetailsShowMode == 'popup'
-      && store.appStoreData.appConfig.detailsDialogStyle == 'modern'" :resource="props.resource"
+      && appearanceStyle == 'modern'" :resource="props.resource"
     @update-resouce-success="updateResourceSuccessHandle" @delete-resource-success="deleteResourceSuccessHandle">
   </detailsShowDialogModern>
   <detailsShowDialog ref="detailsShowDialogRef"
@@ -14,10 +19,11 @@
   </detailsShowDialog>
 </template>
 <script lang="ts" setup>
-import { ref, type PropType } from 'vue'
+import { computed, ref, type PropType } from 'vue'
 import type { I_resource } from '@/dataType/resource.dataType'
 import { appStoreData } from '@/storeData/app.storeData';
 import detailsShowRight from '@/components/details/detailsShowRight.vue';
+import detailsShowRightModern from '@/components/details/detailsShowRightModern.vue';
 import detailsShowDialog from '@/components/details/detailsShowDialog.vue';
 import detailsShowDialogModern from '@/components/details/detailsShowDialogModern.vue';
 const store = {
@@ -33,10 +39,15 @@ const emits = defineEmits(['updateResouceSuccess', 'deleteResourceSuccess'])
 
 const detailsShowDialogRef = ref<InstanceType<typeof detailsShowDialog>>();
 const detailsShowDialogModernRef = ref<InstanceType<typeof detailsShowDialogModern>>();
+const appearanceStyle = computed(() =>
+  store.appStoreData.appConfig.appearanceStyle
+  || store.appStoreData.appConfig.detailsDialogStyle
+  || 'classic'
+)
 
 const init = () => {
   if (store.appStoreData.currentConfigApp.resourceDetailsShowMode == 'popup') {
-    if (store.appStoreData.appConfig.detailsDialogStyle == 'modern') {
+    if (appearanceStyle.value == 'modern') {
       detailsShowDialogModernRef.value?.open();
     } else {
       detailsShowDialogRef.value?.open();

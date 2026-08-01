@@ -133,6 +133,7 @@ const formData = ref<I_appSystemConfig>({
   allowAppCloseServer: false,
   theme: 'default',
   homeMode: 'classic',
+  appearanceStyle: 'modern',
   detailsDialogStyle: 'classic',
   headerStyle: 'modern',
   closeMobileDisplay: false,

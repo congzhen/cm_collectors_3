@@ -7,6 +7,7 @@ general:
     allowAppCloseServer: false
     theme: default
     homeMode: studio
+    appearanceStyle: modern
     detailsDialogStyle: modern
     headerStyle: modern
     closeMobileDisplay: false

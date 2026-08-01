@@ -65,6 +65,26 @@
   color: #ffffff !important;
 }
 
+/* 现代筛选面板使用独立的明亮主题色，覆盖经典标签的兼容样式。 */
+.bright .app-container .main .tag-container.tag-container--modern,
+.tag-container.tag-container--modern.tag-container--bright {
+  background: #ffffff !important;
+  border-color: var(--filter-border);
+}
+
+.bright .app-container .main .tag-container.tag-container--modern .tag-content .tag-span {
+  color: var(--filter-muted);
+  background-color: var(--filter-chip-bg);
+}
+
+.bright .app-container .main .tag-container.tag-container--modern .tag-content .check,
+.bright .app-container .main .tag-container.tag-container--modern .tag-block-performer .tag-content .check,
+.bright .app-container .main .tag-container.tag-container--modern .tag-block-stars .tag-stars .check:not(li) {
+  color: var(--filter-accent) !important;
+  background-color: var(--filter-accent-soft) !important;
+  border-color: var(--filter-accent) !important;
+}
+
 /** 详情 */
 .bright .app-container .details-view .details-container .title {
   color: #606266;

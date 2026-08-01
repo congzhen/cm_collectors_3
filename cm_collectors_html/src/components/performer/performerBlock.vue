@@ -1,5 +1,8 @@
 <template>
-  <div class="performer-block" v-if="props.performer">
+  <div class="performer-block" v-if="props.performer" :class="{
+    'performer-block--modern': props.modern,
+    'performer-block--bright': props.modern && isBrightTheme,
+  }">
     <div class="performer-resource-count" v-if="showResourceCount_C && props.performer.resourceCount !== undefined">
       {{ props.performer.resourceCount }}
     </div>
@@ -63,6 +66,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  modern: {
+    type: Boolean,
+    default: false,
+  },
 })
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const emits = defineEmits(['search', 'edit', 'delete'])
@@ -72,6 +79,7 @@ const attr_C = computed(() => {
 const showResourceCount_C = computed(() => {
   return store.appStoreData.currentConfigApp.showPerformerResourceCount !== false
 })
+const isBrightTheme = computed(() => store.appStoreData.appConfig.theme === 'bright')
 </script>
 <style lang="scss" scoped>
 .performer-block {
@@ -149,6 +157,47 @@ const showResourceCount_C = computed(() => {
     .displayNone {
       display: none;
     }
+  }
+}
+
+.performer-block--modern {
+  --performer-card-bg: #25292d;
+  --performer-card-bg-hover: #2b3034;
+  --performer-card-border: #343b42;
+  --performer-card-text: #e4e7ed;
+  --performer-card-accent: #25b5b3;
+  --performer-card-selected-bg: rgba(37, 181, 179, 0.14);
+
+  padding: 3px;
+  border: 0;
+  border-radius: 7px;
+  color: var(--performer-card-text);
+  background: var(--performer-card-bg) !important;
+  box-shadow: inset 0 0 0 1px var(--performer-card-border);
+  transition: box-shadow 0.18s ease, background-color 0.18s ease;
+
+  &.performer-block--bright {
+    --performer-card-bg: #f4f7f9;
+    --performer-card-bg-hover: #ffffff;
+    --performer-card-border: #dce3e8;
+    --performer-card-text: #34424e;
+    --performer-card-accent: #159fa1;
+    --performer-card-selected-bg: rgba(21, 159, 161, 0.12);
+  }
+
+  &:hover,
+  &.check {
+    background: var(--performer-card-bg-hover) !important;
+    box-shadow: inset 0 0 0 1px var(--performer-card-accent), 0 4px 12px rgba(0, 0, 0, 0.12);
+  }
+
+  &.check {
+    background: var(--performer-card-selected-bg) !important;
+  }
+
+  .performer-block-name,
+  .performer-block-attr {
+    color: var(--performer-card-text);
   }
 }
 </style>

@@ -1,12 +1,13 @@
 <template>
   <div class="tag-logic-container" @click.stop>
     <el-dropdown placement="bottom-end" @click.stop>
-      <div class="tag-logic" @click.stop>
-        <el-icon :class="[props.selectedLogic]">
+      <div class="tag-logic" :class="{ 'tag-logic--modern': props.appearanceStyle === 'modern' }" @click.stop>
+        <el-icon v-if="props.appearanceStyle !== 'modern'" :class="[props.selectedLogic]">
           <HelpFilled />
         </el-icon>
         <label class="tag-logic-text">
-          {{ props.text }}
+          <span>{{ props.text }}</span>
+          <small v-if="props.appearanceStyle === 'modern'">（{{ selectedLogicText }}）</small>
         </label>
       </div>
       <template #dropdown>
@@ -44,7 +45,7 @@
 </template>
 <script setup lang="ts">
 import { E_searchLogic } from '@/dataType/search.dataType';
-import type { PropType } from 'vue';
+import { computed, type PropType } from 'vue';
 
 const props = defineProps({
   text: {
@@ -58,6 +59,10 @@ const props = defineProps({
   selectedLogic: {
     type: String as PropType<E_searchLogic>,
     default: E_searchLogic.Single,
+  },
+  appearanceStyle: {
+    type: String as PropType<'classic' | 'modern'>,
+    default: 'classic',
   }
 })
 const emits = defineEmits(['logicClick']);
@@ -65,6 +70,19 @@ const emits = defineEmits(['logicClick']);
 const logicClickHandle = (option: E_searchLogic) => {
   emits('logicClick', option);
 }
+
+const selectedLogicText = computed(() => {
+  switch (props.selectedLogic) {
+    case E_searchLogic.MultiOr:
+      return '多选或'
+    case E_searchLogic.MultiAnd:
+      return '多选且'
+    case E_searchLogic.Not:
+      return '排除'
+    default:
+      return '单选'
+  }
+})
 
 </script>
 <style lang="scss" scoped>
@@ -115,5 +133,25 @@ const logicClickHandle = (option: E_searchLogic) => {
 .tag-logic:focus-visible {
   outline: none;
   /* 移除默认焦点环 */
+}
+
+.tag-logic--modern {
+  line-height: 1;
+  align-items: center;
+
+  .tag-logic-text {
+    display: flex;
+    align-items: baseline;
+    gap: 2px;
+    padding-left: 0;
+    color: var(--filter-text);
+    font-weight: 600;
+  }
+
+  small {
+    color: var(--filter-muted);
+    font-size: 10px;
+    font-weight: 400;
+  }
 }
 </style>

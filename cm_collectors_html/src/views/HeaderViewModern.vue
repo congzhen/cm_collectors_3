@@ -1,5 +1,7 @@
 <template>
-  <header class="modern-header" :class="{ 'is-search-wrapped': searchWrapped }" data-header-style="modern">
+  <header class="modern-header"
+    :class="{ 'is-search-wrapped': searchWrapped, 'modern-header--solid-dark': props.solid && !isBrightTheme }"
+    data-header-style="modern">
     <div class="modern-header-brand">
       <img src="/public/icon32.png" alt="" />
       <span>{{ store.appStoreData.getLogoName }}</span>
@@ -62,6 +64,12 @@
           </template>
         </el-dropdown>
 
+        <button class="modern-header-action" type="button" :title="themeToggleTitle"
+          :disabled="isThemeSwitching" @click="toggleTheme">
+          <el-icon><Moon v-if="isBrightTheme" /><Sunny v-else /></el-icon>
+          <span>{{ isBrightTheme ? '暗黑' : '明亮' }}</span>
+        </button>
+
         <button v-admin class="modern-header-action" type="button" title="设置" @click="goToSetting">
           <el-icon><Setting /></el-icon>
           <span>设置</span>
@@ -76,6 +84,11 @@
     </template>
 
     <nav v-else class="modern-header-actions modern-header-actions--sub" aria-label="页面导航">
+      <button class="modern-header-action" type="button" :title="themeToggleTitle"
+        :disabled="isThemeSwitching" @click="toggleTheme">
+        <el-icon><Moon v-if="isBrightTheme" /><Sunny v-else /></el-icon>
+        <span>{{ isBrightTheme ? '暗黑' : '明亮' }}</span>
+      </button>
       <button class="modern-header-action" type="button" title="主页" @click="router.push('/')">
         <el-icon><HomeFilled /></el-icon>
         <span>主页</span>
@@ -106,6 +119,7 @@ import type { I_resource } from '@/dataType/resource.dataType'
 import { appStoreData } from '@/storeData/app.storeData'
 import { AppLang } from '@/language/app.lang'
 import { useHomeMode, type T_homeMode } from '@/common/homeMode'
+import { useTheme } from '@/common/theme'
 import switchMobile from '@/components/com/form/switchMobile.vue'
 import searchFavoritePopover from '@/components/search/searchFavoritePopover.vue'
 import searchInputTagByStore from '@/components/com/form/searchInputTagByStore.vue'
@@ -120,6 +134,10 @@ const props = defineProps({
     type: String as PropType<E_headerMode>,
     default: E_headerMode.Index,
   },
+  solid: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const emits = defineEmits<{
@@ -132,6 +150,7 @@ const store = {
   appStoreData: appStoreData(),
 }
 const { currentHomeMode, currentHomeModeLabel, homeModeOptions, setHomeMode } = useHomeMode()
+const { isBrightTheme, isThemeSwitching, themeToggleTitle, toggleTheme } = useTheme()
 
 const tagListDrawerRef = ref<InstanceType<typeof tagListDrawer>>()
 const resourceFormDrawerRef = ref<InstanceType<typeof resourceFormDrawer>>()
@@ -188,6 +207,7 @@ onBeforeUnmount(() => {
 <style scoped lang="scss">
 .modern-header {
   --header-panel: #0d1d29;
+  --header-solid-bg: #1f1f1f;
   --header-panel-hover: #122a38;
   --header-border: rgba(137, 174, 196, 0.15);
   --header-text: #edf6fb;
@@ -351,6 +371,10 @@ onBeforeUnmount(() => {
   --header-muted: #667883;
   --header-accent: #159a9a;
   box-shadow: none;
+}
+
+.modern-header.modern-header--solid-dark {
+  background: var(--header-solid-bg) !important;
 }
 
 :global(.studio-home .modern-header) {

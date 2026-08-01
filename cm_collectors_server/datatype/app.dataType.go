@@ -46,6 +46,7 @@ type App_Config struct {
 	IsAdminLogin         bool   `json:"isAdminLogin"`
 	Theme                string `json:"theme"`
 	HomeMode             string `json:"homeMode"`
+	AppearanceStyle      string `json:"appearanceStyle"`
 	DetailsDialogStyle   string `json:"detailsDialogStyle"`
 	HeaderStyle          string `json:"headerStyle"`
 	CloseMobileDisplay   bool   `json:"closeMobileDisplay"`

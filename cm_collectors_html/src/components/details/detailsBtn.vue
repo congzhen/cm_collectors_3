@@ -1,12 +1,14 @@
 <template>
-  <div class="tool" :class="{ 'tool--labels': props.showLabels }" v-if="props.resource">
+  <div class="tool" :class="{ 'tool--labels': props.showLabels, 'tool--single-row': props.singleRow }"
+    :style="{ '--details-visible-button-count': visibleButtonCount, '--details-button-width': buttonWidth }"
+    v-if="props.resource">
     <el-button-group>
       <el-button icon="VideoPlay" @click="playResourceHandle" :style="{ width: buttonWidth }">
         <span v-if="props.showLabels">播放</span>
       </el-button>
       <el-button icon="Folder" v-admin @click="playOpenResourceFolder(props.resource.id)"
         :style="{ width: buttonWidth }">
-        <span v-if="props.showLabels">打开文件夹</span>
+        <span v-if="props.showLabels">{{ props.compactLabels ? '文件夹' : '打开文件夹' }}</span>
       </el-button>
       <el-button icon="Edit" v-admin @click="editResourceHandle" :style="{ width: buttonWidth }">
         <span v-if="props.showLabels">编辑</span>
@@ -38,6 +40,14 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  singleRow: {
+    type: Boolean,
+    default: false,
+  },
+  compactLabels: {
+    type: Boolean,
+    default: false,
+  },
 })
 const emits = defineEmits(['paly', 'updateResouceSuccess', 'deleteResourceSuccess'])
 
@@ -48,7 +58,7 @@ const visibleButtonCount = computed(() => {
   let count = 1; // 默认的播放按钮总是可见
 
   // 检查是否是管理员且已登录
-  if (store.isAdminLoginStatus) {
+  if (store.displayAdminFn) {
     count += 3; // 文件夹、编辑、删除按钮都可见
   }
 
@@ -57,6 +67,11 @@ const visibleButtonCount = computed(() => {
 
 // 计算按钮宽度
 const buttonWidth = computed(() => {
+  if (props.singleRow) {
+    const count = visibleButtonCount.value;
+    const gapShare = (4 * (count - 1)) / count;
+    return count === 1 ? '100%' : `calc(${100 / count}% - ${gapShare}px)`;
+  }
   if (props.showLabels) {
     return 'auto';
   }
@@ -106,6 +121,31 @@ const resourceDeleteHandle = () => {
     :deep(.el-button) {
       margin-left: 0;
       border-radius: 6px;
+    }
+  }
+
+  &.tool--single-row {
+    .el-button-group {
+      display: flex !important;
+      flex-wrap: nowrap !important;
+      gap: 4px;
+    }
+
+    :deep(.el-button) {
+      width: var(--details-button-width) !important;
+      flex: 0 0 var(--details-button-width) !important;
+      min-width: 0;
+      margin: 0;
+      padding-right: 3px;
+      padding-left: 3px;
+    }
+
+    :deep(.el-button span) {
+      min-width: 0;
+      overflow: hidden;
+      font-size: 10px;
+      text-overflow: clip;
+      white-space: nowrap;
     }
   }
 }

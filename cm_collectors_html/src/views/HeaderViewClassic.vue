@@ -95,6 +95,11 @@
             </el-dropdown-menu>
           </template>
         </el-dropdown>
+        <div class="menu-item" :class="{ disabled: isThemeSwitching }" @click="toggleTheme">
+          <el-tooltip :content="themeToggleTitle" placement="bottom">
+            <el-icon><Moon v-if="isBrightTheme" /><Sunny v-else /></el-icon>
+          </el-tooltip>
+        </div>
         <div class="menu-item" v-admin @click="goToSetting">
           <el-tooltip content="设置" placement="bottom">
             <el-icon>
@@ -112,6 +117,11 @@
     </div>
     <div class="right" v-else>
       <div class="setting sub-nav">
+        <el-tooltip :content="themeToggleTitle" placement="bottom">
+          <label class="icon-text-label" :class="{ disabled: isThemeSwitching }" @click="toggleTheme">
+            <el-icon><Moon v-if="isBrightTheme" /><Sunny v-else /></el-icon>
+          </label>
+        </el-tooltip>
         <el-tooltip content="主页" placement="bottom">
           <label class="icon-text-label" @click="router.push('/')">
             <el-icon title="主页">
@@ -158,6 +168,7 @@ import { appStoreData } from '@/storeData/app.storeData'
 import type { I_resource } from '@/dataType/resource.dataType'
 import { AppLang } from '@/language/app.lang'
 import { useHomeMode, type T_homeMode } from '@/common/homeMode'
+import { useTheme } from '@/common/theme'
 const appLang = AppLang()
 
 const router = useRouter()
@@ -165,6 +176,7 @@ const store = {
   appStoreData: appStoreData(),
 }
 const { currentHomeMode, currentHomeModeLabel, homeModeOptions, setHomeMode } = useHomeMode()
+const { isBrightTheme, isThemeSwitching, themeToggleTitle, toggleTheme } = useTheme()
 const emits = defineEmits(['createResouceSuccess'])
 
 const tagListDrawerRef = ref<InstanceType<typeof tagListDrawer>>()
@@ -293,6 +305,11 @@ const createResouceSuccessHandle = (data: I_resource) => {
         cursor: pointer;
         user-select: none;
 
+        &.disabled {
+          opacity: 0.5;
+          pointer-events: none;
+        }
+
         &:hover {
           color: var(--el-color-primary);
 
@@ -334,6 +351,11 @@ const createResouceSuccessHandle = (data: I_resource) => {
       .icon-text-label {
         display: flex;
         cursor: pointer;
+
+        &.disabled {
+          opacity: 0.5;
+          pointer-events: none;
+        }
 
         &:hover {
           color: var(--el-color-primary);

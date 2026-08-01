@@ -2,10 +2,12 @@
   <el-collapse-item title="Consistency">
     <template #title>
       <tagLogic :text="props.title" :logic="props.logic" :selectedLogic="selectedLogic()"
+        :appearance-style="props.appearanceStyle"
         @logicClick="logicClickHandle">
       </tagLogic>
     </template>
-    <tagBlockPerformer v-if="props.tagType === E_tagType.Performer" @performerClick="tagClickHandle">
+    <tagBlockPerformer v-if="props.tagType === E_tagType.Performer" :appearance-style="props.appearanceStyle"
+      @performerClick="tagClickHandle">
     </tagBlockPerformer>
     <tagBlockStar v-else-if="props.tagType === E_tagType.Star" @starClick="tagClickHandle"></tagBlockStar>
     <tagBlock v-else :dataList="props.dataList" @tagClick="tagClickHandle"></tagBlock>
@@ -44,6 +46,10 @@ const props = defineProps({
   diyTagClassId: {
     type: String,
     default: '',
+  },
+  appearanceStyle: {
+    type: String as PropType<'classic' | 'modern'>,
+    default: 'classic',
   }
 })
 

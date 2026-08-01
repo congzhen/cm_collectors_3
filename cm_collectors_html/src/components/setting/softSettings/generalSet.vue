@@ -5,7 +5,7 @@
         <el-input v-model="formData.logoName" />
       </el-form-item>
       <el-form-item label="主题">
-        <el-select v-model="formData.theme">
+        <el-select v-model="formData.theme" @change="themeChangeHandle">
           <el-option label="暗黑" value="default" />
           <el-option label="明亮" value="bright" />
         </el-select>
@@ -15,17 +15,14 @@
           <el-option v-for="item in homeModeOptions" :key="item.value" :label="item.label" :value="item.value" />
         </el-select>
       </el-form-item>
-      <el-form-item label="详情弹窗样式">
-        <el-select v-model="formData.detailsDialogStyle">
-          <el-option label="经典弹窗" value="classic" />
-          <el-option label="现代弹窗" value="modern" />
+      <el-form-item label="界面外观">
+        <el-select v-model="formData.appearanceStyle">
+          <el-option label="经典外观" value="classic" />
+          <el-option label="现代外观" value="modern" />
         </el-select>
-      </el-form-item>
-      <el-form-item label="顶部栏样式">
-        <el-select v-model="formData.headerStyle">
-          <el-option label="经典顶部栏" value="classic" />
-          <el-option label="新版顶部栏" value="modern" />
-        </el-select>
+        <el-text class="appearance-help" type="info" size="small">
+          统一控制顶部栏、详情弹窗和筛选面板的显示样式。
+        </el-text>
       </el-form-item>
       <el-form-item label="关闭移动端显示">
         <el-switch v-model="formData.closeMobileDisplay" />
@@ -181,9 +178,14 @@ import { playCloudPluginDownload, playCloudPluginDownloadUrl } from '@/component
 import { homeModeOptions } from '@/common/homeMode'
 import { appStoreData } from '@/storeData/app.storeData'
 import { setCloseMobileDisplay } from '@/assets/mobile'
+import { applyTheme } from '@/common/theme'
 
 const serverFileManagementDialogRef = ref<InstanceType<typeof serverFileManagementDialog>>();
 const store = appStoreData()
+const themeChangeHandle = (theme: string) => {
+  store.appConfig.theme = theme
+  applyTheme(theme)
+}
 
 const formData = ref<I_appSystemConfig>({
   logoName: 'CM File Collectors',
@@ -194,6 +196,7 @@ const formData = ref<I_appSystemConfig>({
   allowAppCloseServer: false,
   theme: 'default',
   homeMode: 'classic',
+  appearanceStyle: 'modern',
   detailsDialogStyle: 'classic',
   headerStyle: 'modern',
   closeMobileDisplay: false,
@@ -249,6 +252,9 @@ const getAppConfig = async () => {
     formData.value = result.data;
     if (!formData.value.homeMode) {
       formData.value.homeMode = 'classic'
+    }
+    if (!formData.value.appearanceStyle) {
+      formData.value.appearanceStyle = formData.value.headerStyle || formData.value.detailsDialogStyle || 'modern'
     }
     if (!formData.value.detailsDialogStyle) {
       formData.value.detailsDialogStyle = 'classic'
@@ -310,6 +316,7 @@ const saveHandle = debounceNow(async () => {
       isAdminLogin: formData.value.isAdminLogin,
       theme: formData.value.theme,
       homeMode: formData.value.homeMode,
+      appearanceStyle: formData.value.appearanceStyle,
       detailsDialogStyle: formData.value.detailsDialogStyle,
       headerStyle: formData.value.headerStyle,
       closeMobileDisplay: formData.value.closeMobileDisplay,
@@ -318,6 +325,7 @@ const saveHandle = debounceNow(async () => {
       playCloudMode: formData.value.playCloudMode,
     }
     // 保存后立即同步移动端显示开关，避免必须刷新页面才生效。
+    applyTheme(formData.value.theme)
     setCloseMobileDisplay(formData.value.closeMobileDisplay)
     return
   } catch (error) {
@@ -342,6 +350,13 @@ onMounted(async () => {
   .warning-text {
     line-height: 1.1rem;
     padding-top: 5px;
+  }
+
+  .appearance-help {
+    display: block;
+    width: 100%;
+    margin-top: 5px;
+    line-height: 1.4;
   }
 
   .el-form {
