@@ -1,7 +1,7 @@
 <template>
   <div class="play-movies-container" :class="{ 'is-bright-theme': isBrightTheme_C }" :style="mainContainerStyle_C">
     <div class="main-container-overlay"></div>
-    <HeaderView class="header" :mode="E_headerMode.GoBack" :title="resourceInfo?.title || ''"></HeaderView>
+    <HeaderView class="header" :mode="E_headerMode.GoBack" :title="resourceInfo?.title || ''" solid></HeaderView>
     <div class="main-container" v-loading="loading">
 
       <div class="main" v-if="resourceInfo">
@@ -73,6 +73,7 @@
           <div class="title">{{ resourceInfo.title }}</div>
           <resourceDramaSeriesList :drama-series="resourceInfo.dramaSeries" :selected-id="selectedDramaSeriesId"
             :show-mode="store.appStoreData.currentFilesBasesAppConfig.detailsDramaSeriesMode"
+            :modern="isModernAppearance"
             @play-resource-drama-series="playResourceDramaSeriesHandle">
           </resourceDramaSeriesList>
           <div class="c-height"></div>
@@ -102,6 +103,9 @@ const appLang = AppLang()
 const store = {
   appStoreData: appStoreData(),
 }
+const isModernAppearance = computed(() =>
+  (store.appStoreData.appConfig.appearanceStyle || store.appStoreData.appConfig.headerStyle || 'modern') === 'modern'
+)
 const props = defineProps({
   resourceId: {
     type: String,

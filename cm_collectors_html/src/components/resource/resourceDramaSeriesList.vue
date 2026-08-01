@@ -5,7 +5,8 @@
         <el-popover v-for="(item, key) in props.dramaSeries" :key="item.id || key" trigger="hover" :width="380"
           :show-after="1000" :disabled="metadataDetails(item).length === 0">
           <template #reference>
-            <li :class="[selectedClass(item.id)]" @contextmenu.prevent.stop="addToTranscode(item)"
+            <li :class="[selectedClass(item.id)]" :aria-current="item.id === props.selectedId ? 'true' : undefined"
+              @contextmenu.prevent.stop="addToTranscode(item)"
               @click="emits('playResourceDramaSeries', item)">
               <span class="digit-index">{{ (key + 1) }}</span>
             </li>
@@ -21,10 +22,11 @@
     </div>
     <div class="resourceDramaSeries-list-name" v-else>
       <ul>
-        <li :class="[selectedClass(item.id)]" v-for="(item, key) in props.dramaSeries" :key="key"
+        <li :class="[selectedClass(item.id)]" :aria-current="item.id === props.selectedId ? 'true' : undefined"
+          v-for="(item, key) in props.dramaSeries" :key="key"
           @contextmenu.prevent.stop="addToTranscode(item)"
           @click="emits('playResourceDramaSeries', item)">
-          <label>{{ (key + 1) }}.</label>
+          <label class="series-index">{{ (key + 1) }}</label>
           <div class="series-content">
             <span class="file-name">{{ getFinalPathSegment(item.src) }}</span>
             <div v-if="props.showVideoInfo || metadataText(item) || metadataStatusText(item) ||
@@ -187,6 +189,14 @@ const formatBitRate = (bitRate: number) => {
 </script>
 <style lang="scss" scoped>
 .resourceDramaSeries-list {
+  --series-border: var(--el-border-color);
+  --series-surface: var(--el-fill-color-blank);
+  --series-surface-hover: var(--el-fill-color-light);
+  --series-text: var(--el-text-color-regular);
+  --series-muted: var(--el-text-color-secondary);
+  --series-active-bg: var(--el-color-primary-light-9);
+  --series-active-border: var(--el-color-primary);
+  --series-active-text: var(--el-color-primary);
   width: 100%;
   min-width: 0;
   max-width: 100%;
@@ -194,92 +204,115 @@ const formatBitRate = (bitRate: number) => {
   padding-bottom: 0.5em;
 }
 
-.selected {
-  background-color: #E6A23C;
-  border-radius: 5px;
-  color: #303133;
-  font-weight: 500;
-}
-
 .resourceDramaSeries-list-index {
-  padding-top: 0.5em;
+  padding: 8px 2px 10px;
 
   ul {
     width: 100%;
+    margin: 0;
+    padding: 0;
     list-style-type: none;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(54px, 1fr));
+    gap: 6px;
 
     li {
-      width: 17.5%;
-      height: 1.2em;
-      line-height: 1.2em;
+      position: relative;
+      width: 100%;
+      height: 32px;
+      padding: 0;
+      box-sizing: border-box;
+      display: grid;
+      place-items: center;
+      color: var(--series-text);
+      background: var(--series-surface);
+      border: 1px solid var(--series-border);
+      border-radius: 6px;
       font-weight: 500;
+      font-size: 12px;
+      line-height: 1;
       text-align: center;
-      padding: 0.5em 0;
-      border: 1px solid #a8abb2;
-      border-radius: 4px;
       cursor: pointer;
       user-select: none;
-      /* 新增过渡动画 */
       transition:
-        background-color 0.2s ease,
-        box-shadow 0.2s ease;
+        color 0.16s ease,
+        border-color 0.16s ease,
+        background-color 0.16s ease,
+        box-shadow 0.16s ease,
+        transform 0.16s ease;
 
-      /* 鼠标悬停时的高亮效果 */
       &:hover {
-        color: var(--el-color-primary);
-        background-color: var(--el-color-primary-light-9);
-        border-color: var(--el-color-primary);
+        color: var(--series-active-text);
+        background: var(--series-surface-hover);
+        border-color: var(--series-active-border);
+        transform: translateY(-1px);
       }
 
+      &.selected {
+        color: var(--series-active-text);
+        background: var(--series-active-bg);
+        border-color: var(--series-active-border);
+        box-shadow: inset 0 0 0 1px var(--series-active-border);
+        font-weight: 700;
+
+        &::after {
+          content: '';
+          position: absolute;
+          bottom: 3px;
+          left: 50%;
+          width: 12px;
+          height: 2px;
+          border-radius: 999px;
+          background: currentColor;
+          transform: translateX(-50%);
+          opacity: 0.75;
+        }
+      }
     }
   }
 }
 
 .resourceDramaSeries-list--modern {
+  --series-border: var(--modern-details-border, var(--el-border-color));
+  --series-surface: var(--modern-details-soft-bg, var(--el-fill-color-light));
+
   .resourceDramaSeries-list-index {
-    padding: 4px 8px 10px;
+    padding: 6px 4px 10px;
 
     ul {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(58px, 1fr));
-      gap: 8px;
+      grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
+      gap: 7px;
 
       li {
-        width: 100%;
         height: 34px;
-        padding: 0;
-        display: grid;
-        place-items: center;
-        box-sizing: border-box;
-        border-color: var(--modern-details-border);
-        border-radius: 999px;
-        color: var(--modern-details-text-muted);
-        background:
-          linear-gradient(180deg, rgba(255, 255, 255, 0.045), transparent),
-          var(--modern-details-soft-bg);
+        border-radius: 9px;
+        color: var(--modern-details-text-muted, var(--series-text));
+        background: var(--series-surface);
         box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
-        font-size: 12px;
-        font-style: normal;
-        line-height: 34px;
 
         &:hover {
-          color: #ffffff;
-          border-color: var(--el-color-primary);
-          background: var(--el-color-primary);
-          box-shadow: 0 4px 12px rgba(64, 158, 255, 0.2);
-          transform: translateY(-1px);
+          color: var(--series-active-text);
+          border-color: var(--series-active-border);
+          background: var(--series-surface-hover);
+          box-shadow: 0 4px 12px rgba(20, 158, 158, 0.12);
         }
 
         &.selected {
-          color: #ffffff;
-          border-color: #d89435;
-          background: #d89435;
+          color: var(--series-active-text);
+          border-color: var(--series-active-border);
+          background: var(--series-active-bg);
+          box-shadow:
+            inset 0 0 0 1px var(--series-active-border),
+            0 4px 14px rgba(20, 158, 158, 0.14);
         }
       }
     }
+  }
+
+  .resourceDramaSeries-list-name ul li {
+    border-color: var(--series-border);
+    border-radius: 9px;
+    background: var(--series-surface);
   }
 }
 
@@ -287,41 +320,68 @@ const formatBitRate = (bitRate: number) => {
   min-width: 0;
 
   ul {
-    width: calc(100% - 0.4em);
+    width: 100%;
     min-width: 0;
     box-sizing: border-box;
-    margin: 0 0.2em;
+    margin: 0;
     padding: 0;
     list-style-type: none;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 
     li {
-      width: calc(100% - 2em);
+      width: 100%;
       min-width: 0;
-      box-sizing: content-box;
-      line-height: 1.2em;
+      box-sizing: border-box;
+      line-height: 1.25;
       font-weight: 500;
-      font-style: italic;
-      padding: 0.5em 1em;
-      border-bottom: 1px dotted rgba(168, 171, 178, 0.5);
+      font-style: normal;
+      padding: 7px 8px;
+      color: var(--series-text);
+      background: var(--series-surface);
+      border: 1px solid transparent;
+      border-radius: 6px;
       cursor: pointer;
       user-select: none;
       display: flex;
-      align-items: flex-start;
-      /* 新增过渡动画 */
+      align-items: center;
+      gap: 8px;
       transition:
-        background-color 0.2s ease,
-        box-shadow 0.2s ease;
+        color 0.16s ease,
+        border-color 0.16s ease,
+        background-color 0.16s ease,
+        box-shadow 0.16s ease;
 
-      /* 鼠标悬停时的高亮效果 */
       &:hover {
-        color: var(--el-color-primary);
-        background-color: var(--el-color-primary-light-9);
-        border-color: var(--el-color-primary);
+        color: var(--series-active-text);
+        background: var(--series-surface-hover);
+        border-color: var(--series-border);
       }
 
-      label {
+      &.selected {
+        color: var(--series-active-text);
+        background: var(--series-active-bg);
+        border-color: var(--series-active-border);
+        box-shadow: inset 3px 0 0 var(--series-active-border);
+      }
+
+      .series-index {
+        width: 25px;
+        height: 25px;
         flex-shrink: 0;
-        padding-right: 0.8em;
+        display: grid;
+        place-items: center;
+        border-radius: 6px;
+        color: var(--series-muted);
+        background: var(--el-fill-color);
+        font-size: 11px;
+        line-height: 1;
+      }
+
+      &.selected .series-index {
+        color: #ffffff;
+        background: var(--series-active-border);
       }
 
       .series-content {
@@ -335,6 +395,7 @@ const formatBitRate = (bitRate: number) => {
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+        font-weight: 600;
       }
 
       .metadata-line {
