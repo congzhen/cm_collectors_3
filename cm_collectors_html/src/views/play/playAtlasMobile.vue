@@ -30,7 +30,8 @@
       </div>
     </div>
 
-    <imageViewer ref="imageViewerRef" :imageList="atlasImageListSrc_C"></imageViewer>
+    <imageViewer ref="imageViewerRef" :imageList="atlasImageListSrc_C"
+      :thumbnail-list="atlasThumbnailListSrc_C"></imageViewer>
   </div>
 </template>
 
@@ -88,13 +89,15 @@ watch(waterfallColumn, () => {
 });
 
 // 计算瀑布流列表数据
-const waterfallList = computed(() => {
+const atlasThumbnailWidth_C = computed(() => {
   const mainWidth = mainRef.value?.clientWidth || 0;
-  const thumbWidth = Math.floor(mainWidth / waterfallColumn.value);
+  return Math.floor(mainWidth / waterfallColumn.value);
+});
+const waterfallList = computed(() => {
   return atlasImageList.value
     .slice(0, displayedCount.value)
     .map((fileName, index) => ({
-      src: getFileImageByDramaSeriesId(selectedDramaSeriesId.value, fileName, thumbWidth),
+      src: getFileImageByDramaSeriesId(selectedDramaSeriesId.value, fileName, atlasThumbnailWidth_C.value),
       id: index
     }));
 });
@@ -103,6 +106,11 @@ const waterfallList = computed(() => {
 const atlasImageListSrc_C = computed(() => {
   return atlasImageList.value.map(fileName =>
     getFileImageByDramaSeriesId(selectedDramaSeriesId.value, fileName)
+  );
+});
+const atlasThumbnailListSrc_C = computed(() => {
+  return atlasImageList.value.map(fileName =>
+    getFileImageByDramaSeriesId(selectedDramaSeriesId.value, fileName, atlasThumbnailWidth_C.value)
   );
 });
 

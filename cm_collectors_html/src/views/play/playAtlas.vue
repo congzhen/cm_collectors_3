@@ -1,6 +1,6 @@
 <template>
   <div class="play-atlas-container">
-    <HeaderView class="header" :mode="E_headerMode.GoBack" :title="resourceInfo?.title || ''"></HeaderView>
+    <HeaderView class="header" :mode="E_headerMode.GoBack" :title="resourceInfo?.title || ''" solid></HeaderView>
     <div class="main-container" v-loading="loading">
       <div class="main" ref="mainRef" v-if="resourceInfo">
         <Waterfall ref="waterfallRef" :list="waterfallList" :gutter="10" :breakpoints="waterfallBreakpoints"
@@ -24,7 +24,8 @@
         </div>
       </div>
     </div>
-    <imageViewer ref="imageViewerRef" :imageList="atlasImageListSrc_C"></imageViewer>
+    <imageViewer ref="imageViewerRef" :imageList="atlasImageListSrc_C"
+      :thumbnail-list="atlasThumbnailListSrc_C"></imageViewer>
   </div>
 </template>
 <script lang="ts" setup>
@@ -83,18 +84,25 @@ watch(waterfallColumn, (newVal) => {
 });
 
 // 计算瀑布流列表数据
-const waterfallList = computed(() => {
+const atlasThumbnailWidth_C = computed(() => {
   const mainWidth = mainRef.value?.clientWidth || 0;
-  const thumbWidth = Math.floor(mainWidth / waterfallColumn.value);
+  return Math.floor(mainWidth / waterfallColumn.value);
+})
+const waterfallList = computed(() => {
   return atlasImageList.value
     .slice(0, displayedCount.value)
     .map((fileName, index) => ({
-      src: getFileImageByDramaSeriesId(selectedDramaSeriesId.value, fileName, thumbWidth),
+      src: getFileImageByDramaSeriesId(selectedDramaSeriesId.value, fileName, atlasThumbnailWidth_C.value),
       id: index
     }))
 })
 const atlasImageListSrc_C = computed(() => {
   return atlasImageList.value.map(fileName => getFileImageByDramaSeriesId(selectedDramaSeriesId.value, fileName))
+})
+const atlasThumbnailListSrc_C = computed(() => {
+  return atlasImageList.value.map(fileName =>
+    getFileImageByDramaSeriesId(selectedDramaSeriesId.value, fileName, atlasThumbnailWidth_C.value)
+  )
 })
 
 
