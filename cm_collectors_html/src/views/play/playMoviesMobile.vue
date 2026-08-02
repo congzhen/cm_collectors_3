@@ -1,5 +1,5 @@
 <template>
-  <div class="play-movies-mobile">
+  <div class="play-movies-mobile" v-loading="loading">
     <!-- 顶部导航栏 -->
     <MobileHeader :title="resourceInfo?.title || ''" :show-menu-button="true" @menu-action="handleMenuAction" />
 
@@ -58,8 +58,7 @@
     <div class="performer-section" v-if="resourceInfo && resourceInfo.directors.length > 0">
       <div class="section-title">{{ appLang.director() }}</div>
       <div class="performer-list">
-        <div class="performer-item" v-for="performer in resourceInfo.directors" :key="performer.id"
-          @click="goToPerformer(performer.id)">
+        <div class="performer-item" v-for="performer in resourceInfo.directors" :key="performer.id">
           <performerPhoto class="el-avatar" :performer="performer"></performerPhoto>
           <div class="performer-name">{{ performer.name }}</div>
         </div>
@@ -69,8 +68,7 @@
     <div class="performer-section" v-if="resourceInfo && resourceInfo.performers.length > 0">
       <div class="section-title">{{ appLang.performer() }}</div>
       <div class="performer-list">
-        <div class="performer-item" v-for="performer in resourceInfo.performers" :key="performer.id"
-          @click="goToPerformer(performer.id)">
+        <div class="performer-item" v-for="performer in resourceInfo.performers" :key="performer.id">
           <performerPhoto class="el-avatar" :performer="performer"></performerPhoto>
           <div class="performer-name">{{ performer.name }}</div>
         </div>
@@ -104,7 +102,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, nextTick, computed } from "vue";
+import { ref, onMounted, onBeforeUnmount, nextTick, computed } from "vue";
 import { useRouter } from 'vue-router';
 import videoPlay from "@/components/play/videoPlay.vue";
 import type { I_resource, I_resourceDramaSeries } from '@/dataType/resource.dataType';
@@ -128,6 +126,7 @@ const videoPlayRef = ref<InstanceType<typeof videoPlay>>();
 const resourceInfo = ref<I_resource>();
 const selectedDramaSeriesId = ref<string>('');
 const loading = ref(false);
+let videoRequestVersion = 0
 
 const props = defineProps({
   resourceId: {
@@ -152,23 +151,30 @@ const goToPerformer = (performerId: string) => {
 };
 
 const init = async () => {
-  await getResourceInfo();
-  setVideoDramaSeries();
+  const loaded = await getResourceInfo();
+  if (loaded) setVideoDramaSeries();
 };
 
 const getResourceInfo = async () => {
   loading.value = true;
-  const result = await resourceServer.info(props.resourceId);
-  if (!result || !result.status) {
-    ElMessage.error(result.msg);
-    return;
+  try {
+    const result = await resourceServer.info(props.resourceId);
+    if (!result || !result.status) {
+      ElMessage.error(result?.msg || '资源信息加载失败');
+      return false;
+    }
+    resourceInfo.value = result.data;
+    return true
+  } catch (error) {
+    console.error(error)
+    ElMessage.error('资源信息加载失败')
+    return false
+  } finally {
+    loading.value = false;
   }
-  resourceInfo.value = result.data;
-  loading.value = false;
 };
 
 const setVideoDramaSeries = () => {
-  loading.value = true;
   let dramaSeriesId = '';
   if (props.dramaSeriesId !== '') {
     dramaSeriesId = props.dramaSeriesId;
@@ -176,26 +182,40 @@ const setVideoDramaSeries = () => {
     dramaSeriesId = resourceInfo.value.dramaSeries[0].id;
   }
   if (dramaSeriesId != '') {
-    setVideoSource(dramaSeriesId);
+    void setVideoSource(dramaSeriesId);
   } else {
     noPlayList();
   }
-  loading.value = false;
 };
 
 const setVideoSource = async (dramaSeriesId: string) => {
+  const requestVersion = ++videoRequestVersion
   selectedDramaSeriesId.value = dramaSeriesId;
   const vp = videoPlayRef.value;
   if (!vp) return;
-  const { playUrl, playType } = await getPlayVideoURLAndType(dramaSeriesId)
-  vp.setVideoSource(playUrl, playType, () => {
-    vp.addTextTrack(
-      `/api/video/subtitle/${dramaSeriesId}`,
-      '默认字幕',
-      'zh',
-      true
-    );
-  });
+  loading.value = true
+  try {
+    const { playUrl, playType } = await getPlayVideoURLAndType(dramaSeriesId)
+    if (requestVersion !== videoRequestVersion) return
+    if (!playUrl) throw new Error('播放地址为空')
+    vp.setVideoSource(playUrl, playType, () => {
+      if (requestVersion !== videoRequestVersion) return
+      loading.value = false
+      vp.addTextTrack(
+        `/api/video/subtitle/${dramaSeriesId}`,
+        '默认字幕',
+        'zh',
+        true
+      );
+    }, resourceInfo.value?.title || '', 0, () => {
+      if (requestVersion === videoRequestVersion) loading.value = false
+    });
+  } catch (error) {
+    if (requestVersion !== videoRequestVersion) return
+    console.error(error)
+    loading.value = false
+    ElMessage.error('视频加载失败')
+  }
 };
 
 const noPlayList = () => {
@@ -207,8 +227,8 @@ const noPlayList = () => {
 };
 
 const playResourceDramaSeriesHandle = (ds: I_resourceDramaSeries) => {
-  setVideoSource(ds.id);
-  playUpdate(ds.resources_id, ds.id)
+  void setVideoSource(ds.id);
+  void playUpdate(ds.resources_id, ds.id)
 };
 
 // 处理菜单操作
@@ -228,14 +248,28 @@ onMounted(async () => {
     await init();
   });
 });
+
+onBeforeUnmount(() => {
+  videoRequestVersion++
+  videoPlayRef.value?.resetPlayer()
+})
 </script>
 
 <style lang="scss" scoped>
 .play-movies-mobile {
+  --mobile-play-bg: #121619;
+  --mobile-play-surface: #1b2024;
+  --mobile-play-surface-raised: #272d32;
+  --mobile-play-border: rgba(255, 255, 255, 0.12);
+  --mobile-play-text: #edf1f3;
+  --mobile-play-muted: #9ba5ad;
+
   width: 100%;
-  height: calc(100vh - 50px);
-  background-color: #1f1f1f;
-  color: #f3f3f3;
+  height: 100%;
+  min-height: 0;
+  box-sizing: border-box;
+  background-color: var(--mobile-play-bg);
+  color: var(--mobile-play-text);
   padding: 0;
   padding-bottom: 20px;
   overflow-y: auto;
@@ -250,7 +284,7 @@ onMounted(async () => {
     font-weight: 500;
     padding: 15px 15px 10px;
     margin-bottom: 6px;
-    border-bottom: 1px solid #444;
+    border-bottom: 1px solid var(--mobile-play-border);
   }
 
   .episode-section {
@@ -262,7 +296,7 @@ onMounted(async () => {
       .episode-item {
         padding: 8px 12px;
         margin: 5px;
-        background-color: #333;
+        background-color: var(--mobile-play-surface-raised);
         border-radius: 4px;
         font-size: 14px;
         cursor: pointer;
@@ -288,12 +322,12 @@ onMounted(async () => {
         font-size: 14px;
 
         .label {
-          color: #909399;
+          color: var(--mobile-play-muted);
           margin-bottom: 3px;
         }
 
         .value {
-          color: #f3f3f3;
+          color: var(--mobile-play-text);
         }
       }
     }
@@ -310,7 +344,6 @@ onMounted(async () => {
         display: flex;
         flex-direction: column;
         align-items: center;
-        cursor: pointer;
 
         .el-avatar {
           width: 60px;
@@ -344,8 +377,17 @@ onMounted(async () => {
       padding: 10px 15px;
       font-size: 14px;
       line-height: 1.5;
-      color: #ccc;
+      color: var(--mobile-play-muted);
     }
   }
+}
+
+:global(html.bright) .play-movies-mobile {
+  --mobile-play-bg: #f5f7f8;
+  --mobile-play-surface: #ffffff;
+  --mobile-play-surface-raised: #f1f4f6;
+  --mobile-play-border: #dce3e7;
+  --mobile-play-text: #23323b;
+  --mobile-play-muted: #71808a;
 }
 </style>

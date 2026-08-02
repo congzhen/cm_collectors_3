@@ -55,7 +55,9 @@
           <el-icon><ArrowRight /></el-icon>
         </button>
 
-        <div class="modern-image-viewer__canvas" @wheel.prevent="handleWheel">
+        <div class="modern-image-viewer__canvas" @wheel.prevent="handleWheel"
+          @touchstart="handleTouchStart" @touchmove="handleTouchMove"
+          @touchend="handleTouchEnd" @touchcancel="handleTouchEnd">
           <img
             v-if="currentImage"
             class="modern-image-viewer__image"
@@ -226,8 +228,21 @@ const scale = ref(1)
 const rotation = ref(0)
 const offset = reactive({ x: 0, y: 0 })
 const dragState = reactive({ active: false, startX: 0, startY: 0, originX: 0, originY: 0 })
+const touchState = reactive({
+  active: false,
+  pinching: false,
+  startX: 0,
+  startY: 0,
+  lastX: 0,
+  lastY: 0,
+  originX: 0,
+  originY: 0,
+  startDistance: 0,
+  startScale: 1,
+})
 const zoomStep = 0.2
 let previousBodyOverflow = ''
+let imageListVersion = 0
 
 const imageList_C = computed(() => {
   const result = props.imageList.map((_, index) => loadedImages.value[index] || loadingPlaceholder)
@@ -247,13 +262,18 @@ const thumbnailSource = (index: number) =>
   props.thumbnailList[index] || props.imageList[index] || loadingPlaceholder
 
 watch(
-  () => props.imageList.length,
-  (length) => {
+  () => props.imageList.join('\u0000'),
+  () => {
+    imageListVersion++
+    loadedImages.value = {}
+    loadingImages.value = {}
+    const length = props.imageList.length
     if (length === 0) {
       currentIndex.value = 0
       return
     }
     if (currentIndex.value >= length) currentIndex.value = length - 1
+    if (showImageViewer.value) preloadAround(currentIndex.value)
   },
 )
 
@@ -262,16 +282,20 @@ const preloadImage = (index: number) => {
   if (loadedImages.value[index] || loadingImages.value[index]) return
 
   loadingImages.value[index] = true
+  const loadVersion = imageListVersion
+  const imageSource = props.imageList[index]
   const img = new Image()
   img.onload = () => {
-    loadedImages.value[index] = props.imageList[index]
+    if (loadVersion !== imageListVersion || props.imageList[index] !== imageSource) return
+    loadedImages.value[index] = imageSource
     loadingImages.value[index] = false
   }
   img.onerror = () => {
+    if (loadVersion !== imageListVersion || props.imageList[index] !== imageSource) return
     loadedImages.value[index] = errorPlaceholder
     loadingImages.value[index] = false
   }
-  img.src = props.imageList[index]
+  img.src = imageSource
 }
 
 const preloadAround = (index: number) => {
@@ -344,6 +368,64 @@ const scrollThumbnails = (direction: number) => {
 
 const handleWheel = (event: WheelEvent) => {
   zoom(event.deltaY < 0 ? zoomStep : -zoomStep)
+}
+
+const touchDistance = (touches: TouchList) => {
+  if (touches.length < 2) return 0
+  return Math.hypot(
+    touches[0].clientX - touches[1].clientX,
+    touches[0].clientY - touches[1].clientY,
+  )
+}
+
+const handleTouchStart = (event: TouchEvent) => {
+  if (event.touches.length === 0) return
+  touchState.active = true
+  touchState.pinching = event.touches.length >= 2
+  touchState.startX = event.touches[0].clientX
+  touchState.startY = event.touches[0].clientY
+  touchState.lastX = touchState.startX
+  touchState.lastY = touchState.startY
+  touchState.originX = offset.x
+  touchState.originY = offset.y
+  touchState.startScale = scale.value
+  touchState.startDistance = touchDistance(event.touches)
+}
+
+const handleTouchMove = (event: TouchEvent) => {
+  if (!touchState.active || event.touches.length === 0) return
+  touchState.lastX = event.touches[0].clientX
+  touchState.lastY = event.touches[0].clientY
+
+  if (event.touches.length >= 2 && touchState.startDistance > 0) {
+    if (event.cancelable) event.preventDefault()
+    const nextScale = touchState.startScale * touchDistance(event.touches) / touchState.startDistance
+    scale.value = Math.min(5, Math.max(0.2, Number(nextScale.toFixed(2))))
+    touchState.pinching = true
+    return
+  }
+
+  const deltaX = touchState.lastX - touchState.startX
+  const deltaY = touchState.lastY - touchState.startY
+  if (scale.value > 1 || imageMode.value === 'original') {
+    if (event.cancelable) event.preventDefault()
+    offset.x = touchState.originX + deltaX
+    offset.y = touchState.originY + deltaY
+  } else if (Math.abs(deltaX) > Math.abs(deltaY) && event.cancelable) {
+    event.preventDefault()
+  }
+}
+
+const handleTouchEnd = () => {
+  if (!touchState.active) return
+  const deltaX = touchState.lastX - touchState.startX
+  const deltaY = touchState.lastY - touchState.startY
+  if (!touchState.pinching && scale.value <= 1 && imageMode.value === 'contain'
+    && Math.abs(deltaX) >= 55 && Math.abs(deltaX) > Math.abs(deltaY)) {
+    changeImage(deltaX < 0 ? 1 : -1)
+  }
+  touchState.active = false
+  touchState.pinching = false
 }
 
 const handleMouseMove = (event: MouseEvent) => {
@@ -543,6 +625,7 @@ defineExpose({
   position: absolute;
   inset: 72px 9% 94px;
   overflow: hidden;
+  touch-action: none;
 }
 
 .modern-image-viewer--thumbs .modern-image-viewer__canvas {
@@ -753,6 +836,36 @@ defineExpose({
 }
 
 @media (max-width: 820px) {
+  :global(html.bright .modern-image-viewer) {
+    --viewer-surface: rgba(255, 255, 255, 0.96);
+    --viewer-surface-soft: rgba(246, 248, 249, 0.96);
+    --viewer-border: #d8e0e4;
+    --viewer-text: #24323b;
+    --viewer-muted: #71808a;
+
+    background: radial-gradient(circle at center, #ffffff 0, #f4f6f7 72%);
+  }
+
+  :global(html.bright .modern-image-viewer__image) {
+    background: #eef1f3;
+    border-color: #d8e0e4;
+    box-shadow: 0 16px 36px rgba(44, 57, 65, 0.18);
+  }
+
+  :global(html.bright .modern-image-viewer__header),
+  :global(html.bright .modern-image-viewer__thumbnail-panel),
+  :global(html.bright .modern-image-viewer__toolbar) {
+    box-shadow: 0 8px 24px rgba(44, 57, 65, 0.12);
+  }
+
+  :global(html.bright .modern-image-viewer__thumbnail) {
+    background: #f5f7f8;
+
+    &:hover {
+      border-color: #aebbc2;
+    }
+  }
+
   .modern-image-viewer__header {
     left: 12px;
     right: 12px;
@@ -786,13 +899,39 @@ defineExpose({
   }
 
   .modern-image-viewer__toolbar {
-    max-width: calc(100vw - 20px);
-    gap: 4px;
-    overflow-x: auto;
+    width: calc(100vw - 20px);
+    max-width: none;
+    padding-inline: 4px;
+    gap: 2px;
+    overflow: hidden;
   }
 
   .modern-image-viewer__toolbar button {
-    flex: 0 0 32px;
+    width: auto;
+    min-width: 0;
+    flex: 1 1 0;
+    padding: 0;
+    font-size: clamp(14px, 4.2vw, 17px);
+  }
+
+  .modern-image-viewer__toolbar-progress,
+  .modern-image-viewer__scale {
+    min-width: 0;
+    flex: 1.35 1 0;
+    font-size: clamp(11px, 3.2vw, 13px);
+    white-space: nowrap;
+  }
+
+  .modern-image-viewer__divider {
+    display: none;
+  }
+
+  .modern-image-viewer__fit-text {
+    display: none;
+  }
+
+  .modern-image-viewer__toolbar button:has(.modern-image-viewer__fit-text) .el-icon {
+    transform: none;
   }
 }
 </style>

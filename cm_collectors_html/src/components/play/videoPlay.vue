@@ -26,11 +26,16 @@
         <source :src="videoSrc" :type="isHls ? 'application/x-mpegURL' : 'video/mp4'">
       </video>
       <!-- 移动端使用原生播放器 -->
-      <video v-else ref="nativeVideoRef" class="native-video-player" controls preload="metadata" width="100%"
+      <video v-else ref="nativeVideoRef" class="native-video-player" controls preload="auto" width="100%"
         playsinline webkit-playsinline x5-playsinline x5-video-player-type="h5" x5-video-player-fullscreen="true"
-        x5-video-orientation="portraint" @timeupdate="handleNativeTimeUpdate">
+        x5-video-orientation="portraint" @play="handleNativePlay" @pause="handleNativePause"
+        @ended="handleNativePause" @timeupdate="handleNativeTimeUpdate">
         <source :src="videoSrc" :type="isHls ? 'application/x-mpegURL' : 'video/mp4'">
       </video>
+      <button v-if="showCenterPlayButton" class="center-play-button" type="button" aria-label="播放视频"
+        title="播放" @click.stop="handleCenterPlay">
+        <el-icon><VideoPlay /></el-icon>
+      </button>
       <div v-if="activeSubtitleText" class="custom-subtitle-display">{{ activeSubtitleText }}</div>
     </div>
     <videoPlayControls v-if="useVideoPlayControls && !isMobile()" ref="videoControlsRef" @play="handlePlay"
@@ -56,9 +61,9 @@ import '@videojs/themes/dist/city/index.css';
 // Sea
 //import '@videojs/themes/dist/sea/index.css';
 
-import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { computed, ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { ElMessage } from 'element-plus';
-import { Back } from '@element-plus/icons-vue';
+import { Back, VideoPlay } from '@element-plus/icons-vue';
 import { isMobile } from '@/assets/mobile';
 import { openInPlayerDramaSeries } from '@/common/play';
 import { onHostWindowFullscreenChanged, setHostWindowFullscreen } from '@/common/runtimeBridge';
@@ -91,6 +96,7 @@ const appStore = appStoreData()
 const indexkey = ref(0);
 const isLoading = ref(false);
 const loadingText = ref('正在加载视频...');
+const isPlaybackActive = ref(false)
 
 const videoPlayControlsHeight = 63;
 
@@ -103,10 +109,15 @@ const playCloudCheckPromptDialogRef = ref<InstanceType<typeof playCloudCheckProm
 const player = ref<any>(null) // 指定更合适的类型
 let playerSetupVersion = 0;
 let playerSetupTimer: number | undefined;
+let nativeSourceVersion = 0
+let nativeSourceCleanup: (() => void) | undefined
 const videoId = ref('');
 const videoSrc = ref('');
 const videoTitle = ref('视频播放器');
 const isHls = ref(false)
+const showCenterPlayButton = computed(() =>
+  !isMobile() && Boolean(videoSrc.value) && !isPlaybackActive.value && !isLoading.value
+)
 const subtitleCues = ref<I_subtitleCue[]>([])
 const activeSubtitleText = ref('')
 let subtitleLoadVersion = 0
@@ -257,6 +268,7 @@ const setupPlayerEventListeners = () => {
 
   // 监听播放事件
   player.value.on('play', function () {
+    isPlaybackActive.value = true;
     if (videoControlsRef.value) {
       videoControlsRef.value.isPlaying = true;
     }
@@ -267,9 +279,15 @@ const setupPlayerEventListeners = () => {
 
   // 监听暂停事件
   player.value.on('pause', function () {
+    isPlaybackActive.value = false;
     if (videoControlsRef.value) {
       videoControlsRef.value.isPlaying = false;
     }
+    showControls(false)
+  });
+
+  player.value.on('ended', function () {
+    isPlaybackActive.value = false;
     showControls(false)
   });
 
@@ -653,6 +671,19 @@ const play = () => {
   }
   player.value?.play();
 }
+
+const handleCenterPlay = () => {
+  play()
+}
+
+const handleNativePlay = () => {
+  isPlaybackActive.value = true
+}
+
+const handleNativePause = () => {
+  isPlaybackActive.value = false
+}
+
 // 暂停
 const pause = () => {
   if (isMobile()) {
@@ -747,9 +778,11 @@ const setVideoSource = (
   type = 'mp4',
   fn = () => { },
   title = '',
-  retryCount = 0
+  retryCount = 0,
+  errorCallback: (error?: unknown) => void = () => undefined,
 ) => {
   clearSubtitleCues()
+  isPlaybackActive.value = false
   videoId.value = extractVideoIdFromPath(src)
   videoSrc.value = src
   videoTitle.value = normalizeVideoTitle(title, src)
@@ -761,6 +794,9 @@ const setVideoSource = (
   // 移动端直接使用原生播放器
   if (isMobile()) {
     if (nativeVideoRef.value) {
+      const sourceVersion = ++nativeSourceVersion
+      nativeSourceCleanup?.()
+      nativeSourceCleanup = undefined
       // 记录当前播放状态
       const wasPlaying = !nativeVideoRef.value.paused && !nativeVideoRef.value.ended;
       // 为了解决某些浏览器下切换视频后UI卡住的问题，我们先暂停并重置播放器
@@ -770,18 +806,49 @@ const setVideoSource = (
 
       // 使用 nextTick 确保 DOM 更新后再设置新源
       nextTick(() => {
-        nativeVideoRef.value!.src = src;
-        nativeVideoRef.value!.addEventListener('loadedmetadata', fn, { once: true })
-        // 强制重新加载视频
-        void nativeVideoRef.value!.load();
-        // 如果之前正在播放，则在可以播放时自动播放
-        if (wasPlaying) {
-          const playHandler = () => {
-            nativeVideoRef.value?.play();
-            nativeVideoRef?.value?.removeEventListener('canplay', playHandler);
-          };
-          nativeVideoRef.value?.addEventListener('canplay', playHandler);
+        const nativeVideo = nativeVideoRef.value
+        if (!nativeVideo || sourceVersion !== nativeSourceVersion) return
+
+        const handleLoadedMetadata = () => {
+          if (sourceVersion !== nativeSourceVersion) return
+          fn()
+          // 移动端暂停时主动定位到开头附近，促使浏览器解码并绘制第一帧，
+          // 只改变预览位置，不调用 play，避免首次加载或暂停切源时自动播放。
+          if (!wasPlaying && nativeVideo.paused && nativeVideo.currentTime <= 0 && nativeVideo.duration > 0) {
+            try {
+              nativeVideo.currentTime = Math.min(0.01, nativeVideo.duration / 2)
+            } catch (error) {
+              console.warn('移动端视频首帧预览加载失败:', error)
+            }
+          }
         }
+        const handleCanPlay = () => {
+          if (sourceVersion !== nativeSourceVersion || !wasPlaying) return
+          void nativeVideo.play().catch((error) => {
+            console.warn('移动端切换视频后恢复播放失败:', error)
+          })
+        }
+        const handleNativeError = () => {
+          if (sourceVersion !== nativeSourceVersion) return
+          isPlaybackActive.value = false
+          isLoading.value = false
+          const error = nativeVideo.error || new Error('移动端视频加载失败')
+          errorCallback(error)
+          ElMessage.error('视频加载失败，请检查资源或网络状态')
+        }
+        const cleanup = () => {
+          nativeVideo.removeEventListener('loadedmetadata', handleLoadedMetadata)
+          nativeVideo.removeEventListener('canplay', handleCanPlay)
+          nativeVideo.removeEventListener('error', handleNativeError)
+        }
+        nativeSourceCleanup = cleanup
+        nativeVideo.addEventListener('loadedmetadata', handleLoadedMetadata, { once: true })
+        nativeVideo.addEventListener('error', handleNativeError, { once: true })
+        if (wasPlaying) nativeVideo.addEventListener('canplay', handleCanPlay, { once: true })
+
+        nativeVideo.src = src;
+        // 强制重新加载视频
+        void nativeVideo.load();
       });
     }
     return;
@@ -817,12 +884,13 @@ const setVideoSource = (
           console.log('重试加载视频：', retryCount)
           // 添加延迟重试，避免频繁请求
           setTimeout(() => {
-            setVideoSource(src, type, fn, title, retryCount)
+            setVideoSource(src, type, fn, title, retryCount, errorCallback)
           }, 1000)
           return
         }
         // 隐藏loading
         isLoading.value = false;
+        errorCallback(error)
         ElMessage({
           showClose: true,
           message: error.message,
@@ -948,6 +1016,19 @@ const removeAllTextTracks = () => {
 
 // 添加重置播放器的方法  该方法有可能 触发  player.value.on('error'
 const resetPlayer = () => {
+  isPlaybackActive.value = false
+  if (nativeVideoRef.value) {
+    nativeSourceVersion++
+    nativeSourceCleanup?.()
+    nativeSourceCleanup = undefined
+    nativeVideoRef.value.pause()
+    nativeVideoRef.value.removeAttribute('src')
+    void nativeVideoRef.value.load()
+    videoSrc.value = ''
+    clearSubtitleCues()
+    rotation.value = 0
+    return
+  }
   if (player.value) {
     try {
       // 保存当前状态
@@ -995,7 +1076,8 @@ const saveVolumeToStorage = (volume: number) => {
 const getVolumeFromStorage = (): number => {
   try {
     const savedVolume = localStorage.getItem(VOLUME_STORAGE_KEY);
-    return savedVolume ? parseFloat(savedVolume) : 1; // 默认音量为1
+    const parsedVolume = savedVolume === null ? 1 : Number.parseFloat(savedVolume)
+    return Number.isFinite(parsedVolume) ? Math.min(1, Math.max(0, parsedVolume)) : 1
   } catch (e) {
     console.warn('无法从本地存储读取音量:', e);
     return 1;
@@ -1071,6 +1153,9 @@ onBeforeUnmount(() => {
     })
   }
   playerSetupVersion++;
+  nativeSourceVersion++
+  nativeSourceCleanup?.()
+  nativeSourceCleanup = undefined
   window.clearTimeout(playerSetupTimer);
   if (player.value) {
     player.value.pause()
@@ -1123,6 +1208,46 @@ defineExpose({
   flex: 1;
   min-height: 0;
   position: relative;
+}
+
+.center-play-button {
+  position: absolute;
+  z-index: 14;
+  top: 50%;
+  left: 50%;
+  width: clamp(64px, 10vw, 96px);
+  height: clamp(64px, 10vw, 96px);
+  display: grid;
+  place-items: center;
+  padding: 0;
+  color: #fff;
+  font-size: clamp(34px, 5vw, 52px);
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.58));
+  transform: translate(-50%, -50%);
+  transition: color 0.18s ease, transform 0.18s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.center-play-button:hover,
+.center-play-button:focus-visible {
+  color: #2bc2c4;
+  outline: none;
+  transform: translate(-50%, -50%) scale(1.06);
+}
+
+.center-play-button:active {
+  transform: translate(-50%, -50%) scale(0.96);
+}
+
+@media (max-width: 767px) {
+  .center-play-button {
+    width: 92px;
+    height: 92px;
+    font-size: 60px;
+  }
 }
 
 .custom-subtitle-display {
@@ -1251,6 +1376,20 @@ defineExpose({
 .video-player-container.fullscreen-mode:not(.actual-fullscreen) .video-controller {
   position: relative;
   flex-shrink: 0;
+}
+
+/*
+ * 最大化窗口中，视频区域和控制条是上下排列的两个独立区域。
+ * 清除 Video.js 流式模式用于维持宽高比的 padding，避免视频层溢出到控制条下面。
+ * 真正全屏时控制条仍保持覆盖视频，不应用这条规则。
+ */
+.video-player-container.fullscreen-mode:not(.actual-fullscreen) .video-player-windows {
+  overflow: hidden;
+}
+
+.video-player-container.fullscreen-mode:not(.actual-fullscreen) .video-js.vjs-fluid {
+  height: 100% !important;
+  padding-top: 0 !important;
 }
 
 .video-player-container.fullscreen-mode.actual-fullscreen .video-controller {

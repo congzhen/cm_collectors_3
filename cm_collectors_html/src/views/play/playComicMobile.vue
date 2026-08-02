@@ -4,36 +4,34 @@
     <div class="main-container" v-loading="loading">
       <div class="main" v-if="resourceInfo">
         <!-- 漫画显示区域 -->
-        <div class="comic-image-container" ref="readImageRef" @touchstart="handleTouchStart"
+        <div v-if="comicImageList.length > 0" class="comic-image-container" ref="readImageRef" @touchstart="handleTouchStart"
           @touchmove="handleTouchMove" @touchend="handleTouchEnd">
           <el-image class="comic-image"
             :src="getFileImageByDramaSeriesId(selectedDramaSeriesId, comicImageList[nowPage])" fit="contain"
             :style="{ width: '100%' }" />
         </div>
+        <div v-else class="comic-empty">暂无可显示的漫画图片</div>
 
         <!-- 底部控制区域 -->
         <div class="bottom-controls">
-          <!-- 分页控件 -->
-          <div class="pagination">
+          <div class="page-info">
+            第 {{ nowPage + 1 }} 页 / 共 {{ comicImageList.length }} 页
+          </div>
+
+          <!-- 阅读操作保持单排，避免占用过多漫画显示空间 -->
+          <div class="reader-actions">
             <el-button plain size="small" @click="changeNowPage('per')" :disabled="nowPage <= 0">
               上一页
             </el-button>
-            <div class="page-info">
-              第 {{ nowPage + 1 }} 页 / 共 {{ comicImageList.length }} 页
-            </div>
-            <el-button plain size="small" @click="changeNowPage('next')"
-              :disabled="nowPage >= comicImageList.length - 1">
-              下一页
-            </el-button>
-          </div>
-
-          <!-- 控制按钮 -->
-          <div class="control-buttons">
             <el-button size="small" @click="toggleDramaSeries" :type="showDramaSeries ? 'primary' : 'default'">
               {{ showDramaSeries ? '隐藏选集' : '显示选集' }}
             </el-button>
             <el-button size="small" @click="toggleThumbnail" :type="showThumbnail ? 'primary' : 'default'">
               {{ showThumbnail ? '隐藏缩略图' : '显示缩略图' }}
+            </el-button>
+            <el-button plain size="small" @click="changeNowPage('next')"
+              :disabled="nowPage >= comicImageList.length - 1">
+              下一页
             </el-button>
           </div>
 
@@ -93,6 +91,7 @@ const touchStartY = ref(0);
 const touchStartX = ref(0);
 const startY = ref(0);
 const scrollTop = ref(0);
+const swipeHandled = ref(false)
 
 const readImageRef = ref<HTMLDivElement>();
 const thumbnailRef = ref<HTMLDivElement>();
@@ -102,13 +101,15 @@ const comicImageList = ref<string[]>([]);
 const selectedDramaSeriesId = ref<string>('');
 const nowPage = ref(0);
 const loading = ref(false);
+let comicRequestVersion = 0
 const showThumbnail = ref(false); // 控制缩略图显示/隐藏
 const showDramaSeries = ref(false); // 控制选集显示/隐藏
 
 // 初始化
 const init = async () => {
   nowPage.value = 0;
-  await getResourceInfo();
+  const loaded = await getResourceInfo();
+  if (!loaded) return
   setDramaSeries();
   await getResourceComic();
 }
@@ -125,25 +126,49 @@ const setDramaSeries = () => {
 // 获取资源信息
 const getResourceInfo = async () => {
   loading.value = true;
-  const result = await resourceServer.info(props.resourceId);
-  if (!result || !result.status) {
-    ElMessage.error(result.msg);
-    return;
+  try {
+    const result = await resourceServer.info(props.resourceId);
+    if (!result || !result.status) {
+      ElMessage.error(result?.msg || '资源信息加载失败');
+      return false;
+    }
+    resourceInfo.value = result.data;
+    return true
+  } catch (error) {
+    console.error(error)
+    ElMessage.error('资源信息加载失败')
+    return false
+  } finally {
+    loading.value = false;
   }
-  resourceInfo.value = result.data;
-  loading.value = false;
 };
 
 // 获取漫画图片列表
 const getResourceComic = async () => {
-  loading.value = true;
-  const result = await filesServer.filesDListByDramaSeriesId_Image(selectedDramaSeriesId.value);
-  if (!result || !result.status) {
-    ElMessage.error(result.msg);
-    return;
+  const requestVersion = ++comicRequestVersion
+  if (!selectedDramaSeriesId.value) {
+    comicImageList.value = []
+    loading.value = false
+    return
   }
-  comicImageList.value = result.data;
-  loading.value = false;
+  loading.value = true;
+  try {
+    const result = await filesServer.filesDListByDramaSeriesId_Image(selectedDramaSeriesId.value);
+    if (requestVersion !== comicRequestVersion) return
+    if (!result || !result.status) {
+      ElMessage.error(result?.msg || '漫画图片加载失败');
+      comicImageList.value = []
+      return;
+    }
+    comicImageList.value = result.data;
+  } catch (error) {
+    if (requestVersion !== comicRequestVersion) return
+    console.error(error)
+    comicImageList.value = []
+    ElMessage.error('漫画图片加载失败')
+  } finally {
+    if (requestVersion === comicRequestVersion) loading.value = false;
+  }
 }
 
 // 切换剧集
@@ -233,6 +258,7 @@ const scrollToThumbnail = () => {
 
 // 触摸事件处理 - 开始
 const handleTouchStart = (e: TouchEvent) => {
+  swipeHandled.value = false
   touchStartY.value = e.touches[0].clientY;
   touchStartX.value = e.touches[0].clientX;
 
@@ -254,12 +280,15 @@ const handleTouchMove = (e: TouchEvent) => {
 
   // 如果水平滑动距离大于垂直滑动距离，则切换页面
   if (Math.abs(deltaX) > Math.abs(deltaY)) {
+    if (swipeHandled.value) return
     if (deltaX > 50) { // 向左滑动
       changeNowPage('next');
-      touchStartX.value = touchX; // 重置起点，防止连续触发
+      swipeHandled.value = true
+      if (e.cancelable) e.preventDefault()
     } else if (deltaX < -50) { // 向右滑动
       changeNowPage('per');
-      touchStartX.value = touchX; // 重置起点，防止连续触发
+      swipeHandled.value = true
+      if (e.cancelable) e.preventDefault()
     }
   } else {
     // 垂直滑动时滚动图片
@@ -270,7 +299,7 @@ const handleTouchMove = (e: TouchEvent) => {
 
 // 触摸事件处理 - 结束
 const handleTouchEnd = () => {
-  // 可以在这里添加额外的处理逻辑
+  swipeHandled.value = false
 }
 
 // 监听当前页变化，自动滚动缩略图
@@ -287,12 +316,19 @@ onMounted(async () => {
 
 <style lang="scss" scoped>
 .play-comic-mobile-container {
+  --comic-mobile-bg: #121619;
+  --comic-mobile-surface: #1b2024;
+  --comic-mobile-border: rgba(255, 255, 255, 0.12);
+  --comic-mobile-text: #edf1f3;
+  --comic-mobile-muted: #a0aab2;
+
   width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background-color: #000;
+  color: var(--comic-mobile-text);
+  background-color: var(--comic-mobile-bg);
 
   .header {
     flex-shrink: 0;
@@ -315,6 +351,7 @@ onMounted(async () => {
         align-items: flex-start;
         justify-content: center;
         touch-action: pan-y;
+        background: var(--comic-mobile-bg);
 
         .comic-image {
           max-width: 100%;
@@ -322,28 +359,43 @@ onMounted(async () => {
         }
       }
 
+      .comic-empty {
+        flex: 1;
+        display: grid;
+        place-items: center;
+        color: var(--comic-mobile-muted);
+      }
+
       .bottom-controls {
-        background-color: #1a1a1a;
-        color: white;
+        background-color: var(--comic-mobile-surface);
+        color: var(--comic-mobile-text);
+        border-top: 1px solid var(--comic-mobile-border);
         flex-shrink: 0;
 
-        .pagination {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 10px;
-
-          .page-info {
-            font-size: 14px;
-            white-space: nowrap;
-          }
+        .page-info {
+          padding: 5px 10px 3px;
+          color: var(--comic-mobile-muted);
+          font-size: 11px;
+          line-height: 1.2;
+          text-align: center;
+          white-space: nowrap;
         }
 
-        .control-buttons {
-          display: flex;
-          justify-content: center;
-          gap: 20px;
-          padding: 0 10px 10px;
+        .reader-actions {
+          display: grid;
+          grid-template-columns: 0.9fr 1.1fr 1.3fr 0.9fr;
+          align-items: center;
+          gap: 4px;
+          padding: 3px 8px calc(8px + env(safe-area-inset-bottom));
+
+          .el-button {
+            width: 100%;
+            min-width: 0;
+            height: 30px;
+            padding: 4px 3px;
+            margin: 0 !important;
+            font-size: 12px;
+          }
         }
 
         .drama-series-selector {
@@ -381,7 +433,7 @@ onMounted(async () => {
 
               .page-number {
                 text-align: center;
-                color: white;
+                color: var(--comic-mobile-text);
                 font-size: 12px;
                 padding: 2px 0;
               }
@@ -389,6 +441,25 @@ onMounted(async () => {
           }
         }
       }
+    }
+  }
+}
+
+:global(html.bright) .play-comic-mobile-container {
+  --comic-mobile-bg: #f5f7f8;
+  --comic-mobile-surface: #ffffff;
+  --comic-mobile-border: #dce3e7;
+  --comic-mobile-text: #23323b;
+  --comic-mobile-muted: #71808a;
+}
+
+@media (max-width: 360px) {
+  .play-comic-mobile-container .main-container .main .bottom-controls .reader-actions {
+    gap: 3px;
+    padding-inline: 5px;
+
+    .el-button {
+      font-size: 11px;
     }
   }
 }

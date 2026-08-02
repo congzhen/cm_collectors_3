@@ -13,13 +13,14 @@
         </div>
 
         <!-- 为移动端优化的瀑布流 -->
-        <Waterfall ref="waterfallRef" :list="waterfallList" :gutter="8" :breakpoints="waterfallBreakpoints"
+        <Waterfall v-if="atlasImageList.length > 0" ref="waterfallRef" :list="waterfallList" :gutter="8" :breakpoints="waterfallBreakpoints"
           :img-selector="'src'" class="atlas-list" @scroll="handleScroll">
           <template #default="{ item }">
             <el-image class="atlas-image" :src="item.src" @click="openImageViewer(item.id)" @load="onImageLoad" lazy
               fit="cover" />
           </template>
         </Waterfall>
+        <div v-else class="atlas-empty">暂无可显示的图集图片</div>
 
         <!-- 底部加载更多指示器 -->
         <div v-if="displayedCount < atlasImageList.length" class="load-more-container">
@@ -39,7 +40,7 @@
 import type { I_resource } from '@/dataType/resource.dataType';
 import imageViewer from '@/components/play/imageViewer.vue';
 import MobileHeader from '../MobileHeaderView.vue'
-import { computed, nextTick, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, onBeforeUnmount, ref, watch } from 'vue';
 import { resourceServer } from '@/server/resource.server';
 import { ElMessage } from 'element-plus';
 import { filesServer } from '@/server/files.server';
@@ -78,6 +79,7 @@ const loadedImageCount = ref(0);
 const displayedCount = ref(20); // 移动端初始显示数量更少
 const incrementCount = 10; // 移动端每次加载更少图片
 const isHandlingScroll = ref(false);
+let atlasRequestVersion = 0
 
 // 监听列数变化
 watch(waterfallColumn, () => {
@@ -122,7 +124,8 @@ const waterfallBreakpoints = computed(() => {
 });
 
 const init = async () => {
-  await getResourceInfo();
+  const loaded = await getResourceInfo();
+  if (!loaded) return
   setDramaSeries();
   await getResourceAtlas();
 };
@@ -137,37 +140,61 @@ const setDramaSeries = () => {
 
 const getResourceInfo = async () => {
   loading.value = true;
-  const result = await resourceServer.info(props.resourceId);
-  if (!result || !result.status) {
-    ElMessage.error(result.msg);
-    return;
+  try {
+    const result = await resourceServer.info(props.resourceId);
+    if (!result || !result.status) {
+      ElMessage.error(result?.msg || '资源信息加载失败');
+      return false;
+    }
+    resourceInfo.value = result.data;
+    return true
+  } catch (error) {
+    console.error(error)
+    ElMessage.error('资源信息加载失败')
+    return false
+  } finally {
+    loading.value = false;
   }
-  resourceInfo.value = result.data;
-  loading.value = false;
 };
 
 const getResourceAtlas = async () => {
-  loading.value = true;
-  const result = await filesServer.filesDListByDramaSeriesId_Image(selectedDramaSeriesId.value);
-  if (!result || !result.status) {
-    ElMessage.error(result.msg);
-    return;
+  const requestVersion = ++atlasRequestVersion
+  isFirstLoadCompleted.value = false
+  loadedImageCount.value = 0
+  if (!selectedDramaSeriesId.value) {
+    atlasImageList.value = []
+    loading.value = false
+    return
   }
-  atlasImageList.value = result.data;
-  // 重置显示数量
-  displayedCount.value = Math.min(20, atlasImageList.value.length);
-  loading.value = false;
-  // 在下一个 tick 检查是否需要加载更多
-  nextTick(() => {
-    checkAndLoadMore();
-  });
+  loading.value = true;
+  try {
+    const result = await filesServer.filesDListByDramaSeriesId_Image(selectedDramaSeriesId.value);
+    if (requestVersion !== atlasRequestVersion) return
+    if (!result || !result.status) {
+      ElMessage.error(result?.msg || '图集加载失败');
+      atlasImageList.value = []
+      return;
+    }
+    atlasImageList.value = result.data;
+    displayedCount.value = Math.min(20, atlasImageList.value.length);
+    nextTick(() => {
+      checkAndLoadMore();
+    });
+  } catch (error) {
+    if (requestVersion !== atlasRequestVersion) return
+    console.error(error)
+    atlasImageList.value = []
+    ElMessage.error('图集加载失败')
+  } finally {
+    if (requestVersion === atlasRequestVersion) loading.value = false;
+  }
 };
 
 // 检查并加载更多图片
 const checkAndLoadMore = () => {
   if (!isFirstLoadCompleted.value) return;
 
-  const container = document.querySelector('.atlas-list');
+  const container = mainRef.value?.querySelector<HTMLElement>('.atlas-list');
   if (!container) return;
 
   const { scrollHeight, clientHeight } = container;
@@ -176,7 +203,7 @@ const checkAndLoadMore = () => {
     loadMoreImages();
 
     setTimeout(() => {
-      const container = document.querySelector('.atlas-list');
+      const container = mainRef.value?.querySelector<HTMLElement>('.atlas-list');
       if (container) {
         const { scrollHeight, clientHeight } = container;
         if (scrollHeight <= clientHeight && displayedCount.value < atlasImageList.value.length) {
@@ -260,15 +287,27 @@ onMounted(async () => {
     await init();
   });
 });
+
+onBeforeUnmount(() => {
+  atlasRequestVersion++
+})
 </script>
 
 <style lang="scss" scoped>
 .play-atlas-mobile-container {
+  --atlas-mobile-bg: #121619;
+  --atlas-mobile-surface: #1b2024;
+  --atlas-mobile-border: rgba(255, 255, 255, 0.12);
+  --atlas-mobile-text: #edf1f3;
+  --atlas-mobile-muted: #9ba5ad;
+
   width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  color: var(--atlas-mobile-text);
+  background: var(--atlas-mobile-bg);
 
   :deep(.el-image-viewer__wrapper) {
     background-color: rgba($color: #000000, $alpha: 0.9);
@@ -294,10 +333,12 @@ onMounted(async () => {
         justify-content: space-between;
         align-items: center;
         padding: 5px 10px;
+        background: var(--atlas-mobile-surface);
+        border-bottom: 1px solid var(--atlas-mobile-border);
 
         .info-text {
           font-size: 14px;
-          color: #666;
+          color: var(--atlas-mobile-muted);
         }
 
         .episode-select {
@@ -312,7 +353,14 @@ onMounted(async () => {
         overflow-y: auto;
         padding: 5px;
         box-sizing: border-box;
-        background-color: unset;
+        background-color: var(--atlas-mobile-bg);
+      }
+
+      .atlas-empty {
+        flex: 1;
+        display: grid;
+        place-items: center;
+        color: var(--atlas-mobile-muted);
       }
 
       :deep(.waterfall-item) {
@@ -330,4 +378,13 @@ onMounted(async () => {
     }
   }
 }
+
+:global(html.bright .play-atlas-mobile-container) {
+  --atlas-mobile-bg: #f5f7f8;
+  --atlas-mobile-surface: #ffffff;
+  --atlas-mobile-border: #dce3e7;
+  --atlas-mobile-text: #23323b;
+  --atlas-mobile-muted: #71808a;
+}
+
 </style>
