@@ -83,7 +83,7 @@ const router = createRouter({
         dramaSeriesId: route.params.dramaSeriesId || ''
       }),
       component: playComic,
-      meta: { mobileAccess: true },
+      meta: { mobileAccess: false },
     },
     {
       path: '/play/comicMobile/:resourceId/:dramaSeriesId?',
@@ -103,7 +103,7 @@ const router = createRouter({
         dramaSeriesId: route.params.dramaSeriesId || ''
       }),
       component: playAtlas,
-      meta: { mobileAccess: true },
+      meta: { mobileAccess: false },
     },
     {
       path: '/play/atlasMobile/:resourceId/:dramaSeriesId?',
@@ -123,6 +123,19 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   // 获取目标路由的meta信息
   const routeMeta = to.meta;
+
+  if (isMobile()) {
+    const mobilePlayRouteMap: Record<string, string> = {
+      playMovies: 'playMoviesMobile',
+      playComic: 'playComicMobile',
+      playAtlas: 'playAtlasMobile',
+    }
+    const targetName = typeof to.name === 'string' ? mobilePlayRouteMap[to.name] : undefined
+    if (targetName) {
+      next({ name: targetName, params: to.params, query: to.query })
+      return
+    }
+  }
 
   // 如果是移动设备且目标页面不允许移动端访问，且没有desktop查询参数，则重定向到mobile页面
   if (isMobile() && routeMeta.mobileAccess === false && !to.query.desktop) {

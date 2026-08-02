@@ -42,20 +42,37 @@ const goBack = () => {
 
 // 返回首页
 const goToHome = () => {
-  router.push('/');
+  router.push('/mobile');
 };
 </script>
 
 <style lang="scss" scoped>
 .mobile-header {
+  --mobile-header-bg: #1b2024;
+  --mobile-header-surface: #262c31;
+  --mobile-header-border: rgba(255, 255, 255, 0.12);
+  --mobile-header-text: #edf1f3;
+
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 15px;
-  background-color: #333;
+  min-height: 52px;
+  padding: calc(6px + env(safe-area-inset-top)) 12px 6px;
+  box-sizing: border-box;
+  color: var(--mobile-header-text);
+  background-color: var(--mobile-header-bg);
+  border-bottom: 1px solid var(--mobile-header-border);
   position: sticky;
   top: 0;
   z-index: 100;
+
+  > .el-button {
+    width: 36px;
+    height: 36px;
+    color: var(--mobile-header-text);
+    background: var(--mobile-header-surface);
+    border-color: var(--mobile-header-border);
+  }
 
   .title {
     flex: 1;
@@ -66,7 +83,7 @@ const goToHome = () => {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    color: white;
+    color: var(--mobile-header-text);
   }
 
   .menu-overlay {
@@ -82,26 +99,50 @@ const goToHome = () => {
     z-index: 1000;
 
     .menu-popup {
-      background-color: #333;
+      color: var(--mobile-header-text);
+      background-color: var(--mobile-header-bg);
+      border: 1px solid var(--mobile-header-border);
       border-radius: 8px;
       width: 200px;
 
       .menu-item {
         padding: 15px;
         text-align: center;
-        border-bottom: 1px solid #444;
+        border-bottom: 1px solid var(--mobile-header-border);
         cursor: pointer;
-        color: #f3f3f3;
+        color: var(--mobile-header-text);
 
         &:last-child {
           border-bottom: none;
         }
 
         &:active {
-          background-color: #444;
+          background-color: var(--mobile-header-surface);
         }
       }
     }
   }
 }
+
+:global(html.bright .mobile-header) {
+  --mobile-header-bg: #ffffff;
+  --mobile-header-surface: #f3f6f7;
+  --mobile-header-border: #dce3e7;
+  --mobile-header-text: #23323b;
+}
+
+:global(html.bright .mobile-header > .el-button) {
+  color: #455761;
+  background-color: #f3f6f7;
+  border-color: #d6dfe4;
+}
+
+:global(html.bright .mobile-header > .el-button:hover),
+:global(html.bright .mobile-header > .el-button:focus-visible),
+:global(html.bright .mobile-header > .el-button:active) {
+  color: #159c9a;
+  background-color: #e9f5f5;
+  border-color: #9fd6d4;
+}
+
 </style>
