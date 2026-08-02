@@ -24,33 +24,24 @@ const clamp = (value: number, minimum: number, maximum: number) => {
   return Math.min(maximum, Math.max(minimum, value));
 }
 
-const getDesiredSpan = (remainingColumns: number) => {
-  if (remainingColumns === 1) return 1;
-  return remainingColumns % 2 === 0 ? 2 : 1;
-}
-
 const takeBestItem = <T>(
   pendingItems: I_pendingMosaicItem<T>[],
   remainingColumns: number,
   reorderWindow: number,
 ) => {
-  const searchLength = Math.min(reorderWindow, pendingItems.length);
-  const desiredSpan = getDesiredSpan(remainingColumns);
-  let selectedIndex = -1;
-
-  for (let index = 0; index < searchLength; index++) {
-    if (pendingItems[index].preferredSpan === desiredSpan) {
-      selectedIndex = index;
-      break;
-    }
+  // 优先保持接口返回的资源顺序。只有队首资源确实放不进当前行的
+  // 剩余空间时，才在有限窗口内寻找能够补位的资源。
+  if (pendingItems[0].preferredSpan <= remainingColumns) {
+    return pendingItems.splice(0, 1)[0];
   }
 
-  if (selectedIndex < 0) {
-    for (let index = 0; index < searchLength; index++) {
-      if (pendingItems[index].preferredSpan <= remainingColumns) {
-        selectedIndex = index;
-        break;
-      }
+  const searchLength = Math.min(reorderWindow, pendingItems.length);
+  let selectedIndex = -1;
+
+  for (let index = 1; index < searchLength; index++) {
+    if (pendingItems[index].preferredSpan <= remainingColumns) {
+      selectedIndex = index;
+      break;
     }
   }
 

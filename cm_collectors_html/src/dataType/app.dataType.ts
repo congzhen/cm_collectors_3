@@ -179,9 +179,10 @@ export interface I_playVideoData {
 }
 
 
-export type T_resourcesShowMode = 'coverPoster' | 'coverPosterBox' | 'coverPosterBoxWideSeparate' | 'coverPosterSimple' | 'coverPosterSimpleExpand' | 'coverPosterWaterfall' | 'coverPosterMosaic' | 'coverPosterMosaicShortVideo' | 'coverPosterCompactWall' | 'shortVideo' | 'shortVideoTopBottom' | 'table';
+export type T_resourcesShowMode = 'coverPoster' | 'coverPosterCinemaGallery' | 'coverPosterBox' | 'coverPosterBoxWideSeparate' | 'coverPosterSimple' | 'coverPosterSimpleExpand' | 'coverPosterWaterfall' | 'coverPosterMosaic' | 'coverPosterMosaicShortVideo' | 'coverPosterCompactWall' | 'shortVideo' | 'shortVideoTopBottom' | 'table';
 export const A_layoutCoverPosterSlc: T_resourcesShowMode[] = [
   'coverPoster',
+  'coverPosterCinemaGallery',
   'coverPosterBox',
   'coverPosterBoxWideSeparate',
   'coverPosterSimple',

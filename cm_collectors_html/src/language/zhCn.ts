@@ -19,6 +19,7 @@ export default {
   },
   resourcesShowMode: {
     coverPoster: '封面海报',
+    coverPosterCinemaGallery: '宽幕卡廊',
     coverPosterBox: '封面海报盒子',
     coverPosterBoxWideSeparate: '封面海报盒子-宽图',
     coverPosterSimple: '封面海报精简',

@@ -160,6 +160,7 @@ let shortVideoRequestVersion = 0
 
 const mobileLayoutMap: Record<T_resourcesShowMode, MobileLayoutFamily> = {
   coverPoster: 'poster',
+  coverPosterCinemaGallery: 'poster',
   coverPosterSimple: 'poster',
   coverPosterSimpleExpand: 'poster',
   coverPosterBox: 'list',

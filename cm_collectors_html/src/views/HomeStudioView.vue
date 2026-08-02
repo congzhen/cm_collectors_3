@@ -89,6 +89,7 @@ const filterPanelVisible = ref(localStorage.getItem(filterPanelStorageKey) == 't
 
 const resourceModeLabels: Record<string, string> = {
   coverPoster: '海报',
+  coverPosterCinemaGallery: '宽幕卡廊',
   coverPosterBox: '盒子',
   coverPosterBoxWideSeparate: '宽盒子',
   coverPosterSimple: '简洁',

@@ -2,6 +2,8 @@
   <contentStyle1 v-if="props.resourcesShowMode == 'coverPoster'" :resource="props.resources"
     @click="selectResourcesHandle">
   </contentStyle1>
+  <contentStyleCinemaGallery v-else-if="props.resourcesShowMode == 'coverPosterCinemaGallery'"
+    :resource="props.resources" @click="selectResourcesHandle"></contentStyleCinemaGallery>
   <contentStyle2 v-else-if="props.resourcesShowMode == 'coverPosterBox'" :resource="props.resources"
     @click="selectResourcesHandle"></contentStyle2>
   <contentStyle3 v-else-if="props.resourcesShowMode == 'coverPosterBoxWideSeparate'" :resource="props.resources"
@@ -16,6 +18,7 @@
 </template>
 <script lang="ts" setup>
 import contentStyle1 from '@/components/content/contentStyle1.vue';
+import contentStyleCinemaGallery from './contentStyleCinemaGallery.vue';
 import contentStyle2 from '@/components/content/contentStyle2.vue';
 import contentStyle3 from '@/components/content/contentStyle3.vue';
 import contentStyleSimple from './contentStyleSimple.vue';

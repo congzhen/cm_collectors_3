@@ -62,7 +62,7 @@ describe('createMosaicRows', () => {
     expect(
       rows[0].items.some((item) => item.data.id.startsWith('landscape-')),
     ).toBe(true);
-    expect(rows[0].items.map((item) => item.span)).toEqual([1, 2]);
+    expect(rows[0].items.map((item) => item.span)).toEqual([2, 1]);
   });
 
   it('keeps the final row deterministic without expanding its covers', () => {
@@ -75,7 +75,61 @@ describe('createMosaicRows', () => {
 
     expect(first).toEqual(second);
     expect(first[0].items.reduce((sum, item) => sum + item.span, 0)).toBe(3);
-    expect(first[0].items.map((item) => item.span)).toEqual([2, 1]);
+    expect(first[0].items.map((item) => item.span)).toEqual([1, 2]);
+  });
+
+  it('keeps a complete group of newer portrait resources in the first row', () => {
+    const rows = createMosaicRows(
+      [
+        source('new-1', 2 / 3, 1),
+        source('new-2', 2 / 3, 1),
+        source('new-3', 2 / 3, 1),
+        source('new-4', 2 / 3, 1),
+        source('new-5', 2 / 3, 1),
+        source('old-portrait', 2 / 3, 1),
+        source('old-landscape-1', 16 / 9, 2),
+        source('old-landscape-2', 16 / 9, 2),
+      ],
+      5,
+      1000,
+      10,
+    );
+
+    expect(rows[0].items.map((item) => item.data.id)).toEqual([
+      'new-1',
+      'new-2',
+      'new-3',
+      'new-4',
+      'new-5',
+    ]);
+    expect(rows[1].items.map((item) => item.data.id)).toEqual([
+      'old-portrait',
+      'old-landscape-1',
+      'old-landscape-2',
+    ]);
+  });
+
+  it('looks ahead only when the next resource cannot fit the remaining columns', () => {
+    const rows = createMosaicRows(
+      [
+        source('landscape-1', 16 / 9, 2),
+        source('landscape-2', 16 / 9, 2),
+        source('landscape-3', 16 / 9, 2),
+        source('portrait', 2 / 3, 1),
+      ],
+      5,
+      1000,
+      10,
+    );
+
+    expect(rows[0].items.map((item) => item.data.id)).toEqual([
+      'landscape-1',
+      'landscape-2',
+      'portrait',
+    ]);
+    expect(rows[1].items.map((item) => item.data.id)).toEqual([
+      'landscape-3',
+    ]);
   });
 
   it('keeps every resource with different column counts and aspect mixes', () => {
