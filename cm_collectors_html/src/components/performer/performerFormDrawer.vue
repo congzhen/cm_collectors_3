@@ -17,6 +17,7 @@
       </div>
       <div class="performer-form-right">
         <div class="performer-form-column">
+          <el-divider content-position="left">演员信息</el-divider>
           <el-form-item label="姓名" prop="name">
             <el-input v-model="formData.name" />
           </el-form-item>
@@ -43,6 +44,8 @@
           <el-form-item v-if="store.appStoreData.currentConfigApp.plugInUnit_Cup" label="三围">
             <inputCupBWH v-model:waist="formData.waist" v-model:bust="formData.bust" v-model:hip="formData.hip" />
           </el-form-item>
+          <el-divider content-position="left">演员标签</el-divider>
+          <performerTagSelect v-model="formTagIds" :performer-bases-id="formPerformerBasesId_C" />
 
         </div>
       </div>
@@ -54,7 +57,7 @@
   <scraperOnePerformerDialog ref="scraperOnePerformerDialogRef" @success="success" />
 </template>
 <script lang="ts" setup>
-import { reactive, ref } from 'vue'
+import { computed, reactive, ref } from 'vue'
 import drawerForm from '../com/dialog/drawer-form.vue'
 import selectCountry from '../com/form/selectCountry.vue'
 import selectCup from '@/components/com/form/selectCup.vue'
@@ -69,6 +72,7 @@ import { performerServer } from '@/server/performer.server'
 import { getPerformerPhoto } from '@/common/photo';
 import { AppLang } from '@/language/app.lang'
 import scraperOnePerformerDialog from '../importResource/scraperOnePerformerDialog.vue'
+import performerTagSelect from './performerTagSelect.vue'
 const appLang = AppLang()
 
 const store = {
@@ -107,9 +111,12 @@ const initialFormData: I_performer = {
   birthday: '',
   status: true,
   resourceCount: 0,
+  tags: [],
 };
 
 const formData = ref<I_performer>({ ...initialFormData })
+const formTagIds = ref<string[]>([])
+const formPerformerBasesId_C = computed(() => formData.value.performerBases_id || props.performerBasesId)
 
 const formRules = reactive<FormRules>({
   name: [{ required: true, trigger: 'blur', message: '请输入姓名' }],
@@ -125,8 +132,8 @@ const submitHandle = async () => {
   LoadingService.show();
   try {
     const apiCall = mode === 'add'
-      ? performerServer.create(formData.value, photoBase64)
-      : performerServer.update(formData.value, photoBase64);
+      ? performerServer.create(formData.value, photoBase64, formTagIds.value)
+      : performerServer.update(formData.value, photoBase64, formTagIds.value);
     const result = await apiCall;
     if (result.status) {
       success(result.data)
@@ -155,9 +162,11 @@ const open = (_mode: 'add' | 'edit', _performer: I_performer | null = null) => {
   setImageRef.value?.init();
   mode = _mode;
   if (_performer) {
-    formData.value = _performer;
+    formData.value = { ..._performer, tags: _performer.tags ? [..._performer.tags] : [] };
+    formTagIds.value = _performer.tags?.map(tag => tag.id) || [];
   } else {
     formData.value = { ...initialFormData };
+    formTagIds.value = [];
   }
   drawerFormRef.value?.open()
 }

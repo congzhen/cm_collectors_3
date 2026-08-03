@@ -79,6 +79,27 @@ func (PerformerBases) DeleteByID(id string) error {
 		}
 
 		// 所有保护条件通过后才删除主表记录；事务为后续扩展关联清理保留一致性边界。
+		var classIDs []string
+		if err := tx.Model(&models.PerformerTagClass{}).Where("performerBases_id = ?", id).Pluck("id", &classIDs).Error; err != nil {
+			return err
+		}
+		if len(classIDs) > 0 {
+			var tagIDs []string
+			if err := tx.Model(&models.PerformerTag{}).Where("performerTagClass_id IN ?", classIDs).Pluck("id", &tagIDs).Error; err != nil {
+				return err
+			}
+			if len(tagIDs) > 0 {
+				if err := tx.Where("performer_tag_id IN ?", tagIDs).Delete(&models.PerformersTags{}).Error; err != nil {
+					return err
+				}
+				if err := tx.Where("id IN ?", tagIDs).Delete(&models.PerformerTag{}).Error; err != nil {
+					return err
+				}
+			}
+			if err := tx.Where("id IN ?", classIDs).Delete(&models.PerformerTagClass{}).Error; err != nil {
+				return err
+			}
+		}
 		return models.PerformerBases{}.DeleteByID(tx, id)
 	})
 }

@@ -1,5 +1,7 @@
 
 
+import type { I_performerTag } from './performerTag.dataType';
+
 export interface I_performerBasic {
   id: string;
   name: string;
@@ -23,6 +25,7 @@ export interface I_performer extends I_performerBasic {
   retreatStatus: boolean; // 是否息影
   status: boolean;
   resourceCount: number;
+  tags?: I_performerTag[];
 }
 
 export interface I_search_performer {
@@ -30,6 +33,8 @@ export interface I_search_performer {
   star: string;
   cup: string;
   charIndex: string;
+  tagIds: string[];
+  tagMatchMode: 'any' | 'all';
   sort: 'createdAtDesc' | 'nameAsc' | 'nameDesc' | 'resourceCountDesc' | 'resourceCountAsc';
 }
 

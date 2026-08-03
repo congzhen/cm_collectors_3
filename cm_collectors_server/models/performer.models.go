@@ -30,6 +30,7 @@ type Performer struct {
 	LastScraperUpdateTime *datatype.CustomDate `json:"lastScraperUpdateTime" gorm:"column:lastScraperUpdateTime;type:date;default:NULL"`
 	Status                bool                 `json:"status" gorm:"type:tinyint(1);default:1"`
 	ResourceCount         int64                `json:"resourceCount" gorm:"column:resourceCount;->;-:migration"`
+	Tags                  []PerformerTag       `json:"tags" gorm:"many2many:performersTags;"`
 }
 
 type PerformerBasic struct {
@@ -49,6 +50,11 @@ func (PerformerBasic) TableName() string {
 type performerResourceCount struct {
 	PerformerID   string `gorm:"column:performer_id"`
 	ResourceCount int64  `gorm:"column:resourceCount"`
+}
+
+type PerformerListTagFilter struct {
+	TagIDs    []string
+	MatchMode string
 }
 
 const (
@@ -258,7 +264,7 @@ func (Performer) InfoByName(db *gorm.DB, performerBasesID, name string, searchAl
 }
 func (Performer) InfoByID(db *gorm.DB, id string) (*Performer, error) {
 	var performer Performer
-	err := db.Where("id = ?", id).First(&performer).Error
+	err := db.Preload("Tags").Where("id = ?", id).First(&performer).Error
 	if err != nil {
 		return &performer, err
 	}
@@ -286,9 +292,15 @@ func (Performer) CountByPerformerBasesID(db *gorm.DB, performerBasesID string) (
 	return total, err
 }
 
-func (t Performer) DataList(db *gorm.DB, performerBasesId string, fetchCount bool, page, limit int, search, star, cup, charIndex, sortMode, countFilesBasesId string) (*[]Performer, int64, error) {
+func (t Performer) DataList(db *gorm.DB, performerBasesId string, fetchCount bool, page, limit int, search, star, cup, charIndex, sortMode, countFilesBasesId string, tagFilters ...PerformerListTagFilter) (*[]Performer, int64, error) {
 	var dataList []Performer
 	var total int64
+	var tagIDs []string
+	tagMatchMode := "any"
+	if len(tagFilters) > 0 {
+		tagIDs = tagFilters[0].TagIDs
+		tagMatchMode = tagFilters[0].MatchMode
+	}
 	offset := (page - 1) * limit
 	query := db.Model(Performer{}).Where("performerBases_id = ? and status = 1", performerBasesId)
 	if charIndex != "" {
@@ -310,6 +322,13 @@ func (t Performer) DataList(db *gorm.DB, performerBasesId string, fetchCount boo
 		} else {
 			query = query.Where("cup = ?", cup)
 		}
+	}
+	if len(tagIDs) > 0 {
+		tagFilter := db.Table("performersTags").Select("performer_id").Where("performer_tag_id IN ?", tagIDs)
+		if tagMatchMode == "all" {
+			tagFilter = tagFilter.Group("performer_id").Having("COUNT(DISTINCT performer_tag_id) = ?", len(tagIDs))
+		}
+		query = query.Where("performer.id IN (?)", tagFilter)
 	}
 	if fetchCount {
 		err := query.Count(&total).Error
@@ -340,7 +359,7 @@ func (t Performer) DataList(db *gorm.DB, performerBasesId string, fetchCount boo
 		}
 	}
 	query = query.Limit(limit).Offset(offset)
-	err := query.Find(&dataList).Error
+	err := query.Preload("Tags", "status = ?", true).Find(&dataList).Error
 	if err != nil {
 		return nil, 0, err
 	}
@@ -413,7 +432,7 @@ func (Performer) resourceCountSortQuery(db *gorm.DB, performerBasesId, filesBase
 }
 func (Performer) DataListByIds(db *gorm.DB, ids []string) (*[]Performer, error) {
 	var dataList []Performer
-	err := db.Model(Performer{}).Where("id in (?)", ids).Find(&dataList).Error
+	err := db.Model(Performer{}).Preload("Tags", "status = ?", true).Where("id in (?)", ids).Find(&dataList).Error
 	if err != nil {
 		return &dataList, err
 	}

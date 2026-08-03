@@ -36,6 +36,12 @@
             简介：{{ props.performer.introduction }}
           </li>
         </ul>
+        <div v-if="props.performer.tags?.length" class="performer-tags">
+          <div class="performer-tags-title">标签</div>
+          <div class="performer-tags-list">
+            <el-tag v-for="tag in props.performer.tags" :key="tag.id" size="small" effect="plain">{{ tag.name }}</el-tag>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -94,6 +100,10 @@ const props = defineProps({
         line-height: 1.5em;
       }
     }
+
+    .performer-tags { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--el-border-color-lighter); }
+    .performer-tags-title { margin-bottom: 7px; color: var(--el-text-color-secondary); }
+    .performer-tags-list { display: flex; flex-wrap: wrap; gap: 6px; }
   }
 }
 </style>

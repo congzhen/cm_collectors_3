@@ -3,6 +3,7 @@ import AdminLoginView from '@/views/AdminLoginView.vue'
 import IndexView from '../views/IndexView.vue'
 import PerformerView from '@/views/performerView.vue'
 import PerformerBasesListView from '@/views/performerBasesListView.vue'
+import PerformerTagManageView from '@/views/performerTagManageView.vue'
 import SettingView from '@/views/SettingView.vue'
 import playMovies from '@/views/play/playMovies.vue'
 import playMoviesMobile from '@/views/play/playMoviesMobile.vue'
@@ -34,6 +35,13 @@ const router = createRouter({
       name: 'mobile',
       component: MobileView,
       meta: { mobileAccess: true },
+    },
+    {
+      path: '/performer/tags/:performerBasesId',
+      name: 'performerTagManage',
+      props: route => ({ performerBasesId: route.params.performerBasesId }),
+      component: PerformerTagManageView,
+      meta: { mobileAccess: false },
     },
     {
       path: '/performer/:mainPerformerBasesId',

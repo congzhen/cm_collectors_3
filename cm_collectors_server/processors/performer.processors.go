@@ -28,8 +28,8 @@ func (Performer) BasicList(performerBasesIds []string, careerPerformer, careerDi
 	return models.Performer{}.BasicList(core.DBS(), performerBasesIds, careerPerformer, careerDirector)
 }
 
-func (Performer) DataList(performerBasesId string, fetchCount bool, page, limit int, search, star, cup, charIndex, sortMode, countFilesBasesId string) (*[]models.Performer, int64, error) {
-	return models.Performer{}.DataList(core.DBS(), performerBasesId, fetchCount, page, limit, search, star, cup, charIndex, sortMode, countFilesBasesId)
+func (Performer) DataList(performerBasesId string, fetchCount bool, page, limit int, search, star, cup, charIndex, sortMode, countFilesBasesId string, tagIDs []string, tagMatchMode string) (*[]models.Performer, int64, error) {
+	return models.Performer{}.DataList(core.DBS(), performerBasesId, fetchCount, page, limit, search, star, cup, charIndex, sortMode, countFilesBasesId, models.PerformerListTagFilter{TagIDs: tagIDs, MatchMode: tagMatchMode})
 }
 
 // DataListByIds 根据提供的演员ID列表获取演员数据列表
@@ -269,13 +269,16 @@ func (Performer) DeletePerformerPhoto(performerBasesID, photoName string) error 
 
 // Create 创建新的表演者数据
 func (t Performer) Create(par *datatype.ReqParam_PerformerData) (*models.Performer, error) {
+	db := core.DBS()
+	if err := validatePerformerTagIDs(db, par.Performer.PerformerBasesID, par.TagIDs); err != nil {
+		return nil, err
+	}
 	// 保存图片
 	photoName, err := t.SavePerformerPhoto(par)
 	if err != nil {
 		return nil, err
 	}
 
-	db := core.DBS()
 	createdAt := datatype.CustomTime(core.TimeNow())
 	id := core.GenerateUniqueID()
 
@@ -303,10 +306,18 @@ func (t Performer) Create(par *datatype.ReqParam_PerformerData) (*models.Perform
 		Status:           par.Performer.Status,
 	}
 
-	if err := performerModels.Create(db, &performerModels); err != nil {
+	if err := db.Transaction(func(tx *gorm.DB) error {
+		if err := validatePerformerTagIDs(tx, performerModels.PerformerBasesID, par.TagIDs); err != nil {
+			return err
+		}
+		if err := performerModels.Create(tx, &performerModels); err != nil {
+			return err
+		}
+		return models.PerformersTags{}.Set(tx, performerModels.ID, par.TagIDs)
+	}); err != nil {
 		return nil, err
 	}
-	return &performerModels, nil
+	return t.InfoByID(performerModels.ID)
 }
 
 func (t Performer) CreateByModelsPerformer_DB(db *gorm.DB, info *models.Performer, PhotoBase64 string) error {
@@ -331,6 +342,10 @@ func (t Performer) UpdatePerformerStatus(id string, status bool) error {
 
 // Update 更新表演者数据
 func (t Performer) Update(par *datatype.ReqParam_PerformerData) (*models.Performer, error) {
+	db := core.DBS()
+	if err := validatePerformerTagIDs(db, par.Performer.PerformerBasesID, par.TagIDs); err != nil {
+		return nil, err
+	}
 	// 保存新图片
 	newPhotoName, err := t.SavePerformerPhoto(par)
 	if err != nil {
@@ -342,7 +357,6 @@ func (t Performer) Update(par *datatype.ReqParam_PerformerData) (*models.Perform
 		t.DeletePerformerPhoto(par.Performer.PerformerBasesID, par.Performer.Photo)
 	}
 
-	db := core.DBS()
 	name := strings.TrimSpace(par.Performer.Name)
 	aliasName := strings.TrimSpace(par.Performer.AliasName)
 	performerModels := models.Performer{
@@ -389,10 +403,18 @@ func (t Performer) Update(par *datatype.ReqParam_PerformerData) (*models.Perform
 		fieldsToUpdate = append(fieldsToUpdate, "photo")
 	}
 
-	if err := performerModels.Update(db, &performerModels, fieldsToUpdate); err != nil {
+	if err := db.Transaction(func(tx *gorm.DB) error {
+		if err := validatePerformerTagIDs(tx, performerModels.PerformerBasesID, par.TagIDs); err != nil {
+			return err
+		}
+		if err := performerModels.Update(tx, &performerModels, fieldsToUpdate); err != nil {
+			return err
+		}
+		return models.PerformersTags{}.Set(tx, performerModels.ID, par.TagIDs)
+	}); err != nil {
 		return nil, err
 	}
-	return &performerModels, nil
+	return t.InfoByID(performerModels.ID)
 }
 
 func (t Performer) CreateScraperByModels(id string, dataModels models.Performer, perforomerPhotoBase64 string) error {
@@ -543,6 +565,9 @@ func (t Performer) DeleteByID(id string) error {
 			return err
 		}
 		//删除演员
+		if err := tx.Where("performer_id = ?", id).Delete(&models.PerformersTags{}).Error; err != nil {
+			return err
+		}
 		err = models.Performer{}.DeleteById(tx, id)
 		if err != nil {
 			return err
@@ -592,6 +617,9 @@ func (t Performer) MigratePerformer(performerId string, performerBasesId string)
 		// 更新演员的PerformerBasesID
 		createdAt := datatype.CustomTime(core.TimeNow())
 		performerModels := models.Performer{ID: performerId, PerformerBasesID: performerBasesId, CreatedAt: &createdAt}
+		if err := tx.Where("performer_id = ?", performerId).Delete(&models.PerformersTags{}).Error; err != nil {
+			return err
+		}
 		err = performerModels.Update(tx, &performerModels, []string{"performerBases_id", "addTime"})
 		if err != nil {
 			return err

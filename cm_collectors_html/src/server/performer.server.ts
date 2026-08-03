@@ -9,6 +9,7 @@ export const performerServer = {
       method: 'get',
       params: {
         ...searchCondition,
+        tagIds: searchCondition.tagIds.join(','),
         countFilesBasesId,
       }
     })
@@ -62,23 +63,25 @@ export const performerServer = {
     });
   },
 
-  create: async (performer: I_performer, photoBase64: string) => {
+  create: async (performer: I_performer, photoBase64: string, tagIds: string[] = []) => {
     return await request<I_performer>({
       url: `${routerGroupUri}/performer/create`,
       method: 'post',
       data: {
         performer,
         photoBase64,
+        tagIds,
       },
     });
   },
-  update: async (performer: I_performer, photoBase64: string) => {
+  update: async (performer: I_performer, photoBase64: string, tagIds: string[] = []) => {
     return await request<I_performer>({
       url: `${routerGroupUri}/performer/update`,
       method: 'put',
       data: {
         performer,
         photoBase64,
+        tagIds,
       },
     });
   },

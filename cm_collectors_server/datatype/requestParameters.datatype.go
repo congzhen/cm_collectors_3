@@ -155,6 +155,7 @@ type ReqParam_TopPreferredPerformers struct {
 type ReqParam_PerformerData struct {
 	Performer   ReqParam_Performer `json:"performer"`
 	PhotoBase64 string             `json:"photoBase64"`
+	TagIDs      []string           `json:"tagIds"`
 }
 type ReqParam_Performer struct {
 	ID               string `json:"id"`
@@ -179,6 +180,27 @@ type ReqParam_Performer struct {
 type ReqParam_PerformerStatus struct {
 	ID     string `json:"id"`
 	Status bool   `json:"status"`
+}
+
+type ReqParam_PerformerTagClass struct {
+	ID               string `json:"id"`
+	PerformerBasesID string `json:"performerBases_id" binding:"required"`
+	Name             string `json:"name" binding:"required"`
+	Sort             int    `json:"sort"`
+	Status           bool   `json:"status"`
+}
+
+type ReqParam_PerformerTag struct {
+	ID                  string `json:"id"`
+	PerformerTagClassID string `json:"performerTagClass_id" binding:"required"`
+	Name                string `json:"name" binding:"required"`
+	Sort                int    `json:"sort"`
+	Status              bool   `json:"status"`
+}
+
+type ReqParam_PerformerTagSort struct {
+	TagClassSort []TagSort `json:"tagClassSort"`
+	TagSort      []TagSort `json:"tagSort"`
 }
 
 type ReqParam_CreatePerformerBases struct {

@@ -10,7 +10,7 @@
         </span>
       </div>
       <div class="performer-container-main">
-        <performerSearch class="performer-search" :admin="true" @add="addPerformerHandle" @recycleBin="recycleBinHandle"
+        <performerSearch class="performer-search-toolbar" :admin="true" :performer-bases-id="props.performerBasesId" @add="addPerformerHandle" @recycleBin="recycleBinHandle"
           @search="changeSearchHandle" @scraper="scraperHandle" @avatarBatch="avatarBatchHandle">
         </performerSearch>
         <div class="performer-list-main" v-loading="loading">
@@ -119,6 +119,8 @@ let searchCondition: I_search_performer = {
   star: '',
   cup: '',
   charIndex: '',
+  tagIds: [],
+  tagMatchMode: 'any',
   sort: 'createdAtDesc',
 }
 
@@ -141,6 +143,9 @@ const getDataList = async () => {
   const result = await performerServer.dataList(props.performerBasesId, fetchCount, currentPage.value, pageSize.value, searchCondition, props.countFilesBasesId);
   if (result && result.status) {
     dataList.value = result.data.dataList;
+    if (currentShowPerformer.value) {
+      currentShowPerformer.value = dataList.value.find(item => item.id === currentShowPerformer.value?.id) || dataList.value[0];
+    }
     if (fetchCount) {
       dataCount.value = result.data.total;
       fetchCount = false;
@@ -167,8 +172,13 @@ const searchPerformerHandle = (data: I_performer) => {
 const addPerformerHandle = () => {
   performerFormDrawerRef.value?.open('add')
 }
-const editPerformerHandle = (data: I_performer) => {
-  performerFormDrawerRef.value?.open('edit', data)
+const editPerformerHandle = async (data: I_performer) => {
+  const result = await performerServer.infoById(data.id);
+  if (!result?.status) {
+    ElMessage.error(result?.msg || '加载演员详情失败');
+    return;
+  }
+  performerFormDrawerRef.value?.open('edit', result.data)
 }
 
 const migratePerformerHanadle = (data: I_performer) => {
@@ -198,11 +208,13 @@ const recycleBinHandle = () => {
 
 const changeSearchHandle = (search: I_search_performer) => {
   searchCondition = search;
+  currentPage.value = 1;
   fetchCount = true;
   getDataList();
 }
 const selectCharIndexHandle = (charIndex: string) => {
   selectIndex.value = charIndex;
+  currentPage.value = 1;
   fetchCount = true;
   getDataList();
 }
@@ -290,7 +302,7 @@ onMounted(async () => {
       display: flex;
       flex-direction: column;
 
-      .performer-search {
+      .performer-search-toolbar {
         flex-shrink: 0;
         display: flex;
       }

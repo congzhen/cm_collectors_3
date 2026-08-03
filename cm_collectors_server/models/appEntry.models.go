@@ -31,6 +31,9 @@ func autoMigrate(db *gorm.DB) error {
 		&FilesRelatedPerformerBases{},
 		&Performer{},
 		&PerformerBases{},
+		&PerformerTagClass{},
+		&PerformerTag{},
+		&PerformersTags{},
 		&Resources{},
 		&ResourcesDirectors{},
 		&ResourcesDramaSeries{},
@@ -59,6 +62,7 @@ func RegJoinTable(db *gorm.DB) {
 	db.SetupJoinTable(&Resources{}, "Tags", &ResourcesTags{})
 	db.SetupJoinTable(&Resources{}, "Performers", &ResourcesPerformers{})
 	db.SetupJoinTable(&Resources{}, "Directors", &ResourcesDirectors{})
+	db.SetupJoinTable(&Performer{}, "Tags", &PerformersTags{})
 	//db.SetupJoinTable(&Tag{}, "Resources", &ResourcesTags{})
 }
 
@@ -463,6 +467,12 @@ func AutoDatabase(db *gorm.DB) error {
 			ID: "search_favorites",
 			Migrate: func(tx *gorm.DB) error {
 				return tx.AutoMigrate(&SearchFavorite{})
+			},
+		},
+		{
+			ID: "performer_tags",
+			Migrate: func(tx *gorm.DB) error {
+				return tx.AutoMigrate(&PerformerTagClass{}, &PerformerTag{}, &PerformersTags{})
 			},
 		},
 		{

@@ -61,7 +61,20 @@ func (Performer) DataList(c *gin.Context) {
 	// countFilesBasesId 只影响 resourceCount 的统计范围，不影响演员列表本身。
 	// 例如同一个演员集被多个文件库关联时，前端可传当前 filesBasesId，让角标只显示当前文件库资源数。
 	countFilesBasesId := c.Query("countFilesBasesId")
-	dataList, total, err := processors.Performer{}.DataList(performerBasesId, fetchCount, page, limit, search, star, cup, charIndex, sortMode, countFilesBasesId)
+	tagIDs := make([]string, 0)
+	tagIDSet := make(map[string]struct{})
+	if value := strings.TrimSpace(c.Query("tagIds")); value != "" {
+		for _, id := range strings.Split(value, ",") {
+			if id = strings.TrimSpace(id); id != "" {
+				if _, exists := tagIDSet[id]; !exists {
+					tagIDSet[id] = struct{}{}
+					tagIDs = append(tagIDs, id)
+				}
+			}
+		}
+	}
+	tagMatchMode := c.DefaultQuery("tagMatchMode", "any")
+	dataList, total, err := processors.Performer{}.DataList(performerBasesId, fetchCount, page, limit, search, star, cup, charIndex, sortMode, countFilesBasesId, tagIDs, tagMatchMode)
 	if err := ResError(c, err); err != nil {
 		return
 	}
