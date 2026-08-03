@@ -148,6 +148,7 @@ type Config_FilesBases struct {
 	SortMode                     string                    `json:"sortMode"`                     // 排序模式
 	TagMode                      string                    `json:"tagMode"`                      // 标签模式
 	TagFixedModeRowShowNum       int                       `json:"tagFixedModeRowShowNum"`       // 固定模式-每行显示标签数量
+	ShowCustomTagResourceCount   bool                      `json:"showCustomTagResourceCount"`   // 自定义标签是否显示关联资源数量
 	YouLikeModule                bool                      `json:"youLikeModule"`                // 猜你喜欢-模块
 	YouLikeNumber                int                       `json:"youLikeNumber"`                // 猜你喜欢-数量
 	YouLikeTagClass              []string                  `json:"youLikeTagClass"`              // 猜你喜欢-标签类

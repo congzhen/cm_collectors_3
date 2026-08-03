@@ -233,6 +233,7 @@ const getDiyTagDataList = (tagClassId: string) => {
     result.push({
       id: tag.id,
       name: tag.name,
+      resourceCount: tag.resourceCount,
       status: store.searchStoreData.checkSelected(E_tagType.DiyTag, tag.id, tag.tagClass_id),
     });
   });
@@ -297,6 +298,8 @@ defineExpose({ init });
 </script>
 <style lang="scss" scoped>
 .tag-container {
+  --tag-count-bg: rgba(55, 198, 202, 0.14);
+  --tag-count-text: #67d4d7;
   width: 24.4em;
   height: 100%;
   overflow: hidden;
@@ -315,6 +318,10 @@ defineExpose({ init });
 
     :deep(.el-collapse-item__wrap) {
       border: 0;
+    }
+
+    :deep(.el-collapse-item.is-active .el-collapse-item__wrap) {
+      overflow: visible;
     }
 
     :deep(.el-collapse-item__content) {
@@ -357,6 +364,11 @@ defineExpose({ init });
     }
   }
 
+}
+
+.tag-container.tag-container--bright {
+  --tag-count-bg: rgba(27, 174, 181, 0.11);
+  --tag-count-text: #138c92;
 }
 
 .tag-container--modern {
@@ -477,6 +489,11 @@ defineExpose({ init });
     background: var(--filter-accent-soft) !important;
     border-color: var(--filter-accent) !important;
     box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--filter-accent) 18%, transparent);
+  }
+
+  :deep(.tag-content .check .tag-resource-count) {
+    color: #ffffff;
+    background: var(--filter-accent);
   }
 
   :deep(.tag-block-performer .tag-performer) {

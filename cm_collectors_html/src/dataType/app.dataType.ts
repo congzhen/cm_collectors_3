@@ -78,6 +78,7 @@ export interface I_tagData {
   id: string;
   name: string;
   status: boolean;
+  resourceCount?: number;
 }
 
 

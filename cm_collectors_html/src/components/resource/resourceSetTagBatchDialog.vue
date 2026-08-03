@@ -74,6 +74,7 @@ const submitHandle = debounceNow(async () => {
       ElMessage.success('标签设置成功');
       emits('success');
       close();
+      void store.appStoreData.refreshCurrentTagData();
     } else {
       ElMessage.error(result.msg);
     }

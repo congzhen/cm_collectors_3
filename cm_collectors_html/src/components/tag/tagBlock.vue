@@ -2,6 +2,7 @@
   <div class="tag-block">
     <div class="tag-content">
       <tagSpan v-for="item, key in props.dataList" :class="[item.status ? 'check' : '']" :key="key" :title="item.name"
+        :resource-count="item.resourceCount"
         @click="tagClickHandle(item.id)">
       </tagSpan>
     </div>

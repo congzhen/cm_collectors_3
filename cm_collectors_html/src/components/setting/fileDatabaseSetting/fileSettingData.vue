@@ -52,6 +52,9 @@
       <el-form-item label="固定模式每行显示标签数量">
         <el-input-number v-model="filesConfig.tagFixedModeRowShowNum" :min="1" :max="99" />
       </el-form-item>
+      <el-form-item label="自定义标签资源数量">
+        <el-switch v-model="filesConfig.showCustomTagResourceCount" inline-prompt active-text="显示" inactive-text="隐藏" />
+      </el-form-item>
       <el-form-item label="演员标签">
         <el-checkbox v-model="filesConfig.performerPhoto" label="显示演员照片" border />
         <el-checkbox v-model="filesConfig.shieldNoPerformerPhoto" label="屏蔽无照片演员" border />

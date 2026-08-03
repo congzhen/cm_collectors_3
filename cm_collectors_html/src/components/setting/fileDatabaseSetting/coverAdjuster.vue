@@ -96,6 +96,7 @@
                 <selectLeftColumnMode v-model="leftColumnMode" :teleported="false" />
               </div>
               <el-checkbox v-model="leftColumnFloatAutoHide" label="浮动模式自动隐藏" />
+              <el-checkbox v-model="showCustomTagResourceCount" label="显示自定义标签资源数量" />
               <div class="modern-option-item">
                 <span class="modern-control-label">详情显示模式</span>
                 <selectResourceDetailsShowMode v-model="resourceDetailsShowMode" :teleported="false" />
@@ -183,6 +184,9 @@
               </div>
               <div class="setting-item">
                 <el-checkbox v-model="leftColumnFloatAutoHide" label="浮动模式自动隐藏" />
+              </div>
+              <div class="setting-item">
+                <el-checkbox v-model="showCustomTagResourceCount" label="显示自定义标签资源数量" />
               </div>
               <div class="setting-item">
                 <span class="setting-label">详情显示模式</span>
@@ -341,6 +345,15 @@ const leftColumnFloatAutoHide = computed({
   get: () => store.appStoreData.currentConfigApp.leftColumnFloatAutoHide,
   set: (value) => {
     store.appStoreData.currentConfigApp.leftColumnFloatAutoHide = value;
+  }
+});
+const showCustomTagResourceCount = computed({
+  get: () => store.appStoreData.currentConfigApp.showCustomTagResourceCount !== false,
+  set: (value) => {
+    store.appStoreData.currentConfigApp.showCustomTagResourceCount = value;
+    if (value) {
+      void store.appStoreData.refreshCurrentTagData();
+    }
   }
 });
 const resourceDetailsShowMode = computed({

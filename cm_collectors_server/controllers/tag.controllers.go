@@ -12,7 +12,8 @@ type Tag struct{}
 
 func (Tag) TagData(c *gin.Context) {
 	filesBasesId := c.Param("filesBasesId")
-	tagData, err := processors.Tag{}.TagData(filesBasesId)
+	includeResourceCount := c.DefaultQuery("includeResourceCount", "true") != "false"
+	tagData, err := processors.Tag{}.TagData(filesBasesId, includeResourceCount)
 	if err := ResError(c, err); err != nil {
 		return
 	}
@@ -20,7 +21,8 @@ func (Tag) TagData(c *gin.Context) {
 }
 func (Tag) TagList_FilesBasesId(c *gin.Context) {
 	filesBasesId := c.Param("filesBasesId")
-	tagData, err := processors.Tag{}.TagData(filesBasesId)
+	includeResourceCount := c.DefaultQuery("includeResourceCount", "true") != "false"
+	tagData, err := processors.Tag{}.TagData(filesBasesId, includeResourceCount)
 	if err := ResError(c, err); err != nil {
 		return
 	}
@@ -28,7 +30,8 @@ func (Tag) TagList_FilesBasesId(c *gin.Context) {
 }
 func (Tag) TagList_TagClassId(c *gin.Context) {
 	tagClassId := c.Param("tagClassId")
-	tagList, err := processors.Tag{}.TagListByTagClassId(tagClassId)
+	includeResourceCount := c.DefaultQuery("includeResourceCount", "true") != "false"
+	tagList, err := processors.Tag{}.TagListByTagClassId(tagClassId, includeResourceCount)
 	if err := ResError(c, err); err != nil {
 		return
 	}

@@ -14,6 +14,7 @@ export interface I_tag {
   aiDescription: string;
   aiEnabled: boolean;
   hot: number;
+  resourceCount: number;
   sort: number;
   status: boolean;
 }

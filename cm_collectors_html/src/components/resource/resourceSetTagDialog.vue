@@ -60,6 +60,7 @@ const submitHandle = debounceNow(async () => {
       ElMessage.success('提交成功');
       emits('success', result.data);
       close();
+      void store.appStoreData.refreshCurrentTagData();
     } else {
       ElMessage.error(result.msg);
     }

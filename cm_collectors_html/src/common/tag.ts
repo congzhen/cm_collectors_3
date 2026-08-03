@@ -86,7 +86,7 @@ const parseTagImportText = (content: string) => {
 }
 
 export const tagExport = async (filesBasesId: string) => {
-  const result = await tagServer.tagDataByFilesBasesId(filesBasesId);
+  const result = await tagServer.tagDataByFilesBasesId(filesBasesId, false);
   if (!result || !result.status) {
     messageBoxAlert({
       text: '获取标签数据失败',

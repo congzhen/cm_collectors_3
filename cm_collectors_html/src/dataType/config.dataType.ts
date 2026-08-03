@@ -82,6 +82,7 @@ export interface I_config_app {
   sortMode: string; // 排序模式
   tagMode: string; // 标签模式
   tagFixedModeRowShowNum: number; // 固定标签每行显示数量
+  showCustomTagResourceCount: boolean; // 自定义标签是否显示关联资源数量
   youLikeModule: boolean; // 猜你喜欢-模块
   youLikeNumber: number; // 猜你喜欢-数量
   youLikeTagClass: string[]; // 猜你喜欢-标签类
@@ -107,6 +108,7 @@ export const defualtConfigApp: I_config_app = {
   definition: ['8K', '4K', '2K', '1080P', '720P', 'HighDefinition', 'StandardDefinition'],
   tagMode: 'fixed',
   tagFixedModeRowShowNum: 4,
+  showCustomTagResourceCount: true,
   performerPhoto: true,
   shieldNoPerformerPhoto: true,
   showPerformerResourceCount: true,

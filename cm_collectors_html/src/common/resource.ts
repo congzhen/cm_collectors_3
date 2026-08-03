@@ -3,6 +3,7 @@ import { messageBoxConfirm } from "./messageBox";
 import { resourceServer } from "@/server/resource.server";
 import { ElMessage } from "element-plus";
 import { LoadingService } from "@/assets/loading";
+import { appStoreData } from "@/storeData/app.storeData";
 
 export const resourceDelete = (resource: I_resource, callBackFn: () => void = () => { }) => {
   messageBoxConfirm({
@@ -29,10 +30,17 @@ export const resourceBatchDelete = (resources: I_resource[], callBackFn: () => v
         // 删除
         try {
           LoadingService.show();
+          let refreshTagData = false;
           for (let i = 0; i < resources.length; i++) {
-            await resourceDeleteExec(resources[i]);
+            const deleted = await resourceDeleteExec(resources[i], () => { }, false);
+            if (deleted && resources[i].filesBases_id === appStoreData().currentFilesBases.id) {
+              refreshTagData = true;
+            }
           }
           callBackFn();
+          if (refreshTagData) {
+            void appStoreData().refreshCurrentTagData();
+          }
         } catch (error) {
           console.log(error)
         } finally {
@@ -44,13 +52,22 @@ export const resourceBatchDelete = (resources: I_resource[], callBackFn: () => v
   }
 }
 
-const resourceDeleteExec = async (resource: I_resource, callBackFn: () => void = () => { }) => {
+const resourceDeleteExec = async (
+  resource: I_resource,
+  callBackFn: () => void = () => { },
+  refreshTagData = true,
+): Promise<boolean> => {
   const result = await resourceServer.delete(resource.id);
   if (!result || !result.status) {
     ElMessage.error(result.msg);
+    return false;
   } else {
     ElMessage.success('删除成功');
     callBackFn();
+    if (refreshTagData && resource.filesBases_id === appStoreData().currentFilesBases.id) {
+      void appStoreData().refreshCurrentTagData();
+    }
+    return true;
   }
 }
 

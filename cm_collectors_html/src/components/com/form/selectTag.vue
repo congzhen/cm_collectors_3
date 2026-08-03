@@ -70,7 +70,7 @@ const getTagList = async () => {
   loading.value = true;
   if (props.dataSource === 'database') {
     const apiCall = props.tagClassId === ''
-      ? tagServer.tagListByFilesBasesId(props.filesBasesId)
+      ? tagServer.tagListByFilesBasesId(props.filesBasesId, false)
       : tagServer.tagListByTagClassId(props.tagClassId);
 
     const result = await apiCall;

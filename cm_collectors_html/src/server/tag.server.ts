@@ -2,22 +2,31 @@ import request from "@/assets/request";
 import type { I_tag, I_tagClass, I_tagData, I_tagImportItem, I_tagSort } from "@/dataType/tag.dataType";
 const routerGroupUri = '';
 export const tagServer = {
-  tagDataByFilesBasesId: async (filesBases_id: string) => {
+  tagDataByFilesBasesId: async (filesBases_id: string, includeResourceCount = true) => {
     return await request<I_tagData>({
       url: `${routerGroupUri}/tag/data/${filesBases_id}`,
       method: 'get',
+      params: {
+        includeResourceCount,
+      },
     });
   },
-  tagListByFilesBasesId: async (filesBases_id: string) => {
+  tagListByFilesBasesId: async (filesBases_id: string, includeResourceCount = true) => {
     return await request<I_tag[]>({
       url: `${routerGroupUri}/tag/list/filesBasesId/${filesBases_id}`,
       method: 'get',
+      params: {
+        includeResourceCount,
+      },
     });
   },
-  tagListByTagClassId: async (tagClassId: string) => {
+  tagListByTagClassId: async (tagClassId: string, includeResourceCount = false) => {
     return await request<I_tag[]>({
       url: `${routerGroupUri}/tag/list/tagClassId/${tagClassId}`,
       method: 'get',
+      params: {
+        includeResourceCount,
+      },
     });
   },
   tagClassListByFilesBasesId: async (filesBases_id: string) => {

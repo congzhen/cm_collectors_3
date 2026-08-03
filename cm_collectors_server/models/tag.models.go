@@ -18,16 +18,63 @@ type Tag struct {
 	Sort          int                  `json:"sort" gorm:"type:int;default:0"`
 	CreatedAt     *datatype.CustomTime `json:"-" gorm:"column:addTime;type:datetime"`
 	Status        bool                 `json:"status" gorm:"type:tinyint(1);default:1"`
+	ResourceCount int64                `json:"resourceCount" gorm:"-"`
+}
+
+type tagResourceCount struct {
+	TagID         string `gorm:"column:tag_id"`
+	ResourceCount int64  `gorm:"column:resourceCount"`
 }
 
 func (Tag) TableName() string {
 	return "tag"
 }
 
-func (t Tag) DataListByTagClassIds(db *gorm.DB, tagClassIds []string) (*[]Tag, error) {
+func (t Tag) DataListByTagClassIds(db *gorm.DB, tagClassIds []string, includeResourceCount ...bool) (*[]Tag, error) {
 	var dataList []Tag
-	err := db.Where("tagClass_id in (?)", tagClassIds).Order("sort").Find(&dataList).Error
-	return &dataList, err
+	if err := db.Where("tagClass_id in (?)", tagClassIds).Order("sort").Find(&dataList).Error; err != nil {
+		return &dataList, err
+	}
+	includeCount := len(includeResourceCount) == 0 || includeResourceCount[0]
+	if includeCount {
+		if err := t.fillResourceCounts(db, dataList); err != nil {
+			return &dataList, err
+		}
+	}
+	return &dataList, nil
+}
+
+// fillResourceCounts 批量回填每个自定义标签关联的有效资源数量，避免逐标签查询。
+func (Tag) fillResourceCounts(db *gorm.DB, dataList []Tag) error {
+	if len(dataList) == 0 {
+		return nil
+	}
+
+	tagIDs := make([]string, 0, len(dataList))
+	for _, tag := range dataList {
+		tagIDs = append(tagIDs, tag.ID)
+	}
+
+	var counts []tagResourceCount
+	if err := db.Raw(`
+		SELECT resourcesTags.tag_id, COUNT(DISTINCT resourcesTags.resources_id) AS resourceCount
+		FROM resourcesTags
+		INNER JOIN resources ON resources.id = resourcesTags.resources_id
+		WHERE resources.status = 1
+			AND resourcesTags.tag_id IN ?
+		GROUP BY resourcesTags.tag_id
+	`, tagIDs).Scan(&counts).Error; err != nil {
+		return err
+	}
+
+	countMap := make(map[string]int64, len(counts))
+	for _, item := range counts {
+		countMap[item.TagID] = item.ResourceCount
+	}
+	for i := range dataList {
+		dataList[i].ResourceCount = countMap[dataList[i].ID]
+	}
+	return nil
 }
 
 func (t Tag) InfoByID(db *gorm.DB, id string) (*Tag, error) {

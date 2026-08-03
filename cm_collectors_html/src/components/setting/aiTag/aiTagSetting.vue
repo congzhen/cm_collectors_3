@@ -414,7 +414,7 @@ const loadTagOptions = async () => {
   const classMap: Record<string, I_tagClass[]> = {};
   const missingMap: Record<string, number> = {};
   for (const item of filesBasesSettings.value) {
-    const result = await tagServer.tagDataByFilesBasesId(item.filesBasesId);
+    const result = await tagServer.tagDataByFilesBasesId(item.filesBasesId, false);
     if (result.status) {
       classMap[item.filesBasesId] = result.data.tagClass.filter(tagClass => tagClass.status);
       missingMap[item.filesBasesId] = result.data.tag.filter(tag => tag.status && tag.aiEnabled !== false && !tag.aiDescription).length;

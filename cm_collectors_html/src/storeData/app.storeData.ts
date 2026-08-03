@@ -28,6 +28,7 @@ export const appStoreData = defineStore('app', {
     currentTag: [] as I_tag[],
     currentTagClass: [] as I_tagClass[],
     currentTopPreferredPerformers: [] as I_performer[],
+    tagDataRequestSerial: 0,
   }),
   getters: {
     getLogoName(state): string {
@@ -132,16 +133,28 @@ export const appStoreData = defineStore('app', {
       */
       console.log(this.currentConfigApp);
 
-      this.initTagData(filesBasesId)
-
-      // 获取优先显示演员数据
-      const topPreferredPerformersResult = await performerServer.listTopPreferredPerformers(
+      const tagPromise = this.initTagData(filesBasesId);
+      const topPreferredPerformersPromise = performerServer.listTopPreferredPerformers(
         this.currentConfigApp.performerPreferred,
         this.currentMainPerformerBasesId,
         this.currentConfigApp.shieldNoPerformerPhoto,
         this.currentConfigApp.performerShowNum,
         filesBasesId
       );
+
+      const [tagResult, topPreferredPerformersResult] = await Promise.all([
+        tagPromise,
+        topPreferredPerformersPromise,
+      ]);
+      if (this.currentFilesBases.id !== filesBasesId) {
+        return {
+          status: true,
+          message: 'stale files base request ignored'
+        };
+      }
+      if (tagResult && !tagResult.status) {
+        return tagResult;
+      }
       if (!topPreferredPerformersResult.status) {
         return {
           status: false,
@@ -156,8 +169,10 @@ export const appStoreData = defineStore('app', {
       };
     },
     async initTagData(filesBasesId: string) {
+      const requestSerial = ++this.tagDataRequestSerial;
       // 获取标签数据
-      const tagDataResult = await tagServer.tagDataByFilesBasesId(filesBasesId)
+      const includeResourceCount = this.currentConfigApp.showCustomTagResourceCount !== false;
+      const tagDataResult = await tagServer.tagDataByFilesBasesId(filesBasesId, includeResourceCount)
       if (!tagDataResult.status) {
         return {
           status: false,
@@ -165,9 +180,32 @@ export const appStoreData = defineStore('app', {
         };
       }
 
+      if (requestSerial !== this.tagDataRequestSerial || this.currentFilesBases.id !== filesBasesId) {
+        return {
+          status: true,
+          message: 'stale tag request ignored'
+        };
+      }
+
       // 设置当前标签与标签分类
       this.currentTagClass = tagDataResult.data.tagClass;
       this.currentTag = tagDataResult.data.tag;
+      return {
+        status: true,
+        message: 'success'
+      };
+    },
+    async refreshCurrentTagData() {
+      if (!this.currentFilesBases.id) return;
+      try {
+        return await this.initTagData(this.currentFilesBases.id);
+      } catch (error) {
+        console.warn('刷新自定义标签资源数量失败', error);
+        return {
+          status: false,
+          message: 'refresh tag data failed'
+        };
+      }
     },
     // 根据标签分类获取当前标签列表
     currentTagsByTagClassId(tagClassId: string) {

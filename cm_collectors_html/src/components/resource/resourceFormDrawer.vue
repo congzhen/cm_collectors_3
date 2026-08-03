@@ -325,6 +325,9 @@ const submitHandle = async () => {
     const result = await apiCall;
     if (result.status) {
       success(result.data)
+      if (formData.value.filesBases_id === store.appStoreData.currentFilesBases.id) {
+        void store.appStoreData.refreshCurrentTagData();
+      }
     } else {
       ElMessage.error(result.msg);
     }

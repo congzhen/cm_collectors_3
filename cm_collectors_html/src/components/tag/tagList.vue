@@ -1,5 +1,5 @@
 <template>
-  <div class="tag-list" v-loading="loading">
+  <div class="tag-list" :class="{ 'tag-list--bright': appStore.appConfig.theme === 'bright' }" v-loading="loading">
     <div v-if="tagClass">
       <div :class="['tag-list-block', item.status ? '' : 'disable']" v-for="item, key in tagClass" :key="key">
         <div class="tag-list-header">
@@ -27,7 +27,8 @@
         <div class="tag-list-body">
           <draggable class="tag-list-draggable" :list="tagObjectList[item.id]" item-key="id" @end="onDragEnd">
             <template #item="{ element, index }">
-              <tagItem :key="index" :tag="element" @edit="editTagHandle(element)" @delete="deleteTagHandle(element)"
+              <tagItem :key="index" :tag="element" :show-resource-count="showResourceCount_C"
+                @edit="editTagHandle(element)" @delete="deleteTagHandle(element)"
                 @enable="enableTagHandle(element)" @disable="disableTagHandle(element)" />
             </template>
           </draggable>
@@ -41,7 +42,7 @@
   <tagFormItemDialog ref="tagFormItemDialogRef" @success="successHandle"></tagFormItemDialog>
 </template>
 <script lang="ts" setup>
-import { ref, onMounted } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 import tagFormClassDialog from './tagFormClassDialog.vue';
 import tagFormItemDialog from './tagFormItemDialog.vue';
 import tagItem from './tagItem.vue';
@@ -51,6 +52,8 @@ import { ElMessage } from 'element-plus';
 import type { I_tag, I_tagClass, I_tagSort } from '@/dataType/tag.dataType';
 import draggable from 'vuedraggable';
 import { debounce } from '@/assets/debounce';
+import { filesBasesStoreData } from '@/storeData/filesBases.storeData';
+import { appStoreData } from '@/storeData/app.storeData';
 
 interface TagMap {
   [key: string]: I_tag[];
@@ -72,6 +75,23 @@ const tagObjectList = ref<TagMap>({});
 const tagFormClassDialogRef = ref<InstanceType<typeof tagFormClassDialog>>();
 const tagFormItemDialogRef = ref<InstanceType<typeof tagFormItemDialog>>();
 
+const filesBasesStore = filesBasesStoreData();
+const appStore = appStoreData();
+const showResourceCount_C = computed(() => {
+  if (appStore.currentFilesBases.id === props.id) {
+    return appStore.currentConfigApp.showCustomTagResourceCount !== false;
+  }
+  const filesBases = filesBasesStore.getFilesBasesById(props.id);
+  const configJson = filesBases?.filesBasesSetting?.config_json_data;
+  if (!configJson) return true;
+  try {
+    const config = JSON.parse(configJson) as { showCustomTagResourceCount?: boolean };
+    return config.showCustomTagResourceCount !== false;
+  } catch {
+    return true;
+  }
+});
+
 // 初始化
 const init = async (fn: () => void = () => { }) => {
   tagObjectList.value = {};
@@ -85,7 +105,7 @@ const getTagData = async () => {
   try {
     loading.value = true;
     // 获取标签数据
-    const result = await tagServer.tagDataByFilesBasesId(props.id);
+    const result = await tagServer.tagDataByFilesBasesId(props.id, showResourceCount_C.value);
     if (result && result.status) {
       tagClass.value = result.data.tagClass;
       result.data.tag.forEach(tag => {
@@ -259,6 +279,7 @@ const createTagHandle = (tagClassId: string) => {
     aiDescription: '',
     aiEnabled: true,
     hot: 0,
+    resourceCount: 0,
     sort: 0,
     status: true,
   }
@@ -312,8 +333,15 @@ defineExpose({ init })
 </script>
 <style lang="scss" scoped>
 .tag-list {
+  --tag-count-bg: rgba(55, 198, 202, 0.14);
+  --tag-count-text: #67d4d7;
   color: #a8abb2;
   height: 100%;
+
+  &.tag-list--bright {
+    --tag-count-bg: rgba(27, 174, 181, 0.11);
+    --tag-count-text: #138c92;
+  }
 
   .disable {
     .tag-list-body {
@@ -385,6 +413,7 @@ defineExpose({ init })
         max-width: 100%;
         flex-wrap: wrap;
         gap: 0.5em;
+
       }
     }
   }

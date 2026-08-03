@@ -40,7 +40,7 @@ func (i *importTagItem) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (t Tag) TagData(filesBasesID string) (*TagData, error) {
+func (t Tag) TagData(filesBasesID string, includeResourceCount ...bool) (*TagData, error) {
 	tagClass, err := TagClass{}.DataListByFilesBasesId(filesBasesID)
 	if err != nil {
 		return nil, err
@@ -49,7 +49,7 @@ func (t Tag) TagData(filesBasesID string) (*TagData, error) {
 	for i, v := range *tagClass {
 		tagClassIds[i] = v.ID
 	}
-	tags, err := t.TagListByTagClassIds(tagClassIds)
+	tags, err := t.TagListByTagClassIds(tagClassIds, includeResourceCount...)
 	if err != nil {
 		return nil, err
 	}
@@ -58,8 +58,8 @@ func (t Tag) TagData(filesBasesID string) (*TagData, error) {
 		Tag:      tags,
 	}, nil
 }
-func (t Tag) TagListByTagClassId(tagClassId string) (*[]models.Tag, error) {
-	return t.TagListByTagClassIds([]string{tagClassId})
+func (t Tag) TagListByTagClassId(tagClassId string, includeResourceCount ...bool) (*[]models.Tag, error) {
+	return t.TagListByTagClassIds([]string{tagClassId}, includeResourceCount...)
 }
 
 func (t Tag) InfoByID(id string) (*models.Tag, error) {
@@ -130,8 +130,8 @@ func (t Tag) TagUpdateSort(db *gorm.DB, tagSort *[]datatype.TagSort) error {
 	})
 }
 
-func (Tag) TagListByTagClassIds(tagClassIds []string) (*[]models.Tag, error) {
-	return models.Tag{}.DataListByTagClassIds(core.DBS(), tagClassIds)
+func (Tag) TagListByTagClassIds(tagClassIds []string, includeResourceCount ...bool) (*[]models.Tag, error) {
+	return models.Tag{}.DataListByTagClassIds(core.DBS(), tagClassIds, includeResourceCount...)
 }
 
 func (Tag) GetTotalByTagClassID(tagClassID string) (int64, error) {
@@ -145,7 +145,7 @@ func (t Tag) ImportTag(filesBasesID string, importDataRaw json.RawMessage) error
 	}
 	db := core.DBS()
 	return db.Transaction(func(tx *gorm.DB) error {
-		tagData, err := t.TagData(filesBasesID)
+		tagData, err := t.TagData(filesBasesID, false)
 		if err != nil {
 			return err
 		}
