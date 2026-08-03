@@ -30,6 +30,7 @@ const (
 	VideoMetadataRunMissing      = "missing"
 	VideoMetadataRunMissingStale = "missing_stale"
 	VideoMetadataRunFailed       = "failed"
+	VideoMetadataRunFailedForce  = "failed_force"
 	VideoMetadataRunAll          = "all"
 )
 
@@ -779,7 +780,7 @@ func (VideoMetadata) RunForCron(request VideoMetadataRunRequest) error {
 	}
 	failed := 0
 	for _, candidate := range candidates {
-		force := request.RunMode == VideoMetadataRunFailed
+		force := request.RunMode == VideoMetadataRunFailed || request.RunMode == VideoMetadataRunFailedForce
 		queued, done := (VideoMetadata{}).enqueueIfNeeded(
 			candidate.ResourcesDramaSeries, videoMetadataPriorityMedium, "", force, true, false,
 		)
@@ -800,6 +801,7 @@ func validVideoMetadataRunMode(mode string) bool {
 	return mode == VideoMetadataRunMissing ||
 		mode == VideoMetadataRunMissingStale ||
 		mode == VideoMetadataRunFailed ||
+		mode == VideoMetadataRunFailedForce ||
 		mode == VideoMetadataRunAll
 }
 
@@ -863,7 +865,9 @@ func (VideoMetadata) runBatch(taskID string, maxItems int) {
 				return
 			}
 			updateVideoMetadataBatchCurrent(taskID, candidate.Src)
-			force := task.RunMode == VideoMetadataRunAll || task.RunMode == VideoMetadataRunFailed
+			force := task.RunMode == VideoMetadataRunAll ||
+				task.RunMode == VideoMetadataRunFailed ||
+				task.RunMode == VideoMetadataRunFailedForce
 			queued, done := (VideoMetadata{}).enqueueIfNeeded(
 				candidate.ResourcesDramaSeries, videoMetadataPriorityHigh, taskID, force, true, false,
 			)
@@ -1004,6 +1008,8 @@ func videoMetadataCandidateQuery(ids []string, scopeMode, runMode string, exclud
 	switch runMode {
 	case VideoMetadataRunFailed:
 		q = q.Where("vm.probe_status = ? AND (vm.next_retry_time IS NULL OR vm.next_retry_time <= ?)", models.VideoMetadataStatusFailed, now)
+	case VideoMetadataRunFailedForce:
+		q = q.Where("vm.probe_status = ?", models.VideoMetadataStatusFailed)
 	case VideoMetadataRunAll:
 		q = q.Where(`vm.drama_series_id IS NULL
 			OR vm.probe_status = ?

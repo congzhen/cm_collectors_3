@@ -1,5 +1,5 @@
 export type VideoMetadataScopeMode = 'selected' | 'all';
-export type VideoMetadataRunMode = 'missing' | 'missing_stale' | 'failed' | 'all';
+export type VideoMetadataRunMode = 'missing' | 'missing_stale' | 'failed' | 'failed_force' | 'all';
 
 export interface I_videoMetadata {
   dramaSeriesId: string;

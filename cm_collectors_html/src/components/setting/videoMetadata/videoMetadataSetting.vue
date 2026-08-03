@@ -76,6 +76,7 @@
             <el-option label="补齐缺失并更新失效项" value="missing_stale" />
             <el-option label="只补齐完全缺失的信息" value="missing" />
             <el-option label="重试已到期的失败项" value="failed" />
+            <el-option label="强制重试失败项" value="failed_force" />
             <el-option label="强制重新采集全部" value="all" />
           </el-select>
         </el-form-item>
@@ -255,6 +256,10 @@ const startTask = async () => {
   }
   if (manual.runMode === 'all') {
     await ElMessageBox.confirm('强制重新采集会重新读取所选范围内的全部视频，是否继续？', '确认重新采集', {
+      type: 'warning',
+    });
+  } else if (manual.runMode === 'failed_force') {
+    await ElMessageBox.confirm('将忽略下次重试时间，立即重试所选范围内的全部失败项，是否继续？', '确认强制重试', {
       type: 'warning',
     });
   }

@@ -18,6 +18,24 @@ func TestValidateVideoMetadataScope(t *testing.T) {
 	}
 }
 
+func TestValidVideoMetadataRunMode(t *testing.T) {
+	validModes := []string{
+		VideoMetadataRunMissing,
+		VideoMetadataRunMissingStale,
+		VideoMetadataRunFailed,
+		VideoMetadataRunFailedForce,
+		VideoMetadataRunAll,
+	}
+	for _, mode := range validModes {
+		if !validVideoMetadataRunMode(mode) {
+			t.Fatalf("expected run mode %q to be valid", mode)
+		}
+	}
+	if validVideoMetadataRunMode("unknown") {
+		t.Fatal("unknown run mode should be invalid")
+	}
+}
+
 func TestValidateCronVideoMetadataScope(t *testing.T) {
 	if err := validateCronJobScopeSelection(
 		models.VideoMetadataScopeAll, nil, datatype.E_cronJobsType_VideoMetadata,
