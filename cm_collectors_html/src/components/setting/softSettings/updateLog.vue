@@ -16,6 +16,39 @@
         </div>
       </el-timeline-item>
       -->
+      <el-timeline-item center timestamp="2026/8/3" placement="top">
+        <h4 class="version-title">版本: v 3.2.0</h4>
+        <div class="rawContent">
+          <h5 class="section-title">新特性</h5>
+          <p class="logContent">新增现代外观，支持新版顶部栏、详情弹窗、右侧详情及明亮/暗黑主题切换</p>
+          <p class="logContent">新增影廊、智能拼贴墙、智能拼贴墙短视频、紧凑影墙和宽幕卡廊等资源展示模式</p>
+          <p class="logContent">新增现代漫画与图片查看器，支持缩略图、键盘导航、滚轮浏览和图片缩放</p>
+          <p class="logContent">重构移动端资源浏览、视频播放、漫画和照片集查看体验</p>
+          <p class="logContent">新增安全的视频转码任务，支持批量处理、GPU 探测、源文件替换和失败回滚</p>
+          <p class="logContent">新增视频元数据统一采集、失败项强制重试及数字剧集按需查看视频信息</p>
+          <p class="logContent">新增筛选结果视频文件大小统计，按需计算已统计与未统计文件大小</p>
+          <p class="logContent">新增独立演员头像库，支持单人选图、批量匹配、头像编辑和缓存清理</p>
+          <p class="logContent">新增演员标签系统，支持分类管理、演员编辑选标签及任一/全部标签筛选</p>
+          <p class="logContent">新增组合搜索条件收藏，可按文件库保存、应用和删除常用筛选条件</p>
+          <p class="logContent">自定义标签新增当前库资源数量显示，并可在库设置和快捷显示设置中开关</p>
+          <p class="logContent">演员列表新增影片数量、姓名正序和姓名倒序排序</p>
+        </div>
+        <div class="rawContent">
+          <h5 class="section-title optimization">优化</h5>
+          <p class="logContent">优化资源卡片、详情信息、剧集列表、画室布局和快捷显示设置</p>
+          <p class="logContent">优化播放器全屏控制、字幕兼容、最大化标题及短视频切源体验</p>
+          <p class="logContent">优化标签长文本布局、分类数量和资源数量角标的明暗主题显示</p>
+          <p class="logContent">更新应用多尺寸图标与 Android 安装包</p>
+        </div>
+        <div class="rawContent">
+          <h5 class="section-title bug-fix">BUG修复</h5>
+          <p class="logContent">修复 AI 标签扫描窗口卡住及计划任务可能重复执行的问题</p>
+          <p class="logContent">修复短视频切源声音残留、切库串播和资源列表切库状态异常</p>
+          <p class="logContent">修复播放器全屏控制、字幕显示和播放异常诊断问题</p>
+          <p class="logContent">修复 Windows 打开文件夹、文件定位及视频预览图裁剪问题</p>
+          <p class="logContent">修复推荐模块详情不联动及新资源库推荐模块默认状态问题</p>
+        </div>
+      </el-timeline-item>
       <el-timeline-item center timestamp="2026/6/14" placement="top">
         <h4 class="version-title">版本: v 3.1.0</h4>
         <div class="rawContent">

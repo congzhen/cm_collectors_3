@@ -82,7 +82,7 @@ interface UpdateInfo {
   dockerDownloadUrl?: string;
 }
 
-const currentVersion = ref('3.1.0')
+const currentVersion = ref('3.2.0')
 const latestVersion = ref('')
 const updateInfo = ref<UpdateInfo | null>(null)
 const checking = ref(false)
