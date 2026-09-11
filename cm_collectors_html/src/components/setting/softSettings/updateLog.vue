@@ -16,6 +16,41 @@
         </div>
       </el-timeline-item>
       -->
+      <el-timeline-item center timestamp="2026/9/11" placement="top">
+        <h4 class="version-title">版本: v 3.3.0</h4>
+        <div class="rawContent">
+          <h5 class="section-title">新特性</h5>
+          <p class="logContent">新增可视化视频剪辑，支持片段分割、删除、排序、合成及覆盖式转场，可另存成片或替换源文件</p>
+          <p class="logContent">视频剪辑新增切点预览、时间轴缩放、动态缩略图及统一播放和音量控制</p>
+          <p class="logContent">视频重复检测新增同屏复核，支持最多四路视频统一播放、时间或比例同步、参考音轨切换及删除标记</p>
+          <p class="logContent">新增演员批量管理，支持跨页选择、筛选结果全选、批量评星、演员集迁移、标签调整及移入回收站</p>
+          <p class="logContent">资源编辑支持右键编辑已选演员，保存演员资料后保留资源未保存内容</p>
+          <p class="logContent">资源新增副标题，并支持按文件库配置详情信息显示项</p>
+          <p class="logContent">新增资源体积、总时长和平均视频码率的正序与倒序排序，数据不完整的资源统一置后</p>
+          <p class="logContent">支持在添加时间排序且无筛选条件时，与相邻资源交换添加时间</p>
+          <p class="logContent">批量导入合并剧集支持保持现有顺序，以及按文件名称或文件大小正序、倒序排列</p>
+          <p class="logContent">视频元数据新增采集失败分页列表，支持重试、标记非视频及人工补录</p>
+        </div>
+        <div class="rawContent">
+          <h5 class="section-title optimization">优化</h5>
+          <p class="logContent">完善手机视频播放，支持横屏全屏、滑动定位、首帧预览、字幕及跨视频静音偏好</p>
+          <p class="logContent">手机端记忆资源库、筛选条件、分页、滚动位置及分集播放偏好，返回列表时恢复浏览位置</p>
+          <p class="logContent">演员列表记忆排序选择，重新打开时自动恢复</p>
+          <p class="logContent">完善转码任务顺序处理、源文件替换重试、失败成片另存及临时文件清理</p>
+          <p class="logContent">优化视频关键帧选中反馈与明暗主题显示，完善转场预览缓存存放和回收</p>
+          <p class="logContent">完善数据库及日志初始化错误提示，更新 Android 安装包和手机壳页面联动</p>
+        </div>
+        <div class="rawContent">
+          <h5 class="section-title bug-fix">BUG修复</h5>
+          <p class="logContent">修复随机排序翻页时结果不稳定及重复的问题</p>
+          <p class="logContent">修复视频清晰度获取错误依赖自动截封面开关的问题</p>
+          <p class="logContent">修复合并剧集追加分集后未触发视频信息采集的问题</p>
+          <p class="logContent">修复图片、字幕等非视频文件误计入视频容量的问题，并支持纠正历史误识别记录</p>
+          <p class="logContent">修复视频剪辑切点定位及缩略图异步覆盖问题</p>
+          <p class="logContent">改善手机端 4K MKV 播放与拖动兼容性，修复慢缓冲时播放器重建及加载提示残留问题</p>
+          <p class="logContent">修复经典模式部分中文标签文字显示不全的问题</p>
+        </div>
+      </el-timeline-item>
       <el-timeline-item center timestamp="2026/8/3" placement="top">
         <h4 class="version-title">版本: v 3.2.0</h4>
         <div class="rawContent">
@@ -26,9 +61,7 @@
           <p class="logContent">重构移动端资源浏览、视频播放、漫画和照片集查看体验</p>
           <p class="logContent">新增安全的视频转码任务，支持批量处理、GPU 探测、源文件替换和失败回滚</p>
           <p class="logContent">新增视频元数据统一采集、失败项强制重试及数字剧集按需查看视频信息</p>
-          <p class="logContent">批量导入合并剧集支持保持现有顺序，以及按文件名称或文件大小正序、倒序排列</p>
           <p class="logContent">新增筛选结果视频文件大小统计，按需计算已统计与未统计文件大小</p>
-          <p class="logContent">视频重复检测新增同屏复核，支持多视频统一播放、时间或比例同步及删除标记</p>
           <p class="logContent">新增独立演员头像库，支持单人选图、批量匹配、头像编辑和缓存清理</p>
           <p class="logContent">新增演员标签系统，支持分类管理、演员编辑选标签及任一/全部标签筛选</p>
           <p class="logContent">新增组合搜索条件收藏，可按文件库保存、应用和删除常用筛选条件</p>
