@@ -65,7 +65,7 @@ import '@videojs/themes/dist/city/index.css';
 import { computed, ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { ElMessage } from 'element-plus';
 import { Back, VideoPlay } from '@element-plus/icons-vue';
-import { isMobile } from '@/assets/mobile';
+import { isMobile as isMobileLayout } from '@/assets/mobile';
 import { openInPlayerDramaSeries } from '@/common/play';
 import { onHostWindowFullscreenChanged, setHostWindowFullscreen } from '@/common/runtimeBridge';
 import { appStoreData } from '@/storeData/app.storeData';
@@ -83,6 +83,10 @@ interface I_subtitleCue {
 }
 
 const props = defineProps({
+  forceDesktop: {
+    type: Boolean,
+    default: false,
+  },
   useVideoPlayControls: {
     type: Boolean,
     default: true,
@@ -101,6 +105,8 @@ const props = defineProps({
   },
 })
 
+// 独立播放策略选定桌面播放器后，分屏等尺寸变化不应切到旧原生分支。
+const isMobile = () => !props.forceDesktop && isMobileLayout();
 const appStore = appStoreData()
 const indexkey = ref(0);
 const isLoading = ref(false);

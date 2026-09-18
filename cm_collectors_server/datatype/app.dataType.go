@@ -50,6 +50,9 @@ type App_Config struct {
 	DetailsDialogStyle   string `json:"detailsDialogStyle"`
 	HeaderStyle          string `json:"headerStyle"`
 	CloseMobileDisplay   bool   `json:"closeMobileDisplay"`
+	LargeMobilePlayer    string `json:"largeMobilePlayer"`
+	LargeMobileShortSide int    `json:"largeMobileShortSide"`
+	LargeMobileLongSide  int    `json:"largeMobileLongSide"`
 	ClosePlayCloud       bool   `json:"closePlayCloud"`
 	ClosePlayCloudDialog bool   `json:"closePlayCloudDialog"`
 	PlayCloudMode        string `json:"playCloudMode"`

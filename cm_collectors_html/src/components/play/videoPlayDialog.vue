@@ -31,25 +31,27 @@
 
     <div ref="videoPlayElementRef" v-loading="loading" class="video-play"
       :style="{ display: videoPlayerVisible ? 'block' : 'none' }">
-      <videoPlay ref="videoPlayRef" />
+      <ResourceVideoPlayer v-if="dialogVisible && resourceInfo && selectedDramaSeriesId" ref="videoPlayRef"
+        :resource="resourceInfo" :drama-series-id="selectedDramaSeriesId" @dimensions="onDimensions" />
     </div>
 
   </el-dialog>
 </template>
 <script lang="ts" setup>
 import { ref, computed, nextTick } from 'vue';
-import videoPlay from './videoPlay.vue';
+import ResourceVideoPlayer from './resourceVideoPlayer.vue';
 import { resourceServer } from '@/server/resource.server';
 import { ElMessage } from 'element-plus';
 import type { I_resource } from '@/dataType/resource.dataType';
-import { getPlayVideoURLAndType } from '@/common/play'
+
 
 const videoPlayElementRef = ref<HTMLDivElement>();
-const videoPlayRef = ref<InstanceType<typeof videoPlay>>();
+const videoPlayRef = ref<InstanceType<typeof ResourceVideoPlayer>>();
 
 const dialogVisible = ref(false);
 const loading = ref(false);
-const isPlaying = ref(false);
+const selectedDramaSeriesId = ref('');
+let requestVersion = 0;
 
 const videoPlayerVisible = ref(true); // 控制视频播放器显示状态
 const fullScreenDisplay = ref(false); // 控制全屏显示状态
@@ -67,14 +69,16 @@ const dialogWidth_C = computed(() => {
 
 
 const init = async (resourceId: string, _dramaSeriesId: string) => {
-  isPlaying.value = videoPlayRef.value?.isPlaying() || false;
-  resourceInfo.value = await getResourceInfo(resourceId);
+  const request = ++requestVersion;
+  const resource = await getResourceInfo(resourceId);
+  if (request !== requestVersion) return;
+  resourceInfo.value = resource;
   if (!resourceInfo.value) {
     return;
   }
   const playerDramaSeriesId = _dramaSeriesId || (resourceInfo.value.dramaSeries.length > 0 ? resourceInfo.value.dramaSeries[0].id : '');
   if (playerDramaSeriesId) {
-    await setVideoSource(playerDramaSeriesId);
+    selectedDramaSeriesId.value = playerDramaSeriesId;
   }
 };
 
@@ -94,29 +98,10 @@ const getResourceInfo = async (resourceId: string): Promise<I_resource | undefin
   }
 };
 
-const setVideoSource = async (dramaSeriesId: string) => {
-  const vp = videoPlayRef.value;
-  if (!vp) return;
-  const { playUrl, playType } = await getPlayVideoURLAndType(dramaSeriesId)
-  const dramaSeries = resourceInfo.value?.dramaSeries.find((item) => item.id === dramaSeriesId)
-  vp.setVideoSource(playUrl, playType, () => {
-    vp.addTextTrack(
-      `/api/video/subtitle/${dramaSeriesId}`,
-      '默认字幕',
-      'zh',
-      true // 设为默认字幕
-    )
-    const dimensions = vp.getVideoDimensions();
-    if (dimensions) {
-      videoVertical.value = dimensions.height > dimensions.width;
-      setVideoDimensions(dimensions.width, dimensions.height);
-
-    }
-    if (isPlaying.value) {
-      vp.play();
-    }
-  }, dramaSeries?.src || resourceInfo.value?.title || '');
-}
+const onDimensions = (width: number, height: number) => {
+  videoVertical.value = height > width;
+  setVideoDimensions(width, height);
+};
 
 const setVideoDimensions = (w: number, h: number) => {
   videoPlayRef.value?.setAspectRatio(w + ':' + h)
@@ -152,11 +137,15 @@ const toggleFullScreenDisplay = () => {
 
 const closeHandle = () => {
   fullScreenDisplay.value = false;
-  videoPlayRef.value?.resetPlayer();
+  requestVersion++;
+  selectedDramaSeriesId.value = '';
+  resourceInfo.value = undefined;
 }
 
 const open = (_resourceId: string, _dramaSeriesId: string) => {
-  init(_resourceId, _dramaSeriesId)
+  selectedDramaSeriesId.value = '';
+  videoPlayerVisible.value = true;
+  void init(_resourceId, _dramaSeriesId)
   dialogVisible.value = true
 }
 const close = () => {
@@ -169,6 +158,7 @@ defineExpose({ open, close })
 <style lang="scss">
 .video-play-dialog {
   padding: 4px;
+  max-width: calc(100vw - 16px);
   border: 1px solid #434344;
   display: flex;
   flex-direction: column;

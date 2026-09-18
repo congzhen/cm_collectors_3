@@ -4,6 +4,7 @@ import (
 	"cm_collectors_server/core"
 	"cm_collectors_server/datatype"
 	"cm_collectors_server/models"
+	"fmt"
 )
 
 type App struct {
@@ -44,6 +45,10 @@ func (App) InitData() (*App, error) {
 			DetailsDialogStyle:   core.Config.General.DetailsDialogStyle,
 			HeaderStyle:          core.Config.General.HeaderStyle,
 			CloseMobileDisplay:   core.Config.General.CloseMobileDisplay,
+			LargeMobilePlayer:    core.Config.General.LargeMobilePlayer,
+			LargeMobileShortSide: core.Config.General.LargeMobileShortSide,
+			LargeMobileLongSide:  core.Config.General.LargeMobileLongSide,
+
 			ClosePlayCloud:       core.Config.General.ClosePlayCloud,
 			ClosePlayCloudDialog: core.Config.General.ClosePlayCloudDialog,
 			PlayCloudMode:        core.Config.General.PlayCloudMode,
@@ -63,6 +68,10 @@ func (App) GetConfig() datatype.App_SystemConfig {
 			DetailsDialogStyle:   core.Config.General.DetailsDialogStyle,
 			HeaderStyle:          core.Config.General.HeaderStyle,
 			CloseMobileDisplay:   core.Config.General.CloseMobileDisplay,
+			LargeMobilePlayer:    core.Config.General.LargeMobilePlayer,
+			LargeMobileShortSide: core.Config.General.LargeMobileShortSide,
+			LargeMobileLongSide:  core.Config.General.LargeMobileLongSide,
+
 			ClosePlayCloud:       core.Config.General.ClosePlayCloud,
 			ClosePlayCloudDialog: core.Config.General.ClosePlayCloudDialog,
 			PlayCloudMode:        core.Config.General.PlayCloudMode,
@@ -90,6 +99,21 @@ func (App) GetConfig() datatype.App_SystemConfig {
 }
 
 func (App) SetConfig(config datatype.App_SystemConfig) error {
+	if config.LargeMobilePlayer == "" {
+		config.LargeMobilePlayer = "desktop"
+	}
+	if config.LargeMobileShortSide == 0 {
+		config.LargeMobileShortSide = 768
+	}
+	if config.LargeMobileLongSide == 0 {
+		config.LargeMobileLongSide = 1024
+	}
+	if config.LargeMobilePlayer != "desktop" && config.LargeMobilePlayer != "mobile" {
+		return fmt.Errorf("大屏移动设备播放器设置无效")
+	}
+	if config.LargeMobileShortSide < 320 || config.LargeMobileLongSide > 4096 || config.LargeMobileShortSide > config.LargeMobileLongSide {
+		return fmt.Errorf("大屏尺寸需为 320–4096，且短边不能大于长边")
+	}
 	avatarSetting, err := normalizeAvatarLibrarySetting(datatype.PerformerAvatarLibrarySetting{
 		CustomBaseURL:       config.PerformerAvatarLibrary.CustomBaseURL,
 		DefaultStrategy:     datatype.PerformerAvatarStrategy(config.PerformerAvatarLibrary.DefaultStrategy),
@@ -131,6 +155,10 @@ func (App) SetConfig(config datatype.App_SystemConfig) error {
 	}
 	core.Config.General.HeaderStyle = config.HeaderStyle
 	core.Config.General.CloseMobileDisplay = config.CloseMobileDisplay
+	core.Config.General.LargeMobilePlayer = config.LargeMobilePlayer
+	core.Config.General.LargeMobileShortSide = config.LargeMobileShortSide
+	core.Config.General.LargeMobileLongSide = config.LargeMobileLongSide
+
 	core.Config.General.ClosePlayCloud = config.ClosePlayCloud
 	core.Config.General.ClosePlayCloudDialog = config.ClosePlayCloudDialog
 	core.Config.General.PlayCloudMode = config.PlayCloudMode

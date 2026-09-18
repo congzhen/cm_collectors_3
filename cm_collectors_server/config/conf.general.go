@@ -13,6 +13,9 @@ type General struct {
 	DetailsDialogStyle     string         `yaml:"detailsDialogStyle"`
 	HeaderStyle            string         `yaml:"headerStyle"`
 	CloseMobileDisplay     bool           `yaml:"closeMobileDisplay"`
+	LargeMobilePlayer      string         `yaml:"largeMobilePlayer"`
+	LargeMobileShortSide   int            `yaml:"largeMobileShortSide"`
+	LargeMobileLongSide    int            `yaml:"largeMobileLongSide"`
 	ClosePlayCloud         bool           `yaml:"closePlayCloud"`
 	ClosePlayCloudDialog   bool           `yaml:"closePlayCloudDialog"`
 	PlayCloudMode          string         `yaml:"playCloudMode"`

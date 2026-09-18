@@ -24,8 +24,23 @@
           统一控制顶部栏、详情弹窗和筛选面板的显示样式。
         </el-text>
       </el-form-item>
-      <el-form-item label="关闭移动端显示">
+      <el-form-item label="关闭移动端页面布局">
         <el-switch v-model="formData.closeMobileDisplay" />
+        <el-text type="info" size="small">只影响页面布局，不限制大屏设备使用移动端播放器。</el-text>
+      </el-form-item>
+      <el-form-item label="大屏移动设备播放器">
+        <el-select v-model="formData.largeMobilePlayer">
+          <el-option label="桌面播放器" value="desktop" />
+          <el-option label="移动端播放器" value="mobile" />
+        </el-select>
+        <el-text type="info" size="small">保留桌面页面布局，下次打开播放器生效。</el-text>
+      </el-form-item>
+      <el-form-item label="大屏判定尺寸（高级）">
+        <div>
+          <label>短边 <el-input-number v-model="formData.largeMobileShortSide" :min="320" :max="4096" :precision="0" /></label>
+          <label>长边 <el-input-number v-model="formData.largeMobileLongSide" :min="320" :max="4096" :precision="0" /></label>
+          <div><el-text type="info" size="small">单位为浏览器视口 CSS px，不是屏幕物理分辨率。移动设备任意一边达到阈值即使用大屏播放策略；不改变网站页面布局。</el-text></div>
+        </div>
       </el-form-item>
       <el-form-item label="管理需登录">
         <el-switch v-model="formData.isAdminLogin" />
@@ -177,6 +192,7 @@ import dataset from '@/assets/dataset';
 import { playCloudPluginDownload, playCloudPluginDownloadUrl } from '@/components/play/playCloud'
 import { homeModeOptions } from '@/common/homeMode'
 import { appStoreData } from '@/storeData/app.storeData'
+import { normalizePlayerConfig } from '@/common/playerPreference'
 import { setCloseMobileDisplay } from '@/assets/mobile'
 import { applyTheme } from '@/common/theme'
 
@@ -200,6 +216,7 @@ const formData = ref<I_appSystemConfig>({
   detailsDialogStyle: 'classic',
   headerStyle: 'modern',
   closeMobileDisplay: false,
+  ...normalizePlayerConfig({}),
   closePlayCloud: true,
   closePlayCloudDialog: true,
   playCloudMode: 'm3u8',
@@ -262,6 +279,7 @@ const getAppConfig = async () => {
     if (!formData.value.headerStyle) {
       formData.value.headerStyle = 'modern'
     }
+    Object.assign(formData.value, normalizePlayerConfig(formData.value))
     formData.value.closeMobileDisplay = formData.value.closeMobileDisplay === true
     console.log(formData.value);
     return
@@ -304,6 +322,12 @@ const delTaryMenu = (index: number) => {
 const saveHandle = debounceNow(async () => {
   try {
     loading.value = true;
+    const short = formData.value.largeMobileShortSide;
+    const long = formData.value.largeMobileLongSide;
+    if (!short || !long || short > long) {
+      ElMessage.error('请填写有效尺寸，短边不能大于长边');
+      return;
+    }
     const result = await appDataServer.setAppConfig(formData.value)
     if (!result.status) {
       ElMessage.error(result.msg);
@@ -320,6 +344,7 @@ const saveHandle = debounceNow(async () => {
       detailsDialogStyle: formData.value.detailsDialogStyle,
       headerStyle: formData.value.headerStyle,
       closeMobileDisplay: formData.value.closeMobileDisplay,
+      ...normalizePlayerConfig(formData.value),
       closePlayCloud: formData.value.closePlayCloud,
       closePlayCloudDialog: formData.value.closePlayCloudDialog,
       playCloudMode: formData.value.playCloudMode,

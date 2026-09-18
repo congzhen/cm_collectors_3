@@ -7,7 +7,7 @@
       <div class="main" v-if="resourceInfo">
         <div class="main-left">
           <div>
-            <videoPlay ref="videoPlayRef" />
+            <ResourceVideoPlayer v-if="selectedDramaSeriesId" :resource="resourceInfo" :drama-series-id="selectedDramaSeriesId" />
           </div>
           <div class="info-base">
             <div v-if="resourceInfo.issueNumber">
@@ -85,7 +85,7 @@
 
 <script lang="ts" setup>
 import HeaderView from '../HeaderView.vue'
-import videoPlay from "@/components/play/videoPlay.vue";
+import ResourceVideoPlayer from "@/components/play/resourceVideoPlayer.vue";
 import resourceDramaSeriesList from '@/components/resource/resourceDramaSeriesList.vue'
 import performerDetails from '@/components/performer/performerDetails.vue'
 import detailsSampleImages from '@/components/details/detailsSampleImages.vue'
@@ -97,7 +97,7 @@ import { ref, onMounted, nextTick, computed, type CSSProperties } from "vue";
 import { getResourceCoverPoster } from '@/common/photo';
 import { appStoreData } from '@/storeData/app.storeData';
 import { AppLang } from '@/language/app.lang'
-import { getPlayVideoURLAndType, playUpdate } from '@/common/play';
+import { playUpdate } from '@/common/play';
 const appLang = AppLang()
 
 const store = {
@@ -116,7 +116,6 @@ const props = defineProps({
     default: '',
   },
 })
-const videoPlayRef = ref<InstanceType<typeof videoPlay>>();
 const resourceInfo = ref<I_resource>();
 const selectedDramaSeriesId = ref<string>('');
 const loading = ref(false);
@@ -189,21 +188,8 @@ const setVideoDramaSeries = () => {
   loading.value = false;
 }
 
-const setVideoSource = async (dramaSeriesId: string) => {
+const setVideoSource = (dramaSeriesId: string) => {
   selectedDramaSeriesId.value = dramaSeriesId;
-  const vp = videoPlayRef.value;
-  if (!vp) return;
-  const { playUrl, playType } = await getPlayVideoURLAndType(dramaSeriesId)
-  const dramaSeries = resourceInfo.value?.dramaSeries.find((item) => item.id === dramaSeriesId)
-  vp.setVideoSource(playUrl, playType, () => {
-    vp.addTextTrack(
-      `/api/video/subtitle/${dramaSeriesId}`,
-      '默认字幕',
-      'zh',
-      true // 设为默认字幕
-    )
-    //vp.play();
-  }, dramaSeries?.src || resourceInfo.value?.title || '');
 }
 
 const noPlayList = () => {

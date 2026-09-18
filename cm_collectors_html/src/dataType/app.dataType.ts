@@ -98,6 +98,9 @@ export interface I_appConfig {
   detailsDialogStyle: T_detailsDialogStyle;
   headerStyle: T_headerStyle;
   closeMobileDisplay: boolean;
+  largeMobilePlayer?: 'desktop' | 'mobile';
+  largeMobileShortSide?: number;
+  largeMobileLongSide?: number;
   closePlayCloud: boolean;
   closePlayCloudDialog: boolean;
   playCloudMode: T_VideoPlayMode;
