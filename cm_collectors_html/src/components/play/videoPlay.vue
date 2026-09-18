@@ -7,7 +7,9 @@
         'controls-hidden': isFullscreen && isControlsHidden,
         'fit-container': props.fitContainer
       }"
-      @mousemove="handlePlayerActivity" @mousedown="handlePlayerActivity">
+      @mousemove="handlePlayerActivity" @mousedown="handlePlayerActivity"
+      @touchstart.capture.passive="handlePlayerTouch" @touchmove.capture.passive="handlePlayerTouch"
+      @touchend.capture.passive="handlePlayerTouchEnd" @touchcancel.capture.passive="handlePlayerTouchEnd">
     <div v-if="isFullscreenMode && !isFullscreen" class="maximized-player-header">
       <div class="maximized-player-title" :title="videoTitle">{{ videoTitle }}</div>
       <button class="maximized-player-back" type="button" title="返回" aria-label="关闭最大化"
@@ -147,6 +149,7 @@ const isControlsHidden = ref(false)
 let browserFullscreenActive = false
 let bodyOverflowBeforeMaximize: string | null = null
 let controlsHideTimer: number | undefined
+let touchActive = false
 let removeHostFullscreenListener: (() => void) | undefined
 const controlsHideDelay = 3000
 const videoOptions = (isMobileDevice: boolean) => {
@@ -437,6 +440,7 @@ const showControls = (autoHide = true) => {
   clearControlsHideTimer()
   if (
     autoHide &&
+    !touchActive &&
     isFullscreen.value &&
     player.value &&
     !player.value.paused()
@@ -451,6 +455,18 @@ const handlePlayerActivity = () => {
   if (isFullscreenMode.value) {
     showControls()
   }
+}
+
+// 捕获触控活动，即使子控件阻止冒泡也能唤出控制条；不拦截其拖动、点击事件。
+// 手指未离开时不隐藏，避免长时间拖动进度条/音量条时控件消失。
+const handlePlayerTouch = () => {
+  touchActive = true
+  handlePlayerActivity()
+}
+
+const handlePlayerTouchEnd = (event: TouchEvent) => {
+  touchActive = event.touches.length > 0
+  handlePlayerActivity()
 }
 
 // 最大化函数
