@@ -4,7 +4,7 @@
       <SharedConfigBar ref="sharedBar" :files-bases-id="props.filesBasesId" module="display" :config="filesConfig"
         local-hint="标签与演员选择、路径、自定义头像及封面预设列表保持本库独立。" @config="applySharedConfig" @saved="emit('setSuccess', props.filesBasesId)" />
 
-      <SettingSectionTitle>本库独立设置</SettingSectionTitle>
+      <SettingSectionTitle>文件库信息</SettingSectionTitle>
       <el-form-item label="文件数据库名称">
         <el-input v-model="filesBasesInfo.name" />
       </el-form-item>
@@ -24,48 +24,52 @@
         <el-switch v-model="filesBasesInfo.status" inline-prompt active-text="启用" inactive-text="禁用" />
       </el-form-item>
 
-      <el-form-item label="优先显示演员">
-        <selectPerformer ref="selectPerformerRef" v-model="filesConfig.performerPreferred" multiple
-          :careerType="E_performerCareerType.Performer"
-          :performer-bases-ids="[store.filesBasesStoreData.getMainPerformerBasesIdByFilesBasesId(filesBasesInfo.id)]" />
-      </el-form-item>
+      <SharedDisplayFields :config="filesConfig" :readonly="!!sharedBar?.state?.following">
+        <template #actors>
+          <el-form-item label="优先显示演员">
+            <selectPerformer ref="selectPerformerRef" v-model="filesConfig.performerPreferred" multiple
+              :careerType="E_performerCareerType.Performer"
+              :performer-bases-ids="[store.filesBasesStoreData.getMainPerformerBasesIdByFilesBasesId(filesBasesInfo.id)]" />
+          </el-form-item>
 
-      <el-form-item :label="filesConfig.performerPreferredEnabled ? '其余演员排序' : '演员排序'">
-        <el-select v-model="filesConfig.performerSortMode">
-          <el-option label="默认排序" value="default" />
-          <el-option label="资源数量最多" value="resourceCountDesc" />
-          <el-option label="播放热度最高" value="hotDesc" />
-          <el-option label="近期偏好" value="recentDesc" />
-        </el-select>
-        <el-checkbox v-model="filesConfig.performerPreferredEnabled" label="启用自定义优先演员" />
-        <div class="performer-sort-hint">取消勾选后全部按所选规则排序，上方选择仍会保留；所有模式均遵守“屏蔽无照片演员”。</div>
-      </el-form-item>
-      <el-form-item v-if="filesConfig.performerSortMode === 'recentDesc'" label="近期统计天数">
-        <el-input-number v-model="filesConfig.performerRecentDays" :min="1" :max="365" :precision="0" />
-        <div class="performer-sort-hint">按当前库最近 N 天（含今天）的播放次数排序；从升级后开始统计，无记录时按默认排序补齐。</div>
-      </el-form-item>
-
-      <el-form-item label="封面上显示标签(自定义)">
-        <selectTag ref="selectTagRef" v-model="filesConfig.coverDisplayTag" data-source="database"
-          :filesBasesId="props.filesBasesId" multiple reorder />
-      </el-form-item>
-
-      <el-form-item label="剧照相对文件夹">
-        <el-input v-model="filesConfig.sampleFolder" />
-      </el-form-item>
-
-      <el-form-item label="自定义头像">
-        <setCustomAvatar v-model="filesConfig.performer_photo" />
-      </el-form-item>
-
-      <el-form-item label="封面海报">
-        <coverPosterAdmin v-model:cover-poster-data-default-select="filesConfig.coverPosterDataDefaultSelect"
-          v-model:cover-poster-data="filesConfig.coverPosterData" />
-      </el-form-item>
-
-      <template v-if="!sharedBar?.state?.following">
-        <SharedDisplayFields :config="filesConfig" />
-      </template>
+          <el-form-item :label="filesConfig.performerPreferredEnabled ? '其余演员排序' : '演员排序'">
+            <el-select v-model="filesConfig.performerSortMode">
+              <el-option label="默认排序" value="default" />
+              <el-option label="资源数量最多" value="resourceCountDesc" />
+              <el-option label="播放热度最高" value="hotDesc" />
+              <el-option label="近期偏好" value="recentDesc" />
+            </el-select>
+            <el-checkbox v-model="filesConfig.performerPreferredEnabled" label="启用自定义优先演员" />
+            <div class="performer-sort-hint">取消勾选后全部按所选规则排序，上方选择仍会保留；所有模式均遵守“屏蔽无照片演员”。</div>
+          </el-form-item>
+          <el-form-item v-if="filesConfig.performerSortMode === 'recentDesc'" label="近期统计天数">
+            <el-input-number v-model="filesConfig.performerRecentDays" :min="1" :max="365" :precision="0" />
+            <div class="performer-sort-hint">按当前库最近 N 天（含今天）的播放次数排序；从升级后开始统计，无记录时按默认排序补齐。</div>
+          </el-form-item>
+        </template>
+        <template #tags>
+          <el-form-item label="封面上显示标签(自定义)">
+            <selectTag ref="selectTagRef" v-model="filesConfig.coverDisplayTag" data-source="database"
+              :filesBasesId="props.filesBasesId" multiple reorder />
+          </el-form-item>
+        </template>
+        <template #sample>
+          <el-form-item label="剧照相对文件夹">
+            <el-input v-model="filesConfig.sampleFolder" />
+          </el-form-item>
+        </template>
+        <template #avatar>
+          <el-form-item label="自定义头像">
+            <setCustomAvatar v-model="filesConfig.performer_photo" />
+          </el-form-item>
+        </template>
+        <template #poster>
+          <el-form-item label="封面海报">
+            <coverPosterAdmin v-model:cover-poster-data-default-select="filesConfig.coverPosterDataDefaultSelect"
+              v-model:cover-poster-data="filesConfig.coverPosterData" />
+          </el-form-item>
+        </template>
+      </SharedDisplayFields>
     </el-form>
 
     <div class="save-button-container">
