@@ -95,12 +95,24 @@ func (ResourcesDramaSeries) FindDramaSeriesSlcBySearchPath(filesBasesId string, 
 }
 func (t ResourcesDramaSeries) SetResourcesDramaSeries(db *gorm.DB, resourceID string, dramaSeriesSlc []datatype.ReqParam_resourceDramaSeries_Base) error {
 	return db.Transaction(func(tx *gorm.DB) error {
+		rules, err := models.MetadataRules(tx)
+		if err != nil {
+			return err
+		}
 		vfM := models.VideoFingerprint{}
 		dsM := models.ResourcesDramaSeries{}
 
 		oldDramaSeries, err := dsM.ListByResourceID(tx, resourceID)
 		if err != nil {
 			return err
+		}
+		var manualIDs []string
+		if err := tx.Table("resources_video_metadata vm").Joins("JOIN resourcesDramaSeries ds ON ds.id = vm.drama_series_id").Where("ds.resources_id = ? AND vm.probe_status = ?", resourceID, models.VideoMetadataStatusManual).Pluck("vm.drama_series_id", &manualIDs).Error; err != nil {
+			return err
+		}
+		manualMetadata := map[string]bool{}
+		for _, id := range manualIDs {
+			manualMetadata[id] = true
 		}
 		oldByID := make(map[string]models.ResourcesDramaSeries, len(*oldDramaSeries))
 		oldBySrc := make(map[string][]models.ResourcesDramaSeries, len(*oldDramaSeries))
@@ -149,12 +161,14 @@ func (t ResourcesDramaSeries) SetResourcesDramaSeries(db *gorm.DB, resourceID st
 			}
 
 			if !found {
+				reason := models.MetadataSourceRule(rules, submitted.Src)
 				current = models.ResourcesDramaSeries{
-					ID:                    core.GenerateUniqueID(),
-					ResourcesID:           resourceID,
-					Src:                   submitted.Src,
-					Sort:                  sort,
-					VideoMetadataExcluded: utils.IsClearlyNonVideoSource(submitted.Src),
+					ID:                          core.GenerateUniqueID(),
+					ResourcesID:                 resourceID,
+					Src:                         submitted.Src,
+					Sort:                        sort,
+					VideoMetadataExcluded:       reason != "",
+					VideoMetadataClassification: "system",
 				}
 				newDramaSeries = append(newDramaSeries, current)
 				matched[current.ID] = struct{}{}
@@ -163,10 +177,15 @@ func (t ResourcesDramaSeries) SetResourcesDramaSeries(db *gorm.DB, resourceID st
 
 			matched[current.ID] = struct{}{}
 			pathChanged := current.Src != submitted.Src
-			classificationChanged := current.VideoMetadataExcluded != utils.IsClearlyNonVideoSource(submitted.Src)
+			classificationChanged := false
 			current.Src = submitted.Src
 			current.Sort = sort
-			current.VideoMetadataExcluded = utils.IsClearlyNonVideoSource(submitted.Src)
+			if !manualMetadata[current.ID] && (current.VideoMetadataClassification == "system" || current.VideoMetadataClassification == "custom" || (!current.VideoMetadataExcluded && current.VideoMetadataClassification == "")) {
+				nextExcluded := models.MetadataSourceRule(rules, submitted.Src) != ""
+				classificationChanged = current.VideoMetadataExcluded != nextExcluded
+				current.VideoMetadataExcluded = nextExcluded
+				current.VideoMetadataClassification = "system"
+			}
 			existingUpdates = append(existingUpdates, current)
 			if !pathChanged && !classificationChanged {
 				continue
@@ -189,12 +208,13 @@ func (t ResourcesDramaSeries) SetResourcesDramaSeries(db *gorm.DB, resourceID st
 				tx,
 				models.ResourcesDramaSeries{}.TableName(),
 				"id",
-				[]string{"src", "sort", "video_metadata_excluded"},
+				[]string{"src", "sort", "video_metadata_excluded", "video_metadata_classification"},
 				existingUpdates[start:end],
 				func(item models.ResourcesDramaSeries) map[string]interface{} {
 					return map[string]interface{}{
 						"id": item.ID, "src": item.Src, "sort": item.Sort,
-						"video_metadata_excluded": item.VideoMetadataExcluded,
+						"video_metadata_excluded":       item.VideoMetadataExcluded,
+						"video_metadata_classification": item.VideoMetadataClassification,
 					}
 				},
 			); err != nil {
@@ -310,11 +330,16 @@ func (ResourcesDramaSeries) SortByMode(resourceID string, sortMode datatype.Seri
 }
 
 func (ResourcesDramaSeries) Create(tx *gorm.DB, resourceID, src string, sort int) (*models.ResourcesDramaSeries, error) {
+	rules, err := models.MetadataRules(tx)
+	if err != nil {
+		return nil, err
+	}
 	dramaSeries := models.ResourcesDramaSeries{
 		ID: core.GenerateUniqueID(), ResourcesID: resourceID, Src: src, Sort: sort,
-		VideoMetadataExcluded: utils.IsClearlyNonVideoSource(src),
+		VideoMetadataExcluded:       models.MetadataSourceRule(rules, src) != "",
+		VideoMetadataClassification: "system",
 	}
-	err := models.ResourcesDramaSeries{}.Creates(tx, &[]models.ResourcesDramaSeries{dramaSeries})
+	err = models.ResourcesDramaSeries{}.Creates(tx, &[]models.ResourcesDramaSeries{dramaSeries})
 	return &dramaSeries, err
 }
 

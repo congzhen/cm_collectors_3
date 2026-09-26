@@ -13,6 +13,10 @@ import type {
 const routerGroupUri = '/videoMetadata';
 
 export const videoMetadataServer = {
+  bulk: (ids: string[], action: 'retry' | 'nonvideo' | 'video') => request<{ succeeded: number; failed: Record<string, string> }>({ url: `${routerGroupUri}/bulk`, method: 'post', data: { ids, action } }),
+  cleanupPreview: () => request<{ total: number; byExtension: Record<string, number>; token: string }>({ url: `${routerGroupUri}/cleanupPreview`, method: 'get' }),
+  startCleanup: (token: string) => request<boolean>({ url: `${routerGroupUri}/cleanup`, method: 'post', data: { token } }),
+  cleanupStatus: () => request<{ status: string; processed: number; total: number; error: string }>({ url: `${routerGroupUri}/cleanupStatus`, method: 'get' }),
   setting: async () => request<I_videoMetadataSettingData>({
     url: `${routerGroupUri}/setting`,
     method: 'get',

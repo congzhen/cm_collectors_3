@@ -19,6 +19,7 @@ func newDramaSeriesSyncTestDB(t *testing.T) *gorm.DB {
 		&models.Resources{},
 		&models.ResourcesDramaSeries{},
 		&models.ResourcesVideoMetadata{},
+		&models.VideoMetadataSetting{},
 		&models.VideoFingerprint{},
 	); err != nil {
 		t.Fatalf("migrate test database: %v", err)

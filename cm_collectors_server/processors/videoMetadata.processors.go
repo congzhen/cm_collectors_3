@@ -6,7 +6,6 @@ import (
 	"cm_collectors_server/models"
 	processorscache "cm_collectors_server/processorsCache"
 	processorsffmpeg "cm_collectors_server/processorsFFmpeg"
-	"cm_collectors_server/utils"
 	"errors"
 	"fmt"
 	"os"
@@ -182,13 +181,18 @@ func (VideoMetadata) SaveSetting(data *VideoMetadataSettingData) (*VideoMetadata
 	if data == nil {
 		return nil, errors.New("视频信息采集设置不能为空")
 	}
+	extensions, err := models.NormalizeMetadataExtensions(data.Setting.ExcludedExtensions)
+	if err != nil {
+		return nil, err
+	}
+	data.Setting.ExcludedExtensions = extensions
 	normalizeVideoMetadataSetting(&data.Setting)
 	if data.Setting.IdleBackfillEnabled {
 		if err := validateVideoMetadataScope(data.Setting.IdleScopeMode, data.FilesBasesIDs); err != nil {
 			return nil, err
 		}
 	}
-	err := core.DBS().Transaction(func(tx *gorm.DB) error {
+	err = core.DBS().Transaction(func(tx *gorm.DB) error {
 		if _, err := (models.VideoMetadataSetting{}).Ensure(tx); err != nil {
 			return err
 		}
@@ -328,7 +332,7 @@ func (VideoMetadata) enqueueIfNeeded(
 	wantCompletion bool,
 	waitExisting bool,
 ) (bool, <-chan error) {
-	if ds.ID == "" || ds.Src == "" || ds.VideoMetadataExcluded || utils.IsClearlyNonVideoSource(ds.Src) {
+	if ds.ID == "" || ds.Src == "" || metadataExcluded(core.DBS(), ds.ID) {
 		return false, nil
 	}
 	if !force {
@@ -442,7 +446,7 @@ func (VideoMetadata) needsProbe(dramaSeriesID string, includeFailed bool) (bool,
 	if err != nil {
 		return false, err
 	}
-	if ds.VideoMetadataExcluded || utils.IsClearlyNonVideoSource(ds.Src) {
+	if metadataExcluded(core.DBS(), ds.ID) {
 		return false, nil
 	}
 	item, err := (models.ResourcesVideoMetadata{}).Get(core.DBS(), dramaSeriesID)
@@ -485,8 +489,8 @@ func (VideoMetadata) probe(ds models.ResourcesDramaSeries) error {
 		return err
 	}
 	ds = *current
-	if ds.VideoMetadataExcluded || utils.IsClearlyNonVideoSource(ds.Src) {
-		return (VideoMetadata{}).setVideoClassification(ds.ID, false)
+	if metadataExcluded(core.DBS(), ds.ID) {
+		return nil
 	}
 	now := core.TimeNow()
 	probeTime := datatype.CustomTime(now)
@@ -523,7 +527,7 @@ func (VideoMetadata) probe(ds models.ResourcesDramaSeries) error {
 	}
 	if latest.Src != ds.Src {
 		core.DBS().Model(&models.ResourcesVideoMetadata{}).
-			Where("drama_series_id = ?", ds.ID).
+			Where("drama_series_id = ? AND probe_status = ?", ds.ID, models.VideoMetadataStatusProcessing).
 			Updates(map[string]interface{}{
 				"probe_status":     models.VideoMetadataStatusStale,
 				"metadata_version": 0,
@@ -554,6 +558,10 @@ func (VideoMetadata) probe(ds models.ResourcesDramaSeries) error {
 		AudioSampleRate:  basic.AudioSampleRate,
 	}
 	return core.DBS().Transaction(func(tx *gorm.DB) error {
+		allowed, err := metadataCanSaveProbe(tx, ds)
+		if err != nil || !allowed {
+			return err
+		}
 		if err := (models.ResourcesDramaSeries{}).UpdateDuration(
 			tx, ds.ID, int(duration), models.DurationProbeStatusSuccess, &probeTime,
 		); err != nil {
@@ -612,7 +620,13 @@ func (VideoMetadata) saveFailure(
 		existing.FileSize = 0
 		existing.FileModifiedTime = 0
 	}
+	saved := false
 	dbErr := core.DBS().Transaction(func(tx *gorm.DB) error {
+		allowed, err := metadataCanSaveProbe(tx, ds)
+		if err != nil || !allowed {
+			return err
+		}
+		saved = true
 		duration := ds.DurationSeconds
 		if err := (models.ResourcesDramaSeries{}).UpdateDuration(
 			tx, ds.ID, duration, models.DurationProbeStatusFailed, &probeTime,
@@ -623,6 +637,9 @@ func (VideoMetadata) saveFailure(
 	})
 	if dbErr != nil {
 		return dbErr
+	}
+	if !saved {
+		return nil
 	}
 	core.LogErr(fmt.Errorf("获取视频元数据失败：%s，%w", ds.Src, probeErr))
 	return probeErr
@@ -683,6 +700,7 @@ func (VideoMetadata) MetadataInfo(dramaSeriesID string) (*models.ResourcesVideoM
 }
 
 type VideoMetadataFailureQuery struct {
+	Excluded     bool   `json:"excluded"`
 	Page         int    `json:"page"`
 	Limit        int    `json:"limit"`
 	FilesBasesID string `json:"filesBasesId"`
@@ -690,18 +708,19 @@ type VideoMetadataFailureQuery struct {
 }
 
 type VideoMetadataFailureItem struct {
-	DramaSeriesID  string               `json:"dramaSeriesId" gorm:"column:drama_series_id"`
-	ResourceID     string               `json:"resourceId" gorm:"column:resource_id"`
-	ResourceTitle  string               `json:"resourceTitle" gorm:"column:resource_title"`
-	FilesBasesID   string               `json:"filesBasesId" gorm:"column:files_bases_id"`
-	FilesBasesName string               `json:"filesBasesName" gorm:"column:files_bases_name"`
-	Src            string               `json:"src"`
-	ErrorCode      string               `json:"errorCode" gorm:"column:error_code"`
-	ErrorMessage   string               `json:"errorMessage" gorm:"column:error_message"`
-	RetryCount     int                  `json:"retryCount" gorm:"column:retry_count"`
-	ProbeTime      *datatype.CustomTime `json:"probeTime" gorm:"column:probe_time"`
-	NextRetryTime  *datatype.CustomTime `json:"nextRetryTime" gorm:"column:next_retry_time"`
-	FileSize       int64                `json:"fileSize" gorm:"column:file_size"`
+	ExclusionReason string               `json:"exclusionReason" gorm:"column:exclusion_reason"`
+	DramaSeriesID   string               `json:"dramaSeriesId" gorm:"column:drama_series_id"`
+	ResourceID      string               `json:"resourceId" gorm:"column:resource_id"`
+	ResourceTitle   string               `json:"resourceTitle" gorm:"column:resource_title"`
+	FilesBasesID    string               `json:"filesBasesId" gorm:"column:files_bases_id"`
+	FilesBasesName  string               `json:"filesBasesName" gorm:"column:files_bases_name"`
+	Src             string               `json:"src"`
+	ErrorCode       string               `json:"errorCode" gorm:"column:error_code"`
+	ErrorMessage    string               `json:"errorMessage" gorm:"column:error_message"`
+	RetryCount      int                  `json:"retryCount" gorm:"column:retry_count"`
+	ProbeTime       *datatype.CustomTime `json:"probeTime" gorm:"column:probe_time"`
+	NextRetryTime   *datatype.CustomTime `json:"nextRetryTime" gorm:"column:next_retry_time"`
+	FileSize        int64                `json:"fileSize" gorm:"column:file_size"`
 }
 
 type VideoMetadataFailureList struct {
@@ -734,13 +753,20 @@ func findVideoMetadataFailures(db *gorm.DB, request VideoMetadataFailureQuery) (
 	if request.Limit < 1 || request.Limit > 200 {
 		request.Limit = 20
 	}
+	reason, err := models.MetadataExclusionSQL(db)
+	if err != nil {
+		return nil, err
+	}
 	query := db.Table("resourcesDramaSeries ds").
 		Joins("JOIN resources r ON r.id = ds.resources_id").
 		Joins("LEFT JOIN resources_video_metadata vm ON vm.drama_series_id = ds.id").
 		Joins("LEFT JOIN filesBases fb ON fb.id = r.filesBases_id").
-		Where("(vm.probe_status = ? OR ds.durationProbeStatus = ?)",
-			models.VideoMetadataStatusFailed, models.DurationProbeStatusFailed).
-		Where("COALESCE(ds.video_metadata_excluded, 0) = 0")
+		Where("r.mode IN ?", []datatype.E_resourceMode{datatype.E_resourceMode_Movies, datatype.E_resourceMode_VideoLink})
+	if request.Excluded {
+		query = query.Where("(" + reason + ") <> ''")
+	} else {
+		query = query.Where("(vm.probe_status = ? OR (vm.drama_series_id IS NULL AND ds.durationProbeStatus = ?))", models.VideoMetadataStatusFailed, models.DurationProbeStatusFailed).Where("(" + reason + ") = ''")
+	}
 	if request.FilesBasesID != "" {
 		query = query.Where("r.filesBases_id = ?", request.FilesBasesID)
 	}
@@ -752,7 +778,7 @@ func findVideoMetadataFailures(db *gorm.DB, request VideoMetadataFailureQuery) (
 	if err := query.Session(&gorm.Session{}).Distinct("ds.id").Count(&result.Total).Error; err != nil {
 		return nil, err
 	}
-	err := query.Session(&gorm.Session{}).Select(`ds.id AS drama_series_id, r.id AS resource_id, r.title AS resource_title,
+	err = query.Session(&gorm.Session{}).Select(reason + " AS exclusion_reason, " + `ds.id AS drama_series_id, r.id AS resource_id, r.title AS resource_title,
 			r.filesBases_id AS files_bases_id, COALESCE(fb.name, '') AS files_bases_name, ds.src,
 			COALESCE(vm.error_code, 'legacy_probe_failed') AS error_code,
 			COALESCE(NULLIF(vm.error_message, ''), '视频信息采集失败，请重新采集') AS error_message,
@@ -769,7 +795,7 @@ func (VideoMetadata) RetryFailure(dramaSeriesID string) error {
 	if err != nil {
 		return err
 	}
-	if ds.VideoMetadataExcluded || utils.IsClearlyNonVideoSource(ds.Src) {
+	if metadataExcluded(core.DBS(), ds.ID) {
 		return errors.New("该文件已被识别为非视频，请先手工标记为视频")
 	}
 	(VideoMetadata{}).enqueueIfNeeded(*ds, videoMetadataPriorityHigh, "", true, false, false)
@@ -795,7 +821,11 @@ func (VideoMetadata) SetClassification(request VideoMetadataClassificationReques
 
 func (VideoMetadata) setVideoClassification(dramaSeriesID string, isVideo bool) error {
 	return core.DBS().Transaction(func(tx *gorm.DB) error {
-		updates := map[string]interface{}{"video_metadata_excluded": !isVideo}
+		classification := "nonvideo"
+		if isVideo {
+			classification = "video"
+		}
+		updates := map[string]interface{}{"video_metadata_excluded": !isVideo, "video_metadata_classification": classification}
 		if !isVideo {
 			updates["durationSeconds"] = 0
 			updates["durationProbeStatus"] = ""
@@ -865,7 +895,7 @@ func (VideoMetadata) SaveManual(request VideoMetadataManualRequest) (*models.Res
 		metadata.FileModifiedTime = stat.ModTime().UnixMilli()
 	}
 	err = core.DBS().Transaction(func(tx *gorm.DB) error {
-		updates := map[string]interface{}{"video_metadata_excluded": false}
+		updates := map[string]interface{}{"video_metadata_excluded": false, "video_metadata_classification": "video"}
 		if request.Duration != nil {
 			updates["durationSeconds"] = ds.DurationSeconds
 			updates["durationProbeStatus"] = models.VideoMetadataStatusManual
@@ -879,26 +909,35 @@ func (VideoMetadata) SaveManual(request VideoMetadataManualRequest) (*models.Res
 	return metadata, err
 }
 
-func (VideoMetadata) Stats() ([]VideoMetadataStats, error) {
+func (VideoMetadata) Stats() ([]VideoMetadataStats, error) { return findVideoMetadataStats(core.DBS()) }
+
+func findVideoMetadataStats(db *gorm.DB) ([]VideoMetadataStats, error) {
 	var result []VideoMetadataStats
-	err := core.DBS().Raw(`
+	reason, err := models.MetadataExclusionSQL(db)
+	if err != nil {
+		return nil, err
+	}
+	sql := `
 		SELECT fb.id AS files_bases_id, fb.name,
-			SUM(CASE WHEN ds.id IS NOT NULL AND COALESCE(ds.video_metadata_excluded, 0) = 0 THEN 1 ELSE 0 END) AS total,
-			SUM(CASE WHEN COALESCE(ds.video_metadata_excluded, 0) = 0 AND vm.probe_status = 'success' AND vm.metadata_version >= ? THEN 1 ELSE 0 END) AS completed,
-			SUM(CASE WHEN COALESCE(ds.video_metadata_excluded, 0) = 0 AND ds.id IS NOT NULL AND vm.drama_series_id IS NULL THEN 1 ELSE 0 END) AS pending,
-			SUM(CASE WHEN COALESCE(ds.video_metadata_excluded, 0) = 0 AND vm.probe_status = 'failed' THEN 1 ELSE 0 END) AS failed,
-			SUM(CASE WHEN COALESCE(ds.video_metadata_excluded, 0) = 0 AND vm.probe_status = 'processing' THEN 1 ELSE 0 END) AS processing,
-			SUM(CASE WHEN COALESCE(ds.video_metadata_excluded, 0) = 0 AND (vm.probe_status = 'stale'
+			SUM(CASE WHEN ds.id IS NOT NULL AND __ELIGIBLE__ THEN 1 ELSE 0 END) AS total,
+			SUM(CASE WHEN __ELIGIBLE__ AND vm.probe_status = 'success' AND vm.metadata_version >= ? THEN 1 ELSE 0 END) AS completed,
+			SUM(CASE WHEN __ELIGIBLE__ AND ds.id IS NOT NULL AND vm.drama_series_id IS NULL AND COALESCE(ds.durationProbeStatus,'') <> 'failed' THEN 1 ELSE 0 END) AS pending,
+			SUM(CASE WHEN __ELIGIBLE__ AND (vm.probe_status = 'failed' OR (vm.drama_series_id IS NULL AND ds.durationProbeStatus = 'failed')) THEN 1 ELSE 0 END) AS failed,
+			SUM(CASE WHEN __ELIGIBLE__ AND vm.probe_status = 'processing' THEN 1 ELSE 0 END) AS processing,
+			SUM(CASE WHEN __ELIGIBLE__ AND (vm.probe_status = 'stale'
 				OR (vm.drama_series_id IS NOT NULL AND vm.probe_status NOT IN ('failed', 'processing', 'manual') AND vm.metadata_version < ?)
 				) THEN 1 ELSE 0 END) AS stale,
-			SUM(CASE WHEN COALESCE(ds.video_metadata_excluded, 0) = 0 AND vm.probe_status = 'manual' THEN 1 ELSE 0 END) AS manual,
-			SUM(CASE WHEN ds.id IS NOT NULL AND COALESCE(ds.video_metadata_excluded, 0) = 1 THEN 1 ELSE 0 END) AS excluded
+			SUM(CASE WHEN __ELIGIBLE__ AND vm.probe_status = 'manual' THEN 1 ELSE 0 END) AS manual,
+			SUM(CASE WHEN ds.id IS NOT NULL AND __EXCLUDED__ THEN 1 ELSE 0 END) AS excluded
 		FROM filesBases fb
 		LEFT JOIN resources r ON r.filesBases_id = fb.id AND r.mode IN ('movies', 'videoLink')
 		LEFT JOIN resourcesDramaSeries ds ON ds.resources_id = r.id
 		LEFT JOIN resources_video_metadata vm ON vm.drama_series_id = ds.id
 		GROUP BY fb.id, fb.name
-		ORDER BY fb.sort, fb.id`, CurrentVideoMetadataVersion, CurrentVideoMetadataVersion).Scan(&result).Error
+		ORDER BY fb.sort, fb.id`
+	sql = strings.ReplaceAll(sql, "__ELIGIBLE__", "("+reason+") = ''")
+	sql = strings.ReplaceAll(sql, "__EXCLUDED__", "("+reason+") <> ''")
+	err = db.Raw(sql, CurrentVideoMetadataVersion, CurrentVideoMetadataVersion).Scan(&result).Error
 	return result, err
 }
 
@@ -1163,49 +1202,7 @@ func countVideoMetadataCandidates(ids []string, scopeMode, runMode string, exclu
 // classifyClearlyNonVideoMetadataScope 只在视频信息补齐/重新采集时纠正历史误识别数据。
 // 它保留资源和分集，仅清除错误的视频元数据；人工补录视为明确覆盖，不自动排除。
 func classifyClearlyNonVideoMetadataScope(db *gorm.DB, scopeMode string, ids []string) (int, error) {
-	type sourceItem struct {
-		ID  string `gorm:"column:id"`
-		Src string `gorm:"column:src"`
-	}
-	var sources []sourceItem
-	query := db.Table("resourcesDramaSeries ds").
-		Select("ds.id, ds.src").
-		Joins("JOIN resources r ON r.id = ds.resources_id").
-		Joins("LEFT JOIN resources_video_metadata vm ON vm.drama_series_id = ds.id").
-		Where("r.mode IN ?", []datatype.E_resourceMode{
-			datatype.E_resourceMode_Movies,
-			datatype.E_resourceMode_VideoLink,
-		}).
-		Where("COALESCE(ds.video_metadata_excluded, 0) = 0").
-		Where("vm.probe_status IS NULL OR vm.probe_status <> ?", models.VideoMetadataStatusManual)
-	if scopeMode == models.VideoMetadataScopeSelected {
-		query = query.Where("r.filesBases_id IN ?", ids)
-	}
-	if err := query.Scan(&sources).Error; err != nil {
-		return 0, err
-	}
-	excludedIDs := make([]string, 0)
-	for _, item := range sources {
-		if utils.IsClearlyNonVideoSource(item.Src) {
-			excludedIDs = append(excludedIDs, item.ID)
-		}
-	}
-	if len(excludedIDs) == 0 {
-		return 0, nil
-	}
-	err := db.Transaction(func(tx *gorm.DB) error {
-		if err := tx.Model(&models.ResourcesDramaSeries{}).Where("id IN ?", excludedIDs).
-			Updates(map[string]interface{}{
-				"video_metadata_excluded": true,
-				"durationSeconds":         0,
-				"durationProbeStatus":     "",
-				"durationProbeTime":       nil,
-			}).Error; err != nil {
-			return err
-		}
-		return (models.ResourcesVideoMetadata{}).DeleteByDramaSeriesIDs(tx, excludedIDs)
-	})
-	return len(excludedIDs), err
+	return cleanMetadataRules(db, scopeMode, ids, nil)
 }
 
 // markChangedVideoMetadataScope 在用户明确执行“缺失并更新失效项”时检查已采集文件。
@@ -1251,7 +1248,7 @@ func collectedVideoMetadataScopeQuery(scopeMode string, ids []string) *gorm.DB {
 			datatype.E_resourceMode_Movies,
 			datatype.E_resourceMode_VideoLink,
 		}).
-		Where("COALESCE(ds.video_metadata_excluded, 0) = 0").
+		Scopes(metadataEligibleScope).
 		Where("vm.probe_status = ? AND vm.metadata_version >= ?",
 			models.VideoMetadataStatusSuccess, CurrentVideoMetadataVersion)
 	if scopeMode == models.VideoMetadataScopeSelected {
@@ -1290,7 +1287,7 @@ func videoMetadataCandidateQuery(ids []string, scopeMode, runMode string, exclud
 		Joins("JOIN resources r ON r.id = ds.resources_id").
 		Joins("LEFT JOIN resources_video_metadata vm ON vm.drama_series_id = ds.id").
 		Where("r.mode IN ?", []datatype.E_resourceMode{datatype.E_resourceMode_Movies, datatype.E_resourceMode_VideoLink}).
-		Where("COALESCE(ds.video_metadata_excluded, 0) = 0").
+		Scopes(metadataEligibleScope).
 		Where("ds.src <> ''")
 	if scopeMode == models.VideoMetadataScopeSelected {
 		q = q.Where("r.filesBases_id IN ?", ids)
@@ -1327,25 +1324,35 @@ func videoMetadataCandidateQuery(ids []string, scopeMode, runMode string, exclud
 }
 
 func markVideoMetadataScopeStale(scopeMode string, ids []string) error {
-	q := core.DBS().Model(&models.ResourcesVideoMetadata{}).
-		Where(`drama_series_id IN (
-			SELECT ds.id FROM resourcesDramaSeries ds
-			JOIN resources r ON r.id = ds.resources_id
-			WHERE r.mode IN ('movies', 'videoLink')
-			AND COALESCE(ds.video_metadata_excluded, 0) = 0
-		)`).
-		Where("probe_status <> ?", models.VideoMetadataStatusManual)
-	if scopeMode == models.VideoMetadataScopeSelected {
-		q = q.Where(`drama_series_id IN (
-			SELECT ds.id FROM resourcesDramaSeries ds
-			JOIN resources r ON r.id = ds.resources_id
-			WHERE r.filesBases_id IN ?
-		)`, ids)
+	return markMetadataScopeStale(core.DBS(), scopeMode, ids)
+}
+
+func markMetadataScopeStale(db *gorm.DB, scopeMode string, ids []string) error {
+	// 先分批取 ID，再更新，避免 MySQL 在 UPDATE 中读取同一元数据表。
+	last := ""
+	for {
+		selected := db.Table("resourcesDramaSeries ds").Select("ds.id").
+			Joins("JOIN resources r ON r.id = ds.resources_id").
+			Joins("LEFT JOIN resources_video_metadata vm ON vm.drama_series_id = ds.id").
+			Where("r.mode IN ?", []string{"movies", "videoLink"}).Scopes(metadataEligibleScope).
+			Where("ds.id > ?", last).Order("ds.id").Limit(500)
+		if scopeMode == models.VideoMetadataScopeSelected {
+			selected = selected.Where("r.filesBases_id IN ?", ids)
+		}
+		var batch []string
+		if err := selected.Pluck("ds.id", &batch).Error; err != nil {
+			return err
+		}
+		if len(batch) == 0 {
+			return nil
+		}
+		if err := db.Model(&models.ResourcesVideoMetadata{}).Where("drama_series_id IN ?", batch).
+			Where("probe_status <> ?", models.VideoMetadataStatusManual).
+			Updates(map[string]interface{}{"probe_status": models.VideoMetadataStatusStale, "metadata_version": 0}).Error; err != nil {
+			return err
+		}
+		last = batch[len(batch)-1]
 	}
-	return q.Updates(map[string]interface{}{
-		"probe_status":     models.VideoMetadataStatusStale,
-		"metadata_version": 0,
-	}).Error
 }
 
 func (VideoMetadata) BatchStatus() (*models.VideoMetadataBatchTask, error) {

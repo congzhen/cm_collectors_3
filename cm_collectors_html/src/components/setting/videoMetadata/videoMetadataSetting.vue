@@ -9,6 +9,23 @@
     </div>
 
     <el-card shadow="never">
+      <template #header>视频采集排除规则（全部文件库）</template>
+      <el-form label-width="230px" label-position="left">
+        <el-form-item label="自动排除常见非视频文件">
+          <el-switch v-model="settingData.setting.autoExcludeNonVideo" />
+        </el-form-item>
+        <el-form-item label="系统默认排除后缀">
+          <details><summary>查看图片、网页、文本和字幕格式</summary><p class="help">{{ defaultExcludedExtensions.join('、') }}</p></details>
+        </el-form-item>
+        <el-form-item label="自定义排除后缀">
+          <el-input v-model="settingData.setting.excludedExtensions" type="textarea" :rows="2" placeholder="例如 pdf, zip；支持空格、逗号、分号分隔，不区分大小写" />
+        </el-form-item>
+      </el-form>
+      <el-alert type="info" :closable="false" title="仅影响视频信息采集，不删除文件或资源。匹配文件不采集、不重试，也不计入采集失败。保存后生效。" />
+      <p class="help">删除排除后缀后，文件将在下一次采集任务中重新参与。人工标记的非视频不会自动恢复；可在“已排除文件”中标记为视频并重试。</p>
+    </el-card>
+
+    <el-card shadow="never">
       <template #header>自动触发策略</template>
       <el-form label-width="230px" label-position="left">
         <el-form-item label="新增或文件变化时采集">
@@ -120,24 +137,44 @@
 
         <el-tab-pane label="采集失败文件" name="failures">
           <div class="failure-tools">
+            <el-radio-group v-model="failureQuery.excluded" @change="searchFailures">
+              <el-radio-button :value="false">采集失败</el-radio-button>
+              <el-radio-button :value="true">已排除文件</el-radio-button>
+            </el-radio-group>
+            <el-button :loading="cleanup.status === 'running'" @click="previewCleanup">按已保存规则整理历史记录</el-button>
+          </div>
+          <el-alert v-if="cleanup.status !== 'idle'" :type="cleanup.status === 'failed' ? 'error' : 'info'" :closable="false"
+            :title="cleanup.status === 'running' ? `正在整理：已处理 ${cleanup.processed} 条 / 预览 ${cleanup.total} 条` : cleanup.status === 'failed' ? cleanup.error : `整理完成，共处理 ${cleanup.processed} 条`" />
+          <div class="failure-tools">
+            <span>已选 {{ selectedFailures.length }} 项（表头勾选全选当前页）</span>
+            <el-button v-if="!failureQuery.excluded" :disabled="!selectedFailures.length || bulkBusy" @click="bulkAction('retry')">批量重试</el-button>
+            <el-button v-if="!failureQuery.excluded" :disabled="!selectedFailures.length || bulkBusy" @click="bulkAction('nonvideo')">批量标记非视频</el-button>
+            <el-button v-else :disabled="!selectedFailures.length || bulkBusy" @click="bulkAction('video')">标记为视频并重试</el-button>
+          </div>
+          <div class="failure-tools">
             <el-input v-model="failureQuery.keyword" clearable placeholder="搜索资源、路径或错误"
               @keyup.enter="searchFailures" @clear="searchFailures" />
             <el-button type="primary" plain @click="searchFailures">查询</el-button>
           </div>
-          <el-table v-if="failures.length" :data="failures" stripe max-height="430">
+          <el-table v-if="failures.length" :key="String(failureQuery.excluded)" :data="failures" stripe max-height="430" @selection-change="selectedFailures = $event">
+            <el-table-column type="selection" width="48" />
+            <el-table-column v-if="failureQuery.excluded" label="排除原因" width="130">
+              <template #default="scope">{{ exclusionReasonText(scope.row.exclusionReason) }}</template>
+            </el-table-column>
             <el-table-column prop="filesBasesName" label="文件库" width="120" />
             <el-table-column prop="resourceTitle" label="资源" min-width="150" show-overflow-tooltip />
             <el-table-column prop="src" label="文件路径" min-width="260" show-overflow-tooltip />
             <el-table-column label="文件大小" width="110" align="right">
               <template #default="scope">{{ formatFileSize(scope.row.fileSize) }}</template>
             </el-table-column>
-            <el-table-column prop="errorMessage" label="失败原因" min-width="220" show-overflow-tooltip />
+            <el-table-column v-if="!failureQuery.excluded" prop="errorMessage" label="失败原因" min-width="220" show-overflow-tooltip />
             <el-table-column prop="retryCount" label="重试" width="70" align="center" />
             <el-table-column label="操作" width="250" fixed="right">
               <template #default="scope">
-                <el-button link type="primary" @click="retryFailure(scope.row)">重试</el-button>
-                <el-button link type="success" @click="openManualDialog(scope.row)">手工补录</el-button>
-                <el-button link type="warning" @click="markNonVideo(scope.row)">标记非视频</el-button>
+                <el-button v-if="!failureQuery.excluded" link type="primary" @click="retryFailure(scope.row)">重试</el-button>
+                <el-button v-if="!failureQuery.excluded" link type="success" @click="openManualDialog(scope.row)">手工补录</el-button>
+                <el-button v-if="!failureQuery.excluded" link type="warning" @click="markNonVideo(scope.row)">标记非视频</el-button>
+                <el-button v-if="failureQuery.excluded" link type="primary" @click="bulkAction('video', [scope.row])">标记为视频并重试</el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -145,7 +182,7 @@
             layout="total, sizes, prev, pager, next" v-model:current-page="failureQuery.page"
             v-model:page-size="failureQuery.limit" :page-sizes="[10, 20, 50, 100]" :total="failureTotal"
             @current-change="loadFailures" @size-change="changeFailurePageSize" />
-          <el-empty v-if="!failures.length" description="当前没有采集失败的视频" />
+          <el-empty v-if="!failures.length" :description="failureQuery.excluded ? '当前没有已排除文件' : '当前没有采集失败的视频'" />
         </el-tab-pane>
       </el-tabs>
     </el-card>
@@ -184,9 +221,49 @@ import type {
   I_videoMetadataStats,
 } from '@/dataType/videoMetadata.dataType';
 
+const defaultExcludedExtensions = ['jpg','jpeg','png','gif','bmp','webp','svg','avif','heic','html','htm','nfo','txt','json','xml','url','srt','ass','ssa','vtt','sub'];
+const selectedFailures = ref<I_videoMetadataFailureItem[]>([]);
+const bulkBusy = ref(false);
+const cleanup = reactive({ status: 'idle', processed: 0, total: 0, error: '' });
+const savedRules = ref('');
+const ruleKey = () => JSON.stringify([settingData.setting.autoExcludeNonVideo, settingData.setting.excludedExtensions]);
+const exclusionReasonText = (reason: string) => ({ system: '系统规则', custom: '自定义后缀', manual: '人工标记非视频', legacy: '历史排除（来源未知）' }[reason] || reason);
+const bulkAction = async (action: 'retry' | 'nonvideo' | 'video', rows = selectedFailures.value) => {
+  if (bulkBusy.value || !rows.length) return;
+  try {
+    if (action !== 'retry') await ElMessageBox.confirm(action === 'video' ? `将 ${rows.length} 项指定为视频并重试，人工指定优先于后缀排除规则。` : `将 ${rows.length} 项标记为非视频并清除其视频采集信息，不删除文件或资源。`, '批量操作', { type: 'warning' });
+    bulkBusy.value = true;
+    const result = await videoMetadataServer.bulk(rows.map(x => x.dramaSeriesId), action);
+    if (!result.status) { ElMessage.error(result.msg); return; }
+    const errors = Object.values(result.data.failed);
+    if (errors.length) ElMessage.warning(`成功 ${result.data.succeeded} 项，失败 ${errors.length} 项：${errors[0]}`);
+    else ElMessage.success(`已处理 ${result.data.succeeded} 项`);
+    selectedFailures.value = [];
+    failureQuery.page = 1;
+    await refreshAll();
+  } catch (error) { if (error instanceof Error) ElMessage.error(error.message); }
+  finally { bulkBusy.value = false; }
+};
+const previewCleanup = async () => {
+  if (ruleKey() !== savedRules.value) { ElMessage.warning('排除规则尚未保存，请先保存设置再整理。'); return; }
+  try {
+    const preview = await videoMetadataServer.cleanupPreview();
+    if (!preview.status) { ElMessage.error(preview.msg); return; }
+    if (!preview.data.total) { ElMessage.info('没有需要整理的历史采集记录。'); return; }
+    const counts = Object.entries(preview.data.byExtension).map(([ext,n]) => `${ext || '无后缀'}：${n} 条`).join('；');
+    await ElMessageBox.confirm(`将整理全部文件库中 ${preview.data.total} 条匹配记录（${counts}）。只清理视频采集信息，不删除文件、资源或人工补录数据。`, '预览历史记录整理', { type: 'warning' });
+    const result = await videoMetadataServer.startCleanup(preview.data.token);
+    if (!result.status) { ElMessage.error(result.msg); return; }
+    Object.assign(cleanup, { status: 'running', processed: 0, total: preview.data.total, error: '' });
+    await refreshAll();
+  } catch (error) { if (error instanceof Error) ElMessage.error(error.message); }
+};
+
 const defaultSettingData = (): I_videoMetadataSettingData => ({
   setting: {
     id: 'default',
+    autoExcludeNonVideo: true,
+    excludedExtensions: '',
     collectOnNewOrChanged: true,
     collectOnDetailOrPlay: true,
     collectOnList: false,
@@ -224,7 +301,7 @@ const stats = ref<I_videoMetadataStats[]>([]);
 const collectionResultTab = ref<'stats' | 'failures'>('stats');
 const failures = ref<I_videoMetadataFailureItem[]>([]);
 const failureTotal = ref(0);
-const failureQuery = reactive<I_videoMetadataFailureQuery>({ page: 1, limit: 20, keyword: '' });
+const failureQuery = reactive<I_videoMetadataFailureQuery>({ page: 1, limit: 20, keyword: '', excluded: false });
 const manualDialogVisible = ref(false);
 const manualSaving = ref(false);
 const manualItem = ref<I_videoMetadataFailureItem>();
@@ -260,7 +337,8 @@ const taskProgress = computed(() => {
 });
 
 const assignSetting = (data: I_videoMetadataSettingData) => {
-  Object.assign(settingData.setting, data.setting);
+  Object.assign(settingData.setting, data.setting, { autoExcludeNonVideo: data.setting.autoExcludeNonVideo !== false, excludedExtensions: data.setting.excludedExtensions || '' });
+  savedRules.value = ruleKey();
   settingData.filesBasesIds = [...(data.filesBasesIds || [])];
 };
 
@@ -268,22 +346,28 @@ const assignTask = (data?: I_videoMetadataBatchTask) => {
   Object.assign(task, data || emptyTask());
 };
 
+let failureRequest = 0;
 const loadFailures = async () => {
+  const request = ++failureRequest;
+  selectedFailures.value = [];
   const result = await videoMetadataServer.failures({ ...failureQuery });
-  if (result.status) {
+  if (result.status && request === failureRequest) {
     failures.value = result.data?.dataList || [];
     failureTotal.value = result.data?.total || 0;
   }
 };
 
 const refreshAll = async () => {
-  const [statsResult, taskResult, failureResult] = await Promise.all([
+  const request = ++failureRequest;
+  const [statsResult, taskResult, cleanupResult, failureResult] = await Promise.all([
     videoMetadataServer.stats(),
     videoMetadataServer.taskStatus(),
+    videoMetadataServer.cleanupStatus(),
     videoMetadataServer.failures({ ...failureQuery }),
   ]);
+  if (cleanupResult.status) Object.assign(cleanup, cleanupResult.data);
   if (statsResult.status) stats.value = statsResult.data || [];
-  if (failureResult.status) {
+  if (failureResult.status && request === failureRequest && !selectedFailures.value.length) {
     failures.value = failureResult.data?.dataList || [];
     failureTotal.value = failureResult.data?.total || 0;
   }
@@ -308,6 +392,7 @@ const changeFailurePageSize = () => {
 const retryFailure = async (item: I_videoMetadataFailureItem) => {
   const result = await videoMetadataServer.retryFailure(item.dramaSeriesId);
   if (result.status) {
+    selectedFailures.value = [];
     ElMessage.success('已加入重新采集队列');
     window.setTimeout(() => refreshAll(), 1200);
   } else {
@@ -321,6 +406,7 @@ const markNonVideo = async (item: I_videoMetadataFailureItem) => {
   });
   const result = await videoMetadataServer.setClassification(item.dramaSeriesId, false);
   if (result.status) {
+    selectedFailures.value = [];
     ElMessage.success('已标记为非视频');
     await refreshAll();
   } else {
@@ -360,6 +446,7 @@ const saveManualMetadata = async () => {
     const result = await videoMetadataServer.saveManual(request);
     if (result.status) {
       manualDialogVisible.value = false;
+      selectedFailures.value = [];
       ElMessage.success('人工视频信息已保存');
       await refreshAll();
     } else {
@@ -403,6 +490,8 @@ const saveSetting = async () => {
   }
   saving.value = true;
   try {
+    const risky = (settingData.setting.excludedExtensions || '').toLowerCase().split(/[\s,，;；]+/).map(x => x.replace(/^\./, '')).filter(x => ['mp4','mkv','avi','mov','wmv','flv','webm','ts','m2ts','m4v','mpg','mpeg','vob','rmvb','3gp','m3u8'].includes(x));
+    if (risky.length) await ElMessageBox.confirm(`你正在排除视频格式 ${risky.join('、')}。损坏或未下载完整的同类视频也会被隐藏，确认保存？`, '排除视频格式', { type: 'warning' });
     const result = await videoMetadataServer.saveSetting({
       setting: { ...settingData.setting },
       filesBasesIds: [...settingData.filesBasesIds],
@@ -410,9 +499,14 @@ const saveSetting = async () => {
     if (result.status) {
       assignSetting(result.data);
       ElMessage.success('视频信息采集设置已保存');
+      selectedFailures.value = [];
+      failureQuery.page = 1;
+      await refreshAll();
     } else {
       ElMessage.error(result.msg);
     }
+  } catch (error) {
+    if (error instanceof Error) ElMessage.error(error.message);
   } finally {
     saving.value = false;
   }
@@ -463,7 +557,7 @@ const stopTask = async () => {
 onMounted(async () => {
   await load();
   refreshTimer = setInterval(() => {
-    if (taskRunning.value || taskPaused.value) refreshAll();
+    if (taskRunning.value || taskPaused.value || cleanup.status === 'running') refreshAll();
   }, 2000);
 });
 onUnmounted(() => {
@@ -554,8 +648,10 @@ onUnmounted(() => {
   }
 
   .failure-tools {
-    width: min(100%, 430px);
-    margin: 0 0 12px auto;
+    width: 100%;
+    flex-wrap: wrap;
+    align-items: center;
+    margin: 0 0 12px;
     display: flex;
     gap: 8px;
   }

@@ -9,6 +9,40 @@ import (
 
 type VideoMetadata struct{}
 
+func (VideoMetadata) CleanupPreview(c *gin.Context) {
+	data, err := (processors.VideoMetadata{}).CleanupPreview()
+	if ResError(c, err) != nil {
+		return
+	}
+	response.OkWithData(data, c)
+}
+func (VideoMetadata) CleanupStatus(c *gin.Context) {
+	response.OkWithData((processors.VideoMetadata{}).CleanupStatus(), c)
+}
+func (VideoMetadata) StartCleanup(c *gin.Context) {
+	var request struct {
+		Token string `json:"token"`
+	}
+	if ParameterHandleShouldBindJSON(c, &request) != nil {
+		return
+	}
+	if err := (processors.VideoMetadata{}).StartCleanup(request.Token); ResError(c, err) != nil {
+		return
+	}
+	response.OkWithData(true, c)
+}
+func (VideoMetadata) Bulk(c *gin.Context) {
+	var request processors.MetadataBulkRequest
+	if ParameterHandleShouldBindJSON(c, &request) != nil {
+		return
+	}
+	data, err := (processors.VideoMetadata{}).Bulk(request)
+	if ResError(c, err) != nil {
+		return
+	}
+	response.OkWithData(data, c)
+}
+
 func (VideoMetadata) Setting(c *gin.Context) {
 	data, err := (processors.VideoMetadata{}).Setting()
 	if err := ResError(c, err); err != nil {

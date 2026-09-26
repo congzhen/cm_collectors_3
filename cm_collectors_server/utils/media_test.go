@@ -9,7 +9,9 @@ func TestIsClearlyNonVideoSource(t *testing.T) {
 	}{
 		{src: `D:\media\cover.JPG`, want: true},
 		{src: "https://example.com/poster.png?size=large", want: true},
-		{src: "info.HTML#details", want: true},
+		{src: "https://example.com/info.HTML#details", want: true},
+		{src: "info.HTML#details", want: false},
+		{src: "folder.jpg#name/movie.mp4", want: false},
 		{src: "movie.mp4", want: false},
 		{src: "movie.mkv", want: false},
 		{src: "uncommon.container", want: false},

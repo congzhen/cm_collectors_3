@@ -54,3 +54,52 @@ func TestMigrateVideoMetadataFailureManagementSchemaDoesNotRewriteHistory(t *tes
 		t.Fatalf("schema migration rewrote historical data: %#v", after)
 	}
 }
+
+func TestExclusionMigrationPreservesLegacyAndDisabledSetting(t *testing.T) {
+	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, sql := range []string{
+		"CREATE TABLE resourcesDramaSeries (id char(20) PRIMARY KEY, src text, video_metadata_excluded integer DEFAULT 0)",
+		"INSERT INTO resourcesDramaSeries (id,src,video_metadata_excluded) VALUES ('legacy','old.mp4',1)",
+		"CREATE TABLE video_metadata_settings (id char(20) PRIMARY KEY)",
+		"INSERT INTO video_metadata_settings (id) VALUES ('default')",
+	} {
+		if err := db.Exec(sql).Error; err != nil {
+			t.Fatal(err)
+		}
+	}
+	for i := 0; i < 2; i++ {
+		if err := db.AutoMigrate(&ResourcesDramaSeries{}, &VideoMetadataSetting{}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	var ds ResourcesDramaSeries
+	if err := db.First(&ds, "id = ?", "legacy").Error; err != nil {
+		t.Fatal(err)
+	}
+	if !ds.VideoMetadataExcluded || ds.VideoMetadataClassification != "" {
+		t.Fatal("legacy manual intent lost")
+	}
+	setting, err := MetadataRules(db)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if MetadataSourceRule(setting, "cover.jpg") != "system" {
+		t.Fatal("legacy default not enabled")
+	}
+	disabled := false
+	setting.AutoExcludeNonVideo = &disabled
+	setting.ExcludedExtensions = "pdf"
+	if err := (VideoMetadataSetting{}).Save(db, &setting); err != nil {
+		t.Fatal(err)
+	}
+	reloaded, err := MetadataRules(db)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if reloaded.AutoExcludeNonVideo == nil || *reloaded.AutoExcludeNonVideo || MetadataSourceRule(reloaded, "cover.jpg") != "" || MetadataSourceRule(reloaded, "book.pdf") != "custom" {
+		t.Fatal("saved false/custom setting lost")
+	}
+}

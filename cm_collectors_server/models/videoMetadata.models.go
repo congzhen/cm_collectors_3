@@ -89,6 +89,8 @@ func (ResourcesVideoMetadata) DeleteByFilesBasesID(db *gorm.DB, filesBasesID str
 
 // VideoMetadataSetting 保存全局采集触发和空闲补齐策略。
 type VideoMetadataSetting struct {
+	AutoExcludeNonVideo       *bool                `json:"autoExcludeNonVideo" gorm:"column:auto_exclude_non_video"`
+	ExcludedExtensions        string               `json:"excludedExtensions" gorm:"column:excluded_extensions;type:text"`
 	ID                        string               `json:"id" gorm:"primaryKey;type:char(20);"`
 	CollectOnNewOrChanged     bool                 `json:"collectOnNewOrChanged" gorm:"column:collect_on_new_or_changed;type:tinyint(1);default:1"`
 	CollectOnDetailOrPlay     bool                 `json:"collectOnDetailOrPlay" gorm:"column:collect_on_detail_or_play;type:tinyint(1);default:1"`

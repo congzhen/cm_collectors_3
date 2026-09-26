@@ -17,3 +17,5 @@
 - [Gfriends 演员头像库设计](performer-avatar-library.md)：独立维护头像索引，支持单演员候选选择和演员库批量补充头像。
 - [视频元数据采集与历史补齐设计](video-metadata-collection.md)：统一采集时长、分辨率、帧率和编码信息，支持按需、空闲、手动与多库计划任务补齐。
 - [视频文件转码与源文件替换](video-transcoding.md)：持久化转码队列、FFmpeg 参数、安全替换、异常恢复和元数据刷新协议。
+
+- [视频采集排除规则](video-metadata-exclusions.md)：默认与自定义后缀排除、历史分批整理、批量处理及人工恢复。

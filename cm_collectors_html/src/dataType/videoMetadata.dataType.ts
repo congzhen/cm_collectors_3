@@ -29,6 +29,8 @@ export interface I_videoMetadata {
 }
 
 export interface I_videoMetadataSetting {
+  autoExcludeNonVideo?: boolean | null;
+  excludedExtensions?: string;
   id: string;
   collectOnNewOrChanged: boolean;
   collectOnDetailOrPlay: boolean;
@@ -60,6 +62,7 @@ export interface I_videoMetadataStats {
 }
 
 export interface I_videoMetadataFailureQuery {
+  excluded?: boolean;
   page: number;
   limit: number;
   filesBasesId?: string;
@@ -67,6 +70,7 @@ export interface I_videoMetadataFailureQuery {
 }
 
 export interface I_videoMetadataFailureItem {
+  exclusionReason?: string;
   dramaSeriesId: string;
   resourceId: string;
   resourceTitle: string;
