@@ -1,6 +1,19 @@
 import { nextTick, onActivated, onBeforeUnmount, onDeactivated, onMounted, ref } from 'vue';
 
-type ShellWindow = Window & { __cmPhoneShell?: boolean; __cmPhoneShellSettings?: boolean };
+type ShellWindow = Window & { __cmPhoneShell?: boolean; __cmPhoneShellSettings?: boolean; __cmPhoneShellDownload?: boolean };
+
+export function downloadMobileShell(url: string, filename: string): boolean {
+  if (!(window as ShellWindow).__cmPhoneShellDownload) return false;
+  const headers: Record<string, string> = {};
+  for (const name of ['token', 'adminToken']) {
+    const value = sessionStorage.getItem(name);
+    if (value) headers[name] = value;
+  }
+  window.dispatchEvent(new CustomEvent('cm-phone-download', {
+    detail: { url: new URL(url, window.location.href).href, filename, headers },
+  }));
+  return true;
+}
 const activeMenus = new Set<symbol>();
 function announceMenus() {
   void nextTick(() => {

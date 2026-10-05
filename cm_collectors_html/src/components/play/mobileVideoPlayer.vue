@@ -25,7 +25,7 @@ import 'xgplayer/dist/index.min.css';
 import { MobileSourceError, resolveMobileSource, type MobileSource } from '@/common/mobilePlaybackSource';
 import { readMobilePlayback, readMobileSound, resumeTime, saveMobilePlayback, saveMobileSound } from '@/common/mobileSession';
 import { parseMobileVtt } from '@/common/mobileSubtitles';
-import { notifyMobileShell } from '@/common/mobileShell';
+import { downloadMobileShell, notifyMobileShell } from '@/common/mobileShell';
 
 const props = withDefaults(defineProps<{ resourceId: string; dramaSeriesId: string; title: string; autoplay?: boolean;
   sourceLoader?: (id: string, signal?: AbortSignal) => Promise<MobileSource> }>(), { sourceLoader: resolveMobileSource });
@@ -244,6 +244,7 @@ const load = async (recovering = false) => {
       isMobileSimulateMode: 'mobile', seekedStatus: 'auto', startTime: resumePosition,
       defaultPlaybackRate: previous?.rate || 1, closePauseVideoFocus: false,
       playbackRate: [0.5, 0.75, 1, 1.25, 1.5, 2],
+      download: true,
       fullscreen: { switchCallback: toggleFullscreen },
       mobile: { gestureX: false, gestureY: false, disablePress: true, isTouchingSeek: false, moveDuration: 90000 },
       plugins: hls ? [HlsPlugin] : [],
@@ -251,6 +252,19 @@ const load = async (recovering = false) => {
       ignores: ['error', 'pc', 'keyboard'],
     });
     player = instance;
+    let lastDownloadClick = -Infinity;
+    instance.usePluginHooks('download', 'click', () => {
+      if (!(window as Window & { __cmPhoneShellDownload?: boolean }).__cmPhoneShellDownload) return true;
+      // 同一次触摸可能同时触发 touchend 和 click，避免建立两个原生下载任务。
+      const time = Date.now();
+      if (time - lastDownloadClick < 600) return false;
+      lastDownloadClick = time;
+      if (source.playType === 'm3u8') {
+        window.alert('当前视频使用分片播放，暂不支持下载完整视频');
+        return false;
+      }
+      return !downloadMobileShell(source.playUrl, `${props.title || '视频'}.mp4`);
+    });
     const media = instance.video as HTMLVideoElement;
     instance.muted = sound.muted;
     playerRoot.value = instance.root || undefined;

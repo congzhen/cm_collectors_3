@@ -1,14 +1,33 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { notifyMobileShell } from '../mobileShell';
+import { downloadMobileShell, notifyMobileShell } from '../mobileShell';
 import { useMobileShellSettings } from '../mobileShell';
 import { mount, flushPromises } from '@vue/test-utils';
 import { defineComponent, h } from 'vue';
 const shellWindow = window as Window & { __cmPhoneShell?: boolean };
 afterEach(() => {
   delete shellWindow.__cmPhoneShell;
+  delete (window as Window & { __cmPhoneShellDownload?: boolean }).__cmPhoneShellDownload;
+  sessionStorage.clear();
   delete (window as Window & { __cmPhoneShellSettings?: boolean }).__cmPhoneShellSettings;
 });
 describe('手机套壳全屏通知', () => {
+  it('普通浏览器和旧 APK 下载仍使用播放器原来的方式', () => {
+    expect(downloadMobileShell('/api/video/mp4/e/v.mp4', '视频.mp4')).toBe(false);
+  });
+  it('新版 APK 下载传递绝对地址和登录请求头', () => {
+    (window as Window & { __cmPhoneShellDownload?: boolean }).__cmPhoneShellDownload = true;
+    sessionStorage.setItem('token', 'user-token');
+    sessionStorage.setItem('adminToken', 'admin-token');
+    const listener = vi.fn();
+    window.addEventListener('cm-phone-download', listener);
+    try {
+      expect(downloadMobileShell('/api/video/mp4/e/v.mp4', '视频.mp4')).toBe(true);
+      expect((listener.mock.calls[0][0] as CustomEvent).detail).toEqual({
+        url: new URL('/api/video/mp4/e/v.mp4', window.location.href).href,
+        filename: '视频.mp4', headers: { token: 'user-token', adminToken: 'admin-token' },
+      });
+    } finally { window.removeEventListener('cm-phone-download', listener); }
+  });
   it('服务器入口仅在 APK 就绪后出现，卸载时恢复原生入口', async () => {
     const received: boolean[] = [];
     const listener = (event: Event) => received.push((event as CustomEvent).detail.available);

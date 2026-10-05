@@ -9,6 +9,7 @@ interface MockPlayer {
   root: HTMLElement; video: HTMLVideoElement; config: Record<string, unknown>;
   currentTime: number; duration: number; playbackRate: number; paused: boolean;
   muted: boolean; volume: number;
+  downloadHook?: () => boolean;
   on: (event: string, callback: () => void) => void;
   fire: (event: string) => void; play: ReturnType<typeof vi.fn>; destroy: ReturnType<typeof vi.fn>;
 }
@@ -27,6 +28,10 @@ vi.mock('xgplayer', () => ({
     play = vi.fn(async () => { this.paused = false; this.fire('PLAY'); });
     pause = vi.fn(() => { this.paused = true; this.fire('PAUSE'); });
     destroy = vi.fn(); focus = vi.fn(); getPlugin = () => ({ config: {} });
+    downloadHook?: () => boolean;
+    usePluginHooks(plugin: string, _event: string, callback: () => boolean) {
+      if (plugin === 'download') this.downloadHook = callback;
+    }
     constructor(config: Record<string, unknown>) {
       this.config = config; this.root = config.el as HTMLElement; mocks.instances.push(this);
       this.volume = config.volume as number;
@@ -43,7 +48,34 @@ describe('手机播放恢复与请求隔离', () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false }));
     Object.defineProperty(document, 'hidden', { configurable: true, value: false });
   });
-  afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); });
+  afterEach(() => {
+    delete (window as Window & { __cmPhoneShellDownload?: boolean }).__cmPhoneShellDownload;
+    vi.unstubAllGlobals(); vi.useRealTimers();
+  });
+  it('APK 点击下载由桥接接管，浏览器继续内置下载', async () => {
+    const wrapper = mount(MobileVideoPlayer, { props: { resourceId: 'r', dramaSeriesId: 'e', title: '视频' } });
+    await flushPromises();
+    const hook = mocks.instances[0].downloadHook!;
+    expect(hook()).toBe(true);
+    (window as Window & { __cmPhoneShellDownload?: boolean }).__cmPhoneShellDownload = true;
+    const listener = vi.fn();
+    window.addEventListener('cm-phone-download', listener);
+    try {
+      expect(hook()).toBe(false);
+      expect(hook()).toBe(false);
+      expect(listener).toHaveBeenCalledOnce();
+    } finally { window.removeEventListener('cm-phone-download', listener); wrapper.unmount(); }
+  });
+  it('APK 分片播放不提交伪装成视频的播放列表下载', async () => {
+    mocks.source.mockResolvedValue({ playUrl: '/api/video/m3u8/e/v.m3u8', playType: 'm3u8' });
+    (window as Window & { __cmPhoneShellDownload?: boolean }).__cmPhoneShellDownload = true;
+    const alert = vi.spyOn(window, 'alert').mockImplementation(() => {});
+    const wrapper = mount(MobileVideoPlayer, { props: { resourceId: 'r', dramaSeriesId: 'e', title: '视频' } });
+    await flushPromises();
+    expect(mocks.instances[0].downloadHook!()).toBe(false);
+    expect(alert).toHaveBeenCalledWith(expect.stringContaining('分片播放'));
+    wrapper.unmount(); alert.mockRestore();
+  });
   it('未播放时定位到开头画面，不调用播放也不改变静音设置', async () => {
     const wrapper = mount(MobileVideoPlayer, { props: { resourceId: 'r', dramaSeriesId: 'e', title: '视频' } });
     await flushPromises(); const player = mocks.instances[0]; const muted = player.muted;
