@@ -1,5 +1,5 @@
 <template>
-  <section v-if="resource.mode === 'movies'" class="video-extras">
+  <section v-if="resource.mode === 'movies'" v-show="hasMoments || loadFailed" class="video-extras">
     <MomentCollection
       :resource-id="resource.id"
       :play-mode="resolvedPlayMode === 'page' ? 'page' : 'emit'"
@@ -8,6 +8,8 @@
       :show-resource-title="showResourceTitle"
       :disabled="configLoading"
       @play="play"
+      @has-items-change="hasMoments = $event"
+      @load-error="loadFailed = $event"
     />
     <VideoPlayDialog v-if="resolvedPlayMode === 'dialog'" ref="player" />
   </section>
@@ -31,6 +33,8 @@ const props = withDefaults(defineProps<{
 }>(), { playMode: 'settings', layout: 'grid', showHeading: true, showResourceTitle: false })
 const emit = defineEmits<{ play: [moment: VideoMoment] }>()
 const app = appStoreData()
+const hasMoments = ref(false)
+const loadFailed = ref(false)
 const player = ref<InstanceType<typeof VideoPlayDialog>>()
 const libraryMode = ref<'dialog' | 'page'>('dialog')
 const configLoading = ref(false)

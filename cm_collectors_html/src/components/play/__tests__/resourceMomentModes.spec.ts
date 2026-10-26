@@ -4,15 +4,16 @@ import { defineComponent, h, KeepAlive, reactive, ref } from 'vue'
 import VideoDetailsExtras from '@/components/details/VideoDetailsExtras.vue'
 import MomentCollection from '../MomentCollection.vue'
 import type { I_resource } from '@/dataType/resource.dataType'
+import { momentApi } from '@/server/videoMoments.server'
 
-const mocks = vi.hoisted(() => ({ open: vi.fn(), close: vi.fn(), info: vi.fn(), history: vi.fn() }))
+const mocks = vi.hoisted(() => ({ open: vi.fn(), close: vi.fn(), info: vi.fn(), history: vi.fn(), request: vi.fn() }))
 const store = reactive({
   currentFilesBases: { id: 'library-a' },
   currentFilesBasesAppConfig: {} as { videoMomentOpenMode?: string },
 })
 vi.mock('@/storeData/app.storeData', () => ({ appStoreData: () => store }))
 vi.mock('@/server/filesBases.server', () => ({ filesBasesServer: { infoById: mocks.info } }))
-vi.mock('@/assets/request', () => ({ default: vi.fn() }))
+vi.mock('@/assets/request', () => ({ default: mocks.request }))
 vi.mock('@/common/play', () => ({ playUpdate: mocks.history }))
 vi.mock('vue-router', () => ({ useRouter: () => ({ push: vi.fn() }) }))
 vi.mock('../videoPlayDialog.vue', () => ({ default: defineComponent({
@@ -32,6 +33,69 @@ describe('资源片段收藏打开方式', () => {
     store.currentFilesBases.id = 'library-a'
     store.currentFilesBasesAppConfig = {}
     mocks.info.mockResolvedValue({ status: true, data: { filesBasesSetting: { config_json_data: '{}' } } })
+    mocks.request.mockResolvedValue({ status: true, data: [] })
+  })
+  it('详情无收藏时隐藏整个区块，新增后显示，删除最后一条后再次隐藏', async () => {
+    let items: typeof item[] = []
+    mocks.request.mockImplementation(async ({ method }: { method?: string }) => ({
+      status: true, data: method ? item : [...items],
+    }))
+    const wrapper = mount(VideoDetailsExtras, {
+      props: { resource: resource() },
+      global: { stubs: { VideoPlayDialog: false, MomentCover: true, 'el-button': true } },
+    })
+    expect(wrapper.get('.video-extras').attributes('style')).toContain('display: none')
+    await flushPromises()
+    expect(wrapper.get('.video-extras').attributes('style')).toContain('display: none')
+    expect(wrapper.findComponent(MomentCollection).exists()).toBe(true)
+    items = [item]
+    await momentApi.save(item)
+    await flushPromises()
+    expect(wrapper.get('.video-extras').attributes('style')).not.toContain('display: none')
+    expect(wrapper.text()).toContain('片段收藏')
+    items = []
+    await momentApi.remove(item.id)
+    await flushPromises()
+    expect(wrapper.get('.video-extras').attributes('style')).toContain('display: none')
+    wrapper.unmount()
+  })
+  it('首次加载失败保留刷新入口，成功确认空列表后隐藏', async () => {
+    mocks.request.mockResolvedValueOnce({ status: false, msg: '暂时无法连接' })
+    const wrapper = mount(VideoDetailsExtras, {
+      props: { resource: resource() },
+      global: { stubs: { VideoPlayDialog: false, MomentCover: true, 'el-button': true } },
+    })
+    await flushPromises()
+    expect(wrapper.get('.video-extras').attributes('style')).not.toContain('display: none')
+    expect(wrapper.get('[role="alert"]').text()).toBe('暂时无法连接')
+    await wrapper.get('.collection-refresh').trigger('click')
+    await flushPromises()
+    expect(wrapper.get('.video-extras').attributes('style')).toContain('display: none')
+    expect(wrapper.find('[role="alert"]').exists()).toBe(false)
+    wrapper.unmount()
+  })
+  it('切换资源清除旧错误，旧列表请求不能误显示新资源区块', async () => {
+    let finish!: (value: unknown) => void
+    mocks.request.mockImplementationOnce(() => new Promise(resolve => { finish = resolve }))
+    const wrapper = mount(VideoDetailsExtras, {
+      props: { resource: resource() },
+      global: { stubs: { VideoPlayDialog: false, MomentCover: true, 'el-button': true } },
+    })
+    await wrapper.setProps({ resource: resource('other') })
+    await flushPromises()
+    finish({ status: true, data: [item] })
+    await flushPromises()
+    expect(wrapper.get('.video-extras').attributes('style')).toContain('display: none')
+    expect(wrapper.findAll('.collection-card')).toHaveLength(0)
+    mocks.request.mockResolvedValueOnce({ status: false, msg: '旧资源错误' })
+    await wrapper.get('.collection-refresh').trigger('click')
+    await flushPromises()
+    expect(wrapper.get('[role="alert"]').text()).toBe('旧资源错误')
+    await wrapper.setProps({ resource: resource('next') })
+    expect(wrapper.find('[role="alert"]').exists()).toBe(false)
+    await flushPromises()
+    expect(wrapper.get('.video-extras').attributes('style')).toContain('display: none')
+    wrapper.unmount()
   })
   it('旧库默认使用弹窗播放器并传入片段范围、更新播放历史', async () => {
     const wrapper = render()

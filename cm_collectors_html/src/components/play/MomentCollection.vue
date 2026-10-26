@@ -126,10 +126,15 @@ const props = withDefaults(
   }>(),
   { resourceId: '', filesBasesId: '', playMode: 'page', layout: 'grid', showHeading: true, showResourceTitle: undefined },
 )
-const emit = defineEmits<{ play: [moment: VideoMoment] }>()
+const emit = defineEmits<{
+  play: [moment: VideoMoment]
+  'has-items-change': [hasItems: boolean]
+  'load-error': [failed: boolean]
+}>()
 const router = useRouter()
 const collectionRoot = ref<HTMLElement>()
 const items = ref<VideoMoment[]>([])
+watch(() => items.value.length > 0, hasItems => emit('has-items-change', hasItems), { immediate: true })
 const coverRefresh = ref(0)
 const keyword = ref(''),
   appliedKeyword = ref('')
@@ -138,6 +143,7 @@ const libraryPage = ref(1),
 const loading = ref(false),
   error = ref(''),
   hasMore = ref(false)
+watch(error, message => emit('load-error', !!message), { immediate: true })
 let page = 1,
   version = 0
 async function load(append = false, targetPage = 1) {
@@ -210,6 +216,7 @@ watch(
     libraryPage.value = 1
     libraryTotal.value = 0
     hasMore.value = false
+    error.value = ''
     items.value = []
     refresh()
   },
