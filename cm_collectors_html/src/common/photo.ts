@@ -22,12 +22,6 @@ export const getPerformerEmptyPhoto = () => {
 }
 export const getSamplePhoto = (resource: I_resource | I_resource_base | undefined, imagePath: string) => {
   if (!resource || !resource.coverPoster || resource.coverPoster == '') return '';
-  const store = {
-    appStoreData: appStoreData(),
-  }
-  if (store.appStoreData.currentConfigApp.sampleFolder != '') {
-    imagePath = '/' + store.appStoreData.currentConfigApp.sampleFolder + '/' + imagePath;
-  }
   const encodedImagePath = encodeURIComponent(imagePath);
   return `/api/resource/sampleData/${resource.id}?q=${encodedImagePath}`
 }

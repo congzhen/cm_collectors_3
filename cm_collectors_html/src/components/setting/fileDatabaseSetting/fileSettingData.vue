@@ -53,11 +53,7 @@
               :filesBasesId="props.filesBasesId" multiple reorder />
           </el-form-item>
         </template>
-        <template #sample>
-          <el-form-item label="剧照相对文件夹">
-            <el-input v-model="filesConfig.sampleFolder" />
-          </el-form-item>
-        </template>
+
         <template #avatar>
           <el-form-item label="自定义头像">
             <setCustomAvatar v-model="filesConfig.performer_photo" />

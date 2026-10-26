@@ -73,16 +73,10 @@ export const resourceServer = {
       url: `${routerGroupUri}/resource/count/${filesBasesId}/${performerId}`,
     })
   },
-  sampleImages: async (id: string, sampleFolder: string) => {
+  sampleImages: async (id: string) => {
     const obj: IRequest = {
       url: `${routerGroupUri}/resource/sampleImages/${id}`,
       method: 'get',
-    }
-    sampleFolder = encodeURIComponent(sampleFolder);
-    if (sampleFolder != '') {
-      obj.params = {
-        q: sampleFolder
-      }
     }
     return await request<string[]>(obj);
   },

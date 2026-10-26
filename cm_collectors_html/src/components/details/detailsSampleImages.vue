@@ -69,7 +69,7 @@ const init = async () => {
 
 const getSampleImages = async () => {
   if (!props.resource) return;
-  const result = await resourceServer.sampleImages(props.resource.id, store.appStoreData.currentConfigApp.sampleFolder);
+  const result = await resourceServer.sampleImages(props.resource.id);
   if (result && result.status) {
     result.data.forEach((imagePath: string) => {
       const url = getSamplePhoto(props.resource, imagePath);
