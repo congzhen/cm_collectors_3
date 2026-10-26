@@ -82,88 +82,90 @@ const (
 
 // Config_FilesBases 文件库配置
 type Config_FilesBases struct {
-	Country                      []string                  `json:"country"`                      // 国家
-	ResourceSort                 []string                  `json:"resourceSort"`                 // 资源排序
-	CoverDisplayTagAttribute     []string                  `json:"coverDisplayTagAttribute"`     // 封面显示标签属性
-	CoverDisplayTag              []string                  `json:"coverDisplayTag"`              // 封面显示标签
-	CoverDisplayTagColor         string                    `json:"coverDisplayTagColor"`         // 封面显示标签颜色
-	CoverDisplayTagColors        []string                  `json:"coverDisplayTagColors"`        // 封面显示标签颜色
-	CoverDisplayTagRgba          string                    `json:"coverDisplayTagRgba"`          // 封面显示标签颜色
-	CoverDisplayTagRgbas         []string                  `json:"coverDisplayTagRgbas"`         // 封面显示标签颜色
-	CoverDisplayTagFontSize      int                       `json:"coverDisplayTagFontSize"`      // 封面显示标签字体大小
-	CoverPosterData              []ICoverPosterData        `json:"coverPosterData"`              // 封面数据
-	CoverPosterDataDefaultSelect int                       `json:"coverPosterDataDefaultSelect"` // 封面数据默认选择
-	CoverPosterWidthBase         int                       `json:"coverPosterWidthBase"`         // 封面宽度
-	CoverPosterWidthStatus       bool                      `json:"coverPosterWidthStatus"`       // 封面宽度状态
-	CoverPosterHeightBase        int                       `json:"coverPosterHeightBase"`        // 封面高度
-	CoverPosterHeightStatus      bool                      `json:"coverPosterHeightStatus"`      // 封面高度状态
-	CoverPosterGap               float64                   `json:"coverPosterGap"`               // 封面间隔
-	ContentPadding               int                       `json:"contentPadding"`               // 左右空距
-	Definition                   []string                  `json:"definition"`                   // 清晰度
-	DefinitionFontColor          string                    `json:"definitionFontColor"`          // 清晰度颜色
-	DefinitionRgba               string                    `json:"definitionRgba"`               // 清晰度颜色
-	DetailsDramaSeriesMode       EDetailsDramaSeriesMode   `json:"detailsDramaSeriesMode"`       // 剧集显示模式
-	DetailsVisibleFields         []string                  `json:"detailsVisibleFields"`         // 详情信息显示项
-	DirectorText                 string                    `json:"director_Text"`                // 导演显示文字
-	HistoryModule                bool                      `json:"historyModule"`                // 历史记录是否开启
-	HistoryNumber                int                       `json:"historyNumber"`                // 历史记录数量
-	HotModule                    bool                      `json:"hotModule"`                    // 热门资源是否开启
-	HotNumber                    int                       `json:"hotNumber"`                    // 热门资源数量
-	LeftColumnMode               string                    `json:"leftColumnMode"`               // 左侧栏模式
-	LeftColumnWidth              int                       `json:"leftColumnWidth"`              // 左侧栏宽度
-	LeftColumnFloatAutoHide      bool                      `json:"leftColumnFloatAutoHide"`      // 浮动模式下点击非左侧栏位置后是否隐藏
-	LeftDisplay                  []ETagType                `json:"leftDisplay"`                  // 左侧栏显示内容
-	PageLimit                    int                       `json:"pageLimit"`                    // 分页数量
-	PerformerPhoto               bool                      `json:"performerPhoto"`               // 左侧栏-演员图片是否开启
-	PerformerSortMode            string                    `json:"performerSortMode"`            // 左侧栏-其余演员排序
-	PerformerRecentDays          int                       `json:"performerRecentDays"`          // 左侧栏-近期统计天数
-	PerformerPreferred           []string                  `json:"performerPreferred"`           // 左侧栏-优先显示演员
+	Country                      []string                  `json:"country"`                             // 国家
+	ResourceSort                 []string                  `json:"resourceSort"`                        // 资源排序
+	CoverDisplayTagAttribute     []string                  `json:"coverDisplayTagAttribute"`            // 封面显示标签属性
+	CoverDisplayTag              []string                  `json:"coverDisplayTag"`                     // 封面显示标签
+	CoverDisplayTagColor         string                    `json:"coverDisplayTagColor"`                // 封面显示标签颜色
+	CoverDisplayTagColors        []string                  `json:"coverDisplayTagColors"`               // 封面显示标签颜色
+	CoverDisplayTagRgba          string                    `json:"coverDisplayTagRgba"`                 // 封面显示标签颜色
+	CoverDisplayTagRgbas         []string                  `json:"coverDisplayTagRgbas"`                // 封面显示标签颜色
+	CoverDisplayTagFontSize      int                       `json:"coverDisplayTagFontSize"`             // 封面显示标签字体大小
+	CoverPosterData              []ICoverPosterData        `json:"coverPosterData"`                     // 封面数据
+	CoverPosterDataDefaultSelect int                       `json:"coverPosterDataDefaultSelect"`        // 封面数据默认选择
+	CoverPosterWidthBase         int                       `json:"coverPosterWidthBase"`                // 封面宽度
+	CoverPosterWidthStatus       bool                      `json:"coverPosterWidthStatus"`              // 封面宽度状态
+	CoverPosterHeightBase        int                       `json:"coverPosterHeightBase"`               // 封面高度
+	CoverPosterHeightStatus      bool                      `json:"coverPosterHeightStatus"`             // 封面高度状态
+	CoverPosterGap               float64                   `json:"coverPosterGap"`                      // 封面间隔
+	ContentPadding               int                       `json:"contentPadding"`                      // 左右空距
+	Definition                   []string                  `json:"definition"`                          // 清晰度
+	DefinitionFontColor          string                    `json:"definitionFontColor"`                 // 清晰度颜色
+	DefinitionRgba               string                    `json:"definitionRgba"`                      // 清晰度颜色
+	DetailsDramaSeriesMode       EDetailsDramaSeriesMode   `json:"detailsDramaSeriesMode"`              // 剧集显示模式
+	DetailsVisibleFields         []string                  `json:"detailsVisibleFields"`                // 详情信息显示项
+	DirectorText                 string                    `json:"director_Text"`                       // 导演显示文字
+	HistoryModule                bool                      `json:"historyModule"`                       // 历史记录是否开启
+	HistoryNumber                int                       `json:"historyNumber"`                       // 历史记录数量
+	HotModule                    bool                      `json:"hotModule"`                           // 热门资源是否开启
+	HotNumber                    int                       `json:"hotNumber"`                           // 热门资源数量
+	LeftColumnMode               string                    `json:"leftColumnMode"`                      // 左侧栏模式
+	LeftColumnWidth              int                       `json:"leftColumnWidth"`                     // 左侧栏宽度
+	LeftColumnFloatAutoHide      bool                      `json:"leftColumnFloatAutoHide"`             // 浮动模式下点击非左侧栏位置后是否隐藏
+	LeftDisplay                  []ETagType                `json:"leftDisplay"`                         // 左侧栏显示内容
+	PageLimit                    int                       `json:"pageLimit"`                           // 分页数量
+	PerformerPhoto               bool                      `json:"performerPhoto"`                      // 左侧栏-演员图片是否开启
+	PerformerSortMode            string                    `json:"performerSortMode"`                   // 左侧栏-其余演员排序
+	PerformerRecentDays          int                       `json:"performerRecentDays"`                 // 左侧栏-近期统计天数
+	PerformerPreferred           []string                  `json:"performerPreferred"`                  // 左侧栏-优先显示演员
 	PerformerPreferredEnabled    *bool                     `json:"performerPreferredEnabled,omitempty"` // 是否启用自定义优先演员，缺省启用
-	ShowPerformerResourceCount   bool                      `json:"showPerformerResourceCount"`   // 演员卡片是否显示关联资源数量
-	PerformerShowNum             int                       `json:"performerShowNum"`             // 左侧栏-演员显示数量
-	PerformerText                string                    `json:"performer_Text"`               // 演员显示名称
-	PerformerPhotoDefault        string                    `json:"performer_photo"`              // 默认演员照片
-	PlayAtlasImageWidth          int                       `json:"playAtlasImageWidth"`          // 图集-图片宽度
-	PlayAtlasMode                string                    `json:"playAtlasMode"`                // 图集-模式
-	PlayAtlasPageLimit           int                       `json:"playAtlasPageLimit"`           // 图集-分页数量
-	PlayAtlasThumbnail           bool                      `json:"playAtlasThumbnail"`           // 图集-缩略图
-	PlayComicMode                string                    `json:"playComicMode"`                // 漫画-模式
-	PlayComicrReadingMode        bool                      `json:"playComicrReadingMode"`        // 漫画-阅读模式
-	PlugInUnitCup                bool                      `json:"plugInUnit_Cup"`               // 插件单元-cup
-	PlugInUnitCupText            string                    `json:"plugInUnit_Cup_Text"`          // 插件单元-cup-文字
-	PreviewImageFolder           string                    `json:"previewImageFolder"`           // 预览-图片文件夹
-	VideoPreviewImageCount       int                       `json:"videoPreviewImageCount"`       // 获取视频预览图关键帧数量
-	RandomPosterAutoSize         bool                      `json:"randomPosterAutoSize"`         // 随机海报-自动大小
-	RandomPosterWidth            int                       `json:"randomPosterWidth"`            // 随机海报-宽度
-	RandomPosterHeight           int                       `json:"randomPosterHeight"`           // 随机海报-高度
-	RandomPosterPath             string                    `json:"randomPosterPath"`             // 随机海报-路径
-	RandomPosterStatus           bool                      `json:"randomPosterStatus"`           // 随机海报-状态
-	ResourceDetailsShowMode      string                    `json:"resourceDetailsShowMode"`      // 资源详情-显示模式
-	ResourcesShowMode            string                    `json:"resourcesShowMode"`            // 资源-显示模式
-	CoverPosterBoxInfoWidth      int                       `json:"coverPosterBoxInfoWidth"`      // 资源-显示模式-封面海报盒子-信息宽度
-	CoverPosterWaterfallColumn   int                       `json:"coverPosterWaterfallColumn"`   // 资源-显示模式-封面海报瀑布流-列数
-	CoverImageFit                string                    `json:"coverImageFit"`                // 封面图片填充方式
-	CoverTitleAlign              string                    `json:"coverTitleAlign"`              // 封面标题对齐 left right center
-	ResourceJustifyContent       string                    `json:"resourceJustifyContent"`       // 资源-显示对齐模式- justify-content   flex-start  center flex-end  space-between  space-around
-	RouteConversion              []IRouteConversion        `json:"routeConversion"`              // 路由转换
-	ShieldNoPerformerPhoto       bool                      `json:"shieldNoPerformerPhoto"`       // 屏蔽无照片演员
-	ShowPreviewImage             bool                      `json:"showPreviewImage"`             // 显示预览图片
-	ShowVideoDuration            bool                      `json:"showVideoDuration"`            // 封面显示视频时长
-	SortMode                     string                    `json:"sortMode"`                     // 排序模式
-	TagMode                      string                    `json:"tagMode"`                      // 标签模式
-	TagFixedModeRowShowNum       int                       `json:"tagFixedModeRowShowNum"`       // 固定模式-每行显示标签数量
-	ShowCustomTagResourceCount   bool                      `json:"showCustomTagResourceCount"`   // 自定义标签是否显示关联资源数量
-	YouLikeModule                bool                      `json:"youLikeModule"`                // 猜你喜欢-模块
-	YouLikeNumber                int                       `json:"youLikeNumber"`                // 猜你喜欢-数量
-	YouLikeTagClass              []string                  `json:"youLikeTagClass"`              // 猜你喜欢-标签类
-	YouLikeWordNumber            int                       `json:"youLikeWordNumber"`            // 猜你喜欢-匹配词数量
-	OpenResModeMovies            EResourceOpenMode         `json:"openResModeMovies"`            // 视频 - 打开方式
-	OpenResModeMoviesSoftType    EResourceOpenModeSoftType `json:"openResModeMovies_SoftType"`   // 软件内置播放器类型
-	OpenResModeComic             EResourceOpenMode         `json:"openResModeComic"`             // 漫画 - 打开方式
-	OpenResModeAtlas             EResourceOpenMode         `json:"openResModeAtlas"`             // 图集 - 打开方式
-	SampleStatus                 bool                      `json:"sampleStatus"`                 // 显示剧照
-	SampleShowMax                int                       `json:"sampleShowMax"`                // 剧照最大显示数量
-	SampleFolder                 string                    `json:"sampleFolder"`                 // 剧照文件夹
+	ShowPerformerResourceCount   bool                      `json:"showPerformerResourceCount"`          // 演员卡片是否显示关联资源数量
+	PerformerShowNum             int                       `json:"performerShowNum"`                    // 左侧栏-演员显示数量
+	PerformerText                string                    `json:"performer_Text"`                      // 演员显示名称
+	PerformerPhotoDefault        string                    `json:"performer_photo"`                     // 默认演员照片
+	PlayAtlasImageWidth          int                       `json:"playAtlasImageWidth"`                 // 图集-图片宽度
+	PlayAtlasMode                string                    `json:"playAtlasMode"`                       // 图集-模式
+	PlayAtlasPageLimit           int                       `json:"playAtlasPageLimit"`                  // 图集-分页数量
+	PlayAtlasThumbnail           bool                      `json:"playAtlasThumbnail"`                  // 图集-缩略图
+	PlayComicMode                string                    `json:"playComicMode"`                       // 漫画-模式
+	PlayComicrReadingMode        bool                      `json:"playComicrReadingMode"`               // 漫画-阅读模式
+	PlugInUnitCup                bool                      `json:"plugInUnit_Cup"`                      // 插件单元-cup
+	PlugInUnitCupText            string                    `json:"plugInUnit_Cup_Text"`                 // 插件单元-cup-文字
+	PreviewImageFolder           string                    `json:"previewImageFolder"`                  // 预览-图片文件夹
+	VideoPreviewImageCount       int                       `json:"videoPreviewImageCount"`              // 获取视频预览图关键帧数量
+	RandomPosterAutoSize         bool                      `json:"randomPosterAutoSize"`                // 随机海报-自动大小
+	RandomPosterWidth            int                       `json:"randomPosterWidth"`                   // 随机海报-宽度
+	RandomPosterHeight           int                       `json:"randomPosterHeight"`                  // 随机海报-高度
+	RandomPosterPath             string                    `json:"randomPosterPath"`                    // 随机海报-路径
+	RandomPosterStatus           bool                      `json:"randomPosterStatus"`                  // 随机海报-状态
+	ResourceDetailsShowMode      string                    `json:"resourceDetailsShowMode"`             // 资源详情-显示模式
+	ResourcesShowMode            string                    `json:"resourcesShowMode"`                   // 资源-显示模式
+	CoverPosterBoxInfoWidth      int                       `json:"coverPosterBoxInfoWidth"`             // 资源-显示模式-封面海报盒子-信息宽度
+	CoverPosterWaterfallColumn   int                       `json:"coverPosterWaterfallColumn"`          // 资源-显示模式-封面海报瀑布流-列数
+	CoverImageFit                string                    `json:"coverImageFit"`                       // 封面图片填充方式
+	CoverTitleAlign              string                    `json:"coverTitleAlign"`                     // 封面标题对齐 left right center
+	ResourceJustifyContent       string                    `json:"resourceJustifyContent"`              // 资源-显示对齐模式- justify-content   flex-start  center flex-end  space-between  space-around
+	RouteConversion              []IRouteConversion        `json:"routeConversion"`                     // 路由转换
+	ShieldNoPerformerPhoto       bool                      `json:"shieldNoPerformerPhoto"`              // 屏蔽无照片演员
+	ShowPreviewImage             bool                      `json:"showPreviewImage"`                    // 显示预览图片
+	ShowVideoDuration            bool                      `json:"showVideoDuration"`                   // 封面显示视频时长
+	SortMode                     string                    `json:"sortMode"`                            // 排序模式
+	TagMode                      string                    `json:"tagMode"`                             // 标签模式
+	TagFixedModeRowShowNum       int                       `json:"tagFixedModeRowShowNum"`              // 固定模式-每行显示标签数量
+	ShowCustomTagResourceCount   bool                      `json:"showCustomTagResourceCount"`          // 自定义标签是否显示关联资源数量
+	YouLikeModule                bool                      `json:"youLikeModule"`                       // 猜你喜欢-模块
+	YouLikeNumber                int                       `json:"youLikeNumber"`                       // 猜你喜欢-数量
+	YouLikeTagClass              []string                  `json:"youLikeTagClass"`                     // 猜你喜欢-标签类
+	YouLikeWordNumber            int                       `json:"youLikeWordNumber"`                   // 猜你喜欢-匹配词数量
+	OpenResModeMovies            EResourceOpenMode         `json:"openResModeMovies"`                   // 视频 - 打开方式
+	OpenResModeMoviesSoftType    EResourceOpenModeSoftType `json:"openResModeMovies_SoftType"`          // 软件内置播放器类型
+	OpenResModeComic             EResourceOpenMode         `json:"openResModeComic"`                    // 漫画 - 打开方式
+	OpenResModeAtlas             EResourceOpenMode         `json:"openResModeAtlas"`                    // 图集 - 打开方式
+	SampleStatus                 bool                      `json:"sampleStatus"`                        // 显示剧照
+	SampleShowMax                int                       `json:"sampleShowMax"`                       // 剧照最大显示数量
+	VideoPreviewGeneration       string                    `json:"videoPreviewGeneration"`              // 片段预览生成方式
+	VideoPreviewInterval         int                       `json:"videoPreviewInterval"`                // 默认预览抽图间隔
+	SampleFolder                 string                    `json:"sampleFolder"`                        // 剧照文件夹
 }
 
 type Config_ScanDisk struct {

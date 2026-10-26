@@ -53,7 +53,7 @@ func SharedConfigFields(module string) []string {
 		 pageLimit resourcesShowMode showVideoDuration coverPosterBoxInfoWidth coverPosterWaterfallColumn coverTitleAlign
 		 resourceJustifyContent detailsDramaSeriesMode resourceDetailsShowMode detailsVisibleFields coverDisplayTagAttribute
 		 coverDisplayTagRgbas coverDisplayTagColors coverDisplayTagFontSize casualViewModule casualViewNumber historyModule
-		 historyNumber hotModule hotNumber sampleStatus sampleShowMax openResModeMovies openResModeMovies_SoftType
+		 historyNumber hotModule hotNumber sampleStatus sampleShowMax videoPreviewGeneration videoPreviewInterval openResModeMovies openResModeMovies_SoftType
 		 openResModeComic openResModeAtlas videoPreviewImageCount performer_Text director_Text showPerformerResourceCount
 		 plugInUnit_Cup plugInUnit_Cup_Text coverPosterWidthStatus coverPosterWidthBase coverPosterHeightStatus
 		 coverPosterHeightBase coverPosterGap contentPadding`)
@@ -231,6 +231,12 @@ func SaveSharedConfig(db *gorm.DB, module string, revision int, raw string) erro
 		var typed datatype.Config_FilesBases
 		if err := json.Unmarshal(data, &typed); err != nil {
 			return fmt.Errorf("公共配置参数类型错误: %w", err)
+		}
+		if typed.VideoPreviewGeneration != "playback" && typed.VideoPreviewGeneration != "manual" {
+			return errors.New("片段预览生成方式必须为播放时自动生成或手动生成")
+		}
+		if typed.VideoPreviewInterval != 10 && typed.VideoPreviewInterval != 30 && typed.VideoPreviewInterval != 60 && typed.VideoPreviewInterval != 120 {
+			return errors.New("默认抽图间隔必须为10、30、60或120秒")
 		}
 		if _, ok := value["casualViewModule"].(bool); !ok {
 			return errors.New("随便看看开关必须为布尔值")

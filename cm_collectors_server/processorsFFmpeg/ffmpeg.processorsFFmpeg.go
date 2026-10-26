@@ -96,7 +96,8 @@ func (f FFmpeg) isToolAvailable(toolName string) (string, error) {
 		}
 
 		// 如果本地没有，检查系统PATH中的可执行文件
-		toolPath, err := exec.LookPath(toolName + ".exe")
+		var err error
+		toolPath, err = exec.LookPath(toolName + ".exe")
 		if err != nil {
 			// 尝试不带.exe后缀的版本
 			toolPath, err = exec.LookPath(toolName)

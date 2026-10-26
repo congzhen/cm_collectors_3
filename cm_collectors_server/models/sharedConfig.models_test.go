@@ -79,6 +79,8 @@ func displayTestConfig(t *testing.T, limit int) string {
 	value["casualViewModule"] = false
 	value["casualViewNumber"] = 10
 	value["pageLimit"] = limit
+	value["videoPreviewGeneration"] = "playback"
+	value["videoPreviewInterval"] = 30
 	// 空数组是有效设置，不能作为空值拒绝。
 	for _, key := range SharedConfigFields("display") {
 		if value[key] == nil {
@@ -89,6 +91,47 @@ func displayTestConfig(t *testing.T, limit int) string {
 	value["sampleFolder"] = "must-not-copy"
 	data, _ = json.Marshal(value)
 	return string(data)
+}
+func TestSharedPreviewFieldsFollowRestoreAndValidate(t *testing.T) {
+	db := sharedTestDB(t)
+	local := `{"videoPreviewGeneration":"manual","videoPreviewInterval":120,"sampleFolder":"keep"}`
+	if err := db.Model(&FilesBasesSetting{}).Where("filesBases_id = ?", "A").Update("config_json_data", local).Error; err != nil {
+		t.Fatal(err)
+	}
+	if err := SaveSharedConfig(db, "display", 0, displayTestConfig(t, 32)); err != nil {
+		t.Fatal(err)
+	}
+	if err := db.Transaction(func(tx *gorm.DB) error { return SetLibraryConfigFollow(tx, "A", "display", true, 1) }); err != nil {
+		t.Fatal(err)
+	}
+	effective, err := EffectiveLibraryConfig(db, "A", "display", local)
+	if err != nil {
+		t.Fatal(err)
+	}
+	config, err := parseConfig(effective)
+	if err != nil || config["videoPreviewGeneration"] != "playback" || config["videoPreviewInterval"] != float64(30) || config["sampleFolder"] != "keep" {
+		t.Fatalf("unexpected effective config: %s, %v", effective, err)
+	}
+	if err := GuardSharedConfigWrite(db, "A", "display", local); err == nil {
+		t.Fatal("following library changed shared preview fields")
+	}
+	if err := db.Transaction(func(tx *gorm.DB) error { return SetLibraryConfigFollow(tx, "A", "display", false, 1, "restore") }); err != nil {
+		t.Fatal(err)
+	}
+	var saved FilesBasesSetting
+	db.First(&saved, "filesBases_id = ?", "A")
+	config, err = parseConfig(saved.ConfigJsonData)
+	if err != nil || config["videoPreviewGeneration"] != "manual" || config["videoPreviewInterval"] != float64(120) {
+		t.Fatalf("preview snapshot lost: %+v %v", config, err)
+	}
+	for key, value := range map[string]interface{}{"videoPreviewGeneration": "invalid", "videoPreviewInterval": 15} {
+		invalid, _ := parseConfig(displayTestConfig(t, 32))
+		invalid[key] = value
+		raw, _ := json.Marshal(invalid)
+		if err := SaveSharedConfig(db, "display", 1, string(raw)); err == nil {
+			t.Fatalf("accepted invalid %s", key)
+		}
+	}
 }
 
 func TestSharedDisplayIsolationDetachAndRevision(t *testing.T) {
