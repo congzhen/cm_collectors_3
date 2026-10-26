@@ -11,16 +11,22 @@ vi.mock('../resourceVideoPlayer.vue', () => ({
   default: defineComponent({
     props: ['resource', 'dramaSeriesId', 'initialMoment'],
     unmounted: () => mocks.destroy(),
-    setup: (props) => () => h('div', { class: 'test-player' }, props.dramaSeriesId),
+    setup: (props, { expose }) => {
+      expose({ setAspectRatio: vi.fn(), getVideoDimensions: () => ({ width: 1920, height: 1080 }), getControllerHeight: () => 0 })
+      return () => h('div', { class: 'test-player' }, props.dramaSeriesId)
+    },
   }),
 }))
 const dialogStub = defineComponent({
-  props: ['modelValue'],
+  props: ['modelValue', 'fullscreen'],
   emits: ['update:modelValue', 'close'],
   setup:
-    (props, { slots }) =>
+    (props, { slots, emit }) =>
     () =>
-      h('div', { 'data-open': props.modelValue }, slots.default?.()),
+      h('div', { 'data-open': props.modelValue }, [
+        slots.header?.({ close: () => { emit('update:modelValue', false); emit('close') } }),
+        slots.default?.(),
+      ]),
 })
 const create = () =>
   mount(VideoPlayDialog, {
@@ -66,6 +72,24 @@ describe('播放弹窗生命周期', () => {
     wrapper.vm.open('r', 'e2')
     await flushPromises()
     expect(wrapper.find('.test-player').text()).toBe('e2')
+    wrapper.unmount()
+  })
+  it('标题栏按钮仍可收起、展开、最大化和关闭，收起不销毁播放器', async () => {
+    const wrapper = create()
+    wrapper.vm.open('r', 'e')
+    await flushPromises()
+    expect(wrapper.get('h5').attributes('title')).toBe('测试')
+    await wrapper.get('[aria-label="收起播放器"]').trigger('click')
+    expect(wrapper.get('.video-play').attributes('style')).toContain('display: none')
+    expect(mocks.destroy).not.toHaveBeenCalled()
+    await wrapper.get('[aria-label="展开播放器"]').trigger('click')
+    expect(wrapper.get('.video-play').attributes('style')).toContain('display: block')
+    await wrapper.get('[aria-label="最大化窗口"]').trigger('click')
+    expect(wrapper.getComponent(dialogStub).props('fullscreen')).toBe(true)
+    await wrapper.get('[aria-label="恢复窗口"]').trigger('click')
+    expect(wrapper.getComponent(dialogStub).props('fullscreen')).toBe(false)
+    await wrapper.get('[aria-label="关闭播放器"]').trigger('click')
+    expect(wrapper.find('.test-player').exists()).toBe(false)
     wrapper.unmount()
   })
   it('关闭后完成的资源请求不再挂载播放器', async () => {

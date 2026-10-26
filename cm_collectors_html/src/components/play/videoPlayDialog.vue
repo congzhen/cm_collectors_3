@@ -5,26 +5,34 @@
     <template #header="{ close }">
       <div class="video-play-dialog-header">
         <div class="title">
-          <el-icon size="20">
+          <el-icon class="player-title-icon" size="16">
             <VideoPlay />
           </el-icon>
-          <h5>
+          <h5 :title="title_C">
             {{ title_C }}
           </h5>
         </div>
-        <div class="btn">
-          <el-icon @click="toggleVideoPlayer">
+        <div class="btn" @mousedown.stop>
+          <button class="player-window-action" type="button"
+            :title="videoPlayerVisible ? '收起播放器' : '展开播放器'"
+            :aria-label="videoPlayerVisible ? '收起播放器' : '展开播放器'" @click="toggleVideoPlayer">
+            <el-icon>
             <ArrowUp v-if="!videoPlayerVisible" />
             <ArrowDown v-else />
-          </el-icon>
-          <el-icon @click="toggleFullScreenDisplay">
+            </el-icon>
+          </button>
+          <button class="player-window-action" type="button"
+            :title="fullScreenDisplay ? '恢复窗口' : '最大化窗口'"
+            :aria-label="fullScreenDisplay ? '恢复窗口' : '最大化窗口'" @click="toggleFullScreenDisplay">
+            <el-icon>
             <FullScreen v-if="!fullScreenDisplay" />
             <BottomLeft v-else />
-          </el-icon>
-
-          <el-icon @click="close">
-            <Close />
-          </el-icon>
+            </el-icon>
+          </button>
+          <button class="player-window-action player-window-action--close" type="button"
+            title="关闭" aria-label="关闭播放器" @click="close">
+            <el-icon><Close /></el-icon>
+          </button>
         </div>
       </div>
     </template>
@@ -163,33 +171,61 @@ defineExpose({ open, close })
 </script>
 <style lang="scss">
 .video-play-dialog {
-  padding: 4px;
+  padding: 0;
   max-width: calc(100vw - 16px);
-  border: 1px solid #434344;
+  border: 1px solid var(--el-border-color);
+  border-radius: 12px;
+  background: var(--el-bg-color-overlay);
+  box-shadow: 0 18px 64px #0006;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 
+  &.is-fullscreen {
+    max-width: none;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
   .el-dialog__header {
     flex-shrink: 0;
-    padding-bottom: 2px !important;
+    margin: 0;
+    padding: 7px 10px;
+    border-bottom: 1px solid var(--el-border-color-lighter);
     overflow: hidden;
   }
 
   .video-play-dialog-header {
     display: flex;
+    align-items: center;
+    min-height: 30px;
     gap: 10px;
     justify-content: space-between;
-    padding-bottom: 0px;
 
     .title {
-      flex-grow: 1;
+      flex: 1;
       display: flex;
-      gap: 5px;
-      min-width: 0; // 添加此属性以允许 flex 项目收缩
+      align-items: center;
+      gap: 9px;
+      min-width: 0;
+
+      .player-title-icon {
+        flex: 0 0 28px;
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        color: var(--el-color-primary);
+        background: var(--el-color-primary-light-9);
+      }
 
       h5 {
-        flex-grow: 1;
-        font-size: 12px;
+        flex: 1;
+        min-width: 0;
+        margin: 0;
+        font-size: 13px;
+        font-weight: 500;
+        line-height: 20px;
+        color: var(--el-text-color-primary);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -202,14 +238,38 @@ defineExpose({ open, close })
     .btn {
       flex-shrink: 0;
       display: flex;
-      gap: 5px;
+      align-items: center;
+      gap: 4px;
 
-      .el-icon {
-        font-size: 20px;
+      .player-window-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        padding: 0;
+        border: 0;
+        border-radius: 7px;
+        background: transparent;
+        color: var(--el-text-color-secondary);
         cursor: pointer;
+        transition: background-color 0.15s, color 0.15s;
+
+        .el-icon { font-size: 16px; }
 
         &:hover {
-          color: var(--el-color-primary);
+          color: var(--el-text-color-primary);
+          background: var(--el-fill-color);
+        }
+
+        &:focus-visible {
+          outline: 2px solid var(--el-color-primary);
+          outline-offset: 1px;
+        }
+
+        &--close:hover {
+          color: var(--el-color-danger);
+          background: var(--el-color-danger-light-9);
         }
       }
     }
@@ -217,6 +277,8 @@ defineExpose({ open, close })
 
   .el-dialog__body {
     flex: 1;
+    min-height: 0;
+    padding: 4px;
     overflow: hidden;
 
     .video-play {
