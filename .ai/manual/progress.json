@@ -71,8 +71,8 @@
   "latest_review": "review-summary.json",
   "version_control": {
     "images": "ignored; retained locally",
-    "pdf": "ignored; retained at project root",
-    "tracked": "正文、脚本、来源清单、功能映射及维护记录",
+    "pdf": "tracked; final PDF at project root",
+    "tracked": "正文、脚本、来源清单、功能映射、维护记录及最终PDF",
     "new_clone": "恢复本机素材副本或重新生成和截图后再构建"
   }
 }

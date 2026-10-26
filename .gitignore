@@ -62,7 +62,6 @@ cm_collectors_electron/node_modules
 .claude/
 .ai/ui-concepts/
 
-# Rebuildable manual demo data, executables, caches and final binary
+# Local manual screenshots, demo data, executables and caches
 /.ai/manual/.local/
-/CM Collectors 3 使用说明.pdf
 /.ai/manual/assets/screenshots/

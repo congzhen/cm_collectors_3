@@ -60,11 +60,10 @@
     "candidate_bytes_before_summary": 7838710,
     "ignored": [
       "全部截图 assets/screenshots/",
-      ".local/ 内摄影原图、数据库、媒体、工具与缓存",
-      "根目录PDF"
+      ".local/ 内摄影原图、数据库、媒体、工具与缓存"
     ],
     "image_tracking": "按用户要求不跟踪任何截图；文件继续保留本机。",
-    "commit_scope": "用户授权提交手册文本与脚本；所有图片和现有服务端配置排除。"
+    "commit_scope": "用户授权提交手册文本、脚本及根目录最终PDF；所有独立图片和现有服务端配置排除。"
   },
   "limitations": [
     "远程刮削站点",

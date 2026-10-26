@@ -86,7 +86,7 @@ node .ai/manual/scripts/capture_people.mjs
 
 - 当前截图使用 24 张 Unsplash 风景 / 城市摄影和 24 张 Pexels 人像摄影，作品及人物资料为虚构示例，不表示真实身份、作品或代言。早期程序插画仅保留为重建基础，当前展示已换为照片。
 - `photo-sources.json` 保存每张照片的作者、原图页、下载地址、授权链接与 SHA-256；照片缓存位于 `.local/photography`，不进入 Git。
-- 仅可重建脚本、正文、来源清单和维护记录进入 Git。全部截图（`assets/screenshots/`）、摄影原图、数据库、媒体、工具、缓存、中间页图和根目录 PDF 都保留本机并忽略 Git。
+- 可重建脚本、正文、来源清单、维护记录和根目录最终 PDF 进入 Git。全部截图（`assets/screenshots/`）、摄影原图、数据库、媒体、工具、缓存和中间页图都保留本机并忽略 Git。
 - 重新克隆仓库不会自带图片，不能立即完整构建 PDF。换机器时需另行复制本机的 `assets/screenshots/` 与 `.local/`，或按本文流程生成独立素材并重新截图；不要用开发或构建数据补齐。
 - `.local/runtime/asset-manifest.json` 保存生成参数与作品名，`asset-sources.json` 保存工具来源；已下载照片会保存在本地，日常更新截图无需反复下载。
 - 截图的原始分辨率为 1440×1000，手机为 430×932；裁切由 PDF 构建时处理，不覆盖原图。
