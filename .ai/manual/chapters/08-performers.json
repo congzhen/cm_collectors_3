@@ -1,0 +1,126 @@
+{
+  "id": "08-performers",
+  "title": "人物与演员数据库",
+  "sources": [
+    "cm_collectors_html/src/components/performer/performerDataList.vue",
+    "cm_collectors_html/src/components/performer/performerBatchOperationDialog.vue",
+    "cm_collectors_html/src/views/performerTagManageView.vue",
+    "cm_collectors_html/src/components/setting/performerAvatarLibrary/performerAvatarLibrarySetting.vue",
+    "cm_collectors_html/src/components/setting/performerDatabaseSetting/importPerformerDatabaseDialog.vue",
+    "cm_collectors_html/src/components/setting/performerDatabaseSetting/exportPerformerDatabaseDialog.vue",
+    "cm_collectors_server/processors/performer.processors.go"
+  ],
+  "pages": [
+    {
+      "id": "performer-browse",
+      "title": "浏览人物与关联资源",
+      "lead": "顶部“演员”进入当前文件库关联的演员集；名称可按实际用途自定义为创作者等。",
+      "blocks": [
+        {
+          "title": "搜索和排序",
+          "text": "按姓名、别名或索引查找，结合评星、标签和排序缩小范围；点击人物查看资料或检索其关联资源。资源数量角标用于了解关联数量，范围以当前库和页面配置为准。"
+        },
+        {
+          "title": "添加与修改",
+          "text": "添加人物并填写姓名、别名、职业、简介和照片；资源编辑时可选择演员和导演。主演员集和关联演员集影响可选范围，找不到人物时先检查库关系。"
+        },
+        {
+          "title": "侧栏偏好",
+          "text": "文件库可设置优先演员、默认 / 资源数 / 热度 / 近期偏好排序，以及无照片过滤。取消优先演员开关会保留原有选择；无近期记录时可能按默认顺序补齐。"
+        }
+      ],
+      "image": "performers",
+      "status": "documented",
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "performer-batch",
+      "title": "批量管理、迁移与回收站",
+      "lead": "人物批量管理与资源管理分别操作，请先确认当前演员集。",
+      "blocks": [
+        {
+          "title": "选择人物",
+          "text": "点击“批量管理”，再点击卡片选择人物；按住 Shift 可连续选择本页。顶部可选择本页、选择全部筛选结果、反选本页或清空选择，执行前核对已选数量。"
+        },
+        {
+          "title": "批量操作",
+          "text": "可设置评星、添加 / 移除 / 替换人物标签、迁移演员集或删除。迁移会清除原演员标签并移动头像，先核对目标演员集和文件库关联。人物标签与资源标签分别管理。"
+        },
+        {
+          "title": "删除与恢复",
+          "text": "根据确认窗口检查删除对象及影响，在回收站中处理被移除人物。真实删除演员库需满足库为空且未被文件库关联等条件；不要用删库代替整理人物。"
+        }
+      ],
+      "image": "performer-batch",
+      "status": "documented",
+      "verification": "ui-and-source",
+      "caption": "人物批量管理：选择范围与操作栏"
+    },
+    {
+      "id": "performer-transfer",
+      "title": "演员集导入、导出与迁移",
+      "lead": "入口：设置 → 演员数据库。适合为不同文件库复用人物资料。",
+      "blocks": [
+        {
+          "title": "导出与导入",
+          "text": "导出需要保留的演员集；导入时选择目标及界面提供的 ID 重建等选项。先确认是否已有相同人物，核对姓名、别名、图片与资源关联。"
+        },
+        {
+          "title": "迁移人物",
+          "text": "单个人物可右键迁移，批量管理也可迁移。两种方式都会清除原演员标签，并把头像移到目标演员集目录。迁移前保留需要的标签信息；迁移后重新设置人物标签，核对目标集与文件库关联。"
+        },
+        {
+          "title": "删除演员集",
+          "text": "真实删除演员集要求没有人物且不再被文件库关联。先导出和核对关联，再整理空集；禁用入口与真实删除不是同一操作。"
+        }
+      ],
+      "status": "documented",
+      "verification": "ui-and-source",
+      "image": "setting-performer-libraries"
+    },
+    {
+      "id": "performer-tags",
+      "title": "给人物建立独立标签体系",
+      "lead": "人物标签用于人物分类与检索，资源标签用于作品内容与观看计划。",
+      "blocks": [
+        {
+          "title": "分类管理",
+          "text": "在人物标签管理页建立分类与标签，调整顺序、启用或停用。可以按创作领域、所属团队、个人偏好等设计分类。"
+        },
+        {
+          "title": "应用与筛选",
+          "text": "编辑人物时设置标签，或在批量管理中添加、移除或替换标签。替换模式会覆盖所选人物的标签集合，未选择标签时会清空全部标签；补充标签请选“添加标签”。"
+        },
+        {
+          "title": "删除行为",
+          "text": "人物标签管理页提示：删除标签会解除人物关联，不会删除人物。需要合并重复标签时，先迁移关联再删除不再使用的标签。"
+        }
+      ],
+      "image": "performer-tags",
+      "status": "documented",
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "performer-avatar",
+      "title": "头像库与批量更新",
+      "lead": "入口：设置 → 演员头像库；人物页提供单人候选头像与批量更新入口。",
+      "blocks": [
+        {
+          "title": "准备索引",
+          "text": "更新头像库数据文件，检查来源、更新时间和缓存状态。匹配依据姓名、别名及索引条目；没有候选时，先核对名称，也可手动上传照片。"
+        },
+        {
+          "title": "选择候选",
+          "text": "为单个人物检查候选图片后应用，批量更新前先确认策略与覆盖范围。优先小范围核对，避免同名人物误匹配。"
+        },
+        {
+          "title": "清理缓存",
+          "text": "头像库缓存保存下载的候选图片。清理前看清目标；清理下载缓存与删除已保存的人物照片是不同操作。候选头像仍需人工确认，避免同名误配。"
+        }
+      ],
+      "image": "setting-avatars",
+      "status": "documented",
+      "verification": "ui-and-source"
+    }
+  ]
+}

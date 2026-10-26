@@ -1,0 +1,123 @@
+{
+  "id": "10-system",
+  "title": "计划任务、备份与设置",
+  "sources": [
+    "cm_collectors_html/src/components/setting/cronJobs/createCronJobsDrawer.vue",
+    "cm_collectors_html/src/components/setting/autoBackup/autoBackup.vue",
+    "cm_collectors_html/src/components/setting/databaseCleanup/databaseCleanup.vue",
+    "cm_collectors_html/src/components/setting/softSettings/generalSet.vue",
+    "cm_collectors_html/src/components/setting/tvboxRecommendSetting/tvboxRecommendSetting.vue"
+  ],
+  "pages": [
+    {
+      "id": "system-cron",
+      "title": "设置周期任务",
+      "lead": "入口：设置 → 计划任务 → 创建新任务。先完成对应功能配置，再安排自动执行。",
+      "blocks": [
+        {
+          "title": "可选任务",
+          "text": "导入、刮削资源、刮削演员、清理、视频指纹、AI 自动标签、视频信息补齐和清理演员头像缓存。多数任务需要文件库，头像缓存清理是全局任务。"
+        },
+        {
+          "title": "六段表达式",
+          "text": "界面按“秒 分 时 日 月 周”组合表达式，并给出通俗描述。每天 03:00 的示例为 0 0 3 * * *；核对运行机器时间，不要直接照抄服务器所在时区不明的计划。"
+        },
+        {
+          "title": "检查执行结果",
+          "text": "创建后可立刻执行、编辑或删除，查看上次执行时间、状态和错误。视频信息补齐可指定多个库或全部库，并设置每轮上限；先手动执行一次确认配置，再按周期运行。"
+        }
+      ],
+      "image": "setting-cron",
+      "status": "documented",
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "system-backup",
+      "title": "自动备份与立即备份",
+      "lead": "入口：设置 → 自动备份。备份路径应位于稳定、可写且有足够空间的位置。",
+      "blocks": [
+        {
+          "title": "两种触发条件",
+          "text": "按间隔小时或资源变化数触发。0 表示关闭对应条件；两个条件都为 0 时，即使开启开关也不会自动执行。保存设置后检查最近成功、待备份变化、运行状态和错误。"
+        },
+        {
+          "title": "立即备份与保留数量",
+          "text": "“立即备份”无需开启自动备份开关即可执行一次。最多保留份数控制自动备份目录中的旧 ZIP；使用前确认路径，避免与需要永久保存的其它文件混放。"
+        },
+        {
+          "title": "恢复准备",
+          "text": "保留配置、数据库及关联图片，并另外保护原始媒体。先确认备份包内实际内容；恢复应停止服务，在独立目录试恢复并核对资源数、图片与播放，再替换正式环境。"
+        }
+      ],
+      "image": "setting-backup",
+      "status": "documented",
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "system-cleanup",
+      "title": "数据库清理与失效记录",
+      "lead": "入口：设置 → 数据库清理。清理前先备份，并确认媒体挂载和文件库范围正常。",
+      "blocks": [
+        {
+          "title": "按清理项选择",
+          "text": "根据界面勾选需要处理的对象，核对选中文件库。不要为了让界面整洁而把所有清理项一次选满；先理解每项清理的目标和影响。"
+        },
+        {
+          "title": "清理后核对",
+          "text": "检查资源、标签、人物及封面是否正常；需要时查看清理前备份列表。失效资源清理与路径修复应按“先修路径、再判断失效”的顺序处理。"
+        },
+        {
+          "title": "缓存另行管理",
+          "text": "视频预览和头像库图片缓存有各自清理入口；删除缓存通常用于释放空间，删除资源或标签用于调整资料关系。二者不是同一操作。"
+        }
+      ],
+      "image": "setting-cleanup",
+      "status": "documented",
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "system-general",
+      "title": "通用设置与管理权限",
+      "lead": "入口：设置 → 软件设置 → 通用设置。设置前先确认当前连接的是哪台服务器。",
+      "blocks": [
+        {
+          "title": "界面与权限",
+          "text": "可设置名称、主题、主页样式、界面外观、管理需登录及管理密码。密码输入留空表示不修改已有密码；启用登录后，需要登录才能使用受保护管理功能。"
+        },
+        {
+          "title": "文件与播放",
+          "text": "文件管理挂载路径决定可浏览位置，不存在或不可访问的路径不会显示。格式列表、视频限流、云播模式与外部调用选项影响播放；限流过低可能干扰视频请求。"
+        },
+        {
+          "title": "浏览器与托盘",
+          "text": "刮削浏览器运行在服务端；Windows 托盘菜单可配置程序入口。检测更新与关于软件在相应入口查看，升级前备份数据并等待正在运行的任务结束。"
+        }
+      ],
+      "image": "setting-general",
+      "status": "documented",
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "system-tvbox",
+      "title": "TVBox 推荐与电视端入口",
+      "lead": "先启用 TVBox，再使用电视设备能够访问的服务地址。",
+      "blocks": [
+        {
+          "title": "配置入口",
+          "text": "软件设置提供 TVBox 开关和地址示例。接口形式为 http://服务器IP:端口/api/tvbox/home；局域网电视不能使用指向另一台设备的 127.0.0.1。"
+        },
+        {
+          "title": "维护推荐",
+          "text": "右键资源 → 添加到 TVBox 推荐；设置 → TVBox推荐 中核对条目、调整顺序或移除。推荐列表只是电视端入口编排，不会替代文件库整理。"
+        },
+        {
+          "title": "播放不成功时",
+          "text": "确认电视和服务端网络连通，检查电视端支持的接口格式与音视频编码。推荐条目能显示但不能播放时，继续核对源文件路径和播放地址。"
+        }
+      ],
+      "image": "setting-tvbox",
+      "status": "documented",
+      "verification": "ui-and-source"
+    }
+  ]
+}

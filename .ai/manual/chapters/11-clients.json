@@ -1,0 +1,78 @@
+{
+  "id": "11-clients",
+  "title": "移动端与桌面客户端",
+  "sources": [
+    "cm_collectors_html/src/router/index.ts",
+    "cm_collectors_html/src/components/setting/softSettings/generalSet.vue",
+    "cm_collectors_wails/frontend/src/App.svelte",
+    "cm_collectors_wails/app.go"
+  ],
+  "pages": [
+    {
+      "id": "client-mobile",
+      "title": "手机与平板使用",
+      "lead": "移动端使用同一服务和资源库；页面布局与播放器策略可以分别设置。",
+      "blocks": [
+        {
+          "title": "手机访问",
+          "text": "手机与服务端网络连通后，访问服务 IP 和端口。移动设备通常进入 /mobile；切换文件库，浏览封面并打开对应视频、图集或漫画。"
+        },
+        {
+          "title": "平板策略",
+          "text": "通用设置可关闭移动端页面布局，同时选择大屏移动设备使用桌面或移动端播放器。大屏阈值单位为浏览器视口 CSS px，不是屏幕物理分辨率。"
+        },
+        {
+          "title": "触控操作",
+          "text": "播放时通过触控唤出控制条，使用全屏、进度与片段功能。调整大屏播放器后，下次打开播放器生效；修改布局不会自动解决浏览器不支持的编码。"
+        }
+      ],
+      "image": "mobile",
+      "portrait": true,
+      "status": "documented",
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "client-wails",
+      "title": "Wails 桌面客户端",
+      "lead": "桌面客户端连接同一个资源服务，添加、浏览和整理方法与网页一致。使用前先启动服务。",
+      "blocks": [
+        {
+          "title": "连接服务",
+          "text": "默认地址为 http://127.0.0.1:12345；启动时可用 -url 或 -url= 传入目标服务地址。主服务必须先可访问，桌面壳不是另一个独立资源数据库。"
+        },
+        {
+          "title": "窗口与文件选择",
+          "text": "标题栏可最小化、最大化、关闭和缩放；F11 切换全屏，± 展开缩放控制并可恢复 100%。支持原生选择时可选本地文件或文件夹；连接远程服务时，仍须确认服务端能够访问所选路径。"
+        },
+        {
+          "title": "关闭客户端",
+          "text": "关闭时会尝试请求服务关闭，是否允许取决于服务端设置。若同一服务还供手机、电视或其它电脑使用，关闭前确认是否需要保持服务运行。"
+        }
+      ],
+      "rows": [
+        [
+          "操作",
+          "入口"
+        ],
+        [
+          "指定服务器",
+          "cm_collectors_wails.exe -url http://服务器IP:12345"
+        ],
+        [
+          "全屏",
+          "F11"
+        ],
+        [
+          "缩放",
+          "标题栏 ± → 加 / 减 / 恢复"
+        ],
+        [
+          "本地文件选择",
+          "桥接可用时，资源编辑 / 导入中出现原生按钮"
+        ]
+      ],
+      "status": "documented",
+      "verification": "source-reviewed"
+    }
+  ]
+}

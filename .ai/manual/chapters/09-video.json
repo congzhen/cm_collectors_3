@@ -1,0 +1,122 @@
+{
+  "id": "09-video",
+  "title": "视频信息、重复检测与剪辑",
+  "sources": [
+    "cm_collectors_html/src/components/setting/videoMetadata/videoMetadataSetting.vue",
+    "cm_collectors_html/src/components/setting/duplicateDetection/duplicateDetection.vue",
+    "cm_collectors_html/src/components/setting/videoTranscode/videoTranscodeSetting.vue",
+    "cm_collectors_html/src/components/setting/videoTranscode/videoTranscodeEditor.vue"
+  ],
+  "pages": [
+    {
+      "id": "video-metadata",
+      "title": "采集真实视频参数",
+      "lead": "入口：设置 → 视频信息采集。FFprobe 读取文件信息，补齐时长、体积、尺寸、帧率和编码等。",
+      "blocks": [
+        {
+          "title": "触发与范围",
+          "text": "可配置新建 / 变更、详情 / 播放、列表和空闲补齐等触发方式；手动执行时选择指定文件库或全部文件库，以及补齐缺失、更新失效、重试失败等方式。"
+        },
+        {
+          "title": "观察任务",
+          "text": "查看总数、成功、待处理、失败与失效统计，必要时暂停、继续或停止。完成后打开资源核对时长、尺寸和编码；资料卡中手填的清晰度与实际视频参数可能不同。"
+        },
+        {
+          "title": "失败与非视频",
+          "text": "失败列表可重试、手工补参数或标记非视频；自动排除与后缀规则用于避免反复尝试不应分析的文件。人工填写的资料清晰度与读取出的实际分辨率是不同字段。"
+        }
+      ],
+      "image": "metadata-result",
+      "status": "documented",
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "video-duplicates",
+      "title": "建立指纹并查找相似视频",
+      "lead": "入口：设置 → 视频重复检测。先计算指纹，再筛选相似候选组。",
+      "blocks": [
+        {
+          "title": "准备指纹",
+          "text": "选择文件库，补录待计算项并“立即计算待处理”；需要持续处理新增或更新内容时建立“视频指纹”计划任务。观察当前指纹、待计算、失败和覆盖率。"
+        },
+        {
+          "title": "调节查询",
+          "text": "选择全采样、高度、宽松或最小匹配模式，调整汉明阈值。阈值越大，通常返回更多相似候选。开启“时长优先”可先缩小范围；查找剪辑版或时长不同的内容时可关闭。"
+        },
+        {
+          "title": "人工复核候选",
+          "text": "结果表示画面相似，不代表文件完全相同。先比较画面、时长、分辨率和文件路径，再决定保留哪份；具体比较方式见下一页“同屏复核后再删除”。"
+        }
+      ],
+      "image": "duplicate-results",
+      "status": "documented",
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "video-compare",
+      "title": "同屏复核后再删除",
+      "lead": "在候选组点击“同屏复核”，集中比较组内分集。",
+      "blocks": [
+        {
+          "title": "先比较",
+          "text": "观察多个视频的画面与播放位置，核对是否为同一内容、不同版本、不同清晰度或仅画面相似。勾选要处理的具体分集，确保至少保留需要的版本。"
+        },
+        {
+          "title": "再选择删除范围",
+          "text": "勾选需要删除的分集，点击“删除本组已选分集”。未勾选“同时删除本地视频文件”时只删除数据库记录；勾选后还会删除实际文件。执行前核对该选项、路径和确认窗口。"
+        },
+        {
+          "title": "先备份",
+          "text": "重复检测适合辅助人工整理，不适合把所有相似组自动清空。先备份数据库与需要保留的媒体；媒体文件不应只依赖数据库备份来保护。"
+        }
+      ],
+      "image": "duplicate-compare",
+      "status": "documented",
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "video-transcode",
+      "title": "加入转码队列并应用参数",
+      "lead": "入口：资源右键 → 加入转码与剪辑列表，或管理模式中批量加入。",
+      "blocks": [
+        {
+          "title": "加入与配置",
+          "text": "加入后进入“设置 → 视频转码与剪辑”，选择待处理项，设置容器、视频 / 音频编码、质量、尺寸、帧率与速度，再点击“应用参数”。未选择时应用范围按界面提示确认。"
+        },
+        {
+          "title": "复制与重新编码",
+          "text": "复制视频流不重新压缩画面，通常更快；改变编码、尺寸或帧率需要重新编码。GPU 加速仅在本机检测到可用编码器时使用，复制模式不需要 GPU 编码。"
+        },
+        {
+          "title": "执行与结果",
+          "text": "点击“开始执行”，观察队列、进度、状态和输出文件。可暂停队列、继续或处理失败项。首次先保存为新文件，核对成片时长、画面和声音后，再处理更多资源。"
+        }
+      ],
+      "image": "transcode-result",
+      "status": "documented",
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "video-edit",
+      "title": "时间轴剪辑、顺序与转场",
+      "lead": "在待处理任务上点击“剪辑”，编辑保留片段并保存方案，之后再执行队列。",
+      "blocks": [
+        {
+          "title": "编辑片段",
+          "text": "移动播放头，在播放头处分割；删除不需要的片段，拖动片段调整成片顺序。使用时间轴缩放 / 适配、撤销 / 重做，检查原始时长与保留时长。"
+        },
+        {
+          "title": "精细调整",
+          "text": "根据编辑器提供的起止时间及片段切点设置，调整片段并预览可用转场。先检查预览效果，再保存；“恢复完整视频”会重置当前保留片段方案。"
+        },
+        {
+          "title": "输出方式",
+          "text": "建议先“保存为新文件”并填写名称；确认结果后再考虑替换源文件。替换只在输出校验成功后执行，可选择保留旧文件；失败恢复、回滚与取消状态应按界面提示处理。"
+        }
+      ],
+      "image": "video-editor",
+      "status": "documented",
+      "verification": "ui-and-source"
+    }
+  ]
+}

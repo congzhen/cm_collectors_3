@@ -1,0 +1,112 @@
+{
+  "id": "06-import",
+  "title": "扫描导入与刮削",
+  "sources": [
+    "cm_collectors_html/src/components/importResource/modeScanDisk.vue",
+    "cm_collectors_html/src/components/setting/sharedConfig/SharedImportFields.vue",
+    "cm_collectors_html/src/components/setting/sharedConfig/SharedScraperFields.vue",
+    "cm_collectors_html/src/components/serverFileManagement/serverFileManagement.vue"
+  ],
+  "pages": [
+    {
+      "id": "import-scan",
+      "title": "批量扫描导入媒体",
+      "lead": "入口：顶部“导入刮削” → 导入。先配置并保存规则，再执行导入。",
+      "blocks": [
+        {
+          "title": "选择目录",
+          "text": "添加服务端文件夹位置；支持原生选择的桌面客户端可选择本地文件夹。确认当前库及扫描路径，设置文件后缀名、资源命名方式和封面匹配规则。"
+        },
+        {
+          "title": "追加与覆盖",
+          "text": "追加用于补入新内容；覆盖会更新已存在数据并导入新资源。多个资源指向同一视频时，覆盖只更新最后的资源记录。首次建议小目录试导入，检查结果后扩大范围。"
+        },
+        {
+          "title": "封面匹配",
+          "text": "可按 cover、poster、文件名等名称寻找封面，选择严格或模糊匹配；没有匹配图片时可使用目录随机图或自动截取视频画面。自动截帧依赖 FFmpeg。"
+        }
+      ],
+      "image": "import",
+      "status": "documented",
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "files-manage",
+      "title": "服务端文件管理与文件选择",
+      "lead": "资源编辑、扫描导入等位置可打开“文件管理”。这里浏览的是服务端文件系统。",
+      "blocks": [
+        {
+          "title": "进入目录与选择",
+          "text": "先点击允许访问的根目录，再逐层进入媒体目录。资源编辑可勾选实际文件并确认选择；扫描导入选择文件夹。前进、后退、上级和刷新用于导航。"
+        },
+        {
+          "title": "整理文件",
+          "text": "按当前入口允许的能力，可创建文件 / 文件夹、上传、下载、搜索、复制、移动、压缩、解压、重命名、修改权限和删除。涉及实体文件的操作先核对路径与选择范围。"
+        },
+        {
+          "title": "没有显示路径",
+          "text": "在通用设置中添加服务端挂载路径，并确认其存在且可访问。Docker 使用容器路径，网络共享由服务端权限决定；网页客户端的本地盘符不能直接代表服务器文件。"
+        }
+      ],
+      "status": "documented",
+      "verification": "ui-and-source",
+      "image": "file-manager",
+      "crop": [
+        290,
+        150,
+        1150,
+        765
+      ]
+    },
+    {
+      "id": "import-nfo",
+      "title": "NFO、合并剧集与导入顺序",
+      "lead": "导入规则能决定资料从哪里来，以及多个文件如何组合为资源。",
+      "blocks": [
+        {
+          "title": "NFO 资料",
+          "text": "启用导入 NFO 后，配置根节点、标题、版号、日期、摘要、评分、标签和演员等字段映射。需要自动建立标签或人物时，检查相应开关。先用一份自制 NFO 核对字段，再批量处理。"
+        },
+        {
+          "title": "合并分集",
+          "text": "可以按同一文件夹合并，也可按相近文件名合并。同一文件夹合并优先；合并后的分集可保持现有顺序或按文件名称、文件大小正序 / 倒序排列。"
+        },
+        {
+          "title": "新分集与现有顺序",
+          "text": "保持现有顺序会把新分集追加到末尾；选择名称或大小排序时，新增文件会按所选规则重新排列该资源全部分集。人工排列前先确认是否会被下次扫描规则重排。"
+        }
+      ],
+      "image": "import",
+      "crop": [
+        760,
+        130,
+        1430,
+        950
+      ],
+      "status": "documented",
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "scraper-resource",
+      "title": "刮削资源与人物资料",
+      "lead": "入口：导入刮削 → 刮削；人物页面也提供人物刮削入口。",
+      "blocks": [
+        {
+          "title": "准备依赖",
+          "text": "在通用设置中配置浏览器路径，确保服务端可运行 Chrome 或兼容浏览器；选择可用刮削配置、扫描目录和更新范围，再保存刮削参数。"
+        },
+        {
+          "title": "执行与排查",
+          "text": "先用一条有明确标识的示例检查匹配与字段，再扩大范围。失败时检查标识、站点访问、浏览器路径和超时；不要把网络或站点异常误认为本地文件丢失。"
+        },
+        {
+          "title": "核对结果",
+          "text": "刮削后检查标题、封面、人物和标签是否与原文件对应，误匹配时先修正规则再重试。远程来源的可用性和返回字段可能不同，以任务结果为准。"
+        }
+      ],
+      "image": "scraper",
+      "status": "documented",
+      "verification": "ui-and-source"
+    }
+  ]
+}

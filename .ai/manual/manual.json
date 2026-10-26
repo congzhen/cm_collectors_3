@@ -1,0 +1,22 @@
+{
+  "title": "CM Collectors 3 使用说明",
+  "date": "2026-10-26",
+  "edition": "1.0",
+  "chapters": [
+    "01-start",
+    "03-display",
+    "04-tags",
+    "05-resource",
+    "06-import",
+    "07-play",
+    "08-performers",
+    "02-library",
+    "09-video",
+    "10-system",
+    "11-clients",
+    "12-help"
+  ],
+  "internal_chapters": [
+    "13-reference"
+  ]
+}

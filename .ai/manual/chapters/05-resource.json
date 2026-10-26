@@ -1,0 +1,111 @@
+{
+  "id": "05-resource",
+  "title": "资源资料与分集",
+  "sources": [
+    "cm_collectors_html/src/components/resource/resourceFormDrawer.vue",
+    "cm_collectors_html/src/components/content/contentRightClickMenu.vue",
+    "cm_collectors_html/src/components/details/detailsVisibility.ts"
+  ],
+  "pages": [
+    {
+      "id": "resource-create",
+      "title": "手动添加与编辑资源",
+      "lead": "入口：顶部“添加资源”；已有资源可右键 → 编辑。",
+      "blocks": [
+        {
+          "title": "填写资料",
+          "text": "选择视频、漫画、图集或文件，填写标题、版号、发行日期、国家、清晰度、评分和摘要。关联人物与标签后提交；必填项以表单提示为准。"
+        },
+        {
+          "title": "选择资源与封面",
+          "text": "“选择资源”浏览服务端允许访问的目录；支持桌面原生选择时会出现“选择本地文件”。上传或裁剪封面，并选择适合的海报预设。"
+        },
+        {
+          "title": "一次核对三件事",
+          "text": "标题与类型正确，媒体路径存在，封面和标签符合内容。资料中的清晰度、评分等可以人工设置；技术编码、文件体积与时长应通过信息采集确认。"
+        }
+      ],
+      "image": "resource-edit",
+      "status": "documented",
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "resource-series",
+      "title": "一条资源管理多个分集",
+      "lead": "资源卡片负责整理资料，分集列表负责定位每个实际文件。",
+      "blocks": [
+        {
+          "title": "添加多个文件",
+          "text": "编辑资源时选择多个视频文件，检查左侧资源列表。每项路径对应一个分集；拖动序号可调整播放顺序，删除分集行后需提交保存。"
+        },
+        {
+          "title": "图集与漫画",
+          "text": "图集和漫画以可访问的图片目录作为资源入口。把图片按稳定的文件名排序，例如 01.jpg、02.jpg；正文页面的顺序应与文件命名相匹配。"
+        },
+        {
+          "title": "展示形式",
+          "text": "文件库设置中的“详情剧集显示模式”可选文件名或数字。长文件名适合保留辨识信息，统一编号适合连续内容；播放前仍应核对实际分集路径。"
+        }
+      ],
+      "image": "resource-edit",
+      "crop": [
+        410,
+        50,
+        870,
+        950
+      ],
+      "status": "documented",
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "resource-menu",
+      "title": "右键菜单与资源排序",
+      "lead": "右键菜单集中放置播放、编辑、标签、人物和进阶处理入口。",
+      "blocks": [
+        {
+          "title": "常用操作",
+          "text": "播放、加入播放列表、打开文件夹、编辑、置顶、打标签、添加演员；管理员还可加入 TVBox 推荐、转码与剪辑列表或删除资源。实际可见项取决于权限和资源状态。"
+        },
+        {
+          "title": "置顶与时间交换",
+          "text": "置顶可把需要关注的资源放到前面。满足添加时间排序、无筛选等条件时，可出现“与上项换时间 / 与下项换时间”；该操作交换添加时间，会改变按时间排列的顺序。"
+        },
+        {
+          "title": "服务器上的打开",
+          "text": "“打开文件夹”打开的是服务端能访问的文件位置；远程网页不会因此在手机或另一台电脑上直接打开同名本地目录。"
+        }
+      ],
+      "image": "resource-menu",
+      "crop": [
+        260,
+        90,
+        900,
+        950
+      ],
+      "status": "documented",
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "resource-details",
+      "title": "详情、剧照与信息显示",
+      "lead": "通过详情把封面、简介、人物、标签、分集及片段收藏放在一起查看。",
+      "blocks": [
+        {
+          "title": "详情的打开方式",
+          "text": "文件库显示设置提供右侧、弹出或无；详情显示项可独立控制副标题、版号、国家、年份、收录时间、清晰度、评分及评星。"
+        },
+        {
+          "title": "剧照与视频画面",
+          "text": "显示剧照需要配置剧照目录和最大数量；视频预览图属于另外的生成与缓存功能。剧照、封面和进度条预览是不同用途的图片。"
+        },
+        {
+          "title": "播放与资料核对",
+          "text": "从详情选择具体分集再播放，查看其时长和编码。人物角标表示其关联资源数量，点击标签和人物可进一步检索。"
+        }
+      ],
+      "image": "player",
+      "status": "documented",
+      "verification": "ui-and-source"
+    }
+  ]
+}

@@ -1,0 +1,293 @@
+{
+  "id": "03-display",
+  "title": "显示形式与外观",
+  "sources": [
+    "cm_collectors_html/src/assets/dataset.ts",
+    "cm_collectors_html/src/language/zhCn.ts",
+    "cm_collectors_html/src/components/content/contentList.vue",
+    "cm_collectors_html/src/components/setting/sharedConfig/SharedDisplayFields.vue"
+  ],
+  "pages": [
+    {
+      "id": "display-how",
+      "title": "从哪里切换显示形式",
+      "lead": "先在显示设置中选模式，再按配图比较效果。本章按模式选用竖版或横版封面，切换形式不需要重新导入资源。",
+      "blocks": [
+        {
+          "title": "切换显示模式",
+          "text": "在主页底部点击“显示设置”，或进入“设置 → 文件数据库 → 当前库”，找到“资源显示模式”，选择模式并保存。若该库跟随公共展示配置，需在公共配置中修改。"
+        },
+        {
+          "title": "配合调整",
+          "text": "分页显示数量决定一页数据量；封面宽高、间距和左右空距决定密度；详情显示模式可设为右侧、弹出或无。显示模式改变后，检查封面比例和标签是否适合。"
+        },
+        {
+          "title": "按用途选模式",
+          "text": "看封面：海报、卡廊、影墙；看资料：海报盒子、表格；先看视频画面：短视频、影廊。后续各页保留完整效果图和调整建议，统一按本页入口切换。"
+        }
+      ],
+      "image": "display-settings",
+      "status": "documented",
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "display-coverPoster",
+      "title": "封面海报",
+      "lead": "资源显示形式 01 / 13 · 以海报为主要浏览入口，适合日常片库。",
+      "blocks": [
+        {
+          "title": "浏览特点",
+          "text": "标题与属性标签叠加在封面上，选择一张资源查看详情或播放。"
+        },
+        {
+          "title": "调整建议",
+          "text": "调节封面高度与间距，先让标题、清晰度及评星有足够对比度。"
+        }
+      ],
+      "image": "layout-coverPoster",
+      "status": "documented",
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "display-coverPosterCinemaGallery",
+      "title": "宽幕卡廊",
+      "lead": "资源显示形式 02 / 13 · 突出横向画面和卡片资料，适合横版封面。",
+      "blocks": [
+        {
+          "title": "浏览特点",
+          "text": "同一排卡片形成宽幕浏览节奏，可通过卡片内容快速辨认资源。"
+        },
+        {
+          "title": "调整建议",
+          "text": "本页使用横版摄影封面，显示宽度 300、高度 169。在显示设置中开启封面宽度和高度控制，按屏幕调整尺寸；使用横图可减少对主体的裁切。"
+        }
+      ],
+      "image": "layout-coverPosterCinemaGallery",
+      "status": "documented",
+      "verification": "ui-and-source",
+      "caption": "宽幕卡廊（横版封面示例）"
+    },
+    {
+      "id": "display-coverPosterBox",
+      "title": "封面海报盒子",
+      "lead": "资源显示形式 03 / 13 · 同时查看封面与文字资料。",
+      "blocks": [
+        {
+          "title": "浏览特点",
+          "text": "海报旁展示资源资料，便于按标题、人物和标签挑选。"
+        },
+        {
+          "title": "调整建议",
+          "text": "“封面海报盒子-信息宽度”控制文字区域，文字过挤时先增大信息宽度。"
+        }
+      ],
+      "image": "layout-coverPosterBox",
+      "status": "documented",
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "display-coverPosterBoxWideSeparate",
+      "title": "封面海报盒子-宽图",
+      "lead": "资源显示形式 04 / 13 · 适合以宽幅图片作为主视觉的资源。",
+      "blocks": [
+        {
+          "title": "浏览特点",
+          "text": "宽图区域与资料区域分开呈现，减少资料文字覆盖画面。"
+        },
+        {
+          "title": "调整建议",
+          "text": "本页使用横版摄影封面，显示宽度 300、高度 169。在显示设置中开启封面宽度和高度控制，按屏幕调整尺寸；使用横图可减少对主体的裁切。"
+        }
+      ],
+      "image": "layout-coverPosterBoxWideSeparate",
+      "status": "documented",
+      "verification": "ui-and-source",
+      "caption": "封面海报盒子-宽图（横版封面示例）"
+    },
+    {
+      "id": "display-coverPosterSimple",
+      "title": "封面海报精简",
+      "lead": "资源显示形式 05 / 13 · 把注意力集中到封面，减少常驻资料。",
+      "blocks": [
+        {
+          "title": "浏览特点",
+          "text": "适合已经熟悉资源名称、希望快速浏览较多条目的场景。"
+        },
+        {
+          "title": "调整建议",
+          "text": "需要更多资料时打开详情，不必把所有属性都叠到封面上。"
+        }
+      ],
+      "image": "layout-coverPosterSimple",
+      "status": "documented",
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "display-coverPosterSimpleExpand",
+      "title": "封面海报精简-扩展",
+      "lead": "资源显示形式 06 / 13 · 在精简的基础上补充资料呈现。",
+      "blocks": [
+        {
+          "title": "浏览特点",
+          "text": "封面下方保留标题和人物信息，适合以横图浏览内容，同时快速辨认资源与关联人物。"
+        },
+        {
+          "title": "调整建议",
+          "text": "本页使用横版摄影封面，显示宽度 300、高度 169。在显示设置中开启封面宽度和高度控制，按屏幕调整尺寸；使用横图可减少对主体的裁切。"
+        }
+      ],
+      "image": "layout-coverPosterSimpleExpand",
+      "status": "documented",
+      "verification": "ui-and-source",
+      "caption": "封面海报精简-扩展（横版封面示例）"
+    },
+    {
+      "id": "display-coverPosterWaterfall",
+      "title": "封面海报瀑布流",
+      "lead": "资源显示形式 07 / 13 · 适合保留不同海报的纵向节奏。",
+      "blocks": [
+        {
+          "title": "浏览特点",
+          "text": "资源按列排列，减少因封面高度不同产生的空白。"
+        },
+        {
+          "title": "调整建议",
+          "text": "使用视图底部的列数滑块调整当前瀑布流，列数越多卡片越小；该视图会保留当前浏览器的列数选择。先保证标题可辨认。"
+        }
+      ],
+      "image": "layout-coverPosterWaterfall",
+      "status": "documented",
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "display-coverPosterMosaic",
+      "title": "智能拼贴墙",
+      "lead": "资源显示形式 08 / 13 · 适合大批资源的视觉浏览。",
+      "blocks": [
+        {
+          "title": "浏览特点",
+          "text": "根据可用宽度与封面信息拼贴；底部“基础列数”滑块可调整密度。"
+        },
+        {
+          "title": "调整建议",
+          "text": "不同宽高比的封面更能体现拼贴差异。封面统一比例时也会形成较规整的墙面。"
+        }
+      ],
+      "image": "layout-coverPosterMosaic",
+      "status": "documented",
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "display-coverPosterMosaicShortVideo",
+      "title": "智能拼贴墙短视频",
+      "lead": "资源显示形式 09 / 13 · 结合拼贴浏览与视频预览。",
+      "blocks": [
+        {
+          "title": "浏览特点",
+          "text": "把视频资源放在同一视觉墙中，通过预览相关交互识别内容。"
+        },
+        {
+          "title": "调整建议",
+          "text": "预览依赖实际视频和服务端处理能力；封面加载成功不等于视频已经能够播放。"
+        }
+      ],
+      "image": "layout-coverPosterMosaicShortVideo",
+      "status": "documented",
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "display-coverPosterCompactWall",
+      "title": "紧凑影墙",
+      "lead": "资源显示形式 10 / 13 · 适合在有限空间中尽量多看资源。",
+      "blocks": [
+        {
+          "title": "浏览特点",
+          "text": "缩小卡片间留白，形成密集封面墙；需要详细信息时再打开资源。"
+        },
+        {
+          "title": "调整建议",
+          "text": "选择适度的卡片密度，避免封面文字过小。大屏浏览和触屏操作可使用不同尺寸。"
+        }
+      ],
+      "image": "layout-coverPosterCompactWall",
+      "status": "documented",
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "display-shortVideo",
+      "title": "短视频",
+      "lead": "资源显示形式 11 / 13 · 以视频预览为主的浏览形式。",
+      "blocks": [
+        {
+          "title": "浏览特点",
+          "text": "适合先观察画面再选择内容，仍可通过资源操作入口整理资料。"
+        },
+        {
+          "title": "调整建议",
+          "text": "先确认内置播放正常；同时预览较多视频时应结合服务器性能调整分页量。"
+        }
+      ],
+      "image": "layout-shortVideo",
+      "status": "documented",
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "display-shortVideoTopBottom",
+      "title": "影廊模式",
+      "lead": "资源显示形式 12 / 13 · 将画面和上下信息区域组织成影廊。",
+      "blocks": [
+        {
+          "title": "浏览特点",
+          "text": "适合重视画面同时希望保留资源信息的浏览方式。"
+        },
+        {
+          "title": "调整建议",
+          "text": "与宽幕卡廊和短视频模式比较，在自己的屏幕上检查画面高度、文字与操作区域。"
+        }
+      ],
+      "image": "layout-shortVideoTopBottom",
+      "status": "documented",
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "display-table",
+      "title": "表格",
+      "lead": "资源显示形式 13 / 13 · 适合按字段查看和核对资源。",
+      "blocks": [
+        {
+          "title": "浏览特点",
+          "text": "以行列呈现标题、人物、标签和其它资料，方便比对。"
+        },
+        {
+          "title": "调整建议",
+          "text": "表格显示与“管理模式”是两个入口。需要勾选多条资源并批量操作时，开启顶部管理模式。"
+        }
+      ],
+      "image": "layout-table",
+      "status": "documented",
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "display-appearance",
+      "title": "主页样式、主题与详情形式",
+      "lead": "主页样式决定页面结构；明亮 / 暗黑决定配色；经典 / 现代外观统一顶部栏、详情和筛选面板。",
+      "blocks": [
+        {
+          "title": "经典与画室",
+          "text": "顶部“经典布局 / 画室布局”菜单可以切换主页样式；设置 → 软件设置 → 通用设置也提供相同选项。画室布局强调主视觉与文件库导航，资源显示模式仍按库配置。"
+        },
+        {
+          "title": "明亮与暗黑",
+          "text": "点击顶部明亮 / 暗黑按钮可切换主题。截图采用明亮主题便于阅读；深色环境中可切换暗黑，再检查封面标签的背景和文字颜色。"
+        },
+        {
+          "title": "详情显示",
+          "text": "在文件库显示设置中选择右侧、弹出或无，并配置详情显示项。希望浏览时保持列表可见可用右侧详情；需要集中阅读可用弹出详情。"
+        }
+      ],
+      "image": "home-studio",
+      "status": "documented",
+      "verification": "ui-and-source"
+    }
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "edition": "1.0",
+  "date": "2026-10-26",
+  "status": "complete",
+  "output": "CM Collectors 3 使用说明.pdf",
+  "chapters": 12,
+  "feature_sections": 66,
+  "pdf_pages": 70,
+  "completed": [
+    "独立演示环境与原创素材",
+    "13种显示形式截图",
+    "资源标签重点章节",
+    "人物与资源管理章节",
+    "导入播放与后台工具章节",
+    "PDF目录与书签",
+    "首次70页渲染和逐页版式检查",
+    "演示备份独立恢复与SQLite完整性检查",
+    "79个目录链接检查",
+    "最终70页重新渲染并复核变更页",
+    "数据隔离、源码主机编译启动及Git忽略检查",
+    "基础入门补充：第6页添加第一条资源，第7页查找、播放与修改；更新为72页、68个功能小节。",
+    "摄影素材替换：48张照片来源持久保存，24项元数据与指纹、8组真实副本、转码、预览及独立备份恢复验证通过。",
+    "章节重排：文件库与公共配置为第08章，稳定ID保持不变，目录和书签同步。",
+    "用户手册移除制作、验证及维护说明两页；内部章节保留在项目中，不参与发布。",
+    "整本校验及用户阅读优化：安装前置、制作痕迹清理、显示切换步骤去重、路径和删除说明补齐。",
+    "按用户确认修正第9页：Docker统一一种镜像，移除minimal/full分类。",
+    "第12、14、16页改为横版摄影封面真实截图，覆盖宽幕卡廊、封面海报盒子-宽图、封面海报精简-扩展。",
+    "第二轮整本校验：补齐人物迁移与标签替换影响，纠正路径替换及人物批量管理配图。"
+  ],
+  "current_step": "本版制作与验证完成",
+  "next_update": {
+    "display": "03-display",
+    "resource_tags": "04-tags",
+    "video_processing": "09-video",
+    "rule": "按固定功能ID插入章节pages数组；重建时自动更新页码。"
+  },
+  "demo": {
+    "directory": ".local/runtime",
+    "libraries": 4,
+    "resources": 96,
+    "people": 24,
+    "resource_tags": 72,
+    "people_tags": 40,
+    "moments": 16,
+    "transcode_entries": 12,
+    "tvbox_recommendations": 12,
+    "schedule_examples": 8
+  },
+  "external_validation_pending": [
+    "远程刮削站点",
+    "外部AI模型",
+    "TVBox实机",
+    "GPU编码",
+    "Wails原生窗口与系统选择器",
+    "Linux和Docker实机部署"
+  ],
+  "data_isolation": "未读取或复用开发与build数据库、媒体和原配置。演示主机使用独立18345/18346端口，仅使用自行生成材料。",
+  "pdf_size_bytes": 12074754,
+  "verification_summary": "verification-summary.json",
+  "next_work": "等待新功能或用户校对反馈；先运行check_sources.py，再按稳定ID插入或修改章节。",
+  "runtime_status": "本次演示服务已关闭，.local/runtime材料保留。",
+  "latest_revision": {
+    "date": "2026-10-26",
+    "change": "第二轮整本校验：补齐人物迁移与标签替换影响，纠正路径替换及人物批量管理配图。",
+    "validation": "全本70页重新渲染，通查9张联系表并放大检查最终修改的48、49、50、55页；78个目录链接、书签、正文完整性、图片裁切与边界检查通过。",
+    "runtime": "独立演示服务已关闭；本轮截图只检索和勾选，未提交业务写入。"
+  },
+  "internal_chapters": [
+    "13-reference"
+  ],
+  "latest_review": "review-summary.json",
+  "version_control": {
+    "images": "ignored; retained locally",
+    "pdf": "ignored; retained at project root",
+    "tracked": "正文、脚本、来源清单、功能映射及维护记录",
+    "new_clone": "恢复本机素材副本或重新生成和截图后再构建"
+  }
+}

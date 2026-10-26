@@ -1,0 +1,12 @@
+{
+  "illustrations": {"source": "早期程序插画，保留为重建基础；当前截图使用摄影素材", "generator": "scripts/prepare_demo.py", "seed": 3000, "status": "legacy"},
+  "photography": {"manifest": "photo-sources.json", "landscapes": 24, "portraits": 24, "licenses": ["https://unsplash.com/license", "https://www.pexels.com/license/"], "cache": ".local/photography", "identity_note": "人物及作品名称均为虚构；照片不表示真实身份、关联作品或代言。"},
+  "videos": {"source": "授权摄影与原创合成音，包含真实副本用于检测演示", "generator": "scripts/apply_photo_media.py", "count": 24, "seconds_each": 32, "dimensions": "640x426", "fps": 10},
+  "screenshots": {"source": "独立演示环境中的真实应用界面", "desktop_dimensions": "1440x1000", "mobile_dimensions": "430x932", "format": "JPEG", "quality": 86},
+  "downloaded_tools": [
+    {"name": "imageio-ffmpeg", "version": "0.6.0", "source": "https://pypi.org/project/imageio-ffmpeg/0.6.0/", "use": "生成演示视频、预览和转码", "git": "ignored in .local; do not redistribute bundled executable"},
+    {"name": "@ffprobe-installer/win32-x64", "version": "5.1.0", "source": "https://www.npmjs.com/package/@ffprobe-installer/win32-x64", "tarball_sha1": "87841123e8b903cc327f1e5b9aa69e5d2fbe6d7b", "use": "读取真实演示视频信息", "git": "ignored in .local; do not redistribute executable"}
+  ],
+  "fonts": {"source": "Windows installed Microsoft YaHei", "font_files_in_git": false, "pdf": "ReportLab embeds used glyph subsets"},
+  "policy": "不读取或复用既有开发和构建数据；全部截图、摄影原图、数据库、媒体与缓存保留本机并忽略 Git。仅正文、脚本、来源清单和维护记录进入 Git。"
+}

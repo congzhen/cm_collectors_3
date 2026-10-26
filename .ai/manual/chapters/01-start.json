@@ -1,0 +1,171 @@
+{
+  "id": "01-start",
+  "title": "开始使用",
+  "sources": [
+    "README.md",
+    "cm_collectors_server/core/config.go",
+    "Dockerfile.minimal",
+    "Dockerfile.full",
+    "cm_collectors_html/src/components/resource/resourceFormDrawer.vue",
+    "cm_collectors_html/src/views/HeaderViewModern.vue",
+    "cm_collectors_html/src/components/content/contentRightClickMenu.vue"
+  ],
+  "pages": [
+    {
+      "id": "start-map",
+      "title": "先认识软件的工作方式",
+      "lead": "选择文件库，添加或导入资源，再浏览和播放。尚未安装时，先看下一页安装说明；服务已启动可直接看“第一次使用：添加一条资源”。",
+      "blocks": [
+        {
+          "title": "三个概念",
+          "text": "文件库是资源的分类入口；资源是一张资料卡，包含标题、封面、标签与人物；分集是资源关联的具体文件或图片目录。一条资源可以包含多个分集。"
+        },
+        {
+          "title": "推荐的第一次操作",
+          "text": "启动服务 → 选择已有文件库 → 添加一条资源 → 保存并试播。走通后，再按需要创建新库、整理标签和人物，或批量导入更多文件。"
+        },
+        {
+          "title": "按需要查阅",
+          "text": "初次使用先完成添加、查找和播放，再学习标签与批量导入。“显示形式与外观”展示 13 种模式；“资源打标签与筛选”介绍分类和组合检索。配图中的作品与人物资料均为虚构，照片仅作界面示例。"
+        }
+      ],
+      "image": "layout-coverPoster",
+      "status": "documented",
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "install-native",
+      "title": "Windows 与 Linux 安装",
+      "lead": "使用发布包时保留其目录结构，让配置、数据库、辅助工具与服务程序保持对应关系。",
+      "blocks": [
+        {
+          "title": "Windows",
+          "text": "从项目 Releases 取得对应 Windows 发布包，解压到可写目录。运行包内启动器或服务端程序；启动器会调用同目录服务端。服务启动后，用浏览器访问 http://127.0.0.1:12345。"
+        },
+        {
+          "title": "Linux",
+          "text": "解压对应 Linux 发布包，赋予服务程序执行权限，在解压目录运行 ./cm_collectors_server。需要视频处理时安装可执行的 FFmpeg 与 FFprobe；需要浏览器刮削时另准备 Chrome 或可用的 Chromium 浏览器。"
+        },
+        {
+          "title": "首次启动与关闭",
+          "text": "没有配置文件时，程序会创建默认 config.yaml，并在默认 db 目录建立数据库。服务端会尝试释放配置中的监听端口，启动前应确认端口未被其它程序使用。退出前先等待导入、转码等写入任务结束。"
+        }
+      ],
+      "rows": [
+        [
+          "项目",
+          "默认位置 / 用途"
+        ],
+        [
+          "网页地址",
+          "http://127.0.0.1:12345"
+        ],
+        [
+          "config.yaml",
+          "程序工作目录中的运行配置"
+        ],
+        [
+          "db/",
+          "数据库、封面、人物图片等持久数据"
+        ],
+        [
+          "ffmpeg/",
+          "Windows 下可放置 ffmpeg.exe、ffprobe.exe"
+        ],
+        [
+          "发布入口",
+          "https://github.com/congzhen/cm_collectors_3/releases"
+        ]
+      ],
+      "status": "documented",
+      "verification": "source-reviewed"
+    },
+    {
+      "id": "start-add-first",
+      "title": "第一次使用：添加一条资源",
+      "lead": "先把一个视频放进片库，走通最简单的使用流程；封面、演员和更多配置可以以后再完善。",
+      "image": "resource-edit",
+      "blocks": [
+        {
+          "title": "选择文件库，点击添加资源",
+          "text": "打开主页，点击顶部已有的文件库名称，选择资源要放入的库，再点“添加资源”。首次可以先使用默认库；需要分类时，再按后面的文件库章节创建“电影”“图集”等新库。"
+        },
+        {
+          "title": "选择文件，填写基本信息",
+          "text": "资源类型选择“视频”，点击“选择资源”，选中视频文件并填写标题。这里浏览服务端文件；看不到媒体目录时，先在“设置 → 软件设置 → 通用设置”添加文件管理挂载路径。图集和漫画选择图片目录。"
+        },
+        {
+          "title": "保存后回到主页检查",
+          "text": "需要时添加封面、简介和标签，然后点击表单底部“提交”。保存成功后回到当前文件库，找到新增资源并试播。暂时没有标签或人物资料，也可以先把这一步完成。"
+        }
+      ],
+      "status": "documented",
+      "verification": "source-reviewed-and-existing-demo-screenshots"
+    },
+    {
+      "id": "start-daily-basics",
+      "title": "日常使用：查找、播放与修改",
+      "lead": "添加完成后，先熟悉主页最常用的几个入口，再逐步学习批量导入、显示形式和进阶功能。",
+      "image": "layout-coverPoster",
+      "blocks": [
+        {
+          "title": "找资源：先选库，再搜索和筛选",
+          "text": "顶部切换文件库；搜索框输入关键词，左侧按标签、演员或评星等条件筛选。找不到刚添加的资源时，先确认库名，再清除旧搜索和筛选条件。"
+        },
+        {
+          "title": "看内容：播放入口与资源详情",
+          "text": "使用封面上的播放入口，或右键资源选择“播放”。一条资源有多个分集时，选择需要的分集；图集和漫画会进入相应阅读界面。详情用于查看简介、人物、标签及文件信息。"
+        },
+        {
+          "title": "整理资料：编辑、打标签与批量操作",
+          "text": "右键资源选“编辑”修改资料，选“打标签”归类。需要一次处理多条资源时，再打开顶部“管理模式”并勾选资源。文件多了可用“导入刮削”批量扫描；想改变浏览样式可点底部“显示设置”。"
+        }
+      ],
+      "status": "documented",
+      "verification": "source-reviewed-and-existing-demo-screenshots"
+    },
+    {
+      "id": "install-docker",
+      "title": "Docker 与局域网访问",
+      "lead": "容器内路径和主机路径是两套路径；扫描、播放和文件管理使用服务端能够访问的路径。",
+      "blocks": [
+        {
+          "title": "持久化数据",
+          "text": "将主机的数据库目录挂载到容器 /app/db，将媒体目录挂载到例如 /media，并映射 12345 端口。添加资源时选择 /media 下的文件，不填写 Windows 主机盘符。"
+        },
+        {
+          "title": "镜像与浏览器",
+          "text": "使用项目统一发布的 Docker 镜像即可，无需选择不同功能版本。需要浏览器刮削时，在“设置 → 软件设置 → 通用设置”中确认浏览器路径指向容器内可运行的浏览器，不要填写宿主机的浏览器路径。"
+        },
+        {
+          "title": "从其它设备访问",
+          "text": "使用服务所在电脑的局域网 IP 和映射端口，例如 http://192.168.1.51:12345。localhost / 127.0.0.1 只指向当前访问设备。服务端需允许对应网络访问，媒体挂载目录需可读。"
+        }
+      ],
+      "rows": [
+        [
+          "映射",
+          "示例"
+        ],
+        [
+          "端口",
+          "12345:12345"
+        ],
+        [
+          "数据库目录",
+          "主机专用数据库目录 → /app/db"
+        ],
+        [
+          "媒体目录",
+          "主机媒体目录 → /media"
+        ],
+        [
+          "演示命令",
+          "docker run -d --name cm_collectors_3 -p 12345:12345 -v /srv/cm/db:/app/db -v /srv/cm/media:/media congzhen/cm_collectors_3:latest"
+        ]
+      ],
+      "status": "documented",
+      "verification": "source-reviewed"
+    }
+  ]
+}

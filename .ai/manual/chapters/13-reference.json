@@ -1,0 +1,86 @@
+{
+  "id": "13-reference",
+  "title": "手册版本与演示说明",
+  "sources": [
+    ".ai/manual/demo/server/main.go",
+    ".ai/manual/scripts/prepare_demo.py",
+    ".ai/manual/scripts/seed_demo.mjs",
+    ".ai/manual/scripts/download_photos.py",
+    ".ai/manual/scripts/apply_photo_media.py",
+    ".ai/manual/scripts/apply_photo_database.mjs"
+  ],
+  "pages": [
+    {
+      "id": "reference-scope",
+      "title": "本版范围与验证说明",
+      "lead": "手册依据 2026-10-26 工作区源码、功能入口和独立演示服务制作。",
+      "blocks": [
+        {
+          "title": "数据与图片来源",
+          "text": "未读取或复用开发、构建环境的数据。4 个文件库、96 条资源和人物资料均为独立示例；封面与图页采用 Unsplash 摄影，头像采用 Pexels 摄影，视频由照片与合成音制作。人物与作品名称为虚构，不代表照片人物的真实身份或关联作品。"
+        },
+        {
+          "title": "实际验证",
+          "text": "13 种资源显示形式、经典 / 画室布局、单条与批量打标签、视频播放、图片阅读、片段与预览、元数据采集、指纹候选结果及一项保存为新文件的转码均在演示环境操作。"
+        },
+        {
+          "title": "仍需外部环境验证",
+          "text": "远程刮削站点、外部 AI 模型、真实 TVBox、GPU 编码、Wails 原生窗口及 Linux / Docker 实际部署未进行端到端验证。相关章节依据源码和界面描述操作条件，不宣称这些链路已在本机跑通。"
+        }
+      ],
+      "status": "documented",
+      "verification": "source-reviewed"
+    },
+    {
+      "id": "reference-maintenance",
+      "title": "如何持续更新这份手册",
+      "lead": "章节与功能使用稳定 ID；以后新增功能按 ID 插入源文件，再重新构建目录、书签和页码。",
+      "blocks": [
+        {
+          "title": "新增功能插入位置",
+          "text": "显示布局放入“显示形式与外观”；资源标签放入“资源打标签与筛选”；导入和视频工具放入各自对应章节。按固定功能 ID 定位，章节顺序由目录配置决定，页码随内容自动变化。"
+        },
+        {
+          "title": "保留制作材料",
+          "text": "章节 JSON、截图、功能映射、进度和脚本保存在 .ai/manual。演示数据库、媒体、下载工具和中间文件在 .local 中持久保存并被 Git 忽略；最终 PDF 位于项目根目录。"
+        },
+        {
+          "title": "更新时检查",
+          "text": "先检查功能映射中的源码指纹，找到变更章节；只使用演示环境补数据和截图，重新构建并逐页检查。只有已核对的步骤才能标记已验证，外部依赖缺口继续保留记录。"
+        }
+      ],
+      "rows": [
+        [
+          "文件 / 目录",
+          "用途"
+        ],
+        [
+          "chapters/*.json",
+          "可编辑的正文源文件"
+        ],
+        [
+          "feature-map.json",
+          "功能 ID、对应源码、截图与 PDF 位置"
+        ],
+        [
+          "progress.json",
+          "完成状态、验证记录与待办"
+        ],
+        [
+          ".local/runtime/",
+          "独立数据库、媒体、配置及复用状态"
+        ],
+        [
+          "scripts/build_pdf.py",
+          "构建根目录 PDF 并生成检查报告"
+        ],
+        [
+          "photo-sources.json",
+          "48 张摄影素材的作者、原图链接、授权与本地缓存指纹"
+        ]
+      ],
+      "status": "documented",
+      "verification": "source-reviewed"
+    }
+  ]
+}

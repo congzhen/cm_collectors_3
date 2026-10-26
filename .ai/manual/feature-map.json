@@ -1,0 +1,1066 @@
+{
+  "edition": "1.0",
+  "date": "2026-10-26",
+  "output": "CM Collectors 3 使用说明.pdf",
+  "pages": 70,
+  "features": [
+    {
+      "id": "start-map",
+      "chapter": "01-start",
+      "title": "先认识软件的工作方式",
+      "pdf_page": 5,
+      "bottom": 750.0,
+      "image": "layout-coverPoster",
+      "source_hashes": {
+        "README.md": "4ae12b774c943a923d45aa3c35cf9bd7ed585a864dc430d974aad712848f29cc",
+        "cm_collectors_server/core/config.go": "e6073a627fae9b55af18ef51bed701197f91d84a1932e27846db2c57cc416206",
+        "Dockerfile.minimal": "b929f11d1333cfd54b2152363bdf19bac6a3a20f28173043d4186b82ab63b674",
+        "Dockerfile.full": "566bf3b04402dcf26a3957e0d26dcb9749c07a27da965997d9953e4b88a40bbb",
+        "cm_collectors_html/src/components/resource/resourceFormDrawer.vue": "c45b6ac1dc1faf86385d053bfc7e2d828340bbdc39f0aea6f8e17c472fc88fba",
+        "cm_collectors_html/src/views/HeaderViewModern.vue": "0553f232fae4da4127550f9f4c52bb8413114a6930b16f501116940661a899a4",
+        "cm_collectors_html/src/components/content/contentRightClickMenu.vue": "ad00f3b51669cd4d0c204773ff47a71eaf9dcef577ecbd5f23b440fef44cb51e"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "install-native",
+      "chapter": "01-start",
+      "title": "Windows 与 Linux 安装",
+      "pdf_page": 6,
+      "bottom": 572,
+      "image": null,
+      "source_hashes": {
+        "README.md": "4ae12b774c943a923d45aa3c35cf9bd7ed585a864dc430d974aad712848f29cc",
+        "cm_collectors_server/core/config.go": "e6073a627fae9b55af18ef51bed701197f91d84a1932e27846db2c57cc416206",
+        "Dockerfile.minimal": "b929f11d1333cfd54b2152363bdf19bac6a3a20f28173043d4186b82ab63b674",
+        "Dockerfile.full": "566bf3b04402dcf26a3957e0d26dcb9749c07a27da965997d9953e4b88a40bbb",
+        "cm_collectors_html/src/components/resource/resourceFormDrawer.vue": "c45b6ac1dc1faf86385d053bfc7e2d828340bbdc39f0aea6f8e17c472fc88fba",
+        "cm_collectors_html/src/views/HeaderViewModern.vue": "0553f232fae4da4127550f9f4c52bb8413114a6930b16f501116940661a899a4",
+        "cm_collectors_html/src/components/content/contentRightClickMenu.vue": "ad00f3b51669cd4d0c204773ff47a71eaf9dcef577ecbd5f23b440fef44cb51e"
+      },
+      "verification": "source-reviewed"
+    },
+    {
+      "id": "start-add-first",
+      "chapter": "01-start",
+      "title": "第一次使用：添加一条资源",
+      "pdf_page": 7,
+      "bottom": 733.0,
+      "image": "resource-edit",
+      "source_hashes": {
+        "README.md": "4ae12b774c943a923d45aa3c35cf9bd7ed585a864dc430d974aad712848f29cc",
+        "cm_collectors_server/core/config.go": "e6073a627fae9b55af18ef51bed701197f91d84a1932e27846db2c57cc416206",
+        "Dockerfile.minimal": "b929f11d1333cfd54b2152363bdf19bac6a3a20f28173043d4186b82ab63b674",
+        "Dockerfile.full": "566bf3b04402dcf26a3957e0d26dcb9749c07a27da965997d9953e4b88a40bbb",
+        "cm_collectors_html/src/components/resource/resourceFormDrawer.vue": "c45b6ac1dc1faf86385d053bfc7e2d828340bbdc39f0aea6f8e17c472fc88fba",
+        "cm_collectors_html/src/views/HeaderViewModern.vue": "0553f232fae4da4127550f9f4c52bb8413114a6930b16f501116940661a899a4",
+        "cm_collectors_html/src/components/content/contentRightClickMenu.vue": "ad00f3b51669cd4d0c204773ff47a71eaf9dcef577ecbd5f23b440fef44cb51e"
+      },
+      "verification": "source-reviewed-and-existing-demo-screenshots"
+    },
+    {
+      "id": "start-daily-basics",
+      "chapter": "01-start",
+      "title": "日常使用：查找、播放与修改",
+      "pdf_page": 8,
+      "bottom": 733.0,
+      "image": "layout-coverPoster",
+      "source_hashes": {
+        "README.md": "4ae12b774c943a923d45aa3c35cf9bd7ed585a864dc430d974aad712848f29cc",
+        "cm_collectors_server/core/config.go": "e6073a627fae9b55af18ef51bed701197f91d84a1932e27846db2c57cc416206",
+        "Dockerfile.minimal": "b929f11d1333cfd54b2152363bdf19bac6a3a20f28173043d4186b82ab63b674",
+        "Dockerfile.full": "566bf3b04402dcf26a3957e0d26dcb9749c07a27da965997d9953e4b88a40bbb",
+        "cm_collectors_html/src/components/resource/resourceFormDrawer.vue": "c45b6ac1dc1faf86385d053bfc7e2d828340bbdc39f0aea6f8e17c472fc88fba",
+        "cm_collectors_html/src/views/HeaderViewModern.vue": "0553f232fae4da4127550f9f4c52bb8413114a6930b16f501116940661a899a4",
+        "cm_collectors_html/src/components/content/contentRightClickMenu.vue": "ad00f3b51669cd4d0c204773ff47a71eaf9dcef577ecbd5f23b440fef44cb51e"
+      },
+      "verification": "source-reviewed-and-existing-demo-screenshots"
+    },
+    {
+      "id": "install-docker",
+      "chapter": "01-start",
+      "title": "Docker 与局域网访问",
+      "pdf_page": 9,
+      "bottom": 554,
+      "image": null,
+      "source_hashes": {
+        "README.md": "4ae12b774c943a923d45aa3c35cf9bd7ed585a864dc430d974aad712848f29cc",
+        "cm_collectors_server/core/config.go": "e6073a627fae9b55af18ef51bed701197f91d84a1932e27846db2c57cc416206",
+        "Dockerfile.minimal": "b929f11d1333cfd54b2152363bdf19bac6a3a20f28173043d4186b82ab63b674",
+        "Dockerfile.full": "566bf3b04402dcf26a3957e0d26dcb9749c07a27da965997d9953e4b88a40bbb",
+        "cm_collectors_html/src/components/resource/resourceFormDrawer.vue": "c45b6ac1dc1faf86385d053bfc7e2d828340bbdc39f0aea6f8e17c472fc88fba",
+        "cm_collectors_html/src/views/HeaderViewModern.vue": "0553f232fae4da4127550f9f4c52bb8413114a6930b16f501116940661a899a4",
+        "cm_collectors_html/src/components/content/contentRightClickMenu.vue": "ad00f3b51669cd4d0c204773ff47a71eaf9dcef577ecbd5f23b440fef44cb51e"
+      },
+      "verification": "source-reviewed"
+    },
+    {
+      "id": "display-how",
+      "chapter": "03-display",
+      "title": "从哪里切换显示形式",
+      "pdf_page": 10,
+      "bottom": 733.0,
+      "image": "display-settings",
+      "source_hashes": {
+        "cm_collectors_html/src/assets/dataset.ts": "22bbed83d0995d0e045595b32d6b9bb123e14e7a5d4e909877ccfc51af756c99",
+        "cm_collectors_html/src/language/zhCn.ts": "2c25ec918b506ebff9d0e616542299b868ab8c9282c7e2b1bc7adc062e1cb0b6",
+        "cm_collectors_html/src/components/content/contentList.vue": "1e94c0b4e8d5d52ad838871e5a5f8815255661b3db3c529ee78330e67de3c4cb",
+        "cm_collectors_html/src/components/setting/sharedConfig/SharedDisplayFields.vue": "1bc71883ecf99f15ec3acc08fa25f788aa9547c16c3f2ad8d19639d9ccf546a4"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "display-coverPoster",
+      "chapter": "03-display",
+      "title": "封面海报",
+      "pdf_page": 11,
+      "bottom": 629.0,
+      "image": "layout-coverPoster",
+      "source_hashes": {
+        "cm_collectors_html/src/assets/dataset.ts": "22bbed83d0995d0e045595b32d6b9bb123e14e7a5d4e909877ccfc51af756c99",
+        "cm_collectors_html/src/language/zhCn.ts": "2c25ec918b506ebff9d0e616542299b868ab8c9282c7e2b1bc7adc062e1cb0b6",
+        "cm_collectors_html/src/components/content/contentList.vue": "1e94c0b4e8d5d52ad838871e5a5f8815255661b3db3c529ee78330e67de3c4cb",
+        "cm_collectors_html/src/components/setting/sharedConfig/SharedDisplayFields.vue": "1bc71883ecf99f15ec3acc08fa25f788aa9547c16c3f2ad8d19639d9ccf546a4"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "display-coverPosterCinemaGallery",
+      "chapter": "03-display",
+      "title": "宽幕卡廊",
+      "pdf_page": 12,
+      "bottom": 646.0,
+      "image": "layout-coverPosterCinemaGallery",
+      "source_hashes": {
+        "cm_collectors_html/src/assets/dataset.ts": "22bbed83d0995d0e045595b32d6b9bb123e14e7a5d4e909877ccfc51af756c99",
+        "cm_collectors_html/src/language/zhCn.ts": "2c25ec918b506ebff9d0e616542299b868ab8c9282c7e2b1bc7adc062e1cb0b6",
+        "cm_collectors_html/src/components/content/contentList.vue": "1e94c0b4e8d5d52ad838871e5a5f8815255661b3db3c529ee78330e67de3c4cb",
+        "cm_collectors_html/src/components/setting/sharedConfig/SharedDisplayFields.vue": "1bc71883ecf99f15ec3acc08fa25f788aa9547c16c3f2ad8d19639d9ccf546a4"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "display-coverPosterBox",
+      "chapter": "03-display",
+      "title": "封面海报盒子",
+      "pdf_page": 13,
+      "bottom": 629.0,
+      "image": "layout-coverPosterBox",
+      "source_hashes": {
+        "cm_collectors_html/src/assets/dataset.ts": "22bbed83d0995d0e045595b32d6b9bb123e14e7a5d4e909877ccfc51af756c99",
+        "cm_collectors_html/src/language/zhCn.ts": "2c25ec918b506ebff9d0e616542299b868ab8c9282c7e2b1bc7adc062e1cb0b6",
+        "cm_collectors_html/src/components/content/contentList.vue": "1e94c0b4e8d5d52ad838871e5a5f8815255661b3db3c529ee78330e67de3c4cb",
+        "cm_collectors_html/src/components/setting/sharedConfig/SharedDisplayFields.vue": "1bc71883ecf99f15ec3acc08fa25f788aa9547c16c3f2ad8d19639d9ccf546a4"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "display-coverPosterBoxWideSeparate",
+      "chapter": "03-display",
+      "title": "封面海报盒子-宽图",
+      "pdf_page": 14,
+      "bottom": 646.0,
+      "image": "layout-coverPosterBoxWideSeparate",
+      "source_hashes": {
+        "cm_collectors_html/src/assets/dataset.ts": "22bbed83d0995d0e045595b32d6b9bb123e14e7a5d4e909877ccfc51af756c99",
+        "cm_collectors_html/src/language/zhCn.ts": "2c25ec918b506ebff9d0e616542299b868ab8c9282c7e2b1bc7adc062e1cb0b6",
+        "cm_collectors_html/src/components/content/contentList.vue": "1e94c0b4e8d5d52ad838871e5a5f8815255661b3db3c529ee78330e67de3c4cb",
+        "cm_collectors_html/src/components/setting/sharedConfig/SharedDisplayFields.vue": "1bc71883ecf99f15ec3acc08fa25f788aa9547c16c3f2ad8d19639d9ccf546a4"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "display-coverPosterSimple",
+      "chapter": "03-display",
+      "title": "封面海报精简",
+      "pdf_page": 15,
+      "bottom": 629.0,
+      "image": "layout-coverPosterSimple",
+      "source_hashes": {
+        "cm_collectors_html/src/assets/dataset.ts": "22bbed83d0995d0e045595b32d6b9bb123e14e7a5d4e909877ccfc51af756c99",
+        "cm_collectors_html/src/language/zhCn.ts": "2c25ec918b506ebff9d0e616542299b868ab8c9282c7e2b1bc7adc062e1cb0b6",
+        "cm_collectors_html/src/components/content/contentList.vue": "1e94c0b4e8d5d52ad838871e5a5f8815255661b3db3c529ee78330e67de3c4cb",
+        "cm_collectors_html/src/components/setting/sharedConfig/SharedDisplayFields.vue": "1bc71883ecf99f15ec3acc08fa25f788aa9547c16c3f2ad8d19639d9ccf546a4"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "display-coverPosterSimpleExpand",
+      "chapter": "03-display",
+      "title": "封面海报精简-扩展",
+      "pdf_page": 16,
+      "bottom": 646.0,
+      "image": "layout-coverPosterSimpleExpand",
+      "source_hashes": {
+        "cm_collectors_html/src/assets/dataset.ts": "22bbed83d0995d0e045595b32d6b9bb123e14e7a5d4e909877ccfc51af756c99",
+        "cm_collectors_html/src/language/zhCn.ts": "2c25ec918b506ebff9d0e616542299b868ab8c9282c7e2b1bc7adc062e1cb0b6",
+        "cm_collectors_html/src/components/content/contentList.vue": "1e94c0b4e8d5d52ad838871e5a5f8815255661b3db3c529ee78330e67de3c4cb",
+        "cm_collectors_html/src/components/setting/sharedConfig/SharedDisplayFields.vue": "1bc71883ecf99f15ec3acc08fa25f788aa9547c16c3f2ad8d19639d9ccf546a4"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "display-coverPosterWaterfall",
+      "chapter": "03-display",
+      "title": "封面海报瀑布流",
+      "pdf_page": 17,
+      "bottom": 646.0,
+      "image": "layout-coverPosterWaterfall",
+      "source_hashes": {
+        "cm_collectors_html/src/assets/dataset.ts": "22bbed83d0995d0e045595b32d6b9bb123e14e7a5d4e909877ccfc51af756c99",
+        "cm_collectors_html/src/language/zhCn.ts": "2c25ec918b506ebff9d0e616542299b868ab8c9282c7e2b1bc7adc062e1cb0b6",
+        "cm_collectors_html/src/components/content/contentList.vue": "1e94c0b4e8d5d52ad838871e5a5f8815255661b3db3c529ee78330e67de3c4cb",
+        "cm_collectors_html/src/components/setting/sharedConfig/SharedDisplayFields.vue": "1bc71883ecf99f15ec3acc08fa25f788aa9547c16c3f2ad8d19639d9ccf546a4"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "display-coverPosterMosaic",
+      "chapter": "03-display",
+      "title": "智能拼贴墙",
+      "pdf_page": 18,
+      "bottom": 629.0,
+      "image": "layout-coverPosterMosaic",
+      "source_hashes": {
+        "cm_collectors_html/src/assets/dataset.ts": "22bbed83d0995d0e045595b32d6b9bb123e14e7a5d4e909877ccfc51af756c99",
+        "cm_collectors_html/src/language/zhCn.ts": "2c25ec918b506ebff9d0e616542299b868ab8c9282c7e2b1bc7adc062e1cb0b6",
+        "cm_collectors_html/src/components/content/contentList.vue": "1e94c0b4e8d5d52ad838871e5a5f8815255661b3db3c529ee78330e67de3c4cb",
+        "cm_collectors_html/src/components/setting/sharedConfig/SharedDisplayFields.vue": "1bc71883ecf99f15ec3acc08fa25f788aa9547c16c3f2ad8d19639d9ccf546a4"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "display-coverPosterMosaicShortVideo",
+      "chapter": "03-display",
+      "title": "智能拼贴墙短视频",
+      "pdf_page": 19,
+      "bottom": 629.0,
+      "image": "layout-coverPosterMosaicShortVideo",
+      "source_hashes": {
+        "cm_collectors_html/src/assets/dataset.ts": "22bbed83d0995d0e045595b32d6b9bb123e14e7a5d4e909877ccfc51af756c99",
+        "cm_collectors_html/src/language/zhCn.ts": "2c25ec918b506ebff9d0e616542299b868ab8c9282c7e2b1bc7adc062e1cb0b6",
+        "cm_collectors_html/src/components/content/contentList.vue": "1e94c0b4e8d5d52ad838871e5a5f8815255661b3db3c529ee78330e67de3c4cb",
+        "cm_collectors_html/src/components/setting/sharedConfig/SharedDisplayFields.vue": "1bc71883ecf99f15ec3acc08fa25f788aa9547c16c3f2ad8d19639d9ccf546a4"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "display-coverPosterCompactWall",
+      "chapter": "03-display",
+      "title": "紧凑影墙",
+      "pdf_page": 20,
+      "bottom": 629.0,
+      "image": "layout-coverPosterCompactWall",
+      "source_hashes": {
+        "cm_collectors_html/src/assets/dataset.ts": "22bbed83d0995d0e045595b32d6b9bb123e14e7a5d4e909877ccfc51af756c99",
+        "cm_collectors_html/src/language/zhCn.ts": "2c25ec918b506ebff9d0e616542299b868ab8c9282c7e2b1bc7adc062e1cb0b6",
+        "cm_collectors_html/src/components/content/contentList.vue": "1e94c0b4e8d5d52ad838871e5a5f8815255661b3db3c529ee78330e67de3c4cb",
+        "cm_collectors_html/src/components/setting/sharedConfig/SharedDisplayFields.vue": "1bc71883ecf99f15ec3acc08fa25f788aa9547c16c3f2ad8d19639d9ccf546a4"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "display-shortVideo",
+      "chapter": "03-display",
+      "title": "短视频",
+      "pdf_page": 21,
+      "bottom": 629.0,
+      "image": "layout-shortVideo",
+      "source_hashes": {
+        "cm_collectors_html/src/assets/dataset.ts": "22bbed83d0995d0e045595b32d6b9bb123e14e7a5d4e909877ccfc51af756c99",
+        "cm_collectors_html/src/language/zhCn.ts": "2c25ec918b506ebff9d0e616542299b868ab8c9282c7e2b1bc7adc062e1cb0b6",
+        "cm_collectors_html/src/components/content/contentList.vue": "1e94c0b4e8d5d52ad838871e5a5f8815255661b3db3c529ee78330e67de3c4cb",
+        "cm_collectors_html/src/components/setting/sharedConfig/SharedDisplayFields.vue": "1bc71883ecf99f15ec3acc08fa25f788aa9547c16c3f2ad8d19639d9ccf546a4"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "display-shortVideoTopBottom",
+      "chapter": "03-display",
+      "title": "影廊模式",
+      "pdf_page": 22,
+      "bottom": 629.0,
+      "image": "layout-shortVideoTopBottom",
+      "source_hashes": {
+        "cm_collectors_html/src/assets/dataset.ts": "22bbed83d0995d0e045595b32d6b9bb123e14e7a5d4e909877ccfc51af756c99",
+        "cm_collectors_html/src/language/zhCn.ts": "2c25ec918b506ebff9d0e616542299b868ab8c9282c7e2b1bc7adc062e1cb0b6",
+        "cm_collectors_html/src/components/content/contentList.vue": "1e94c0b4e8d5d52ad838871e5a5f8815255661b3db3c529ee78330e67de3c4cb",
+        "cm_collectors_html/src/components/setting/sharedConfig/SharedDisplayFields.vue": "1bc71883ecf99f15ec3acc08fa25f788aa9547c16c3f2ad8d19639d9ccf546a4"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "display-table",
+      "chapter": "03-display",
+      "title": "表格",
+      "pdf_page": 23,
+      "bottom": 629.0,
+      "image": "layout-table",
+      "source_hashes": {
+        "cm_collectors_html/src/assets/dataset.ts": "22bbed83d0995d0e045595b32d6b9bb123e14e7a5d4e909877ccfc51af756c99",
+        "cm_collectors_html/src/language/zhCn.ts": "2c25ec918b506ebff9d0e616542299b868ab8c9282c7e2b1bc7adc062e1cb0b6",
+        "cm_collectors_html/src/components/content/contentList.vue": "1e94c0b4e8d5d52ad838871e5a5f8815255661b3db3c529ee78330e67de3c4cb",
+        "cm_collectors_html/src/components/setting/sharedConfig/SharedDisplayFields.vue": "1bc71883ecf99f15ec3acc08fa25f788aa9547c16c3f2ad8d19639d9ccf546a4"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "display-appearance",
+      "chapter": "03-display",
+      "title": "主页样式、主题与详情形式",
+      "pdf_page": 24,
+      "bottom": 733.0,
+      "image": "home-studio",
+      "source_hashes": {
+        "cm_collectors_html/src/assets/dataset.ts": "22bbed83d0995d0e045595b32d6b9bb123e14e7a5d4e909877ccfc51af756c99",
+        "cm_collectors_html/src/language/zhCn.ts": "2c25ec918b506ebff9d0e616542299b868ab8c9282c7e2b1bc7adc062e1cb0b6",
+        "cm_collectors_html/src/components/content/contentList.vue": "1e94c0b4e8d5d52ad838871e5a5f8815255661b3db3c529ee78330e67de3c4cb",
+        "cm_collectors_html/src/components/setting/sharedConfig/SharedDisplayFields.vue": "1bc71883ecf99f15ec3acc08fa25f788aa9547c16c3f2ad8d19639d9ccf546a4"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "tags-design",
+      "chapter": "04-tags",
+      "title": "先设计标签分类",
+      "pdf_page": 25,
+      "bottom": 733.0,
+      "image": "tag-manage",
+      "source_hashes": {
+        "cm_collectors_html/src/components/tag/tagList.vue": "873d6b5c439e6089df40b91aaa7c358ddc6fc48bb7adbc5dc280f9c9c88b9403",
+        "cm_collectors_html/src/components/tag/tagLogic.vue": "65ea57f7c341a0ddc542e5ac7d1cac948503ae9fe98adbb2b4abaee94f8511b6",
+        "cm_collectors_html/src/components/resource/resourceSetTagDialog.vue": "7dd18847a529b25bb2f3898ce9f641c545e3441390a9bc4ae07d61a29c5f0024",
+        "cm_collectors_html/src/components/resource/resourceSetTagBatchDialog.vue": "c72257946de36a1626a17a6354f22d0852bef78b441a99b7eef8f516ee914334",
+        "cm_collectors_html/src/components/search/searchFavoritePopover.vue": "adcbbc599d69a8824a5a9e9ddd5fd1ac0d4df2d84abec63e66910a3fd6e81a8a",
+        "cm_collectors_html/src/components/setting/aiTag/aiTagSetting.vue": "bff4bceb64a4eda60425f1d28c6bc99d42443eb18db27851923efb88dd482500",
+        "cm_collectors_html/src/common/tag.ts": "6ada033af4407b1dbc3141735333b2e008ac68190de0fd5598c2cddebe2bcec1",
+        "cm_collectors_html/src/components/tag/tagListDrawer.vue": "4fdac9bd21b371e46cd14bbeefeebf775960c8a3d678f07ec72c0c2f2d57d462"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "tags-manage",
+      "chapter": "04-tags",
+      "title": "维护分类、顺序与显示",
+      "pdf_page": 26,
+      "bottom": 733.0,
+      "image": "tag-manage",
+      "source_hashes": {
+        "cm_collectors_html/src/components/tag/tagList.vue": "873d6b5c439e6089df40b91aaa7c358ddc6fc48bb7adbc5dc280f9c9c88b9403",
+        "cm_collectors_html/src/components/tag/tagLogic.vue": "65ea57f7c341a0ddc542e5ac7d1cac948503ae9fe98adbb2b4abaee94f8511b6",
+        "cm_collectors_html/src/components/resource/resourceSetTagDialog.vue": "7dd18847a529b25bb2f3898ce9f641c545e3441390a9bc4ae07d61a29c5f0024",
+        "cm_collectors_html/src/components/resource/resourceSetTagBatchDialog.vue": "c72257946de36a1626a17a6354f22d0852bef78b441a99b7eef8f516ee914334",
+        "cm_collectors_html/src/components/search/searchFavoritePopover.vue": "adcbbc599d69a8824a5a9e9ddd5fd1ac0d4df2d84abec63e66910a3fd6e81a8a",
+        "cm_collectors_html/src/components/setting/aiTag/aiTagSetting.vue": "bff4bceb64a4eda60425f1d28c6bc99d42443eb18db27851923efb88dd482500",
+        "cm_collectors_html/src/common/tag.ts": "6ada033af4407b1dbc3141735333b2e008ac68190de0fd5598c2cddebe2bcec1",
+        "cm_collectors_html/src/components/tag/tagListDrawer.vue": "4fdac9bd21b371e46cd14bbeefeebf775960c8a3d678f07ec72c0c2f2d57d462"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "tags-transfer",
+      "chapter": "04-tags",
+      "title": "标签导入、导出与重命名",
+      "pdf_page": 27,
+      "bottom": 733.0,
+      "image": "tag-manage",
+      "source_hashes": {
+        "cm_collectors_html/src/components/tag/tagList.vue": "873d6b5c439e6089df40b91aaa7c358ddc6fc48bb7adbc5dc280f9c9c88b9403",
+        "cm_collectors_html/src/components/tag/tagLogic.vue": "65ea57f7c341a0ddc542e5ac7d1cac948503ae9fe98adbb2b4abaee94f8511b6",
+        "cm_collectors_html/src/components/resource/resourceSetTagDialog.vue": "7dd18847a529b25bb2f3898ce9f641c545e3441390a9bc4ae07d61a29c5f0024",
+        "cm_collectors_html/src/components/resource/resourceSetTagBatchDialog.vue": "c72257946de36a1626a17a6354f22d0852bef78b441a99b7eef8f516ee914334",
+        "cm_collectors_html/src/components/search/searchFavoritePopover.vue": "adcbbc599d69a8824a5a9e9ddd5fd1ac0d4df2d84abec63e66910a3fd6e81a8a",
+        "cm_collectors_html/src/components/setting/aiTag/aiTagSetting.vue": "bff4bceb64a4eda60425f1d28c6bc99d42443eb18db27851923efb88dd482500",
+        "cm_collectors_html/src/common/tag.ts": "6ada033af4407b1dbc3141735333b2e008ac68190de0fd5598c2cddebe2bcec1",
+        "cm_collectors_html/src/components/tag/tagListDrawer.vue": "4fdac9bd21b371e46cd14bbeefeebf775960c8a3d678f07ec72c0c2f2d57d462"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "tags-single",
+      "chapter": "04-tags",
+      "title": "给一条资源打标签",
+      "pdf_page": 28,
+      "bottom": 733.0,
+      "image": "tag-single",
+      "source_hashes": {
+        "cm_collectors_html/src/components/tag/tagList.vue": "873d6b5c439e6089df40b91aaa7c358ddc6fc48bb7adbc5dc280f9c9c88b9403",
+        "cm_collectors_html/src/components/tag/tagLogic.vue": "65ea57f7c341a0ddc542e5ac7d1cac948503ae9fe98adbb2b4abaee94f8511b6",
+        "cm_collectors_html/src/components/resource/resourceSetTagDialog.vue": "7dd18847a529b25bb2f3898ce9f641c545e3441390a9bc4ae07d61a29c5f0024",
+        "cm_collectors_html/src/components/resource/resourceSetTagBatchDialog.vue": "c72257946de36a1626a17a6354f22d0852bef78b441a99b7eef8f516ee914334",
+        "cm_collectors_html/src/components/search/searchFavoritePopover.vue": "adcbbc599d69a8824a5a9e9ddd5fd1ac0d4df2d84abec63e66910a3fd6e81a8a",
+        "cm_collectors_html/src/components/setting/aiTag/aiTagSetting.vue": "bff4bceb64a4eda60425f1d28c6bc99d42443eb18db27851923efb88dd482500",
+        "cm_collectors_html/src/common/tag.ts": "6ada033af4407b1dbc3141735333b2e008ac68190de0fd5598c2cddebe2bcec1",
+        "cm_collectors_html/src/components/tag/tagListDrawer.vue": "4fdac9bd21b371e46cd14bbeefeebf775960c8a3d678f07ec72c0c2f2d57d462"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "tags-batch-add",
+      "chapter": "04-tags",
+      "title": "批量给资源添加标签",
+      "pdf_page": 29,
+      "bottom": 733.0,
+      "image": "tag-batch",
+      "source_hashes": {
+        "cm_collectors_html/src/components/tag/tagList.vue": "873d6b5c439e6089df40b91aaa7c358ddc6fc48bb7adbc5dc280f9c9c88b9403",
+        "cm_collectors_html/src/components/tag/tagLogic.vue": "65ea57f7c341a0ddc542e5ac7d1cac948503ae9fe98adbb2b4abaee94f8511b6",
+        "cm_collectors_html/src/components/resource/resourceSetTagDialog.vue": "7dd18847a529b25bb2f3898ce9f641c545e3441390a9bc4ae07d61a29c5f0024",
+        "cm_collectors_html/src/components/resource/resourceSetTagBatchDialog.vue": "c72257946de36a1626a17a6354f22d0852bef78b441a99b7eef8f516ee914334",
+        "cm_collectors_html/src/components/search/searchFavoritePopover.vue": "adcbbc599d69a8824a5a9e9ddd5fd1ac0d4df2d84abec63e66910a3fd6e81a8a",
+        "cm_collectors_html/src/components/setting/aiTag/aiTagSetting.vue": "bff4bceb64a4eda60425f1d28c6bc99d42443eb18db27851923efb88dd482500",
+        "cm_collectors_html/src/common/tag.ts": "6ada033af4407b1dbc3141735333b2e008ac68190de0fd5598c2cddebe2bcec1",
+        "cm_collectors_html/src/components/tag/tagListDrawer.vue": "4fdac9bd21b371e46cd14bbeefeebf775960c8a3d678f07ec72c0c2f2d57d462"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "tags-batch-remove",
+      "chapter": "04-tags",
+      "title": "批量移除标签与批量管理",
+      "pdf_page": 30,
+      "bottom": 733.0,
+      "image": "management",
+      "source_hashes": {
+        "cm_collectors_html/src/components/tag/tagList.vue": "873d6b5c439e6089df40b91aaa7c358ddc6fc48bb7adbc5dc280f9c9c88b9403",
+        "cm_collectors_html/src/components/tag/tagLogic.vue": "65ea57f7c341a0ddc542e5ac7d1cac948503ae9fe98adbb2b4abaee94f8511b6",
+        "cm_collectors_html/src/components/resource/resourceSetTagDialog.vue": "7dd18847a529b25bb2f3898ce9f641c545e3441390a9bc4ae07d61a29c5f0024",
+        "cm_collectors_html/src/components/resource/resourceSetTagBatchDialog.vue": "c72257946de36a1626a17a6354f22d0852bef78b441a99b7eef8f516ee914334",
+        "cm_collectors_html/src/components/search/searchFavoritePopover.vue": "adcbbc599d69a8824a5a9e9ddd5fd1ac0d4df2d84abec63e66910a3fd6e81a8a",
+        "cm_collectors_html/src/components/setting/aiTag/aiTagSetting.vue": "bff4bceb64a4eda60425f1d28c6bc99d42443eb18db27851923efb88dd482500",
+        "cm_collectors_html/src/common/tag.ts": "6ada033af4407b1dbc3141735333b2e008ac68190de0fd5598c2cddebe2bcec1",
+        "cm_collectors_html/src/components/tag/tagListDrawer.vue": "4fdac9bd21b371e46cd14bbeefeebf775960c8a3d678f07ec72c0c2f2d57d462"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "tags-logic",
+      "chapter": "04-tags",
+      "title": "单选、或、与、非怎么用",
+      "pdf_page": 31,
+      "bottom": 733.0,
+      "image": "tag-logic",
+      "source_hashes": {
+        "cm_collectors_html/src/components/tag/tagList.vue": "873d6b5c439e6089df40b91aaa7c358ddc6fc48bb7adbc5dc280f9c9c88b9403",
+        "cm_collectors_html/src/components/tag/tagLogic.vue": "65ea57f7c341a0ddc542e5ac7d1cac948503ae9fe98adbb2b4abaee94f8511b6",
+        "cm_collectors_html/src/components/resource/resourceSetTagDialog.vue": "7dd18847a529b25bb2f3898ce9f641c545e3441390a9bc4ae07d61a29c5f0024",
+        "cm_collectors_html/src/components/resource/resourceSetTagBatchDialog.vue": "c72257946de36a1626a17a6354f22d0852bef78b441a99b7eef8f516ee914334",
+        "cm_collectors_html/src/components/search/searchFavoritePopover.vue": "adcbbc599d69a8824a5a9e9ddd5fd1ac0d4df2d84abec63e66910a3fd6e81a8a",
+        "cm_collectors_html/src/components/setting/aiTag/aiTagSetting.vue": "bff4bceb64a4eda60425f1d28c6bc99d42443eb18db27851923efb88dd482500",
+        "cm_collectors_html/src/common/tag.ts": "6ada033af4407b1dbc3141735333b2e008ac68190de0fd5598c2cddebe2bcec1",
+        "cm_collectors_html/src/components/tag/tagListDrawer.vue": "4fdac9bd21b371e46cd14bbeefeebf775960c8a3d678f07ec72c0c2f2d57d462"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "tags-favorites",
+      "chapter": "04-tags",
+      "title": "把常用组合保存为搜索收藏",
+      "pdf_page": 32,
+      "bottom": 733.0,
+      "image": "search-favorite",
+      "source_hashes": {
+        "cm_collectors_html/src/components/tag/tagList.vue": "873d6b5c439e6089df40b91aaa7c358ddc6fc48bb7adbc5dc280f9c9c88b9403",
+        "cm_collectors_html/src/components/tag/tagLogic.vue": "65ea57f7c341a0ddc542e5ac7d1cac948503ae9fe98adbb2b4abaee94f8511b6",
+        "cm_collectors_html/src/components/resource/resourceSetTagDialog.vue": "7dd18847a529b25bb2f3898ce9f641c545e3441390a9bc4ae07d61a29c5f0024",
+        "cm_collectors_html/src/components/resource/resourceSetTagBatchDialog.vue": "c72257946de36a1626a17a6354f22d0852bef78b441a99b7eef8f516ee914334",
+        "cm_collectors_html/src/components/search/searchFavoritePopover.vue": "adcbbc599d69a8824a5a9e9ddd5fd1ac0d4df2d84abec63e66910a3fd6e81a8a",
+        "cm_collectors_html/src/components/setting/aiTag/aiTagSetting.vue": "bff4bceb64a4eda60425f1d28c6bc99d42443eb18db27851923efb88dd482500",
+        "cm_collectors_html/src/common/tag.ts": "6ada033af4407b1dbc3141735333b2e008ac68190de0fd5598c2cddebe2bcec1",
+        "cm_collectors_html/src/components/tag/tagListDrawer.vue": "4fdac9bd21b371e46cd14bbeefeebf775960c8a3d678f07ec72c0c2f2d57d462"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "tags-ai",
+      "chapter": "04-tags",
+      "title": "AI 自动标签：使用已有标签池",
+      "pdf_page": 33,
+      "bottom": 733.0,
+      "image": "setting-ai-tags",
+      "source_hashes": {
+        "cm_collectors_html/src/components/tag/tagList.vue": "873d6b5c439e6089df40b91aaa7c358ddc6fc48bb7adbc5dc280f9c9c88b9403",
+        "cm_collectors_html/src/components/tag/tagLogic.vue": "65ea57f7c341a0ddc542e5ac7d1cac948503ae9fe98adbb2b4abaee94f8511b6",
+        "cm_collectors_html/src/components/resource/resourceSetTagDialog.vue": "7dd18847a529b25bb2f3898ce9f641c545e3441390a9bc4ae07d61a29c5f0024",
+        "cm_collectors_html/src/components/resource/resourceSetTagBatchDialog.vue": "c72257946de36a1626a17a6354f22d0852bef78b441a99b7eef8f516ee914334",
+        "cm_collectors_html/src/components/search/searchFavoritePopover.vue": "adcbbc599d69a8824a5a9e9ddd5fd1ac0d4df2d84abec63e66910a3fd6e81a8a",
+        "cm_collectors_html/src/components/setting/aiTag/aiTagSetting.vue": "bff4bceb64a4eda60425f1d28c6bc99d42443eb18db27851923efb88dd482500",
+        "cm_collectors_html/src/common/tag.ts": "6ada033af4407b1dbc3141735333b2e008ac68190de0fd5598c2cddebe2bcec1",
+        "cm_collectors_html/src/components/tag/tagListDrawer.vue": "4fdac9bd21b371e46cd14bbeefeebf775960c8a3d678f07ec72c0c2f2d57d462"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "resource-create",
+      "chapter": "05-resource",
+      "title": "手动添加与编辑资源",
+      "pdf_page": 34,
+      "bottom": 733.0,
+      "image": "resource-edit",
+      "source_hashes": {
+        "cm_collectors_html/src/components/resource/resourceFormDrawer.vue": "c45b6ac1dc1faf86385d053bfc7e2d828340bbdc39f0aea6f8e17c472fc88fba",
+        "cm_collectors_html/src/components/content/contentRightClickMenu.vue": "ad00f3b51669cd4d0c204773ff47a71eaf9dcef577ecbd5f23b440fef44cb51e",
+        "cm_collectors_html/src/components/details/detailsVisibility.ts": "1196e6bd5fd87a9d47fbb33097fa02424b18f26a1dad15c29d4be25d68901af3"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "resource-series",
+      "chapter": "05-resource",
+      "title": "一条资源管理多个分集",
+      "pdf_page": 35,
+      "bottom": 733.0,
+      "image": "resource-edit",
+      "source_hashes": {
+        "cm_collectors_html/src/components/resource/resourceFormDrawer.vue": "c45b6ac1dc1faf86385d053bfc7e2d828340bbdc39f0aea6f8e17c472fc88fba",
+        "cm_collectors_html/src/components/content/contentRightClickMenu.vue": "ad00f3b51669cd4d0c204773ff47a71eaf9dcef577ecbd5f23b440fef44cb51e",
+        "cm_collectors_html/src/components/details/detailsVisibility.ts": "1196e6bd5fd87a9d47fbb33097fa02424b18f26a1dad15c29d4be25d68901af3"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "resource-menu",
+      "chapter": "05-resource",
+      "title": "右键菜单与资源排序",
+      "pdf_page": 36,
+      "bottom": 733.0,
+      "image": "resource-menu",
+      "source_hashes": {
+        "cm_collectors_html/src/components/resource/resourceFormDrawer.vue": "c45b6ac1dc1faf86385d053bfc7e2d828340bbdc39f0aea6f8e17c472fc88fba",
+        "cm_collectors_html/src/components/content/contentRightClickMenu.vue": "ad00f3b51669cd4d0c204773ff47a71eaf9dcef577ecbd5f23b440fef44cb51e",
+        "cm_collectors_html/src/components/details/detailsVisibility.ts": "1196e6bd5fd87a9d47fbb33097fa02424b18f26a1dad15c29d4be25d68901af3"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "resource-details",
+      "chapter": "05-resource",
+      "title": "详情、剧照与信息显示",
+      "pdf_page": 37,
+      "bottom": 733.0,
+      "image": "player",
+      "source_hashes": {
+        "cm_collectors_html/src/components/resource/resourceFormDrawer.vue": "c45b6ac1dc1faf86385d053bfc7e2d828340bbdc39f0aea6f8e17c472fc88fba",
+        "cm_collectors_html/src/components/content/contentRightClickMenu.vue": "ad00f3b51669cd4d0c204773ff47a71eaf9dcef577ecbd5f23b440fef44cb51e",
+        "cm_collectors_html/src/components/details/detailsVisibility.ts": "1196e6bd5fd87a9d47fbb33097fa02424b18f26a1dad15c29d4be25d68901af3"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "import-scan",
+      "chapter": "06-import",
+      "title": "批量扫描导入媒体",
+      "pdf_page": 38,
+      "bottom": 733.0,
+      "image": "import",
+      "source_hashes": {
+        "cm_collectors_html/src/components/importResource/modeScanDisk.vue": "1b21745f447949a9a0e60b48a740615e379805276e586a2fa52b78b4579dadaa",
+        "cm_collectors_html/src/components/setting/sharedConfig/SharedImportFields.vue": "9bcfb7ce73858dc3b26773c90542027b4834249b2ea0869b25b9054103e99693",
+        "cm_collectors_html/src/components/setting/sharedConfig/SharedScraperFields.vue": "e62a978415cf131eb10f632735bfb126b06aee1b030df108544668b2fa18c3f2",
+        "cm_collectors_html/src/components/serverFileManagement/serverFileManagement.vue": "950cd55be4e3a68cebfe48f0b3ca54545805c99d505b7a8541504777a4fab225"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "files-manage",
+      "chapter": "06-import",
+      "title": "服务端文件管理与文件选择",
+      "pdf_page": 39,
+      "bottom": 733.0,
+      "image": "file-manager",
+      "source_hashes": {
+        "cm_collectors_html/src/components/importResource/modeScanDisk.vue": "1b21745f447949a9a0e60b48a740615e379805276e586a2fa52b78b4579dadaa",
+        "cm_collectors_html/src/components/setting/sharedConfig/SharedImportFields.vue": "9bcfb7ce73858dc3b26773c90542027b4834249b2ea0869b25b9054103e99693",
+        "cm_collectors_html/src/components/setting/sharedConfig/SharedScraperFields.vue": "e62a978415cf131eb10f632735bfb126b06aee1b030df108544668b2fa18c3f2",
+        "cm_collectors_html/src/components/serverFileManagement/serverFileManagement.vue": "950cd55be4e3a68cebfe48f0b3ca54545805c99d505b7a8541504777a4fab225"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "import-nfo",
+      "chapter": "06-import",
+      "title": "NFO、合并剧集与导入顺序",
+      "pdf_page": 40,
+      "bottom": 733.0,
+      "image": "import",
+      "source_hashes": {
+        "cm_collectors_html/src/components/importResource/modeScanDisk.vue": "1b21745f447949a9a0e60b48a740615e379805276e586a2fa52b78b4579dadaa",
+        "cm_collectors_html/src/components/setting/sharedConfig/SharedImportFields.vue": "9bcfb7ce73858dc3b26773c90542027b4834249b2ea0869b25b9054103e99693",
+        "cm_collectors_html/src/components/setting/sharedConfig/SharedScraperFields.vue": "e62a978415cf131eb10f632735bfb126b06aee1b030df108544668b2fa18c3f2",
+        "cm_collectors_html/src/components/serverFileManagement/serverFileManagement.vue": "950cd55be4e3a68cebfe48f0b3ca54545805c99d505b7a8541504777a4fab225"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "scraper-resource",
+      "chapter": "06-import",
+      "title": "刮削资源与人物资料",
+      "pdf_page": 41,
+      "bottom": 733.0,
+      "image": "scraper",
+      "source_hashes": {
+        "cm_collectors_html/src/components/importResource/modeScanDisk.vue": "1b21745f447949a9a0e60b48a740615e379805276e586a2fa52b78b4579dadaa",
+        "cm_collectors_html/src/components/setting/sharedConfig/SharedImportFields.vue": "9bcfb7ce73858dc3b26773c90542027b4834249b2ea0869b25b9054103e99693",
+        "cm_collectors_html/src/components/setting/sharedConfig/SharedScraperFields.vue": "e62a978415cf131eb10f632735bfb126b06aee1b030df108544668b2fa18c3f2",
+        "cm_collectors_html/src/components/serverFileManagement/serverFileManagement.vue": "950cd55be4e3a68cebfe48f0b3ca54545805c99d505b7a8541504777a4fab225"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "play-video",
+      "chapter": "07-play",
+      "title": "内置视频播放与播放列表",
+      "pdf_page": 42,
+      "bottom": 733.0,
+      "image": "player",
+      "source_hashes": {
+        "cm_collectors_html/src/common/play.ts": "6fa178c90658e0289dd842ea6d9a3e13e636861cbc7602c14795d98a37c07259",
+        "cm_collectors_html/src/components/play/MomentTools.vue": "76f57fa42074a4fddb5b6cac0b33bc613101af582e7d214c9abc71844b93d631",
+        "cm_collectors_html/src/views/MomentsView.vue": "faeb80d93ee5894e5bfaf3e31723b03067df91884909b276326f28692b1ebb9b",
+        "cm_collectors_html/src/components/setting/VideoPreviewSetting.vue": "3cd7ae3045d36842d00061ae73d4a4e2f0c7f0b1e34c62df95578a75748ccddf"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "play-moment-create",
+      "chapter": "07-play",
+      "title": "收藏一个时刻或一段视频",
+      "pdf_page": 43,
+      "bottom": 716.0,
+      "image": "player-moments",
+      "source_hashes": {
+        "cm_collectors_html/src/common/play.ts": "6fa178c90658e0289dd842ea6d9a3e13e636861cbc7602c14795d98a37c07259",
+        "cm_collectors_html/src/components/play/MomentTools.vue": "76f57fa42074a4fddb5b6cac0b33bc613101af582e7d214c9abc71844b93d631",
+        "cm_collectors_html/src/views/MomentsView.vue": "faeb80d93ee5894e5bfaf3e31723b03067df91884909b276326f28692b1ebb9b",
+        "cm_collectors_html/src/components/setting/VideoPreviewSetting.vue": "3cd7ae3045d36842d00061ae73d4a4e2f0c7f0b1e34c62df95578a75748ccddf"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "play-moment-library",
+      "chapter": "07-play",
+      "title": "按文件库集中查看片段收藏",
+      "pdf_page": 44,
+      "bottom": 733.0,
+      "image": "moments",
+      "source_hashes": {
+        "cm_collectors_html/src/common/play.ts": "6fa178c90658e0289dd842ea6d9a3e13e636861cbc7602c14795d98a37c07259",
+        "cm_collectors_html/src/components/play/MomentTools.vue": "76f57fa42074a4fddb5b6cac0b33bc613101af582e7d214c9abc71844b93d631",
+        "cm_collectors_html/src/views/MomentsView.vue": "faeb80d93ee5894e5bfaf3e31723b03067df91884909b276326f28692b1ebb9b",
+        "cm_collectors_html/src/components/setting/VideoPreviewSetting.vue": "3cd7ae3045d36842d00061ae73d4a4e2f0c7f0b1e34c62df95578a75748ccddf"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "play-previews",
+      "chapter": "07-play",
+      "title": "预览生成与缓存管理",
+      "pdf_page": 45,
+      "bottom": 733.0,
+      "image": "player-moments",
+      "source_hashes": {
+        "cm_collectors_html/src/common/play.ts": "6fa178c90658e0289dd842ea6d9a3e13e636861cbc7602c14795d98a37c07259",
+        "cm_collectors_html/src/components/play/MomentTools.vue": "76f57fa42074a4fddb5b6cac0b33bc613101af582e7d214c9abc71844b93d631",
+        "cm_collectors_html/src/views/MomentsView.vue": "faeb80d93ee5894e5bfaf3e31723b03067df91884909b276326f28692b1ebb9b",
+        "cm_collectors_html/src/components/setting/VideoPreviewSetting.vue": "3cd7ae3045d36842d00061ae73d4a4e2f0c7f0b1e34c62df95578a75748ccddf"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "play-images",
+      "chapter": "07-play",
+      "title": "图集浏览与漫画阅读",
+      "pdf_page": 46,
+      "bottom": 733.0,
+      "image": "atlas",
+      "source_hashes": {
+        "cm_collectors_html/src/common/play.ts": "6fa178c90658e0289dd842ea6d9a3e13e636861cbc7602c14795d98a37c07259",
+        "cm_collectors_html/src/components/play/MomentTools.vue": "76f57fa42074a4fddb5b6cac0b33bc613101af582e7d214c9abc71844b93d631",
+        "cm_collectors_html/src/views/MomentsView.vue": "faeb80d93ee5894e5bfaf3e31723b03067df91884909b276326f28692b1ebb9b",
+        "cm_collectors_html/src/components/setting/VideoPreviewSetting.vue": "3cd7ae3045d36842d00061ae73d4a4e2f0c7f0b1e34c62df95578a75748ccddf"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "performer-browse",
+      "chapter": "08-performers",
+      "title": "浏览人物与关联资源",
+      "pdf_page": 47,
+      "bottom": 733.0,
+      "image": "performers",
+      "source_hashes": {
+        "cm_collectors_html/src/components/performer/performerDataList.vue": "ae73f93f78fe1c733bd0cdbad5155addc030edd3dadc9e6f9add78cb7e1d71c5",
+        "cm_collectors_html/src/components/performer/performerBatchOperationDialog.vue": "db4c7691a3f299e6b04a8c47ee1e4dba9e7965581f6d46ce57efdaba25189ce5",
+        "cm_collectors_html/src/views/performerTagManageView.vue": "7e24aef30cb44b8928dd983246a4cd8b73b7cfb6f570cc9f630dbdafe8995d4a",
+        "cm_collectors_html/src/components/setting/performerAvatarLibrary/performerAvatarLibrarySetting.vue": "3b7f5003e75f79f6454196fafefd16e379f7544a8af25e158ffbf90fcba7b632",
+        "cm_collectors_html/src/components/setting/performerDatabaseSetting/importPerformerDatabaseDialog.vue": "74bada03f9170885cc7feb67db883553f82fb1feb3b7082e3e8420db0b997701",
+        "cm_collectors_html/src/components/setting/performerDatabaseSetting/exportPerformerDatabaseDialog.vue": "17b66265ee7da8c4e0b94e7c6ba45987ee128e2c6c68eb5a8124084745f8758b",
+        "cm_collectors_server/processors/performer.processors.go": "adf18f830d92bb61b1bf166f2d035778244bf94d42925cd8206c8f5a34dbc220"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "performer-batch",
+      "chapter": "08-performers",
+      "title": "批量管理、迁移与回收站",
+      "pdf_page": 48,
+      "bottom": 733.0,
+      "image": "performer-batch",
+      "source_hashes": {
+        "cm_collectors_html/src/components/performer/performerDataList.vue": "ae73f93f78fe1c733bd0cdbad5155addc030edd3dadc9e6f9add78cb7e1d71c5",
+        "cm_collectors_html/src/components/performer/performerBatchOperationDialog.vue": "db4c7691a3f299e6b04a8c47ee1e4dba9e7965581f6d46ce57efdaba25189ce5",
+        "cm_collectors_html/src/views/performerTagManageView.vue": "7e24aef30cb44b8928dd983246a4cd8b73b7cfb6f570cc9f630dbdafe8995d4a",
+        "cm_collectors_html/src/components/setting/performerAvatarLibrary/performerAvatarLibrarySetting.vue": "3b7f5003e75f79f6454196fafefd16e379f7544a8af25e158ffbf90fcba7b632",
+        "cm_collectors_html/src/components/setting/performerDatabaseSetting/importPerformerDatabaseDialog.vue": "74bada03f9170885cc7feb67db883553f82fb1feb3b7082e3e8420db0b997701",
+        "cm_collectors_html/src/components/setting/performerDatabaseSetting/exportPerformerDatabaseDialog.vue": "17b66265ee7da8c4e0b94e7c6ba45987ee128e2c6c68eb5a8124084745f8758b",
+        "cm_collectors_server/processors/performer.processors.go": "adf18f830d92bb61b1bf166f2d035778244bf94d42925cd8206c8f5a34dbc220"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "performer-transfer",
+      "chapter": "08-performers",
+      "title": "演员集导入、导出与迁移",
+      "pdf_page": 49,
+      "bottom": 733.0,
+      "image": "setting-performer-libraries",
+      "source_hashes": {
+        "cm_collectors_html/src/components/performer/performerDataList.vue": "ae73f93f78fe1c733bd0cdbad5155addc030edd3dadc9e6f9add78cb7e1d71c5",
+        "cm_collectors_html/src/components/performer/performerBatchOperationDialog.vue": "db4c7691a3f299e6b04a8c47ee1e4dba9e7965581f6d46ce57efdaba25189ce5",
+        "cm_collectors_html/src/views/performerTagManageView.vue": "7e24aef30cb44b8928dd983246a4cd8b73b7cfb6f570cc9f630dbdafe8995d4a",
+        "cm_collectors_html/src/components/setting/performerAvatarLibrary/performerAvatarLibrarySetting.vue": "3b7f5003e75f79f6454196fafefd16e379f7544a8af25e158ffbf90fcba7b632",
+        "cm_collectors_html/src/components/setting/performerDatabaseSetting/importPerformerDatabaseDialog.vue": "74bada03f9170885cc7feb67db883553f82fb1feb3b7082e3e8420db0b997701",
+        "cm_collectors_html/src/components/setting/performerDatabaseSetting/exportPerformerDatabaseDialog.vue": "17b66265ee7da8c4e0b94e7c6ba45987ee128e2c6c68eb5a8124084745f8758b",
+        "cm_collectors_server/processors/performer.processors.go": "adf18f830d92bb61b1bf166f2d035778244bf94d42925cd8206c8f5a34dbc220"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "performer-tags",
+      "chapter": "08-performers",
+      "title": "给人物建立独立标签体系",
+      "pdf_page": 50,
+      "bottom": 733.0,
+      "image": "performer-tags",
+      "source_hashes": {
+        "cm_collectors_html/src/components/performer/performerDataList.vue": "ae73f93f78fe1c733bd0cdbad5155addc030edd3dadc9e6f9add78cb7e1d71c5",
+        "cm_collectors_html/src/components/performer/performerBatchOperationDialog.vue": "db4c7691a3f299e6b04a8c47ee1e4dba9e7965581f6d46ce57efdaba25189ce5",
+        "cm_collectors_html/src/views/performerTagManageView.vue": "7e24aef30cb44b8928dd983246a4cd8b73b7cfb6f570cc9f630dbdafe8995d4a",
+        "cm_collectors_html/src/components/setting/performerAvatarLibrary/performerAvatarLibrarySetting.vue": "3b7f5003e75f79f6454196fafefd16e379f7544a8af25e158ffbf90fcba7b632",
+        "cm_collectors_html/src/components/setting/performerDatabaseSetting/importPerformerDatabaseDialog.vue": "74bada03f9170885cc7feb67db883553f82fb1feb3b7082e3e8420db0b997701",
+        "cm_collectors_html/src/components/setting/performerDatabaseSetting/exportPerformerDatabaseDialog.vue": "17b66265ee7da8c4e0b94e7c6ba45987ee128e2c6c68eb5a8124084745f8758b",
+        "cm_collectors_server/processors/performer.processors.go": "adf18f830d92bb61b1bf166f2d035778244bf94d42925cd8206c8f5a34dbc220"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "performer-avatar",
+      "chapter": "08-performers",
+      "title": "头像库与批量更新",
+      "pdf_page": 51,
+      "bottom": 733.0,
+      "image": "setting-avatars",
+      "source_hashes": {
+        "cm_collectors_html/src/components/performer/performerDataList.vue": "ae73f93f78fe1c733bd0cdbad5155addc030edd3dadc9e6f9add78cb7e1d71c5",
+        "cm_collectors_html/src/components/performer/performerBatchOperationDialog.vue": "db4c7691a3f299e6b04a8c47ee1e4dba9e7965581f6d46ce57efdaba25189ce5",
+        "cm_collectors_html/src/views/performerTagManageView.vue": "7e24aef30cb44b8928dd983246a4cd8b73b7cfb6f570cc9f630dbdafe8995d4a",
+        "cm_collectors_html/src/components/setting/performerAvatarLibrary/performerAvatarLibrarySetting.vue": "3b7f5003e75f79f6454196fafefd16e379f7544a8af25e158ffbf90fcba7b632",
+        "cm_collectors_html/src/components/setting/performerDatabaseSetting/importPerformerDatabaseDialog.vue": "74bada03f9170885cc7feb67db883553f82fb1feb3b7082e3e8420db0b997701",
+        "cm_collectors_html/src/components/setting/performerDatabaseSetting/exportPerformerDatabaseDialog.vue": "17b66265ee7da8c4e0b94e7c6ba45987ee128e2c6c68eb5a8124084745f8758b",
+        "cm_collectors_server/processors/performer.processors.go": "adf18f830d92bb61b1bf166f2d035778244bf94d42925cd8206c8f5a34dbc220"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "library-create",
+      "chapter": "02-library",
+      "title": "创建文件库与关联演员集",
+      "pdf_page": 52,
+      "bottom": 733.0,
+      "image": "setting-libraries",
+      "source_hashes": {
+        "cm_collectors_html/src/components/setting/fileDatabaseSetting/fileDatabaseSetting.vue": "73e1809ea5bb3dfc37913850d417f96a0795d606ba0a372791cd45a38b756be8",
+        "cm_collectors_html/src/components/setting/fileDatabaseSetting/fileSettingData.vue": "9d857023948c99baff3bbde5567df950ef22f5a3fd0d502e17e6655fdf917b92",
+        "cm_collectors_html/src/components/setting/SharedConfigBar.vue": "1bdd0a8097f73d17d57d55354e1dde367abc0c61c6744423c9281838e78182ee",
+        "cm_collectors_html/src/common/filesBasesConfig.ts": "9e7f1d01f3014f3755823b50a31ff9c80f07e966af97e5181f0c0f9fc29b9438",
+        "cm_collectors_html/src/components/setting/fileDatabaseSetting/pathReplaceDialog.vue": "d134a5783842e38612c08b18e801e1ba97d10a8fccb8296bfa59f350097b839f"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "library-shared",
+      "chapter": "02-library",
+      "title": "让多个库跟随公共配置",
+      "pdf_page": 53,
+      "bottom": 733.0,
+      "image": "shared-display",
+      "source_hashes": {
+        "cm_collectors_html/src/components/setting/fileDatabaseSetting/fileDatabaseSetting.vue": "73e1809ea5bb3dfc37913850d417f96a0795d606ba0a372791cd45a38b756be8",
+        "cm_collectors_html/src/components/setting/fileDatabaseSetting/fileSettingData.vue": "9d857023948c99baff3bbde5567df950ef22f5a3fd0d502e17e6655fdf917b92",
+        "cm_collectors_html/src/components/setting/SharedConfigBar.vue": "1bdd0a8097f73d17d57d55354e1dde367abc0c61c6744423c9281838e78182ee",
+        "cm_collectors_html/src/common/filesBasesConfig.ts": "9e7f1d01f3014f3755823b50a31ff9c80f07e966af97e5181f0c0f9fc29b9438",
+        "cm_collectors_html/src/components/setting/fileDatabaseSetting/pathReplaceDialog.vue": "d134a5783842e38612c08b18e801e1ba97d10a8fccb8296bfa59f350097b839f"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "library-transfer",
+      "chapter": "02-library",
+      "title": "导出与导入文件库配置",
+      "pdf_page": 54,
+      "bottom": 733.0,
+      "image": "setting-libraries",
+      "source_hashes": {
+        "cm_collectors_html/src/components/setting/fileDatabaseSetting/fileDatabaseSetting.vue": "73e1809ea5bb3dfc37913850d417f96a0795d606ba0a372791cd45a38b756be8",
+        "cm_collectors_html/src/components/setting/fileDatabaseSetting/fileSettingData.vue": "9d857023948c99baff3bbde5567df950ef22f5a3fd0d502e17e6655fdf917b92",
+        "cm_collectors_html/src/components/setting/SharedConfigBar.vue": "1bdd0a8097f73d17d57d55354e1dde367abc0c61c6744423c9281838e78182ee",
+        "cm_collectors_html/src/common/filesBasesConfig.ts": "9e7f1d01f3014f3755823b50a31ff9c80f07e966af97e5181f0c0f9fc29b9438",
+        "cm_collectors_html/src/components/setting/fileDatabaseSetting/pathReplaceDialog.vue": "d134a5783842e38612c08b18e801e1ba97d10a8fccb8296bfa59f350097b839f"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "library-paths",
+      "chapter": "02-library",
+      "title": "媒体搬家、路径替换与清理",
+      "pdf_page": 55,
+      "bottom": 733.0,
+      "image": "library-paths",
+      "source_hashes": {
+        "cm_collectors_html/src/components/setting/fileDatabaseSetting/fileDatabaseSetting.vue": "73e1809ea5bb3dfc37913850d417f96a0795d606ba0a372791cd45a38b756be8",
+        "cm_collectors_html/src/components/setting/fileDatabaseSetting/fileSettingData.vue": "9d857023948c99baff3bbde5567df950ef22f5a3fd0d502e17e6655fdf917b92",
+        "cm_collectors_html/src/components/setting/SharedConfigBar.vue": "1bdd0a8097f73d17d57d55354e1dde367abc0c61c6744423c9281838e78182ee",
+        "cm_collectors_html/src/common/filesBasesConfig.ts": "9e7f1d01f3014f3755823b50a31ff9c80f07e966af97e5181f0c0f9fc29b9438",
+        "cm_collectors_html/src/components/setting/fileDatabaseSetting/pathReplaceDialog.vue": "d134a5783842e38612c08b18e801e1ba97d10a8fccb8296bfa59f350097b839f"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "video-metadata",
+      "chapter": "09-video",
+      "title": "采集真实视频参数",
+      "pdf_page": 56,
+      "bottom": 733.0,
+      "image": "metadata-result",
+      "source_hashes": {
+        "cm_collectors_html/src/components/setting/videoMetadata/videoMetadataSetting.vue": "871689e894a5c7a41311c1f986f90a8d2fcf9719dd56fee7c63856c1b96c09a9",
+        "cm_collectors_html/src/components/setting/duplicateDetection/duplicateDetection.vue": "8b033d8b417dd58cdd31cf32a3c7fb2105ed62c48f6ff53cd0b5903393d13c87",
+        "cm_collectors_html/src/components/setting/videoTranscode/videoTranscodeSetting.vue": "f8f2f64e1c6254ff7ccae1af07389fa41f459054202c9fa48e993d55dd5729cc",
+        "cm_collectors_html/src/components/setting/videoTranscode/videoTranscodeEditor.vue": "fc89c3d46a9956c5001563a873ecf41bc662dd21607d6294cf81d37e3d981c3f"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "video-duplicates",
+      "chapter": "09-video",
+      "title": "建立指纹并查找相似视频",
+      "pdf_page": 57,
+      "bottom": 733.0,
+      "image": "duplicate-results",
+      "source_hashes": {
+        "cm_collectors_html/src/components/setting/videoMetadata/videoMetadataSetting.vue": "871689e894a5c7a41311c1f986f90a8d2fcf9719dd56fee7c63856c1b96c09a9",
+        "cm_collectors_html/src/components/setting/duplicateDetection/duplicateDetection.vue": "8b033d8b417dd58cdd31cf32a3c7fb2105ed62c48f6ff53cd0b5903393d13c87",
+        "cm_collectors_html/src/components/setting/videoTranscode/videoTranscodeSetting.vue": "f8f2f64e1c6254ff7ccae1af07389fa41f459054202c9fa48e993d55dd5729cc",
+        "cm_collectors_html/src/components/setting/videoTranscode/videoTranscodeEditor.vue": "fc89c3d46a9956c5001563a873ecf41bc662dd21607d6294cf81d37e3d981c3f"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "video-compare",
+      "chapter": "09-video",
+      "title": "同屏复核后再删除",
+      "pdf_page": 58,
+      "bottom": 733.0,
+      "image": "duplicate-compare",
+      "source_hashes": {
+        "cm_collectors_html/src/components/setting/videoMetadata/videoMetadataSetting.vue": "871689e894a5c7a41311c1f986f90a8d2fcf9719dd56fee7c63856c1b96c09a9",
+        "cm_collectors_html/src/components/setting/duplicateDetection/duplicateDetection.vue": "8b033d8b417dd58cdd31cf32a3c7fb2105ed62c48f6ff53cd0b5903393d13c87",
+        "cm_collectors_html/src/components/setting/videoTranscode/videoTranscodeSetting.vue": "f8f2f64e1c6254ff7ccae1af07389fa41f459054202c9fa48e993d55dd5729cc",
+        "cm_collectors_html/src/components/setting/videoTranscode/videoTranscodeEditor.vue": "fc89c3d46a9956c5001563a873ecf41bc662dd21607d6294cf81d37e3d981c3f"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "video-transcode",
+      "chapter": "09-video",
+      "title": "加入转码队列并应用参数",
+      "pdf_page": 59,
+      "bottom": 733.0,
+      "image": "transcode-result",
+      "source_hashes": {
+        "cm_collectors_html/src/components/setting/videoMetadata/videoMetadataSetting.vue": "871689e894a5c7a41311c1f986f90a8d2fcf9719dd56fee7c63856c1b96c09a9",
+        "cm_collectors_html/src/components/setting/duplicateDetection/duplicateDetection.vue": "8b033d8b417dd58cdd31cf32a3c7fb2105ed62c48f6ff53cd0b5903393d13c87",
+        "cm_collectors_html/src/components/setting/videoTranscode/videoTranscodeSetting.vue": "f8f2f64e1c6254ff7ccae1af07389fa41f459054202c9fa48e993d55dd5729cc",
+        "cm_collectors_html/src/components/setting/videoTranscode/videoTranscodeEditor.vue": "fc89c3d46a9956c5001563a873ecf41bc662dd21607d6294cf81d37e3d981c3f"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "video-edit",
+      "chapter": "09-video",
+      "title": "时间轴剪辑、顺序与转场",
+      "pdf_page": 60,
+      "bottom": 733.0,
+      "image": "video-editor",
+      "source_hashes": {
+        "cm_collectors_html/src/components/setting/videoMetadata/videoMetadataSetting.vue": "871689e894a5c7a41311c1f986f90a8d2fcf9719dd56fee7c63856c1b96c09a9",
+        "cm_collectors_html/src/components/setting/duplicateDetection/duplicateDetection.vue": "8b033d8b417dd58cdd31cf32a3c7fb2105ed62c48f6ff53cd0b5903393d13c87",
+        "cm_collectors_html/src/components/setting/videoTranscode/videoTranscodeSetting.vue": "f8f2f64e1c6254ff7ccae1af07389fa41f459054202c9fa48e993d55dd5729cc",
+        "cm_collectors_html/src/components/setting/videoTranscode/videoTranscodeEditor.vue": "fc89c3d46a9956c5001563a873ecf41bc662dd21607d6294cf81d37e3d981c3f"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "system-cron",
+      "chapter": "10-system",
+      "title": "设置周期任务",
+      "pdf_page": 61,
+      "bottom": 733.0,
+      "image": "setting-cron",
+      "source_hashes": {
+        "cm_collectors_html/src/components/setting/cronJobs/createCronJobsDrawer.vue": "a6455f8bdc7d14c0261b079e9baefc35d2719505e6f26d18f0c70023fe59790e",
+        "cm_collectors_html/src/components/setting/autoBackup/autoBackup.vue": "5da8e6a9e12670a92a2d04c9737582ccf637249de714e320ddb1eb5bbdcfad13",
+        "cm_collectors_html/src/components/setting/databaseCleanup/databaseCleanup.vue": "e54b405460e7680de11db77782dfb06e6f2ad3abd2d450b188fa4a9e1bf0078e",
+        "cm_collectors_html/src/components/setting/softSettings/generalSet.vue": "12db73f6d60a6b4a31ba207c0d430332e3a88b1326d1e03dc3df5f5515b53289",
+        "cm_collectors_html/src/components/setting/tvboxRecommendSetting/tvboxRecommendSetting.vue": "0638dab3462a8a10ef0f370a62c83c8cd71bc7d21475bc20ad7d33d076040ea0"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "system-backup",
+      "chapter": "10-system",
+      "title": "自动备份与立即备份",
+      "pdf_page": 62,
+      "bottom": 733.0,
+      "image": "setting-backup",
+      "source_hashes": {
+        "cm_collectors_html/src/components/setting/cronJobs/createCronJobsDrawer.vue": "a6455f8bdc7d14c0261b079e9baefc35d2719505e6f26d18f0c70023fe59790e",
+        "cm_collectors_html/src/components/setting/autoBackup/autoBackup.vue": "5da8e6a9e12670a92a2d04c9737582ccf637249de714e320ddb1eb5bbdcfad13",
+        "cm_collectors_html/src/components/setting/databaseCleanup/databaseCleanup.vue": "e54b405460e7680de11db77782dfb06e6f2ad3abd2d450b188fa4a9e1bf0078e",
+        "cm_collectors_html/src/components/setting/softSettings/generalSet.vue": "12db73f6d60a6b4a31ba207c0d430332e3a88b1326d1e03dc3df5f5515b53289",
+        "cm_collectors_html/src/components/setting/tvboxRecommendSetting/tvboxRecommendSetting.vue": "0638dab3462a8a10ef0f370a62c83c8cd71bc7d21475bc20ad7d33d076040ea0"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "system-cleanup",
+      "chapter": "10-system",
+      "title": "数据库清理与失效记录",
+      "pdf_page": 63,
+      "bottom": 733.0,
+      "image": "setting-cleanup",
+      "source_hashes": {
+        "cm_collectors_html/src/components/setting/cronJobs/createCronJobsDrawer.vue": "a6455f8bdc7d14c0261b079e9baefc35d2719505e6f26d18f0c70023fe59790e",
+        "cm_collectors_html/src/components/setting/autoBackup/autoBackup.vue": "5da8e6a9e12670a92a2d04c9737582ccf637249de714e320ddb1eb5bbdcfad13",
+        "cm_collectors_html/src/components/setting/databaseCleanup/databaseCleanup.vue": "e54b405460e7680de11db77782dfb06e6f2ad3abd2d450b188fa4a9e1bf0078e",
+        "cm_collectors_html/src/components/setting/softSettings/generalSet.vue": "12db73f6d60a6b4a31ba207c0d430332e3a88b1326d1e03dc3df5f5515b53289",
+        "cm_collectors_html/src/components/setting/tvboxRecommendSetting/tvboxRecommendSetting.vue": "0638dab3462a8a10ef0f370a62c83c8cd71bc7d21475bc20ad7d33d076040ea0"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "system-general",
+      "chapter": "10-system",
+      "title": "通用设置与管理权限",
+      "pdf_page": 64,
+      "bottom": 733.0,
+      "image": "setting-general",
+      "source_hashes": {
+        "cm_collectors_html/src/components/setting/cronJobs/createCronJobsDrawer.vue": "a6455f8bdc7d14c0261b079e9baefc35d2719505e6f26d18f0c70023fe59790e",
+        "cm_collectors_html/src/components/setting/autoBackup/autoBackup.vue": "5da8e6a9e12670a92a2d04c9737582ccf637249de714e320ddb1eb5bbdcfad13",
+        "cm_collectors_html/src/components/setting/databaseCleanup/databaseCleanup.vue": "e54b405460e7680de11db77782dfb06e6f2ad3abd2d450b188fa4a9e1bf0078e",
+        "cm_collectors_html/src/components/setting/softSettings/generalSet.vue": "12db73f6d60a6b4a31ba207c0d430332e3a88b1326d1e03dc3df5f5515b53289",
+        "cm_collectors_html/src/components/setting/tvboxRecommendSetting/tvboxRecommendSetting.vue": "0638dab3462a8a10ef0f370a62c83c8cd71bc7d21475bc20ad7d33d076040ea0"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "system-tvbox",
+      "chapter": "10-system",
+      "title": "TVBox 推荐与电视端入口",
+      "pdf_page": 65,
+      "bottom": 733.0,
+      "image": "setting-tvbox",
+      "source_hashes": {
+        "cm_collectors_html/src/components/setting/cronJobs/createCronJobsDrawer.vue": "a6455f8bdc7d14c0261b079e9baefc35d2719505e6f26d18f0c70023fe59790e",
+        "cm_collectors_html/src/components/setting/autoBackup/autoBackup.vue": "5da8e6a9e12670a92a2d04c9737582ccf637249de714e320ddb1eb5bbdcfad13",
+        "cm_collectors_html/src/components/setting/databaseCleanup/databaseCleanup.vue": "e54b405460e7680de11db77782dfb06e6f2ad3abd2d450b188fa4a9e1bf0078e",
+        "cm_collectors_html/src/components/setting/softSettings/generalSet.vue": "12db73f6d60a6b4a31ba207c0d430332e3a88b1326d1e03dc3df5f5515b53289",
+        "cm_collectors_html/src/components/setting/tvboxRecommendSetting/tvboxRecommendSetting.vue": "0638dab3462a8a10ef0f370a62c83c8cd71bc7d21475bc20ad7d33d076040ea0"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "client-mobile",
+      "chapter": "11-clients",
+      "title": "手机与平板使用",
+      "pdf_page": 66,
+      "bottom": 596.0,
+      "image": "mobile",
+      "source_hashes": {
+        "cm_collectors_html/src/router/index.ts": "a134c11753e47f7383df5a59d00926755758c4f848cbba2b07254eaca52b5c69",
+        "cm_collectors_html/src/components/setting/softSettings/generalSet.vue": "12db73f6d60a6b4a31ba207c0d430332e3a88b1326d1e03dc3df5f5515b53289",
+        "cm_collectors_wails/frontend/src/App.svelte": "bf7934c5e9952c7e478f70d22dc562d621e85e12b4f549c7b1e635c15fc8112c",
+        "cm_collectors_wails/app.go": "22c79f7d40018f7ababe5d05ed412c5935b8cc076d5128adac26b058085725cd"
+      },
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "client-wails",
+      "chapter": "11-clients",
+      "title": "Wails 桌面客户端",
+      "pdf_page": 67,
+      "bottom": 539,
+      "image": null,
+      "source_hashes": {
+        "cm_collectors_html/src/router/index.ts": "a134c11753e47f7383df5a59d00926755758c4f848cbba2b07254eaca52b5c69",
+        "cm_collectors_html/src/components/setting/softSettings/generalSet.vue": "12db73f6d60a6b4a31ba207c0d430332e3a88b1326d1e03dc3df5f5515b53289",
+        "cm_collectors_wails/frontend/src/App.svelte": "bf7934c5e9952c7e478f70d22dc562d621e85e12b4f549c7b1e635c15fc8112c",
+        "cm_collectors_wails/app.go": "22c79f7d40018f7ababe5d05ed412c5935b8cc076d5128adac26b058085725cd"
+      },
+      "verification": "source-reviewed"
+    },
+    {
+      "id": "help-find",
+      "chapter": "12-help",
+      "title": "找不到资源、标签或文件时",
+      "pdf_page": 68,
+      "bottom": 539,
+      "image": null,
+      "source_hashes": {
+        "cm_collectors_html/src/assets/request.ts": "e64bf2f00dd637f2100d632d0e2add652bc3989d5e751121af130050376345d0",
+        "cm_collectors_server/processorsFFmpeg/ffmpeg.processorsFFmpeg.go": "4f35f1a35ee3961b5b2357d6b36ff02d381d53878e39e2a890960fc535ba6639",
+        "cm_collectors_html/src/components/setting/softSettings/generalSet.vue": "12db73f6d60a6b4a31ba207c0d430332e3a88b1326d1e03dc3df5f5515b53289"
+      },
+      "verification": "source-reviewed"
+    },
+    {
+      "id": "help-play",
+      "chapter": "12-help",
+      "title": "播放、刮削和后台任务异常时",
+      "pdf_page": 69,
+      "bottom": 539,
+      "image": null,
+      "source_hashes": {
+        "cm_collectors_html/src/assets/request.ts": "e64bf2f00dd637f2100d632d0e2add652bc3989d5e751121af130050376345d0",
+        "cm_collectors_server/processorsFFmpeg/ffmpeg.processorsFFmpeg.go": "4f35f1a35ee3961b5b2357d6b36ff02d381d53878e39e2a890960fc535ba6639",
+        "cm_collectors_html/src/components/setting/softSettings/generalSet.vue": "12db73f6d60a6b4a31ba207c0d430332e3a88b1326d1e03dc3df5f5515b53289"
+      },
+      "verification": "source-reviewed"
+    },
+    {
+      "id": "help-routine",
+      "chapter": "12-help",
+      "title": "一套可重复的日常整理流程",
+      "pdf_page": 70,
+      "bottom": 555,
+      "image": null,
+      "source_hashes": {
+        "cm_collectors_html/src/assets/request.ts": "e64bf2f00dd637f2100d632d0e2add652bc3989d5e751121af130050376345d0",
+        "cm_collectors_server/processorsFFmpeg/ffmpeg.processorsFFmpeg.go": "4f35f1a35ee3961b5b2357d6b36ff02d381d53878e39e2a890960fc535ba6639",
+        "cm_collectors_html/src/components/setting/softSettings/generalSet.vue": "12db73f6d60a6b4a31ba207c0d430332e3a88b1326d1e03dc3df5f5515b53289"
+      },
+      "verification": "source-reviewed"
+    }
+  ]
+}

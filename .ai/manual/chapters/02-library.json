@@ -1,0 +1,114 @@
+{
+  "id": "02-library",
+  "title": "文件库与公共配置",
+  "sources": [
+    "cm_collectors_html/src/components/setting/fileDatabaseSetting/fileDatabaseSetting.vue",
+    "cm_collectors_html/src/components/setting/fileDatabaseSetting/fileSettingData.vue",
+    "cm_collectors_html/src/components/setting/SharedConfigBar.vue",
+    "cm_collectors_html/src/common/filesBasesConfig.ts",
+    "cm_collectors_html/src/components/setting/fileDatabaseSetting/pathReplaceDialog.vue"
+  ],
+  "pages": [
+    {
+      "id": "library-create",
+      "title": "创建文件库与关联演员集",
+      "lead": "入口：设置 → 文件数据库。不同内容可以放入不同库，分别设置显示、导入和刮削规则。",
+      "blocks": [
+        {
+          "title": "创建顺序",
+          "text": "先在“演员数据库”建立需要的演员集，再点击“创建新文件数据库”，填写库名、选择主演员集和关联演员集。创建后回到主页，点击顶部文件库名称切换。"
+        },
+        {
+          "title": "本库设置",
+          "text": "选中左侧库名，编辑名称、状态、关联演员集和显示参数，点击“保存本库设置”。每次确认正在编辑的库名；主页当前库和设置页选中的库可能不同。"
+        },
+        {
+          "title": "排序、禁用与真实删除",
+          "text": "“排序”调整文件库入口顺序；禁用用于暂时隐藏入口。真实删除要求库中没有资源记录；演员库还要求没有演员且不再被文件库关联。禁用和真实删除是不同操作。"
+        }
+      ],
+      "image": "setting-libraries",
+      "status": "documented",
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "library-shared",
+      "title": "让多个库跟随公共配置",
+      "lead": "公共配置分为基础展示、导入规则和刮削参数三个分组，分别决定是否跟随。",
+      "blocks": [
+        {
+          "title": "建立公共参数",
+          "text": "在对应功能页点击“创建公共配置…”，以当前库的通用参数为起点，核对后保存。创建公共配置本身不会自动让所有库跟随。"
+        },
+        {
+          "title": "开启跟随",
+          "text": "在需要统一的库中开启“跟随公共配置”。公共字段会显示为只读；修改这些字段需打开公共配置。保存前查看跟随库列表，确认本次修改影响哪些库。"
+        },
+        {
+          "title": "保持独立的内容",
+          "text": "扫描目录、标签与演员选择、路径、自定义头像和封面预设列表等仍按本库保存。公共配置不会同步已有资源数据。关闭跟随后的本库参数以界面显示为准，检查并保存后再继续操作。"
+        }
+      ],
+      "image": "shared-display",
+      "crop": [
+        255,
+        45,
+        1185,
+        930
+      ],
+      "status": "documented",
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "library-transfer",
+      "title": "导出与导入文件库配置",
+      "lead": "文件库设置底部提供导入 / 导出，用于保存或复用配置参数。",
+      "blocks": [
+        {
+          "title": "导出配置",
+          "text": "选中目标库，核对当前表单参数，点击“导出”，得到带库名与时间的 JSON。它记录配置，不会复制资源数据库和媒体文件。"
+        },
+        {
+          "title": "导入配置",
+          "text": "先关联目标演员集并建立标签，再导入配置。当前库不存在的演员、标签等项目可能被移除；导入后核对封面、筛选项和播放方式，并保存本库设置。"
+        },
+        {
+          "title": "与公共配置的区别",
+          "text": "一次性导入复制的是当次参数；跟随公共配置会持续读取公共分组。跟随状态下导入等操作可能受限，先查看配置来源，再决定独立设置或修改公共参数。"
+        }
+      ],
+      "status": "documented",
+      "verification": "ui-and-source",
+      "image": "setting-libraries"
+    },
+    {
+      "id": "library-paths",
+      "title": "媒体搬家、路径替换与清理",
+      "lead": "入口：设置 → 文件数据库。先修复路径，再决定是否清理失效记录。",
+      "blocks": [
+        {
+          "title": "批量替换路径",
+          "text": "点击“路径替换”，选择文件库，在“检索路径”填写原路径片段并点击“检索”。核对命中项后，填写“替换路径”再执行替换。它只更新资源引用，不搬运文件；替换前应先把媒体放到新位置。"
+        },
+        {
+          "title": "核对分集顺序",
+          "text": "在资源编辑中检查每个分集的文件路径，拖动分集序号可重新排序。替换后至少试播一条视频、打开一个图集，确认服务端可以访问新位置。"
+        },
+        {
+          "title": "清除已删除的资源",
+          "text": "仅在媒体磁盘、网络共享和容器挂载正常后使用。磁盘暂时离线也可能表现为文件不存在；先备份并确认清理范围，避免把暂时不可访问的资源资料误当成失效数据。"
+        }
+      ],
+      "image": "library-paths",
+      "status": "documented",
+      "verification": "ui-and-source",
+      "crop": [
+        310,
+        140,
+        1130,
+        685
+      ],
+      "caption": "资源路径替换器：先检索，再核对命中项"
+    }
+  ]
+}
