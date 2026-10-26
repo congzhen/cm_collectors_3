@@ -70,6 +70,7 @@ describe('独立播放页片段收藏入口', () => {
     await flushPromises()
     const extras = wrapper.findComponent(VideoDetailsExtras)
     expect(extras.exists()).toBe(true)
+    expect(extras.props('playMode')).toBe('page')
     expect(extras.findComponent(MomentCollection).props('resourceId')).toBe('resource')
     const html = wrapper.html()
     const actorPosition = html.indexOf('class="performer-list"')

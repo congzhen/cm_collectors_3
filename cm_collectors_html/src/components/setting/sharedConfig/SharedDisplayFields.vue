@@ -236,6 +236,13 @@
     <slot name="sample" />
     <SettingSectionTitle>参数设置</SettingSectionTitle>
     <SettingFieldsScope :disabled="readonly">
+      <el-form-item label="片段收藏打开方式">
+        <el-select v-model="config.videoMomentOpenMode">
+          <el-option label="弹窗播放器（默认）" value="dialog" />
+          <el-option label="进入详情播放页" value="page" />
+        </el-select>
+        <div class="preview-setting-hint">用于主页右侧详情、弹出详情等位置的片段收藏。</div>
+      </el-form-item>
       <el-form-item label="视频 - 打开方式">
         <el-select v-model="config.openResModeMovies">
           <el-option label="内置" :value="E_resourceOpenMode.Soft" />

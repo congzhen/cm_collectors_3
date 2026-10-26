@@ -81,6 +81,7 @@ func displayTestConfig(t *testing.T, limit int) string {
 	value["pageLimit"] = limit
 	value["videoPreviewGeneration"] = "playback"
 	value["videoPreviewInterval"] = 30
+	value["videoMomentOpenMode"] = "dialog"
 	// 空数组是有效设置，不能作为空值拒绝。
 	for _, key := range SharedConfigFields("display") {
 		if value[key] == nil {
@@ -92,9 +93,42 @@ func displayTestConfig(t *testing.T, limit int) string {
 	data, _ = json.Marshal(value)
 	return string(data)
 }
+func TestSharedMomentOpenModeKeepsLocalValueUntilOldSharedConfigIsUpdated(t *testing.T) {
+	db := sharedTestDB(t)
+	local := `{"videoMomentOpenMode":"page"}`
+	if err := db.Model(&FilesBasesSetting{}).Where("filesBases_id = ?", "A").Update("config_json_data", local).Error; err != nil {
+		t.Fatal(err)
+	}
+	if err := db.Create(&SharedLibraryConfig{Module: "display", Revision: 1, Config: `{"pageLimit":32}`}).Error; err != nil {
+		t.Fatal(err)
+	}
+	if err := db.Transaction(func(tx *gorm.DB) error { return SetLibraryConfigFollow(tx, "A", "display", true, 1) }); err != nil {
+		t.Fatal(err)
+	}
+	effective, err := EffectiveLibraryConfig(db, "A", "display", local)
+	if err != nil {
+		t.Fatal(err)
+	}
+	config, err := parseConfig(effective)
+	if err != nil || config["videoMomentOpenMode"] != "page" {
+		t.Fatalf("old shared config discarded local playback preference: %s %v", effective, err)
+	}
+	if err := SaveSharedConfig(db, "display", 1, displayTestConfig(t, 32)); err != nil {
+		t.Fatal(err)
+	}
+	effective, err = EffectiveLibraryConfig(db, "A", "display", local)
+	if err != nil {
+		t.Fatal(err)
+	}
+	config, err = parseConfig(effective)
+	if err != nil || config["videoMomentOpenMode"] != "dialog" {
+		t.Fatalf("updated shared playback preference not applied: %s %v", effective, err)
+	}
+}
+
 func TestSharedPreviewFieldsFollowRestoreAndValidate(t *testing.T) {
 	db := sharedTestDB(t)
-	local := `{"videoPreviewGeneration":"manual","videoPreviewInterval":120,"sampleFolder":"keep"}`
+	local := `{"videoPreviewGeneration":"manual","videoPreviewInterval":120,"videoMomentOpenMode":"page","sampleFolder":"keep"}`
 	if err := db.Model(&FilesBasesSetting{}).Where("filesBases_id = ?", "A").Update("config_json_data", local).Error; err != nil {
 		t.Fatal(err)
 	}
@@ -109,7 +143,7 @@ func TestSharedPreviewFieldsFollowRestoreAndValidate(t *testing.T) {
 		t.Fatal(err)
 	}
 	config, err := parseConfig(effective)
-	if err != nil || config["videoPreviewGeneration"] != "playback" || config["videoPreviewInterval"] != float64(30) || config["sampleFolder"] != "keep" {
+	if err != nil || config["videoPreviewGeneration"] != "playback" || config["videoPreviewInterval"] != float64(30) || config["videoMomentOpenMode"] != "dialog" || config["sampleFolder"] != "keep" {
 		t.Fatalf("unexpected effective config: %s, %v", effective, err)
 	}
 	if err := GuardSharedConfigWrite(db, "A", "display", local); err == nil {
@@ -121,10 +155,10 @@ func TestSharedPreviewFieldsFollowRestoreAndValidate(t *testing.T) {
 	var saved FilesBasesSetting
 	db.First(&saved, "filesBases_id = ?", "A")
 	config, err = parseConfig(saved.ConfigJsonData)
-	if err != nil || config["videoPreviewGeneration"] != "manual" || config["videoPreviewInterval"] != float64(120) {
+	if err != nil || config["videoPreviewGeneration"] != "manual" || config["videoPreviewInterval"] != float64(120) || config["videoMomentOpenMode"] != "page" {
 		t.Fatalf("preview snapshot lost: %+v %v", config, err)
 	}
-	for key, value := range map[string]interface{}{"videoPreviewGeneration": "invalid", "videoPreviewInterval": 15} {
+	for key, value := range map[string]interface{}{"videoPreviewGeneration": "invalid", "videoPreviewInterval": 15, "videoMomentOpenMode": "invalid"} {
 		invalid, _ := parseConfig(displayTestConfig(t, 32))
 		invalid[key] = value
 		raw, _ := json.Marshal(invalid)

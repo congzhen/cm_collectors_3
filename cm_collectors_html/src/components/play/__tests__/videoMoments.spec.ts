@@ -982,9 +982,28 @@ describe('片段收藏和时间轴', () => {
       path: '/play/movies/r/d',
       query: { t: '12', end: '20', momentTitle: '片段名称' },
     })
+    expect(wrapper.emitted('play')?.[0]).toEqual([expect.objectContaining({ id: 'moment' })])
     await wrapper.setProps({ resourceId: '' })
     await flushPromises()
     expect(wrapper.text()).toContain('重复的视频标题')
+    wrapper.unmount()
+  })
+  it('收藏组件可用列表布局隐藏标题、展示来源并交给父组件播放', async () => {
+    const item = { id: 'm', resourceId: 'r', dramaSeriesId: 'd', title: '收藏', resourceTitle: '来源资源', start: 1, end: 2, available: true }
+    mocks.list.mockResolvedValue({ status: true, data: [item] })
+    const wrapper = mount(MomentCollection, {
+      props: { resourceId: 'r', playMode: 'emit', layout: 'list', showHeading: false, showResourceTitle: true },
+      global: { stubs: { 'el-button': button, MomentCover: true } },
+    })
+    await flushPromises()
+    expect(wrapper.classes()).toContain('moment-collection--list')
+    expect(wrapper.find('.collection-heading').exists()).toBe(false)
+    expect(wrapper.text()).toContain('来源资源')
+    await wrapper.get('.collection-play').trigger('click')
+    expect(wrapper.emitted('play')).toEqual([[item]])
+    expect(mocks.push).not.toHaveBeenCalled()
+    await wrapper.setProps({ disabled: true })
+    expect(wrapper.get('.collection-play').attributes('disabled')).toBeDefined()
     wrapper.unmount()
   })
   it('收藏首图使用独立接口，读取失败时显示占位而非破图', async () => {

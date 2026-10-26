@@ -77,7 +77,7 @@
       </div>
     </div>
 
-    <VideoDetailsExtras v-if="resourceInfo" :resource="resourceInfo" />
+    <VideoDetailsExtras v-if="resourceInfo" :resource="resourceInfo" play-mode="page" />
 
     <!-- 剧照 -->
     <div class="tag-section" v-if="resourceInfo && store.appStoreData.currentFilesBasesAppConfig.sampleStatus">

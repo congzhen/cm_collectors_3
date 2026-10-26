@@ -59,6 +59,21 @@ it('片段预览方式和间隔位于公共表单内，跟随时只读，独立�
   expect(scope.props('disabled')).toBe(true)
   expect(config.videoPreviewGeneration).toBe('playback')
   expect(config.videoPreviewInterval).toBe(30)
+  expect(config.videoMomentOpenMode).toBe('dialog')
+  await wrapper.setProps({ readonly: false })
+  expect(scope.props('disabled')).toBe(false)
+  wrapper.unmount()
+})
+it('片段收藏打开方式在公共参数组内，跟随时锁定，退出跟随后可编辑', async () => {
+  const config = createDefaultConfigApp()
+  const wrapper = shallowMount(SharedDisplayFields, { props: { config, readonly: true }, global: {
+    plugins: [createPinia()], renderStubDefaultSlot: true,
+  } })
+  const scope = wrapper.findAllComponents(SettingFieldsScope).find(item => item.html().includes('片段收藏打开方式'))!
+  expect(scope).toBeDefined()
+  expect(scope.props('disabled')).toBe(true)
+  expect(scope.html()).toContain('进入详情播放页')
+  expect(config.videoMomentOpenMode).toBe('dialog')
   await wrapper.setProps({ readonly: false })
   expect(scope.props('disabled')).toBe(false)
   wrapper.unmount()

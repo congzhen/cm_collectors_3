@@ -48,7 +48,7 @@
             </div>
           </div>
 
-          <VideoDetailsExtras :resource="resourceInfo" />
+          <VideoDetailsExtras :resource="resourceInfo" play-mode="page" />
 
           <div v-if="store.appStoreData.currentFilesBasesAppConfig.sampleStatus">
             <el-alert class="tagAlert" title="剧照" type="warning" :closable="false" />

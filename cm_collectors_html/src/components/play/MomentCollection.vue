@@ -2,9 +2,9 @@
   <section
     ref="collectionRoot"
     class="moment-collection"
-    :class="{ 'moment-collection--library': !!filesBasesId }"
+    :class="{ 'moment-collection--library': !!filesBasesId, 'moment-collection--list': layout === 'list' }"
   >
-    <div v-if="!filesBasesId" class="collection-heading">
+    <div v-if="showHeading && !filesBasesId" class="collection-heading">
       <strong>片段收藏</strong>
       <button type="button" class="collection-refresh" :disabled="loading" @click="refresh">
         <svg
@@ -46,7 +46,7 @@
         <button
           type="button"
           class="cover-button"
-          :disabled="!item.available"
+          :disabled="!item.available || disabled"
           :aria-label="`播放片段：${item.title}`"
           @click="open(item)"
         >
@@ -57,7 +57,7 @@
         </button>
         <div class="card-text">
           <strong :title="item.title">{{ item.title }}</strong>
-          <div v-if="!props.resourceId" class="resource-title" :title="item.resourceTitle">
+          <div v-if="showResourceTitle ?? !props.resourceId" class="resource-title" :title="item.resourceTitle">
             {{ item.resourceTitle || '原资源已移除' }}
           </div>
           <div class="card-time">
@@ -71,7 +71,7 @@
         <button
           type="button"
           class="collection-play"
-          :disabled="!item.available"
+          :disabled="!item.available || disabled"
           :title="item.end ? '循环播放片段' : '播放片段'"
           :aria-label="`播放片段：${item.title}`"
           @click="open(item)"
@@ -114,8 +114,17 @@ import {
 } from '@/server/videoMoments.server'
 import MomentCover from './MomentCover.vue'
 const props = withDefaults(
-  defineProps<{ resourceId?: string; filesBasesId?: string; playInDialog?: boolean }>(),
-  { resourceId: '', filesBasesId: '' },
+  defineProps<{
+    resourceId?: string
+    filesBasesId?: string
+    playInDialog?: boolean
+    playMode?: 'page' | 'emit'
+    layout?: 'grid' | 'list'
+    showHeading?: boolean
+    showResourceTitle?: boolean
+    disabled?: boolean
+  }>(),
+  { resourceId: '', filesBasesId: '', playMode: 'page', layout: 'grid', showHeading: true, showResourceTitle: undefined },
 )
 const emit = defineEmits<{ play: [moment: VideoMoment] }>()
 const router = useRouter()
@@ -182,8 +191,9 @@ function more() {
   void load(true)
 }
 function open(item: VideoMoment) {
-  if (props.playInDialog) {
-    emit('play', item)
+  if (!item.available || props.disabled) return
+  emit('play', item)
+  if (props.playInDialog || props.playMode === 'emit') {
     return
   }
   void router.push({
@@ -300,6 +310,9 @@ onBeforeUnmount(() => {
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
   gap: 12px;
   margin-bottom: 12px;
+}
+.moment-collection--list .collection-list {
+  grid-template-columns: minmax(0, 1fr);
 }
 .collection-card {
   display: flex;

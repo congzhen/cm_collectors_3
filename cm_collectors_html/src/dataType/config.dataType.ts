@@ -72,6 +72,7 @@ export interface I_config_app {
   playComicrReadingMode: boolean; // 漫画-阅读模式
   videoPreviewInterval: 10 | 30 | 60 | 120; // 默认预览抽图间隔（秒）
   videoPreviewGeneration: 'manual' | 'playback'; // 片段预览生成方式，可跟随公共展示配置
+  videoMomentOpenMode: 'dialog' | 'page'; // 片段收藏打开方式，可跟随公共展示配置
   videoPreviewImageCount: number; // 获取视频预览图关键帧数量
   plugInUnit_Cup: boolean; // 插件单元-cup
   plugInUnit_Cup_Text: string; // 插件单元-cup-文字
@@ -156,6 +157,7 @@ export const defualtConfigApp: I_config_app = {
   previewImageFolder: '/',
   videoPreviewInterval: 30,
   videoPreviewGeneration: 'playback',
+  videoMomentOpenMode: 'dialog',
   videoPreviewImageCount: 32,
   plugInUnit_Cup: false,
   plugInUnit_Cup_Text: 'Cup',
