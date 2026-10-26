@@ -5,8 +5,11 @@ import VideoPlay from '../videoPlay.vue';
 
 const mocks = vi.hoisted(() => ({
   fullscreen: (_value: boolean) => {},
+  events: new Map<string, () => void>(), previewRequest: vi.fn(),
   paused: vi.fn(() => false), pause: vi.fn(), play: vi.fn(),
 }));
+vi.mock('@/assets/request', () => ({ default: mocks.previewRequest }));
+vi.mock('../MomentTools.vue', () => ({ default: defineComponent({ setup: () => () => h('div') }) }));
 vi.mock('@/storeData/app.storeData', () => ({ appStoreData: () => ({ runtimeBridgeStatus: true }) }));
 vi.mock('@/common/play', () => ({ openInPlayerDramaSeries: vi.fn() }));
 vi.mock('@/common/runtimeBridge', () => ({
@@ -14,7 +17,7 @@ vi.mock('@/common/runtimeBridge', () => ({
   onHostWindowFullscreenChanged: (callback: (value: boolean) => void) => { mocks.fullscreen = callback; return () => {}; },
 }));
 vi.mock('video.js', () => ({ default: Object.assign(vi.fn(() => ({
-  on: vi.fn(), ready: vi.fn(), aspectRatio: vi.fn(), paused: mocks.paused,
+  on: (event: string, callback: () => void) => mocks.events.set(event, callback), ready: vi.fn(), aspectRatio: vi.fn(), paused: mocks.paused,
   pause: mocks.pause, play: mocks.play, dispose: vi.fn(),
 })), { getComponent: () => class {}, registerComponent: vi.fn() }) }));
 vi.mock('../playCloudCheckPromptDialog.vue', () => ({ default: defineComponent({ setup: () => () => h('div') }) }));
@@ -43,7 +46,7 @@ async function create() {
 }
 
 describe('PC 全屏播放器触控唤出控制条', () => {
-  beforeEach(() => { vi.useFakeTimers(); vi.clearAllMocks(); mocks.paused.mockReturnValue(false); });
+  beforeEach(() => { vi.useFakeTimers(); vi.clearAllMocks(); mocks.events.clear(); mocks.previewRequest.mockResolvedValue({ status: true, data: false }); mocks.paused.mockReturnValue(false); });
   afterEach(() => { vi.useRealTimers(); });
   it('轻触、滑动唤醒，持续触摸不隐藏，松手后恢复自动隐藏', async () => {
     const { wrapper, root } = await create();
@@ -82,4 +85,17 @@ describe('PC 全屏播放器触控唤出控制条', () => {
     await vi.advanceTimersByTimeAsync(5000); expect(root.classList.contains('controls-hidden')).toBe(false);
     wrapper.unmount();
   });
+  it('桌面播放器实际播放时检查本分集预览，缓冲恢复不重复排队', async () => {
+    const wrapper = mount(VideoPlay, { props: { forceDesktop: true }, global: { stubs: { 'el-icon': true } } });
+    wrapper.vm.setVideoSource('/api/video/mp4/episode/v.mp4', 'mp4', () => {});
+    await nextTick(); await vi.advanceTimersByTimeAsync(100);
+    expect(mocks.previewRequest).not.toHaveBeenCalled();
+    expect(mocks.events.has('playing')).toBe(true);
+    mocks.events.get('playing')!(); await vi.advanceTimersByTimeAsync(0);
+    mocks.events.get('playing')!(); await vi.advanceTimersByTimeAsync(0);
+    expect(mocks.previewRequest).toHaveBeenCalledOnce();
+    expect(mocks.previewRequest).toHaveBeenCalledWith({ url: '/videoPreviews/episode/playback', method: 'post' });
+    wrapper.unmount();
+  });
+
 });

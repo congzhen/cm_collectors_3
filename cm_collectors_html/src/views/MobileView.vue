@@ -20,6 +20,7 @@
       </div>
 
       <div class="mobile-toolbar-row mobile-search-row">
+        <el-button @click="router.push('/moments')">片段</el-button>
         <el-input v-model="searchText" class="mobile-search-input" clearable placeholder="搜索资源、标签、演员…"
           aria-label="搜索资源" @keyup.enter="applySearch" @clear="applySearch">
           <template #prefix><el-icon><Search /></el-icon></template>
@@ -71,7 +72,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, onActivated, onDeactivated, nextTick, ref, watch } from 'vue'
 import { ArrowLeft, ArrowRight, Filter, Monitor, More, Search } from '@element-plus/icons-vue'
-import { onBeforeRouteLeave } from 'vue-router'
+import { onBeforeRouteLeave, useRouter } from 'vue-router'
 import { useMobileShellSettings } from '@/common/mobileShell'
 import MobileResourceLayout from '@/components/mobile/MobileResourceLayout.vue'
 import TagView from './TagView.vue'
@@ -88,6 +89,7 @@ import { goToMobileOrPC, setMobileShow } from '@/assets/mobile'
 import { E_searchSort } from '@/dataType/search.dataType'
 import { readMobileSession, saveMobileSession } from '@/common/mobileSession'
 
+const router = useRouter()
 const store = {
   appStoreData: appStoreData(),
   searchStoreData: searchStoreData(),

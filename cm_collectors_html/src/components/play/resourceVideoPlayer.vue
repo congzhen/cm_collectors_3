@@ -1,7 +1,7 @@
 <template>
   <div class="resource-video-player">
-    <MobileVideoPlayer v-if="mode === 'mobile'" :resource-id="resource.id" :drama-series-id="dramaSeriesId" :title="resource.title" />
-    <VideoPlay v-else ref="desktop" force-desktop />
+    <MobileVideoPlayer v-if="mode === 'mobile'" :resource-id="resource.id" :drama-series-id="dramaSeriesId" :title="resource.title" :initial-moment="initialMoment" />
+    <VideoPlay v-else ref="desktop" force-desktop :initial-moment="initialMoment" />
     <div v-if="error" role="alert">{{ error }} <button @click="loadDesktop">重试</button></div>
   </div>
 </template>
@@ -10,12 +10,13 @@
 import { defineAsyncComponent, onBeforeUnmount, ref, watch, nextTick } from 'vue';
 import VideoPlay from './videoPlay.vue';
 import type { I_resource } from '@/dataType/resource.dataType';
+import type { MomentPlayback } from '@/server/videoMoments.server';
 import { appStoreData } from '@/storeData/app.storeData';
 import { getPlayVideoURLAndType } from '@/common/play';
 import { resolvePlayerMode } from '@/common/playerPreference';
 
 const MobileVideoPlayer = defineAsyncComponent(() => import('./mobileVideoPlayer.vue'));
-const props = defineProps<{ resource: I_resource; dramaSeriesId: string }>();
+const props = defineProps<{ resource: I_resource; dramaSeriesId: string; initialMoment?: MomentPlayback }>();
 const emit = defineEmits<{ dimensions: [width: number, height: number] }>();
 const desktop = ref<InstanceType<typeof VideoPlay>>();
 // 每次打开确定一次策略，切集、旋转、全屏和后台配置更新都不重建播放器。

@@ -1,11 +1,39 @@
 <template>
   <div class="video-controller">
     <!-- 播放进度条 -->
-    <div class="progress-container" @click="onProgressClick">
+    <div
+      class="progress-container"
+      @click="onProgressClick"
+      @pointerenter="refreshPreview"
+      @pointermove="previewPointer"
+      @pointerleave="previewVisible = false"
+      @pointerup="previewVisible = false"
+    >
+      <div
+        v-if="previewVisible && previewSrc"
+        class="seek-image"
+        :style="{ left: previewPercent + '%' }"
+      >
+        <img :src="previewSrc" alt="跳转位置预览" /><span>{{
+          formatTime(previewTime - seekStart)
+        }}</span>
+      </div>
       <div class="progress-slider-container">
-        <input type="range" min="0" :max="duration || 100" :value="currentTime" class="progress-slider"
-          @input="onSeek" />
-        <div class="progress-filled" :style="{ width: progressPercent + '%' }"></div>
+        <input
+          type="range"
+          min="0"
+          :max="seekLength || 100"
+          :value="displayTime"
+          step="0.1"
+          class="progress-slider"
+          @input="onSeek"
+          @click.stop
+        />
+        <div
+          class="progress-filled"
+          :class="{ 'progress-filled--clip': loopRange }"
+          :style="{ width: progressPercent + '%' }"
+        ></div>
       </div>
     </div>
 
@@ -14,21 +42,27 @@
       <div class="controls-left">
         <!-- 播放速度 -->
         <div class="speed-control">
-          <button class="control-button" @click="toggleSpeedMenu" :title="`播放速度: ${playbackRate}x`">
+          <button
+            class="control-button"
+            @click="toggleSpeedMenu"
+            :title="`播放速度: ${playbackRate}x`"
+          >
             {{ playbackRate }}x
           </button>
           <div v-if="showSpeedMenu" class="speed-menu">
-            <button v-for="rate in speedOptions" :key="rate" :class="{ active: playbackRate === rate }"
-              @click="setPlaybackRate(rate)">
+            <button
+              v-for="rate in speedOptions"
+              :key="rate"
+              :class="{ active: playbackRate === rate }"
+              @click="setPlaybackRate(rate)"
+            >
               {{ rate }}x
             </button>
           </div>
         </div>
 
         <!-- 播放时间 -->
-        <div class="time-display">
-          {{ formatTime(currentTime) }} / {{ formatTime(duration) }}
-        </div>
+        <div class="time-display">{{ formatTime(displayTime) }} / {{ formatTime(seekLength) }}</div>
       </div>
 
       <!-- 中间控件 -->
@@ -49,30 +83,51 @@
         <!-- 音量控制 -->
         <div class="volume-control">
           <button class="control-button" @click="toggleMute" :title="isMuted ? '取消静音' : '静音'">
-            <svg v-if="isMuted || volume === 0" class="icon" viewBox="0 0 24 24" width="24" height="24">
-              <path fill="currentColor"
-                d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z" />
+            <svg
+              v-if="isMuted || volume === 0"
+              class="icon"
+              viewBox="0 0 24 24"
+              width="24"
+              height="24"
+            >
+              <path
+                fill="currentColor"
+                d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"
+              />
             </svg>
             <svg v-else-if="volume < 0.5" class="icon" viewBox="0 0 24 24" width="24" height="24">
-              <path fill="currentColor"
-                d="M18.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM5 9v6h4l5 5V4l-5 5H5z" />
+              <path
+                fill="currentColor"
+                d="M18.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM5 9v6h4l5 5V4l-5 5H5z"
+              />
             </svg>
             <svg v-else class="icon" viewBox="0 0 24 24" width="24" height="24">
-              <path fill="currentColor"
-                d="M3 9v6h4l5 5V4l-5 5H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+              <path
+                fill="currentColor"
+                d="M3 9v6h4l5 5V4l-5 5H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"
+              />
             </svg>
           </button>
           <div class="volume-slider-container">
-            <input type="range" min="0" max="1" step="0.01" v-model="volume" class="volume-slider"
-              @input="onVolumeChange" />
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.01"
+              v-model="volume"
+              class="volume-slider"
+              @input="onVolumeChange"
+            />
           </div>
         </div>
 
         <!-- 旋转按钮 -->
         <button class="control-button" @click="rotateVideo" :title="`旋转: ${rotation}°`">
           <svg class="icon" viewBox="0 0 24 24" width="24" height="24">
-            <path fill="currentColor"
-              d="M12 21c-4.97 0-9-4.03-9-9 0-1.94.62-3.72 1.65-5.16L2.51 4.7A11.94 11.94 0 0 0 0 12c0 6.63 5.37 12 12 12s12-5.37 12-12-5.37-12-12-12c-1.53 0-3 .29-4.37.82l1.23 1.23C10.1 1.62 11.03 1.38 12 1.38c5.77 0 10.62 4.85 10.62 10.62S17.77 22.62 12 22.62 1.38 17.77 1.38 12H3c0 4.97 4.03 9 9 9z" />
+            <path
+              fill="currentColor"
+              d="M12 21c-4.97 0-9-4.03-9-9 0-1.94.62-3.72 1.65-5.16L2.51 4.7A11.94 11.94 0 0 0 0 12c0 6.63 5.37 12 12 12s12-5.37 12-12-5.37-12-12-12c-1.53 0-3 .29-4.37.82l1.23 1.23C10.1 1.62 11.03 1.38 12 1.38c5.77 0 10.62 4.85 10.62 10.62S17.77 22.62 12 22.62 1.38 17.77 1.38 12H3c0 4.97 4.03 9 9 9z"
+            />
             <path fill="currentColor" d="M12 6v4.38l3.54 3.54 1.41-1.41L13.41 9H12V6z" />
           </svg>
         </button>
@@ -80,50 +135,76 @@
         <!-- 本地云播放按钮 -->
         <button class="control-button" @click="openCloudPlayer" title="本地云播放">
           <svg class="icon" viewBox="0 0 24 24" width="24" height="24">
-            <path fill="currentColor"
-              d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM10 15.5v-7l6 3.5-6 3.5z" />
+            <path
+              fill="currentColor"
+              d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM10 15.5v-7l6 3.5-6 3.5z"
+            />
           </svg>
         </button>
-
 
         <!-- 用本地播放器打开视频按钮 -->
         <button class="control-button" @click="openInPlayer" title="本地播放器打开">
           <svg class="icon" viewBox="0 0 24 24" width="24" height="24">
-            <path fill="currentColor"
-              d="M19 4H5c-1.11 0-2 .9-2 2v12c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.89-2-2-2zm0 14H5V6h14v12z" />
+            <path
+              fill="currentColor"
+              d="M19 4H5c-1.11 0-2 .9-2 2v12c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.89-2-2-2zm0 14H5V6h14v12z"
+            />
             <path fill="currentColor" d="M8 9.5v5l4-2.5-4-2.5z" />
-            <path fill="currentColor"
-              d="M16.5 12c0-.28-.22-.5-.5-.5s-.5.22-.5.5.22.5.5.5.5-.22.5-.5zm1.5 0c0 .55-.45 1-1 1s-1-.45-1-1 .45-1 1-1 1 .45 1 1zm-1 3.5c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z" />
+            <path
+              fill="currentColor"
+              d="M16.5 12c0-.28-.22-.5-.5-.5s-.5.22-.5.5.22.5.5.5.5-.22.5-.5zm1.5 0c0 .55-.45 1-1 1s-1-.45-1-1 .45-1 1-1 1 .45 1 1zm-1 3.5c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z"
+            />
           </svg>
         </button>
 
         <!-- 画中画按钮 -->
-        <button class="control-button" @click="togglePictureInPicture" :title="isPictureInPicture ? '退出画中画' : '画中画'">
+        <button
+          class="control-button"
+          @click="togglePictureInPicture"
+          :title="isPictureInPicture ? '退出画中画' : '画中画'"
+        >
           <svg class="icon" viewBox="0 0 24 24" width="24" height="24">
-            <path fill="currentColor"
-              d="M19 7h-8v6h8V7zm2-4H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H3V5h18v14z" />
+            <path
+              fill="currentColor"
+              d="M19 7h-8v6h8V7zm2-4H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H3V5h18v14z"
+            />
           </svg>
         </button>
 
         <!-- 最大化/恢复按钮 -->
-        <button class="control-button" @click="toggleMaximize" :title="isMaximized ? '恢复' : '最大化'">
+        <button
+          class="control-button"
+          @click="toggleMaximize"
+          :title="isMaximized ? '恢复' : '最大化'"
+        >
           <svg v-if="!isMaximized" class="icon" viewBox="0 0 24 24" width="24" height="24">
             <path fill="currentColor" d="M4 4h16v16H4V4m2 2v12h12V6H6zm4 4h4v2h2v4h-4v-2h-2v-4z" />
           </svg>
           <svg v-else class="icon" viewBox="0 0 24 24" width="24" height="24">
-            <path fill="currentColor" d="M4 4h16v16H4V4m2 2v12h12V6H6zm4 4v2h2v2h2v-2h2v-2h-2v-2h-2v2h-2z" />
+            <path
+              fill="currentColor"
+              d="M4 4h16v16H4V4m2 2v12h12V6H6zm4 4v2h2v2h2v-2h2v-2h-2v-2h-2v2h-2z"
+            />
           </svg>
         </button>
 
         <!-- 全屏按钮 -->
-        <button class="control-button" @click="toggleFullscreen" :title="isFullscreen ? '退出全屏' : '全屏'">
+        <button
+          class="control-button"
+          @click="toggleFullscreen"
+          :title="isFullscreen ? '退出全屏' : '全屏'"
+        >
           <svg v-if="!isFullscreen" class="icon" viewBox="0 0 24 24" width="24" height="24">
-            <path fill="currentColor"
-              d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z" />
+            <path
+              fill="currentColor"
+              d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"
+            />
           </svg>
           <svg v-else class="icon" viewBox="0 0 24 24" width="24" height="24">
-            <path fill="currentColor"
-              d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z" />
+            <path
+              fill="currentColor"
+              d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"
+            />
           </svg>
         </button>
       </div>
@@ -132,7 +213,27 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, toRef } from 'vue'
+import { previewImage, type MomentPlayback } from '@/server/videoMoments.server'
+import { useVideoPreview } from './useVideoPreview'
+const props = withDefaults(defineProps<{ dramaSeriesId?: string; loopRange?: MomentPlayback }>(), {
+  dramaSeriesId: '',
+})
+const { preview, refresh: refreshPreview } = useVideoPreview(toRef(props, 'dramaSeriesId'))
+const previewVisible = ref(false),
+  previewTime = ref(0),
+  previewPercent = ref(50)
+const previewSrc = computed(() =>
+  preview.value ? previewImage(preview.value, previewTime.value) : '',
+)
+function previewPointer(e: PointerEvent) {
+  const box = (e.currentTarget as HTMLElement).getBoundingClientRect()
+  const fraction = Math.max(0, Math.min(1, (e.clientX - box.left) / box.width))
+  previewTime.value = seekStart.value + fraction * seekLength.value
+  const edge = Math.min(50, (84 / box.width) * 100)
+  previewPercent.value = Math.max(edge, Math.min(100 - edge, fraction * 100))
+  previewVisible.value = true
+}
 
 // 状态定义
 const isPlaying = defineModel<boolean>('isPlaying', { default: false })
@@ -151,9 +252,16 @@ const showSpeedMenu = ref(false)
 const speedOptions = [0.5, 0.75, 1, 1.25, 1.5, 2]
 
 // 计算进度条填充百分比
+const seekStart = computed(() => props.loopRange?.start ?? 0)
+const seekLength = computed(() =>
+  props.loopRange ? props.loopRange.end - props.loopRange.start : duration.value,
+)
+const displayTime = computed(() =>
+  Math.max(0, Math.min(seekLength.value, currentTime.value - seekStart.value)),
+)
 const progressPercent = computed(() => {
-  if (duration.value <= 0) return 0
-  return (currentTime.value / duration.value) * 100
+  if (seekLength.value <= 0) return 0
+  return (displayTime.value / seekLength.value) * 100
 })
 
 // 格式化时间显示
@@ -181,7 +289,7 @@ const onVolumeChange = () => {
 // 进度条控制
 const onSeek = (event: Event) => {
   const target = event.target as HTMLInputElement
-  const time = parseFloat(target.value)
+  const time = seekStart.value + Math.max(0, Math.min(seekLength.value, parseFloat(target.value)))
   emit('seek', time)
 }
 
@@ -189,8 +297,8 @@ const onSeek = (event: Event) => {
 const onProgressClick = (event: MouseEvent) => {
   const progressBar = event.currentTarget as HTMLElement
   const rect = progressBar.getBoundingClientRect()
-  const pos = (event.clientX - rect.left) / rect.width
-  const time = pos * (duration.value || 100)
+  const pos = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width))
+  const time = seekStart.value + pos * (seekLength.value || 100)
   emit('seek', time)
 }
 
@@ -298,10 +406,9 @@ defineExpose({
   rotation,
   isFullscreen,
   isPictureInPicture,
-  isMaximized
+  isMaximized,
 })
 </script>
-
 
 <style scoped>
 .video-controller {
@@ -331,8 +438,13 @@ defineExpose({
   gap: 4px;
 }
 
+.controls-left {
+  min-width: 0;
+}
+
 .controls-center {
   flex: 1;
+  min-width: 24px;
   justify-content: center;
 }
 
@@ -421,11 +533,13 @@ defineExpose({
 .volume-slider::-webkit-slider-runnable-track {
   height: 5px;
   -webkit-appearance: none;
-  background: linear-gradient(to right,
-      white 0%,
-      white v-bind(volume * 100 + '%'),
-      rgba(255, 255, 255, 0.3) v-bind(volume * 100 + '%'),
-      rgba(255, 255, 255, 0.3) 100%);
+  background: linear-gradient(
+    to right,
+    white 0%,
+    white v-bind(volume * 100 + '%'),
+    rgba(255, 255, 255, 0.3) v-bind(volume * 100 + '%'),
+    rgba(255, 255, 255, 0.3) 100%
+  );
   border-radius: 5px;
 }
 
@@ -437,6 +551,7 @@ defineExpose({
 }
 
 .progress-container {
+  position: relative;
   width: 100%;
   cursor: pointer;
 }
@@ -446,7 +561,6 @@ defineExpose({
   width: 100%;
   height: 5px;
   margin: 6px 0;
-
 }
 
 /* 进度条背景轨道 */
@@ -468,6 +582,8 @@ defineExpose({
 }
 
 .progress-slider {
+  display: block;
+  margin: 0;
   width: 100%;
   height: 5px;
   -webkit-appearance: none;
@@ -482,7 +598,7 @@ defineExpose({
   -webkit-appearance: none;
   width: 12px;
   height: 12px;
-  margin-top: -15px;
+  margin-top: -3.5px;
   border-radius: 50%;
   background: white;
   cursor: pointer;
@@ -493,6 +609,10 @@ defineExpose({
 
 .progress-slider-container:hover .progress-slider::-webkit-slider-thumb {
   transform: scale(1.2);
+}
+.progress-slider::-webkit-slider-runnable-track {
+  height: 5px;
+  background: transparent;
 }
 
 /* 进度条填充效果 */
@@ -508,10 +628,13 @@ defineExpose({
   transition: width 0.1s linear;
 }
 
+.progress-filled--clip {
+  background-color: #66b1ff;
+}
+
 .speed-control {
   position: relative;
   flex-shrink: 1;
-
 }
 
 .speed-control .control-button {
@@ -551,7 +674,6 @@ defineExpose({
 
 /* 当屏幕宽度较小时，缩小控件 */
 @media (max-width: 768px) {
-
   .controls-left,
   .controls-center,
   .controls-right {
@@ -580,7 +702,6 @@ defineExpose({
 
 /* 当屏幕宽度小于500px时，进一步缩小控件 */
 @media (max-width: 500px) {
-
   .controls-left,
   .controls-center,
   .controls-right {
@@ -610,7 +731,6 @@ defineExpose({
 
 /* 当屏幕宽度小于400px时，进一步缩小控件 */
 @media (max-width: 400px) {
-
   .controls-left,
   .controls-center,
   .controls-right {
@@ -637,5 +757,36 @@ defineExpose({
     min-width: 25px;
     font-size: 11px;
   }
+}
+</style>
+
+<style scoped>
+.seek-image {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  transform: translateX(-50%);
+  z-index: 40;
+  width: 160px;
+  border-radius: 7px;
+  background: #10151eea;
+  color: white;
+  text-align: center;
+  pointer-events: none;
+  overflow: hidden;
+  font-size: 11px;
+}
+.seek-image,
+.seek-image * {
+  pointer-events: none !important;
+}
+.seek-image img {
+  display: block;
+  width: 160px;
+  height: 90px;
+  object-fit: contain;
+}
+.seek-image span {
+  display: block;
+  padding: 4px;
 }
 </style>

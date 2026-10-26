@@ -48,3 +48,18 @@ it('独立项插回对应功能分组，公共配置编辑器不出现本库独�
   expect(editor.html()).not.toContain('LOCAL_')
   editor.unmount()
 })
+it('片段预览方式和间隔位于公共表单内，跟随时只读，独立时可编辑', async () => {
+  const config = createDefaultConfigApp()
+  const wrapper = shallowMount(SharedDisplayFields, { props: { config, readonly: true }, global: {
+    plugins: [createPinia()], renderStubDefaultSlot: true,
+  } })
+  const scope = wrapper.findAllComponents(SettingFieldsScope).find(item => item.html().includes('片段预览生成方式'))!
+  expect(scope).toBeDefined()
+  expect(scope.html()).toContain('默认预览抽图间隔')
+  expect(scope.props('disabled')).toBe(true)
+  expect(config.videoPreviewGeneration).toBe('playback')
+  expect(config.videoPreviewInterval).toBe(30)
+  await wrapper.setProps({ readonly: false })
+  expect(scope.props('disabled')).toBe(false)
+  wrapper.unmount()
+})

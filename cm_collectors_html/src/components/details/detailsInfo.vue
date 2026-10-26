@@ -71,6 +71,7 @@
           </div>
         </div>
       </div>
+      <VideoDetailsExtras class="info-block" :resource="props.resource" />
       <div class="info-block" v-if="store.appStoreData.currentFilesBasesAppConfig.sampleStatus">
         <div v-if="props.modern" class="modern-section-title">
           <span>剧照</span>
@@ -100,6 +101,7 @@
   </div>
 </template>
 <script lang="ts" setup>
+import VideoDetailsExtras from "./VideoDetailsExtras.vue";
 import type { I_resource, I_resourceDramaSeries } from '@/dataType/resource.dataType';
 import { ref, watch, computed, type PropType } from 'vue';
 import { appStoreData } from '@/storeData/app.storeData';

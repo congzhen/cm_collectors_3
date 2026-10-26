@@ -4,6 +4,9 @@
       <el-tab-pane name="general" label="通用设置">
         <generalSet v-if="activeName === 'general'"></generalSet>
       </el-tab-pane>
+      <el-tab-pane name="videoPreviewCache" label="视频预览缓存">
+        <VideoPreviewSetting v-if="activeName === 'videoPreviewCache'" />
+      </el-tab-pane>
       <!--
       <el-tab-pane name="user" label="用户管理">
         <h3>未开放</h3>
@@ -20,6 +23,7 @@
 </template>
 <script setup lang="ts">
 import { ref } from 'vue';
+import VideoPreviewSetting from '../VideoPreviewSetting.vue';
 import generalSet from './generalSet.vue';
 import updateLog from './updateLog.vue';
 import aboutSoftware from './aboutSoftware.vue';

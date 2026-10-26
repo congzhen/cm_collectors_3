@@ -4,7 +4,7 @@ import { defineComponent, h, KeepAlive, ref, nextTick } from 'vue';
 import MobileVideoPlayer from '../mobileVideoPlayer.vue';
 import { readMobilePlayback, saveMobilePlayback } from '@/common/mobileSession';
 
-const mocks = vi.hoisted(() => ({ source: vi.fn(), instances: [] as MockPlayer[] }));
+const mocks = vi.hoisted(() => ({ source: vi.fn(), previewRequest: vi.fn(), instances: [] as MockPlayer[] }));
 interface MockPlayer {
   root: HTMLElement; video: HTMLVideoElement; config: Record<string, unknown>;
   currentTime: number; duration: number; playbackRate: number; paused: boolean;
@@ -13,6 +13,10 @@ interface MockPlayer {
   on: (event: string, callback: () => void) => void;
   fire: (event: string) => void; play: ReturnType<typeof vi.fn>; destroy: ReturnType<typeof vi.fn>;
 }
+// These controls have their own tests; playback lifecycle tests do not make preview API requests.
+vi.mock('@/assets/request', () => ({ default: mocks.previewRequest }));
+vi.mock('../MomentTools.vue', () => ({ default: defineComponent({ setup: () => () => h('div') }) }));
+vi.mock('../MobileSeekPreview.vue', () => ({ default: defineComponent({ setup: () => () => h('div') }) }));
 vi.mock('@/common/mobilePlaybackSource', () => ({ resolveMobileSource: mocks.source, MobileSourceError: class extends Error {} }));
 vi.mock('xgplayer-hls', () => ({ default: { isSupported: () => true } }));
 vi.mock('xgplayer', () => ({
@@ -43,6 +47,7 @@ vi.mock('xgplayer', () => ({
 
 describe('手机播放恢复与请求隔离', () => {
   beforeEach(() => {
+    mocks.previewRequest.mockReset().mockResolvedValue({ status: true, data: false });
     mocks.instances.length = 0; localStorage.clear();
     mocks.source.mockReset().mockResolvedValue({ playUrl: '/movie.mp4', playType: 'mp4' });
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false }));
@@ -51,6 +56,18 @@ describe('手机播放恢复与请求隔离', () => {
   afterEach(() => {
     delete (window as Window & { __cmPhoneShellDownload?: boolean }).__cmPhoneShellDownload;
     vi.unstubAllGlobals(); vi.useRealTimers();
+  });
+  it('实际开始播放后才检查自动生成，缓冲恢复不重复请求', async () => {
+    const wrapper = mount(MobileVideoPlayer, { props: { resourceId: 'r', dramaSeriesId: 'e', title: '视频' } });
+    await flushPromises();
+    const player = mocks.instances[0];
+    player.fire('LOADED_DATA'); player.fire('PLAY');
+    expect(mocks.previewRequest).not.toHaveBeenCalled();
+    player.fire('PLAYING'); await flushPromises();
+    player.fire('PLAYING'); await flushPromises();
+    expect(mocks.previewRequest).toHaveBeenCalledOnce();
+    expect(mocks.previewRequest).toHaveBeenCalledWith({ url: '/videoPreviews/e/playback', method: 'post' });
+    wrapper.unmount();
   });
   it('APK 点击下载由桥接接管，浏览器继续内置下载', async () => {
     const wrapper = mount(MobileVideoPlayer, { props: { resourceId: 'r', dramaSeriesId: 'e', title: '视频' } });
@@ -202,7 +219,7 @@ describe('手机播放恢复与请求隔离', () => {
     await vi.advanceTimersByTimeAsync(40000); await nextTick();
     expect(player.root.textContent).toContain('可继续等待');
     expect(mocks.source).toHaveBeenCalledOnce();
-    const retry = player.root.querySelector('button')!;
+    const retry = player.root.querySelector<HTMLButtonElement>('.phone-player-message button')!;
     retry.click(); await flushPromises();
     expect(mocks.instances).toHaveLength(2);
     expect(mocks.instances[1].config.startTime).toBe(160);

@@ -77,6 +77,8 @@
       </div>
     </div>
 
+    <VideoDetailsExtras v-if="resourceInfo" :resource="resourceInfo" />
+
     <!-- 剧照 -->
     <div class="tag-section" v-if="resourceInfo && store.appStoreData.currentFilesBasesAppConfig.sampleStatus">
       <div class="section-title">剧照</div>
@@ -104,6 +106,7 @@
 </template>
 
 <script lang="ts" setup>
+import VideoDetailsExtras from "@/components/details/VideoDetailsExtras.vue";
 import { ref, onMounted, onBeforeUnmount, nextTick, computed, defineAsyncComponent } from "vue";
 import { useRouter } from 'vue-router';
 const mobileVideoPlayer = defineAsyncComponent(() => import('@/components/play/mobileVideoPlayer.vue'));

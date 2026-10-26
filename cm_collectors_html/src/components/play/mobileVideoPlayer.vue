@@ -2,6 +2,8 @@
   <div ref="stageRef" class="phone-player-stage">
     <div ref="hostRef" class="phone-player-host" />
     <Teleport v-if="playerRoot" :to="playerRoot">
+      <MomentTools @loop-change="activeMoment = $event" :initial-moment="props.initialMoment" :activity-root="playerRoot" :page-overlay="!full" :key="props.dramaSeriesId" :drama-series-id="props.dramaSeriesId" :is-playing="() => !!player && !player.paused" :is-ended="() => !!player?.ended" :get-time="() => player?.currentTime || 0" :get-duration="() => ready ? player?.duration || 0 : 0" :seek="seekMoment" :play="continuePlay" />
+      <MobileSeekPreview :get-range="() => activeMoment" :drama-series-id="props.dramaSeriesId" :root="playerRoot" :get-rotation="() => player?.rotateDeg || 0" :get-duration="() => player?.duration || 0" />
       <div v-if="subtitleText" class="phone-subtitle">{{ subtitleText }}</div>
       <div v-if="displayMessage" class="phone-player-message" role="status">
         <span v-if="isLoading" class="phone-loading-spinner" aria-hidden="true" />
@@ -19,6 +21,11 @@
 
 <script setup lang="ts">
 import { computed, nextTick, onActivated, onBeforeUnmount, onDeactivated, onMounted, ref, shallowRef, watch } from 'vue';
+import MomentTools from './MomentTools.vue';
+import type { MomentPlayback } from '@/server/videoMoments.server';
+import { createPlaybackPreviewTrigger } from '@/server/videoMoments.server';
+const queuePlaybackPreview = createPlaybackPreviewTrigger();
+import MobileSeekPreview from './MobileSeekPreview.vue';
 import Player, { Events } from 'xgplayer';
 import HlsPlugin from 'xgplayer-hls';
 import 'xgplayer/dist/index.min.css';
@@ -27,8 +34,9 @@ import { readMobilePlayback, readMobileSound, resumeTime, saveMobilePlayback, sa
 import { parseMobileVtt } from '@/common/mobileSubtitles';
 import { downloadMobileShell, notifyMobileShell } from '@/common/mobileShell';
 
-const props = withDefaults(defineProps<{ resourceId: string; dramaSeriesId: string; title: string; autoplay?: boolean;
+const props = withDefaults(defineProps<{ resourceId: string; dramaSeriesId: string; title: string; autoplay?: boolean; initialMoment?: MomentPlayback;
   sourceLoader?: (id: string, signal?: AbortSignal) => Promise<MobileSource> }>(), { sourceLoader: resolveMobileSource });
+const activeMoment = ref<MomentPlayback>();
 const stageRef = ref<HTMLElement>();
 const hostRef = ref<HTMLElement>();
 const playerRoot = shallowRef<HTMLElement>();
@@ -310,6 +318,7 @@ const load = async (recovering = false) => {
     });
     instance.on(Events.PLAYING, () => {
       if (!current()) return;
+      void queuePlaybackPreview(activeId);
       playbackStalled.value = false;
       retries = 0; failed.value = false; retryableFailure = false; message.value = ''; clearTimers();
     });
@@ -466,6 +475,7 @@ const onShellQuery = () => {
     notifyMobileShell(true, video.videoWidth > video.videoHeight);
   }
 };
+const seekMoment = (time: number) => { if (player && ready) { player.currentTime = time; saveProgress(); } };
 const pause = () => {
   wantedPlaying = false;
   player?.pause();

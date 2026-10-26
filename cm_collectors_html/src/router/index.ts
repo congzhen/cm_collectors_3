@@ -18,6 +18,7 @@ import { isMobile } from '@/assets/mobile'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
+    { path: '/moments', name: 'moments', component: () => import('@/views/MomentsView.vue'), meta: { mobileAccess: true } },
     {
       path: '/adminLogin',
       name: 'adminLogin',

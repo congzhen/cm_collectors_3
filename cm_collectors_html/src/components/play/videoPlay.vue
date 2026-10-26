@@ -31,7 +31,7 @@
       <!-- 移动端使用原生播放器 -->
       <video v-else ref="nativeVideoRef" class="native-video-player" :controls="!props.hideControls" preload="auto" width="100%"
         playsinline webkit-playsinline x5-playsinline x5-video-player-type="h5" x5-video-player-fullscreen="true"
-        x5-video-orientation="portraint" @play="handleNativePlay" @pause="handleNativePause"
+        x5-video-orientation="portraint" @playing="queuePlaybackPreview(videoId)" @play="handleNativePlay" @pause="handleNativePause"
         @ended="handleNativePause" @timeupdate="handleNativeTimeUpdate">
         <source :src="videoSrc" :type="isHls ? 'application/x-mpegURL' : 'video/mp4'">
       </video>
@@ -41,17 +41,23 @@
       </button>
       <div v-if="activeSubtitleText" class="custom-subtitle-display">{{ activeSubtitleText }}</div>
     </div>
-    <videoPlayControls v-if="useVideoPlayControls && !props.hideControls && !isMobile()" ref="videoControlsRef" @play="handlePlay"
+    <videoPlayControls :loop-range="activeMoment" v-if="useVideoPlayControls && !props.hideControls && !isMobile()" :drama-series-id="videoId" ref="videoControlsRef" @play="handlePlay"
       @pause="handlePause" @seek="handleSeek" @volume-change="handleVolumeChange" @mute-toggle="handleMuteToggle"
       @playback-rate-change="handlePlaybackRateChange" @rotate="handleRotate" @fullscreen="handleFullscreen"
       @picture-in-picture="handlePictureInPicture" @maximize="handleMaximize" @open-in-player="handleOpenInPlayer"
       @open-cloud-player="handleOpenCloudPlayer" />
+    <MomentTools @loop-change="activeMoment = $event" :initial-moment="props.initialMoment" :activity-root="videoPlayContainerElementRef || undefined" v-if="videoId && !props.hideControls" :key="videoId" :drama-series-id="videoId" :is-playing="isPlaying" :is-ended="() => isMobile() ? !!nativeVideoRef?.ended : !!player?.ended()" :get-time="getCurrentTime" :get-duration="() => isLoading ? 0 : getDuration()" :seek="setCurrentTime" :play="play" />
     <playCloudCheckPromptDialog ref="playCloudCheckPromptDialogRef" />
     </div>
   </Teleport>
 </template>
 
 <script lang="ts" setup>
+import MomentTools from './MomentTools.vue';
+import type { MomentPlayback } from '@/server/videoMoments.server';
+import type { PropType } from 'vue';
+import { createPlaybackPreviewTrigger } from '@/server/videoMoments.server';
+const queuePlaybackPreview = createPlaybackPreviewTrigger();
 import videojs from 'video.js'
 import 'video.js/dist/video-js.css'
 import videoPlayControls from './videoPlayControls.vue';
@@ -85,6 +91,7 @@ interface I_subtitleCue {
 }
 
 const props = defineProps({
+  initialMoment: { type: Object as PropType<MomentPlayback> },
   forceDesktop: {
     type: Boolean,
     default: false,
@@ -110,6 +117,7 @@ const props = defineProps({
 // 独立播放策略选定桌面播放器后，分屏等尺寸变化不应切到旧原生分支。
 const isMobile = () => !props.forceDesktop && isMobileLayout();
 const appStore = appStoreData()
+const activeMoment = ref<MomentPlayback>();
 const indexkey = ref(0);
 const isLoading = ref(false);
 const loadingText = ref('正在加载视频...');
@@ -296,6 +304,8 @@ const setupPlayerEventListeners = () => {
     isLoading.value = false;
     showControls()
   });
+
+  player.value.on('playing', () => { void queuePlaybackPreview(videoId.value) });
 
   // 监听暂停事件
   player.value.on('pause', function () {
@@ -1304,6 +1314,7 @@ defineExpose({
 
 <style lang="scss">
 .video-player-container {
+  position: relative;
   width: 100%;
   height: 100%;
   margin: 0 auto;

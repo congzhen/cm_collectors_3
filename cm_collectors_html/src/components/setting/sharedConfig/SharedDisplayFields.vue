@@ -1,6 +1,8 @@
 <template>
   <div class="shared-fields">
-    <p v-if="readonly" class="shared-source-hint">通用参数来自公共配置，下方只读展示；本库独立项仍可编辑。修改通用参数请点击上方“打开公共配置”。</p>
+    <p v-if="readonly" class="shared-source-hint">
+      通用参数来自公共配置，下方只读展示；本库独立项仍可编辑。修改通用参数请点击上方“打开公共配置”。
+    </p>
     <SettingSectionTitle>基础设置</SettingSectionTitle>
     <SettingFieldsScope :disabled="readonly">
       <el-form-item label="国家列表">
@@ -70,7 +72,10 @@
           inactive-text="关闭"
         />
       </el-form-item>
-      <el-form-item v-if="config.resourcesShowMode == 'coverPosterBox'" label="封面海报盒子-信息宽度">
+      <el-form-item
+        v-if="config.resourcesShowMode == 'coverPosterBox'"
+        label="封面海报盒子-信息宽度"
+      >
         <el-input-number v-model="config.coverPosterBoxInfoWidth" :min="20" :max="9999" />
       </el-form-item>
       <el-form-item
@@ -205,6 +210,28 @@
       <el-form-item label="剧照最大显示数量">
         <el-input-number v-model="config.sampleShowMax" :min="1" :max="100" />
       </el-form-item>
+      <el-form-item label="片段预览生成方式">
+        <el-select v-model="config.videoPreviewGeneration">
+          <el-option label="播放时自动生成（默认）" value="playback" />
+          <el-option label="手动点击生成" value="manual" />
+        </el-select>
+        <div class="preview-setting-hint">
+          自动模式在内置播放器开始播放时为无预览的视频排队；已有预览保留，不会因视频替换而重建。
+        </div>
+      </el-form-item>
+      <el-form-item label="默认预览抽图间隔">
+        <el-select v-model="config.videoPreviewInterval">
+          <el-option
+            v-for="seconds in [10, 30, 60, 120]"
+            :key="seconds"
+            :label="`每 ${seconds} 秒`"
+            :value="seconds"
+          />
+        </el-select>
+        <div class="preview-setting-hint">
+          默认 30 秒。用于自动生成与手动生成的初始选项；已有预览需手动删除后重新生成才会改变间隔。
+        </div>
+      </el-form-item>
     </SettingFieldsScope>
     <slot name="sample" />
     <SettingSectionTitle>参数设置</SettingSectionTitle>
@@ -301,7 +328,7 @@
 </template>
 <script setup lang="ts">
 import SettingFieldsScope from '@/components/setting/SettingFieldsScope.vue'
-import SettingSectionTitle from '@/components/setting/SettingSectionTitle.vue';
+import SettingSectionTitle from '@/components/setting/SettingSectionTitle.vue'
 import alertMsg from '@/components/com/feedback/alertMsg.vue'
 import type { I_config_app } from '@/dataType/config.dataType'
 import selectCountry from '@/components/com/form/selectCountry.vue'
@@ -320,6 +347,13 @@ const appLang = AppLang()
 defineProps<{ config: I_config_app; readonly?: boolean }>()
 </script>
 <style scoped>
+.preview-setting-hint {
+  width: 100%;
+  margin-top: 6px;
+  color: var(--el-text-color-secondary);
+  font-size: 12px;
+  line-height: 1.6;
+}
 .shared-source-hint {
   color: var(--el-text-color-secondary);
   font-size: 13px;

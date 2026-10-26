@@ -53,6 +53,7 @@
           :total="dataCount" :page-size="pageSize" :pager-count="5" size="small" @change="changePageHandle" />
       </div>
       <div class="bottom-btns">
+        <LibraryMomentsButton :files-bases-id="store.appStoreData.currentFilesBases.id || ''" />
         <playListBtn :modern="isModernAppearance"></playListBtn>
         <coverAdjuster v-admin></coverAdjuster>
       </div>
@@ -61,6 +62,7 @@
 </template>
 <script setup lang="ts">
 import contentList from '@/components/content/contentList.vue'
+import LibraryMomentsButton from '@/components/play/LibraryMomentsButton.vue'
 import contentListAdmin from '@/components/content/contentListAdmin.vue';
 import coverAdjuster from '@/components/setting/fileDatabaseSetting/coverAdjuster.vue';
 import playListBtn from '@/components/playList/playListBtn.vue';

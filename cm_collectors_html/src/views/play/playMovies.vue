@@ -48,6 +48,8 @@
             </div>
           </div>
 
+          <VideoDetailsExtras :resource="resourceInfo" />
+
           <div v-if="store.appStoreData.currentFilesBasesAppConfig.sampleStatus">
             <el-alert class="tagAlert" title="剧照" type="warning" :closable="false" />
           </div>
@@ -85,6 +87,7 @@
 
 <script lang="ts" setup>
 import HeaderView from '../HeaderView.vue'
+import VideoDetailsExtras from '@/components/details/VideoDetailsExtras.vue'
 import ResourceVideoPlayer from "@/components/play/resourceVideoPlayer.vue";
 import resourceDramaSeriesList from '@/components/resource/resourceDramaSeriesList.vue'
 import performerDetails from '@/components/performer/performerDetails.vue'

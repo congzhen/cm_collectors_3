@@ -32,7 +32,7 @@
     <div ref="videoPlayElementRef" v-loading="loading" class="video-play"
       :style="{ display: videoPlayerVisible ? 'block' : 'none' }">
       <ResourceVideoPlayer v-if="dialogVisible && resourceInfo && selectedDramaSeriesId" ref="videoPlayRef"
-        :resource="resourceInfo" :drama-series-id="selectedDramaSeriesId" @dimensions="onDimensions" />
+        :key="playbackSession" :resource="resourceInfo" :drama-series-id="selectedDramaSeriesId" :initial-moment="initialMoment" @dimensions="onDimensions" />
     </div>
 
   </el-dialog>
@@ -43,6 +43,7 @@ import ResourceVideoPlayer from './resourceVideoPlayer.vue';
 import { resourceServer } from '@/server/resource.server';
 import { ElMessage } from 'element-plus';
 import type { I_resource } from '@/dataType/resource.dataType';
+import type { MomentPlayback } from '@/server/videoMoments.server';
 
 
 const videoPlayElementRef = ref<HTMLDivElement>();
@@ -51,6 +52,8 @@ const videoPlayRef = ref<InstanceType<typeof ResourceVideoPlayer>>();
 const dialogVisible = ref(false);
 const loading = ref(false);
 const selectedDramaSeriesId = ref('');
+const initialMoment = ref<MomentPlayback>();
+const playbackSession = ref(0);
 let requestVersion = 0;
 
 const videoPlayerVisible = ref(true); // 控制视频播放器显示状态
@@ -70,7 +73,7 @@ const dialogWidth_C = computed(() => {
 
 const init = async (resourceId: string, _dramaSeriesId: string) => {
   const request = ++requestVersion;
-  const resource = await getResourceInfo(resourceId);
+  const resource = await getResourceInfo(resourceId, request);
   if (request !== requestVersion) return;
   resourceInfo.value = resource;
   if (!resourceInfo.value) {
@@ -82,19 +85,20 @@ const init = async (resourceId: string, _dramaSeriesId: string) => {
   }
 };
 
-const getResourceInfo = async (resourceId: string): Promise<I_resource | undefined> => {
+const getResourceInfo = async (resourceId: string, request: number): Promise<I_resource | undefined> => {
   try {
     loading.value = true;
     const result = await resourceServer.info(resourceId);
+    if (request !== requestVersion || !dialogVisible.value) return undefined;
     if (!result || !result.status) {
-      ElMessage.error(result.msg);
+      ElMessage.error(result?.msg || '资源加载失败');
       return undefined;
     }
     return result.data;
   } catch (error) {
-    console.log(error)
+    if (request === requestVersion && dialogVisible.value) ElMessage.error('资源加载失败，请重试')
   } finally {
-    loading.value = false;
+    if (request === requestVersion) loading.value = false;
   }
 };
 
@@ -142,7 +146,9 @@ const closeHandle = () => {
   resourceInfo.value = undefined;
 }
 
-const open = (_resourceId: string, _dramaSeriesId: string) => {
+const open = (_resourceId: string, _dramaSeriesId: string, moment?: MomentPlayback) => {
+  playbackSession.value++;
+  initialMoment.value = moment;
   selectedDramaSeriesId.value = '';
   videoPlayerVisible.value = true;
   void init(_resourceId, _dramaSeriesId)
