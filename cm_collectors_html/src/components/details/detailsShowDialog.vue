@@ -11,7 +11,7 @@
         </div>
       </div>
       <div class="right">
-        <detailsInfo :resource="props.resource"></detailsInfo>
+        <detailsInfo :resource="props.resource" moment-layout="grid"></detailsInfo>
       </div>
     </div>
   </dialogCommon>

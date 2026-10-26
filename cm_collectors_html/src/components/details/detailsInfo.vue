@@ -71,7 +71,7 @@
           </div>
         </div>
       </div>
-      <VideoDetailsExtras class="info-block" :resource="props.resource" />
+      <VideoDetailsExtras class="info-block" :resource="props.resource" :layout="props.momentLayout" />
       <div class="info-block" v-if="store.appStoreData.currentFilesBasesAppConfig.sampleStatus">
         <div v-if="props.modern" class="modern-section-title">
           <span>剧照</span>
@@ -140,6 +140,10 @@ const props = defineProps({
   sampleColumns: {
     type: Number,
     default: 0,
+  },
+  momentLayout: {
+    type: String as PropType<'grid' | 'list'>,
+    default: 'list',
   },
 })
 // 本地响应式变量，用于替代直接修改 props.resource.stars

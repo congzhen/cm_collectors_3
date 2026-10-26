@@ -61,7 +61,7 @@
       </section>
 
       <section class="modern-details-content">
-        <detailsInfo :resource="props.resource" :show-overview="false" modern></detailsInfo>
+        <detailsInfo :resource="props.resource" :show-overview="false" moment-layout="grid" modern></detailsInfo>
       </section>
     </div>
   </el-dialog>
