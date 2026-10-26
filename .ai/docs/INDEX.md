@@ -17,6 +17,8 @@
 
 - [文件库公共基础配置](design/shared-library-config.md)：按分组跟随、独立字段边界、分期提交和回归验证。
 
+- [视频片段收藏与画面预览](design/video-moments-previews.md)：片段收藏、时间轴、进度条预览、手动删除和缓存容量管理。
+
 ## Testing
 
 - [测试指南](testing/testing-guide.md)：已有测试入口、建议验证方式和验收清单。
