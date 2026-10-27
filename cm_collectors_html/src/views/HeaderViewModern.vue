@@ -42,7 +42,7 @@
           <span>导入刮削</span>
         </button>
 
-        <button v-admin class="modern-header-action" type="button" title="检测更新" @click="openCheckUpdateSoft">
+        <button v-admin class="modern-header-action" type="button" title="检测更新" @click="openSoftwareUpdate">
           <el-icon><Refresh /></el-icon>
           <span>检测更新</span>
         </button>
@@ -106,7 +106,6 @@
     <tagListDrawer ref="tagListDrawerRef" />
     <resourceFormDrawer ref="resourceFormDrawerRef" @success="createResouceSuccessHandle" />
     <importResourceDrawer ref="importResourceDrawerRef" @success="createResouceSuccessHandle" />
-    <updateSoftDialog ref="updateSoftDialogRef" />
     <playListDrawer ref="playListDrawerRef" />
   </header>
 </template>
@@ -126,7 +125,7 @@ import searchInputTagByStore from '@/components/com/form/searchInputTagByStore.v
 import tagListDrawer from '@/components/tag/tagListDrawer.vue'
 import resourceFormDrawer from '@/components/resource/resourceFormDrawer.vue'
 import importResourceDrawer from '@/components/importResource/importResourceDrawer.vue'
-import updateSoftDialog from '@/components/setting/updateSoft/updateSoftDialog.vue'
+import { openSoftwareUpdate } from '@/common/softwareUpdate'
 import playListDrawer from '@/components/playList/playListDrawer.vue'
 
 const props = defineProps({
@@ -155,7 +154,6 @@ const { isBrightTheme, isThemeSwitching, themeToggleTitle, toggleTheme } = useTh
 const tagListDrawerRef = ref<InstanceType<typeof tagListDrawer>>()
 const resourceFormDrawerRef = ref<InstanceType<typeof resourceFormDrawer>>()
 const importResourceDrawerRef = ref<InstanceType<typeof importResourceDrawer>>()
-const updateSoftDialogRef = ref<InstanceType<typeof updateSoftDialog>>()
 const playListDrawerRef = ref<InstanceType<typeof playListDrawer>>()
 const modernHeaderSearchRef = ref<HTMLElement>()
 const searchWrapped = ref(false)
@@ -172,7 +170,6 @@ const switchAdminStatus = () => {
 }
 const openTagList = () => tagListDrawerRef.value?.open()
 const openImportResource = () => importResourceDrawerRef.value?.open()
-const openCheckUpdateSoft = () => updateSoftDialogRef.value?.open()
 const openPlayListHandle = () => playListDrawerRef.value?.open()
 const changeHomeMode = (mode: T_homeMode) => setHomeMode(mode)
 

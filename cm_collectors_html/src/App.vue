@@ -10,6 +10,7 @@
     <p>{{ startupError }}</p>
     <el-button type="primary" @click="init">重新连接</el-button>
   </div>
+  <UpdateCenter v-if="initStatus" />
 </template>
 <script setup lang="ts">
 import { onMounted, onBeforeUnmount, ref, watch } from 'vue'
@@ -24,6 +25,7 @@ import router from '@/router'
 import { isMobile, setCloseMobileDisplay } from '@/assets/mobile'
 import { isRestorableMobilePath, mobileRestorePath, readMobileSession, saveMobileSession } from '@/common/mobileSession'
 import { applyTheme } from '@/common/theme'
+import UpdateCenter from '@/components/setting/updateSoft/UpdateCenter.vue'
 
 const initStatus = ref(false)
 const startupError = ref('')

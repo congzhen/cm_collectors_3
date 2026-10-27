@@ -68,7 +68,7 @@
           <label class="menu-item-title">导入</label>
            -->
         </div>
-        <div class="menu-item" v-admin @click="openCheckUpdateSoft">
+        <div class="menu-item" v-admin @click="openSoftwareUpdate">
           <el-tooltip content="检测更新" placement="bottom">
             <el-icon>
               <ChromeFilled />
@@ -148,7 +148,6 @@
     <tagListDrawer ref="tagListDrawerRef" />
     <resourceFormDrawer ref="resourceFormDrawerRef" @success="createResouceSuccessHandle" />
     <importResourceDrawer ref="importResourceDrawerRef" @success="createResouceSuccessHandle" />
-    <updateSoftDialog ref="updateSoftDialogRef"></updateSoftDialog>
     <playListDrawer ref="playListDrawerRef"></playListDrawer>
   </div>
 </template>
@@ -161,7 +160,7 @@ import tagListDrawer from '@/components/tag/tagListDrawer.vue'
 import searchInputTagByStore from '@/components/com/form/searchInputTagByStore.vue'
 import resourceFormDrawer from '@/components/resource/resourceFormDrawer.vue'
 import importResourceDrawer from '@/components/importResource/importResourceDrawer.vue'
-import updateSoftDialog from '@/components/setting/updateSoft/updateSoftDialog.vue'
+import { openSoftwareUpdate } from '@/common/softwareUpdate'
 import playListDrawer from '@/components/playList/playListDrawer.vue'
 import searchFavoritePopover from '@/components/search/searchFavoritePopover.vue'
 import { appStoreData } from '@/storeData/app.storeData'
@@ -182,7 +181,6 @@ const emits = defineEmits(['createResouceSuccess'])
 const tagListDrawerRef = ref<InstanceType<typeof tagListDrawer>>()
 const resourceFormDrawerRef = ref<InstanceType<typeof resourceFormDrawer>>()
 const importResourceDrawerRef = ref<InstanceType<typeof importResourceDrawer>>()
-const updateSoftDialogRef = ref<InstanceType<typeof updateSoftDialog>>()
 const playListDrawerRef = ref<InstanceType<typeof playListDrawer>>()
 
 const props = defineProps({
@@ -209,9 +207,6 @@ const openImportResource = () => {
   importResourceDrawerRef.value?.open()
 }
 
-const openCheckUpdateSoft = () => {
-  updateSoftDialogRef.value?.open()
-}
 const openPlayListHandle = () => {
   playListDrawerRef.value?.open()
 }
