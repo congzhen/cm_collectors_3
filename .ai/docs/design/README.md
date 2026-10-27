@@ -10,6 +10,8 @@
 
 ## 当前状态
 
+- [静默检查与应用自更新](software-update.md)：浏览器提醒策略、GitHub 校验下载、Windows/Linux 安装及 Docker 持久化迁移。
+
 - [文件库公共基础配置](shared-library-config.md)：展示、导入和刮削的公共参数跟随与兼容边界。
 
 - [大屏移动设备播放器](tablet-player.md)：保留桌面布局，支持后台播放策略、尺寸阈值及 PC 全屏触控唤醒。
