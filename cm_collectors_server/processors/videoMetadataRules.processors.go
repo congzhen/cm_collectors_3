@@ -2,6 +2,7 @@ package processors
 
 import (
 	"cm_collectors_server/core"
+	"cm_collectors_server/internal/maintenance"
 	"cm_collectors_server/models"
 	"cm_collectors_server/utils"
 	"crypto/sha256"
@@ -207,7 +208,7 @@ func (VideoMetadata) StartCleanup(token string) error {
 		return errors.New("排除规则已变化，请重新预览")
 	}
 	metadataCleanupState = MetadataCleanupState{Status: "running", Total: preview.Total}
-	go func() {
+	maintenance.Go(func() {
 		n, err := cleanMetadataRules(core.DBS(), models.VideoMetadataScopeAll, nil, func(n int) error {
 			metadataCleanupMu.Lock()
 			metadataCleanupState.Processed = n
@@ -229,7 +230,7 @@ func (VideoMetadata) StartCleanup(token string) error {
 			metadataCleanupState.Status = "failed"
 			metadataCleanupState.Error = err.Error()
 		}
-	}()
+	})
 	return nil
 }
 

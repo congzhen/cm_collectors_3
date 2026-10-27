@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"cm_collectors_server/core"
 	"cm_collectors_server/datatype"
+	"cm_collectors_server/internal/maintenance"
 	"cm_collectors_server/models"
 	processorscache "cm_collectors_server/processorsCache"
 	processorsffmpeg "cm_collectors_server/processorsFFmpeg"
@@ -610,6 +611,11 @@ func (m *videoTranscodeManager) loop() {
 }
 
 func (m *videoTranscodeManager) runNext() {
+	if !maintenance.Begin() {
+		m.scheduleRetry()
+		return
+	}
+	defer maintenance.End()
 	m.mu.Lock()
 	if m.paused || m.currentID != "" {
 		m.mu.Unlock()
@@ -656,7 +662,7 @@ func (m *videoTranscodeManager) runNext() {
 	m.cancel = cancel
 	m.mu.Unlock()
 
-	go func() {
+	maintenance.Go(func() {
 		defer func() {
 			cancel()
 			m.mu.Lock()
@@ -666,7 +672,7 @@ func (m *videoTranscodeManager) runNext() {
 			m.notify()
 		}()
 		(VideoTranscode{}).execute(ctx, task)
-	}()
+	})
 }
 
 func (m *videoTranscodeManager) scheduleRetry() {
@@ -1773,7 +1779,7 @@ func (VideoTranscode) RetryReplacement(id string) error {
 	transcodeManager.cancel = cancel
 	transcodeManager.mu.Unlock()
 
-	go func() {
+	maintenance.Go(func() {
 		defer func() {
 			cancel()
 			transcodeManager.mu.Lock()
@@ -1783,7 +1789,7 @@ func (VideoTranscode) RetryReplacement(id string) error {
 			transcodeManager.notify()
 		}()
 		(VideoTranscode{}).retryReplacement(ctx, task, config)
-	}()
+	})
 	return nil
 }
 
@@ -1905,7 +1911,7 @@ func (VideoTranscode) SaveVerifiedOutputAsNewFile(id string) error {
 	transcodeManager.cancel = cancel
 	transcodeManager.mu.Unlock()
 
-	go func() {
+	maintenance.Go(func() {
 		defer func() {
 			cancel()
 			transcodeManager.mu.Lock()
@@ -1926,7 +1932,7 @@ func (VideoTranscode) SaveVerifiedOutputAsNewFile(id string) error {
 		if err := saveVideoTranscodeNewOutput(ctx, task, task.TemporaryPath, outputPath, outputStat); err != nil {
 			setVideoTranscodeFailure(task.ID, err)
 		}
-	}()
+	})
 	return nil
 }
 
@@ -2880,7 +2886,7 @@ func waitVideoTranscodeVerification(
 	verify func() videoTranscodeVerifyResult,
 ) videoTranscodeVerifyResult {
 	resultChannel := make(chan videoTranscodeVerifyResult, 1)
-	go func() { resultChannel <- verify() }()
+	maintenance.Go(func() { resultChannel <- verify() })
 	timer := time.NewTimer(timeout)
 	defer timer.Stop()
 	select {

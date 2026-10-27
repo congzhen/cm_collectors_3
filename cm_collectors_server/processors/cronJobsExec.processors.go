@@ -3,6 +3,7 @@ package processors
 import (
 	"cm_collectors_server/datatype"
 	"cm_collectors_server/errorMessage"
+	"cm_collectors_server/internal/maintenance"
 	"cm_collectors_server/models"
 	"encoding/json"
 	"fmt"
@@ -84,6 +85,10 @@ func (t CronJobsExec) RegCronJobs() error {
 	return nil
 }
 func (t CronJobsExec) ExecuteJob(data models.CronJobs) error {
+	if !maintenance.Begin() {
+		return maintenance.ErrPaused
+	}
+	defer maintenance.End()
 	if !cronJobExecutions.tryStart(data.ID) {
 		return errorMessage.Err_CronJobs_Running
 	}

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"cm_collectors_server/core"
 	"cm_collectors_server/datatype"
+	"cm_collectors_server/internal/maintenance"
 	"cm_collectors_server/models"
 	processorsai "cm_collectors_server/processorsAI"
 	processorsffmpeg "cm_collectors_server/processorsFFmpeg"
@@ -474,7 +475,7 @@ func startAiTagWorker(filesBasesID string) bool {
 	aiTagWorkerFilesBasesID = filesBasesID
 	aiTagStopCurrentRun = false
 	aiTagRestartAfterStop = false
-	go func() {
+	maintenance.Go(func() {
 		defer func() {
 			restart := false
 			restartFilesBasesID := ""
@@ -491,7 +492,7 @@ func startAiTagWorker(filesBasesID string) bool {
 			}
 		}()
 		(AiTag{}).runWorker(filesBasesID)
-	}()
+	})
 	return true
 }
 

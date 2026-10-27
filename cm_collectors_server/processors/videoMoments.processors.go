@@ -3,6 +3,7 @@ package processors
 import (
 	"cm_collectors_server/core"
 	"cm_collectors_server/datatype"
+	"cm_collectors_server/internal/maintenance"
 	"cm_collectors_server/models"
 	ff "cm_collectors_server/processorsFFmpeg"
 	"context"
@@ -380,7 +381,7 @@ func (VideoMoments) QueueOnPlayback(id string) (bool, error) {
 func startPreviewWorkerLocked() {
 	if !previewQueue.running && !previewQueue.paused {
 		previewQueue.running = true
-		go runPreviewQueue()
+		maintenance.Go(runPreviewQueue)
 	}
 }
 func runPreviewQueue() {

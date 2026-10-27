@@ -2,6 +2,7 @@ package processors
 
 import (
 	"cm_collectors_server/core"
+	"cm_collectors_server/internal/maintenance"
 	"cm_collectors_server/models"
 	processorsffmpeg "cm_collectors_server/processorsFFmpeg"
 	"fmt"
@@ -156,10 +157,10 @@ func (t VideoFingerprint) StartComputePendingFingerprintsAsync(filesBasesID stri
 	if !startFingerprintTask(filesBasesID) {
 		return fmt.Errorf("视频指纹任务正在执行中")
 	}
-	go func() {
+	maintenance.Go(func() {
 		defer finishFingerprintTask()
 		_ = t.computeAllPendingFingerprintsLocked(filesBasesID, batchSize)
-	}()
+	})
 	return nil
 }
 

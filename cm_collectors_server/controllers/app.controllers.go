@@ -4,10 +4,10 @@ import (
 	"cm_collectors_server/core"
 	"cm_collectors_server/datatype"
 	"cm_collectors_server/errorMessage"
+	"cm_collectors_server/internal/selfupdate"
 	"cm_collectors_server/processors"
 	"cm_collectors_server/response"
-	"io"
-	"net/http"
+	"encoding/json"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -57,29 +57,24 @@ func (App) Shutdown(c *gin.Context) {
 	}()
 }
 
+// Preserve the legacy string response while sharing bounded, cached update checks.
 func (App) GetUpdateSoftConfig(c *gin.Context) {
-	updateURL := core.GetUpdateSoftConfigURL()
-	// 发起HTTP GET请求
-	client := http.Client{Timeout: 60 * time.Second}
-	resp, err := client.Get(updateURL)
+	var result selfupdate.CheckResult
+	var err error
+	if selfupdate.Default != nil {
+		result, err = selfupdate.Default.Check(c.Request.Context(), false)
+	} else {
+		result, err = selfupdate.Check(c.Request.Context(), core.GetUpdateSoftConfigURL())
+	}
 	if err != nil {
 		response.FailWithMessage("请求更新配置失败: "+err.Error(), c)
 		return
 	}
-	defer resp.Body.Close()
-	if resp.StatusCode < http.StatusOK || resp.StatusCode >= http.StatusMultipleChoices {
-		response.FailWithMessage("请求更新配置失败: "+resp.Status, c)
-		return
-	}
-
-	// 读取响应体
-	body, err := io.ReadAll(resp.Body)
+	body, err := json.Marshal(result.Manifest)
 	if err != nil {
-		response.FailWithMessage("读取更新配置失败: "+err.Error(), c)
+		response.FailWithMessage("解析更新配置失败", c)
 		return
 	}
-
-	// 直接返回JSON数据
 	response.OkWithData(string(body), c)
 }
 

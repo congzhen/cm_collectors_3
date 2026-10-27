@@ -2,6 +2,7 @@ package main
 
 import (
 	"cm_collectors_server/core"
+	"cm_collectors_server/internal/selfupdate"
 	"cm_collectors_server/models"
 	"cm_collectors_server/processors"
 	"cm_collectors_server/routers"
@@ -31,6 +32,9 @@ var icon []byte
 var server *http.Server
 
 func main() {
+	if selfupdate.HandleMode() {
+		return
+	}
 	// 检查是否有命令行参数来决定是否启用系统托盘
 	args := os.Args[1:]
 	trayMode := false
@@ -60,9 +64,9 @@ func appInit() {
 	//初始化项目数据库数据库
 	dbInitErr := models.DB_Init(core.DBS())
 	if dbInitErr != nil {
-		core.LogErr(fmt.Errorf("数据库迁移失败: %w", dbInitErr))
-		return
+		log.Fatalf("数据库迁移失败: %v", dbInitErr)
 	}
+	initUpdater()
 
 	// 演员头像库启动初始化
 	processors.InitPerformerAvatarLibrary()

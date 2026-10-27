@@ -3,6 +3,7 @@ package processors
 import (
 	"cm_collectors_server/core"
 	"cm_collectors_server/datatype"
+	"cm_collectors_server/internal/maintenance"
 	"cm_collectors_server/models"
 	processorscache "cm_collectors_server/processorsCache"
 	processorsffmpeg "cm_collectors_server/processorsFFmpeg"
@@ -120,39 +121,45 @@ func (VideoMetadata) idleLoop() {
 	ticker := time.NewTicker(time.Minute)
 	defer ticker.Stop()
 	for range ticker.C {
-		setting, err := (models.VideoMetadataSetting{}).Ensure(core.DBS())
-		if err != nil || !setting.IdleBackfillEnabled || setting.Paused {
+		if !maintenance.Begin() {
 			continue
 		}
-		lastInteractiveAt := time.UnixMilli(lastInteractiveVideoMetadataAt.Load())
-		if core.TimeNow().Sub(lastInteractiveAt) < time.Duration(setting.IdleWaitMinutes)*time.Minute {
-			continue
-		}
-		if videoMetadataHasActiveBatch() {
-			continue
-		}
-		ids, err := (models.VideoMetadataSettingFilesBases{}).ListIDs(core.DBS())
-		if err != nil || (setting.IdleScopeMode == models.VideoMetadataScopeSelected && len(ids) == 0) {
-			continue
-		}
-		if err := markNextChangedVideoMetadataScope(
-			setting.IdleScopeMode, ids, setting.IdleBatchSize,
-		); err != nil {
-			core.LogErr(err)
-			continue
-		}
-		candidates, err := findVideoMetadataCandidates(
-			ids, setting.IdleScopeMode, VideoMetadataRunMissingStale, setting.IdleBatchSize, nil,
-		)
-		if err != nil {
-			core.LogErr(err)
-			continue
-		}
-		for _, candidate := range candidates {
-			(VideoMetadata{}).enqueueIfNeeded(
-				candidate.ResourcesDramaSeries, videoMetadataPriorityLow, "", false, false, false,
+		func() {
+			defer maintenance.End()
+			setting, err := (models.VideoMetadataSetting{}).Ensure(core.DBS())
+			if err != nil || !setting.IdleBackfillEnabled || setting.Paused {
+				return
+			}
+			lastInteractiveAt := time.UnixMilli(lastInteractiveVideoMetadataAt.Load())
+			if core.TimeNow().Sub(lastInteractiveAt) < time.Duration(setting.IdleWaitMinutes)*time.Minute {
+				return
+			}
+			if videoMetadataHasActiveBatch() {
+				return
+			}
+			ids, err := (models.VideoMetadataSettingFilesBases{}).ListIDs(core.DBS())
+			if err != nil || (setting.IdleScopeMode == models.VideoMetadataScopeSelected && len(ids) == 0) {
+				return
+			}
+			if err := markNextChangedVideoMetadataScope(
+				setting.IdleScopeMode, ids, setting.IdleBatchSize,
+			); err != nil {
+				core.LogErr(err)
+				return
+			}
+			candidates, err := findVideoMetadataCandidates(
+				ids, setting.IdleScopeMode, VideoMetadataRunMissingStale, setting.IdleBatchSize, nil,
 			)
-		}
+			if err != nil {
+				core.LogErr(err)
+				return
+			}
+			for _, candidate := range candidates {
+				(VideoMetadata{}).enqueueIfNeeded(
+					candidate.ResourcesDramaSeries, videoMetadataPriorityLow, "", false, false, false,
+				)
+			}
+		}()
 	}
 }
 
@@ -386,7 +393,7 @@ func enqueueVideoMetadata(item videoMetadataQueueItem, wantCompletion, waitExist
 	q.items = append(q.items, &copyItem)
 	if !q.worker {
 		q.worker = true
-		go (VideoMetadata{}).runQueue()
+		maintenance.Go(func() { (VideoMetadata{}).runQueue() })
 	}
 	return true, done
 }
@@ -1019,7 +1026,7 @@ func (VideoMetadata) StartBatch(request VideoMetadataRunRequest) (*models.VideoM
 		return nil, err
 	}
 	task.Total = total
-	go (VideoMetadata{}).runBatch(task.ID, request.MaxItemsPerRun)
+	maintenance.Go(func() { (VideoMetadata{}).runBatch(task.ID, request.MaxItemsPerRun) })
 	return &task, nil
 }
 
@@ -1382,7 +1389,7 @@ func (VideoMetadata) ResumeBatch() error {
 	if err := core.DBS().Model(&task).Update("status", models.VideoMetadataBatchStatusRunning).Error; err != nil {
 		return err
 	}
-	go (VideoMetadata{}).runBatch(task.ID, 0)
+	maintenance.Go(func() { (VideoMetadata{}).runBatch(task.ID, 0) })
 	return nil
 }
 

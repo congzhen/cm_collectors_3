@@ -3,6 +3,7 @@ package processors
 import (
 	"cm_collectors_server/core"
 	"cm_collectors_server/datatype"
+	"cm_collectors_server/internal/maintenance"
 	"cm_collectors_server/models"
 	"cm_collectors_server/utils"
 	"crypto/sha256"
@@ -495,7 +496,7 @@ func (t PerformerAvatarLibrary) StartBatchApply(par datatype.ReqParam_PerformerA
 	preview := previewAvatarBatch(index, performers, par.Overwrite)
 	batchID := core.GenerateUniqueID()
 	tracker := startAvatarBatchProgress(batchID, preview)
-	go t.runBatchApply(batchID, par, performers, index, tracker)
+	maintenance.Go(func() { t.runBatchApply(batchID, par, performers, index, tracker) })
 	progress, _ := (PerformerAvatarLibrary{}).BatchProgress(batchID)
 	return progress, nil
 }

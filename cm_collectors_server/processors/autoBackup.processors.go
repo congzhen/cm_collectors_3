@@ -5,6 +5,7 @@ import (
 	"cm_collectors_server/config"
 	"cm_collectors_server/core"
 	"cm_collectors_server/datatype"
+	"cm_collectors_server/internal/maintenance"
 	"cm_collectors_server/models"
 	"errors"
 	"fmt"
@@ -101,6 +102,10 @@ func (t AutoBackup) ManualRun() error {
 }
 
 func (t AutoBackup) CheckTimeTrigger(reason string) {
+	if !maintenance.Begin() {
+		return
+	}
+	defer maintenance.End()
 	cfg := t.config()
 	if !cfg.Enabled || cfg.IntervalHours <= 0 {
 		return
@@ -189,6 +194,10 @@ func (t AutoBackup) QueueRun(reason string) {
 }
 
 func (t AutoBackup) run(reason string) error {
+	if !maintenance.Begin() {
+		return maintenance.ErrPaused
+	}
+	defer maintenance.End()
 	autoBackupRunMu.Lock()
 	defer autoBackupRunMu.Unlock()
 

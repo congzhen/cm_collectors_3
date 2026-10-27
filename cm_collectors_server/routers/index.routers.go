@@ -2,10 +2,13 @@ package routers
 
 import (
 	"cm_collectors_server/controllers"
+	"cm_collectors_server/core"
+	"cm_collectors_server/internal/selfupdate"
 	"cm_collectors_server/middleware"
 	"embed"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -15,6 +18,7 @@ import (
 *初始化路由
  */
 func InitRouter(router *gin.Engine, htmlFS *embed.FS) *gin.Engine {
+	router.Use(middleware.UpdateMaintenance())
 	//设置信任ip
 	router.SetTrustedProxies([]string{"127.0.0.1", "0.0.0.0"})
 
@@ -57,7 +61,12 @@ func healthRoute(router *gin.Engine) {
 	router.GET("/api/app/shutdown", controllers.App{}.Shutdown)
 }
 func handleHealth(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"status": "ok"})
+	db, err := core.DBS().DB()
+	if err != nil || db.PingContext(c.Request.Context()) != nil {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"status": "unavailable"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"status": "ok", "version": selfupdate.Version, "updateToken": os.Getenv("CM_UPDATE_TOKEN")})
 }
 
 func HealthCheck(c *gin.Context) {
@@ -140,6 +149,11 @@ func publicRouter(router *gin.Engine) {
 
 func AdminRouter(router *gin.Engine) {
 	routerGroup := router.Group("/api", middleware.AdminLoginApiMiddleware())
+	routerGroup.GET("/update/check", controllers.Update{}.Check)
+	routerGroup.GET("/update/status", controllers.Update{}.Status)
+	routerGroup.POST("/update/download", controllers.Update{}.Download)
+	routerGroup.POST("/update/install", controllers.Update{}.Install)
+	routerGroup.POST("/update/cancel", controllers.Update{}.Cancel)
 	routerGroup.POST("/videoPreviewCache/openFolder", controllers.VideoMoments{}.OpenCacheFolder)
 	routerGroup.GET("/videoPreviewSetting", controllers.VideoMoments{}.Setting)
 	routerGroup.PUT("/videoPreviewSetting", controllers.VideoMoments{}.SaveSetting)
