@@ -64,4 +64,5 @@ cm_collectors_electron/node_modules
 
 # Local manual screenshots, demo data, executables and caches
 /.ai/manual/.local/
+**/.cm-updates/
 /.ai/manual/assets/screenshots/

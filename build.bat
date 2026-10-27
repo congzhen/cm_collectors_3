@@ -7,6 +7,14 @@ REM 获取当前目录（根目录）
 set ROOT_DIR=%cd%
 set BUILD_DIR=!ROOT_DIR!\build
 
+REM 服务端版本与发布清单保持一致，供自动更新和健康检查使用。
+set "APP_VERSION="
+for /f "usebackq delims=" %%V in (`powershell -NoProfile -Command "$v=(ConvertFrom-Json -InputObject (Get-Content -Raw -Encoding UTF8 'updateSoftConfig.json')).version; if ($v -notmatch '^\d+\.\d+\.\d+$') { exit 1 }; Write-Output $v"`) do set "APP_VERSION=%%V"
+if not defined APP_VERSION (
+    echo [错误] 无法读取 updateSoftConfig.json 中的版本号
+    exit /b 1
+)
+
 echo ========================================
 echo CM Collectors 3 构建工具
 echo ========================================
@@ -154,7 +162,7 @@ if "!BUILD_SERVER_WIN_TRAY_GUI!"=="1" (
     pushd "!ROOT_DIR!\cm_collectors_server"
     set GOOS=windows
     set GOARCH=amd64
-    go build -ldflags -H=windowsgui -tags tray -o "!BUILD_DIR!\cm_collectors_server.exe" . || (echo [错误] Win Tray GUI 构建失败 & popd & goto END)
+    go build -ldflags "-H=windowsgui -X cm_collectors_server/internal/selfupdate.Version=!APP_VERSION!" -tags tray -o "!BUILD_DIR!\cm_collectors_server.exe" . || (echo [错误] Win Tray GUI 构建失败 & popd & goto END)
     popd
     echo [服务端Win Tray GUI] 构建完成
     pushd "!BUILD_DIR!"
@@ -166,7 +174,7 @@ if "!BUILD_SERVER_WIN_TRAY!"=="1" (
     pushd "!ROOT_DIR!\cm_collectors_server"
     set GOOS=windows
     set GOARCH=amd64
-    go build -tags tray -o "!BUILD_DIR!\cm_collectors_server.exe" . || (echo [错误] Win Tray Console 构建失败 & popd & goto END)
+    go build -ldflags "-X cm_collectors_server/internal/selfupdate.Version=!APP_VERSION!" -tags tray -o "!BUILD_DIR!\cm_collectors_server.exe" . || (echo [错误] Win Tray Console 构建失败 & popd & goto END)
     popd
     echo [服务端Win Tray Console] 构建完成
     pushd "!BUILD_DIR!"
@@ -178,7 +186,7 @@ if "!BUILD_SERVER_WIN!"=="1" (
     pushd "!ROOT_DIR!\cm_collectors_server"
     set GOOS=windows
     set GOARCH=amd64
-    go build -o "!BUILD_DIR!\cm_collectors_server.exe" . || (echo [错误] Win无托盘 构建失败 & popd & goto END)
+    go build -ldflags "-X cm_collectors_server/internal/selfupdate.Version=!APP_VERSION!" -o "!BUILD_DIR!\cm_collectors_server.exe" . || (echo [错误] Win无托盘 构建失败 & popd & goto END)
     popd
     echo [服务端Win无托盘] 构建完成
     pushd "!BUILD_DIR!"
@@ -190,7 +198,10 @@ if "!BUILD_SERVER_LINUX!"=="1" (
     pushd "!ROOT_DIR!\cm_collectors_server"
     set GOOS=linux
     set GOARCH=amd64
-    go build -o "!BUILD_DIR!\cm_collectors_server" . || (echo [错误] Linux 构建失败 & popd & goto END)
+    set "UPDATE_SAVED_CGO=!CGO_ENABLED!"
+    set CGO_ENABLED=0
+    go build -ldflags "-X cm_collectors_server/internal/selfupdate.Version=!APP_VERSION!" -o "!BUILD_DIR!\cm_collectors_server" . || (echo [错误] Linux 构建失败 & popd & goto END)
+    set "CGO_ENABLED=!UPDATE_SAVED_CGO!"
     popd
     echo [服务端Linux] 构建完成
     pushd "!BUILD_DIR!"
