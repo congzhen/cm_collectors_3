@@ -9,6 +9,8 @@ interface MockPlayer {
   root: HTMLElement; video: HTMLVideoElement; config: Record<string, unknown>;
   currentTime: number; duration: number; playbackRate: number; paused: boolean;
   muted: boolean; volume: number;
+  posterPlugin: { hide: ReturnType<typeof vi.fn> };
+  presentFrame: () => void;
   downloadHook?: () => boolean;
   progressHooks: Record<string, (plugin: unknown, event: Event, data: { percent: number; currentTime: number; seekTime: number }) => boolean>;
   on: (event: string, callback: () => void) => void;
@@ -17,7 +19,7 @@ interface MockPlayer {
 // These controls have their own tests; playback lifecycle tests do not make preview API requests.
 vi.mock('@/assets/request', () => ({ default: mocks.previewRequest }));
 vi.mock('../MomentTools.vue', () => ({ default: defineComponent({
-  name: 'MomentTools', props: ['isSeeking', 'getSeekRevision'], setup: () => () => h('div'),
+  name: 'MomentTools', props: ['isSeeking', 'getSeekRevision', 'restoredPlayback', 'initialMoment'], setup: () => () => h('div'),
 }) }));
 vi.mock('../MobileSeekPreview.vue', () => ({ default: defineComponent({ setup: () => () => h('div') }) }));
 vi.mock('@/common/mobilePlaybackSource', () => ({ resolveMobileSource: mocks.source, MobileSourceError: class extends Error {} }));
@@ -34,7 +36,10 @@ vi.mock('xgplayer', () => ({
     config: Record<string, unknown>;
     play = vi.fn(async () => { this.paused = false; this.fire('PLAY'); });
     pause = vi.fn(() => { this.paused = true; this.fire('PAUSE'); });
-    destroy = vi.fn(); focus = vi.fn(); getPlugin = () => ({ config: {} });
+    posterPlugin = { config: {}, hide: vi.fn() };
+    frameCallback?: VideoFrameRequestCallback;
+    presentFrame() { this.frameCallback?.(0, {} as VideoFrameCallbackMetadata); }
+    destroy = vi.fn(); focus = vi.fn(); getPlugin = () => this.posterPlugin;
     downloadHook?: () => boolean;
     progressHooks: MockPlayer['progressHooks'] = {};
     usePluginHooks(plugin: string, event: string, callback: MockPlayer['progressHooks'][string] & (() => boolean)) {
@@ -42,6 +47,8 @@ vi.mock('xgplayer', () => ({
       if (plugin === 'progress') this.progressHooks[event] = callback;
     }
     constructor(config: Record<string, unknown>) {
+      this.video.requestVideoFrameCallback = vi.fn(callback => { this.frameCallback = callback; return 1; });
+      this.video.cancelVideoFrameCallback = vi.fn();
       this.config = config; this.root = config.el as HTMLElement; mocks.instances.push(this);
       this.volume = config.volume as number;
     }
@@ -62,6 +69,109 @@ describe('手机播放恢复与请求隔离', () => {
     delete (window as Window & { __cmPhoneShellDownload?: boolean }).__cmPhoneShellDownload;
     vi.unstubAllGlobals(); vi.useRealTimers();
   });
+  it('预载就绪仍保留封面和小播放按钮，实际播放帧提交后才移除占位', async () => {
+    const wrapper = mount(MobileVideoPlayer, { props: { resourceId: 'r', dramaSeriesId: 'e', title: '视频', poster: '/cover.jpg' } });
+    await flushPromises();
+    const player = mocks.instances[0];
+    expect(player.config.poster).toBe('/cover.jpg');
+    expect(player.video.getAttribute('poster')).toBe('/cover.jpg');
+    expect(wrapper.get('.phone-player-splash img').attributes('src')).toBe('/cover.jpg');
+    expect(wrapper.text()).toContain('正在加载中');
+    player.fire('LOADED_METADATA'); await flushPromises();
+    expect(wrapper.find('.phone-player-splash').exists()).toBe(true);
+    expect(player.posterPlugin.hide).not.toHaveBeenCalled();
+    expect(player.play).not.toHaveBeenCalled();
+    player.fire('LOADED_DATA'); await flushPromises();
+    expect(wrapper.find('.phone-player-splash').exists()).toBe(true);
+    expect(player.posterPlugin.hide).not.toHaveBeenCalled();
+    expect(player.play).not.toHaveBeenCalled();
+    await wrapper.get('.phone-splash-play').trigger('click');
+    expect(player.play).toHaveBeenCalledOnce();
+    player.fire('PLAYING'); await flushPromises();
+    expect(wrapper.find('.phone-player-splash').exists()).toBe(true);
+    player.presentFrame(); await flushPromises();
+    expect(wrapper.find('.phone-player-splash').exists()).toBe(false);
+    expect(player.video.hasAttribute('poster')).toBe(false);
+    expect(player.posterPlugin.hide).toHaveBeenCalledOnce();
+    wrapper.unmount();
+  });
+  it('旧视频首帧事件不能清除新视频背景，播放中缓冲不重新覆盖画面', async () => {
+    const wrapper = mount(MobileVideoPlayer, { props: { resourceId: 'r', dramaSeriesId: 'e', title: '视频', poster: '/cover.jpg' } });
+    await flushPromises();
+    const oldPlayer = mocks.instances[0];
+    oldPlayer.fire('PLAYING');
+    await wrapper.setProps({ dramaSeriesId: 'e2' });
+    await flushPromises();
+    oldPlayer.fire('LOADED_DATA'); oldPlayer.fire('PLAYING'); oldPlayer.presentFrame();
+    await flushPromises();
+    expect(wrapper.find('.phone-player-splash').exists()).toBe(true);
+    const player = mocks.instances[1];
+    player.fire('LOADED_DATA'); player.fire('PLAY'); player.fire('PLAYING'); player.fire('WAITING');
+    player.presentFrame();
+    await flushPromises();
+    expect(wrapper.find('.phone-player-splash').exists()).toBe(false);
+    wrapper.unmount();
+  });
+  it('旧内核没有视频帧回调时，实际播放并经过绘制周期后移除封面', async () => {
+    vi.useFakeTimers();
+    const wrapper = mount(MobileVideoPlayer, { props: { resourceId: 'r', dramaSeriesId: 'e', title: '视频' } });
+    await flushPromises();
+    const player = mocks.instances[0];
+    Object.defineProperty(player.video, 'requestVideoFrameCallback', { value: undefined });
+    player.fire('LOADED_DATA'); await flushPromises();
+    expect(wrapper.find('.phone-player-splash').exists()).toBe(true);
+    await player.play(); player.fire('PLAYING'); await flushPromises();
+    expect(wrapper.find('.phone-player-splash').exists()).toBe(true);
+    await vi.advanceTimersByTimeAsync(50);
+    expect(wrapper.find('.phone-player-splash').exists()).toBe(false);
+    wrapper.unmount();
+  });
+  it('手机只预载元数据时也提供播放入口，不必等解码首帧才能点击', async () => {
+    vi.useFakeTimers();
+    const wrapper = mount(MobileVideoPlayer, { props: { resourceId: 'r', dramaSeriesId: 'e', title: '视频', poster: '/cover.jpg' } });
+    await flushPromises();
+    const player = mocks.instances[0];
+    Object.defineProperty(player.video, 'readyState', { configurable: true, value: 1 });
+    player.fire('LOADED_METADATA'); player.fire('STALLED');
+    await vi.advanceTimersByTimeAsync(65000);
+    expect(wrapper.find('.phone-player-splash').exists()).toBe(true);
+    expect(wrapper.find('.phone-player-message').exists()).toBe(false);
+    expect(player.play).not.toHaveBeenCalled();
+    await wrapper.get('.phone-splash-play').trigger('click');
+    expect(player.play).toHaveBeenCalledOnce();
+    wrapper.unmount();
+  });
+  it('元数据待播后用户主动定位，仍显示定位加载及超时重试提示', async () => {
+    vi.useFakeTimers();
+    const wrapper = mount(MobileVideoPlayer, { props: { resourceId: 'r', dramaSeriesId: 'e', title: '视频' } });
+    await flushPromises();
+    const player = mocks.instances[0];
+    Object.defineProperty(player.video, 'readyState', { configurable: true, value: 1 });
+    player.fire('LOADED_METADATA');
+    const progress = { updatePercent: vi.fn(), updateTime: vi.fn() };
+    player.progressHooks.dragend(progress, new Event('mouseup'), { percent: .6, currentTime: 120, seekTime: 120 });
+    player.fire('SEEKING');
+    await flushPromises();
+    expect(player.currentTime).toBe(120);
+    expect(wrapper.text()).toContain('正在加载中');
+    await vi.advanceTimersByTimeAsync(65000);
+    expect(wrapper.text()).toContain('可继续等待或手动重试');
+    expect(mocks.instances).toHaveLength(1);
+    wrapper.unmount();
+  });
+  it('封面加载失败使用深色占位，换视频时重新显示加载背景', async () => {
+    const wrapper = mount(MobileVideoPlayer, { props: { resourceId: 'r', dramaSeriesId: 'e', title: '视频', poster: '/missing.jpg' } });
+    await flushPromises();
+    await wrapper.get('.phone-player-splash img').trigger('error');
+    expect(wrapper.find('.phone-player-splash img').exists()).toBe(false);
+    expect(wrapper.find('.phone-player-splash').exists()).toBe(true);
+    mocks.instances[0].fire('LOADED_DATA'); await flushPromises();
+    await wrapper.setProps({ dramaSeriesId: 'e2', poster: '/new-cover.jpg' });
+    await flushPromises();
+    expect(wrapper.get('.phone-player-splash img').attributes('src')).toBe('/new-cover.jpg');
+    expect(mocks.instances[1].play).not.toHaveBeenCalled();
+    wrapper.unmount();
+  });
   it('实际开始播放后才检查自动生成，缓冲恢复不重复请求', async () => {
     const wrapper = mount(MobileVideoPlayer, { props: { resourceId: 'r', dramaSeriesId: 'e', title: '视频' } });
     await flushPromises();
@@ -72,6 +182,18 @@ describe('手机播放恢复与请求隔离', () => {
     player.fire('PLAYING'); await flushPromises();
     expect(mocks.previewRequest).toHaveBeenCalledOnce();
     expect(mocks.previewRequest).toHaveBeenCalledWith({ url: '/videoPreviews/e/playback', method: 'post' });
+    wrapper.unmount();
+  });
+  it('首次取流失败后重试仍应用入口片段，不误判为已退出循环', async () => {
+    mocks.source.mockRejectedValueOnce(new Error('首次取流失败'));
+    const initialMoment = { start: 10, end: 20, title: '入口片段', autoplay: false };
+    const wrapper = mount(MobileVideoPlayer, { props: { resourceId: 'r', dramaSeriesId: 'e', title: '视频', initialMoment } });
+    await flushPromises();
+    await wrapper.get('.phone-player-message button').trigger('click');
+    await flushPromises();
+    const tools = wrapper.findComponent({ name: 'MomentTools' });
+    expect(tools.props('restoredPlayback')).toBeUndefined();
+    expect(tools.props('initialMoment')).toEqual(initialMoment);
     wrapper.unmount();
   });
   it('APK 点击下载由桥接接管，浏览器继续内置下载', async () => {
@@ -228,6 +350,7 @@ describe('手机播放恢复与请求隔离', () => {
     retry.click(); await flushPromises();
     expect(mocks.instances).toHaveLength(2);
     expect(mocks.instances[1].config.startTime).toBe(160);
+    expect(wrapper.findComponent({ name: 'MomentTools' }).props('restoredPlayback')).toMatchObject({ time: 160, playing: true });
     expect(mocks.instances[1].muted).toBe(true);
     wrapper.unmount(); await flushPromises();
   });
@@ -491,6 +614,54 @@ describe('手机播放恢复与请求隔离', () => {
     expect(readMobilePlayback('r/e')?.time).toBe(42);
     expect(mocks.instances).toHaveLength(1); expect(player.play).not.toHaveBeenCalled();
     wrapper.unmount(); await flushPromises();
+  });
+  it('缓存页停用期间只有元数据就绪，返回后仍提供待播按钮', async () => {
+    const visible = ref(true);
+    const wrapper = mount(defineComponent({ setup: () => () => h(KeepAlive, null, {
+      default: () => visible.value ? h(MobileVideoPlayer, { resourceId: 'r', dramaSeriesId: 'e', title: '测试' }) : h('div'),
+    }) }));
+    await flushPromises(); const player = mocks.instances[0];
+    visible.value = false; await nextTick();
+    Object.defineProperty(player.video, 'readyState', { configurable: true, value: 1 });
+    player.fire('LOADED_METADATA');
+    visible.value = true; await nextTick(); await flushPromises();
+    expect(wrapper.find('.phone-splash-play').exists()).toBe(true);
+    expect(wrapper.find('.phone-player-message').exists()).toBe(false);
+    expect(player.play).not.toHaveBeenCalled();
+    expect(mocks.instances).toHaveLength(1);
+    wrapper.unmount(); await flushPromises();
+  });
+  it('首个播放帧在缓存页停用期间到达，返回后仍可手动播放并移除封面', async () => {
+    const visible = ref(true);
+    const wrapper = mount(defineComponent({ setup: () => () => h(KeepAlive, null, {
+      default: () => visible.value ? h(MobileVideoPlayer, { resourceId: 'r', dramaSeriesId: 'e', title: '测试' }) : h('div'),
+    }) }));
+    await flushPromises(); const player = mocks.instances[0];
+    player.fire('LOADED_DATA'); await player.play(); player.fire('PLAYING');
+    visible.value = false; await nextTick();
+    player.presentFrame();
+    visible.value = true; await nextTick(); await flushPromises();
+    expect(wrapper.find('.phone-player-splash').exists()).toBe(true);
+    await wrapper.get('.phone-splash-play').trigger('click');
+    player.fire('PLAYING'); player.presentFrame(); await flushPromises();
+    expect(wrapper.find('.phone-player-splash').exists()).toBe(false);
+    expect(mocks.instances).toHaveLength(1);
+    wrapper.unmount(); await flushPromises();
+  });
+  it('重试取流尚未完成时退出，迟到响应不重建播放器或覆盖保存进度', async () => {
+    vi.useFakeTimers();
+    const wrapper = mount(MobileVideoPlayer, { props: { resourceId: 'r', dramaSeriesId: 'e', title: '测试' } });
+    await flushPromises(); const player = mocks.instances[0];
+    player.fire('LOADED_DATA'); player.currentTime = 42;
+    let finish!: (value: { playUrl: string; playType: string }) => void;
+    mocks.source.mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    player.fire('ERROR');
+    await vi.advanceTimersByTimeAsync(1000); await flushPromises();
+    expect(mocks.source).toHaveBeenCalledTimes(2);
+    wrapper.unmount();
+    finish({ playUrl: '/retry.mp4', playType: 'mp4' }); await flushPromises();
+    expect(mocks.instances).toHaveLength(1);
+    expect(readMobilePlayback('r/e')?.time).toBe(42);
   });
   it('拖动中离开缓存页会清除交互状态，seeked 事件只更新当前播放器', async () => {
     const visible = ref(true);

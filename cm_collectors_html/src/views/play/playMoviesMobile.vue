@@ -6,7 +6,7 @@
     <!-- 视频播放器 -->
     <div class="video-container">
       <mobileVideoPlayer v-if="resourceInfo && selectedDramaSeriesId" :resource-id="resourceId"
-        :drama-series-id="selectedDramaSeriesId" :title="resourceInfo.title" />
+        :drama-series-id="selectedDramaSeriesId" :title="resourceInfo.title" :poster="getResourceCoverPoster(resourceInfo)" />
       <div v-if="resourceError" class="resource-error"><p>{{ resourceError }}</p><el-button @click="init">重试</el-button></div>
     </div>
 
@@ -120,6 +120,7 @@ import { appStoreData } from "@/storeData/app.storeData";
 import resourceDramaSeriesList from '@/components/resource/resourceDramaSeriesList.vue'
 import MobileHeader from '../MobileHeaderView.vue'
 import { playUpdate } from "@/common/play";
+import { getResourceCoverPoster } from '@/common/photo';
 
 const appLang = AppLang();
 const router = useRouter();

@@ -1,6 +1,6 @@
 <template>
   <div class="resource-video-player">
-    <MobileVideoPlayer v-if="mode === 'mobile'" :resource-id="resource.id" :drama-series-id="dramaSeriesId" :title="resource.title" :initial-moment="initialMoment" @playing="emit('playing')" />
+    <MobileVideoPlayer v-if="mode === 'mobile'" :resource-id="resource.id" :drama-series-id="dramaSeriesId" :title="resource.title" :poster="getResourceCoverPoster(resource)" :initial-moment="initialMoment" @playing="emit('playing')" />
     <VideoPlay v-else ref="desktop" force-desktop :fit-container="fitContainer" :initial-moment="initialMoment" @playing="emit('playing')" />
     <div v-if="error" role="alert">{{ error }} <button @click="loadDesktop">重试</button></div>
   </div>
@@ -14,6 +14,7 @@ import type { MomentPlayback } from '@/server/videoMoments.server';
 import { appStoreData } from '@/storeData/app.storeData';
 import { getPlayVideoURLAndType } from '@/common/play';
 import { resolvePlayerMode } from '@/common/playerPreference';
+import { getResourceCoverPoster } from '@/common/photo';
 
 const MobileVideoPlayer = defineAsyncComponent(() => import('./mobileVideoPlayer.vue'));
 const props = defineProps<{ resource: I_resource; dramaSeriesId: string; initialMoment?: MomentPlayback; fitContainer?: boolean }>();

@@ -1,8 +1,13 @@
 <template>
   <div ref="stageRef" class="phone-player-stage">
     <div ref="hostRef" class="phone-player-host" />
+    <Teleport :to="playerRoot || 'body'" :disabled="!playerRoot">
+      <div v-if="!frameReady" class="phone-player-splash" aria-hidden="true">
+        <img v-if="props.poster && !posterFailed" :src="props.poster" alt="" @error="posterFailed = true" />
+      </div>
+    </Teleport>
     <Teleport v-if="playerRoot" :to="playerRoot">
-      <MomentTools @loop-change="activeMoment = $event" :initial-moment="props.initialMoment" :activity-root="playerRoot" :page-overlay="!full" :key="props.dramaSeriesId" :drama-series-id="props.dramaSeriesId" :is-playing="() => !!player && !player.paused" :is-seeking="isSeeking" :get-seek-revision="getSeekRevision" :cancel-pending-seek="playbackSeek.cancel" :is-ended="() => !!player?.ended" :get-time="() => player?.currentTime || 0" :get-duration="() => ready ? player?.duration || 0 : 0" :seek="seekMoment" :play="continuePlay" />
+      <MomentTools @loop-change="activeMoment = $event" :initial-moment="props.initialMoment" :restored-playback="restoredPlayback" :activity-root="playerRoot" :page-overlay="!full" :key="props.dramaSeriesId" :drama-series-id="props.dramaSeriesId" :is-playing="() => !!player && !player.paused" :is-seeking="isSeeking" :get-seek-revision="getSeekRevision" :cancel-pending-seek="playbackSeek.cancel" :is-ended="() => !!player?.ended" :get-time="() => player?.currentTime || 0" :get-duration="() => ready ? player?.duration || 0 : 0" :seek="seekMoment" :play="continuePlay" />
       <MobileSeekPreview :get-range="() => activeMoment" :drama-series-id="props.dramaSeriesId" :root="playerRoot" :get-rotation="() => player?.rotateDeg || 0" :get-duration="() => player?.duration || 0" />
       <div v-if="subtitleText" class="phone-subtitle">{{ subtitleText }}</div>
       <div v-if="displayMessage" class="phone-player-message" role="status">
@@ -11,6 +16,7 @@
         <button v-if="failed" type="button" @click.stop="retry">重试</button>
         <button v-if="needsPlay" type="button" @click.stop="continuePlay">继续播放</button>
       </div>
+      <button v-if="!frameReady && canStart && !displayMessage" class="phone-splash-play" type="button" aria-label="播放视频" @click.stop="continuePlay"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5v14l11-7z" fill="currentColor" /></svg></button>
     </Teleport>
     <div v-if="!playerRoot && displayMessage" class="phone-player-message" role="status">
       <span v-if="isLoading" class="phone-loading-spinner" aria-hidden="true" />
@@ -35,9 +41,10 @@ import { readMobilePlayback, readMobileSound, resumeTime, saveMobilePlayback, sa
 import { parseMobileVtt } from '@/common/mobileSubtitles';
 import { downloadMobileShell, notifyMobileShell } from '@/common/mobileShell';
 
-const props = withDefaults(defineProps<{ resourceId: string; dramaSeriesId: string; title: string; autoplay?: boolean; initialMoment?: MomentPlayback;
+const props = withDefaults(defineProps<{ resourceId: string; dramaSeriesId: string; title: string; poster?: string; autoplay?: boolean; initialMoment?: MomentPlayback;
   sourceLoader?: (id: string, signal?: AbortSignal) => Promise<MobileSource> }>(), { sourceLoader: resolveMobileSource });
 const activeMoment = ref<MomentPlayback>();
+const restoredPlayback = ref<{ time: number; playing: boolean; moment?: MomentPlayback }>();
 const emit = defineEmits<{ playing: [] }>();
 const stageRef = ref<HTMLElement>();
 const hostRef = ref<HTMLElement>();
@@ -50,6 +57,10 @@ const isLoading = computed(() => displayMessage.value === loadingText);
 const failed = ref(false);
 const needsPlay = ref(false);
 const full = ref(false);
+const frameReady = ref(false);
+const canStart = ref(false);
+const posterFailed = ref(false);
+watch(() => props.poster, () => { posterFailed.value = false; });
 const subtitleText = ref('');
 let player: Player | undefined;
 let version = 0;
@@ -77,7 +88,9 @@ let subtitleAbort: AbortController | undefined;
 let sourceAbort: AbortController | undefined;
 let retryableFailure = false;
 let watchBuffering: (() => void) | undefined;
+let syncMetadata: (() => void) | undefined;
 let syncLoadedData: (() => void) | undefined;
+let cancelFrameReveal: (() => void) | undefined;
 const playbackId = () => `${activeResourceId}/${activeId}`;
 
 const saveProgress = () => {
@@ -201,11 +214,14 @@ const reportFailure = (retryable: boolean) => {
 };
 const retry = () => { retries = 0; void load(true); };
 const destroyPlayer = async () => {
+  cancelFrameReveal?.();
+  cancelFrameReveal = undefined;
   playbackSeek.cancel();
   pendingSeekPosition = undefined;
   progressDragging = false;
   clearTimers();
   watchBuffering = undefined;
+  syncMetadata = undefined;
   syncLoadedData = undefined;
   window.clearInterval(progressTimer);
   playbackStalled.value = false;
@@ -230,6 +246,13 @@ const load = async (recovering = false) => {
   const position = recovering && player
     ? pendingSeekPosition ?? (ready ? player.currentTime : resumeTime(previous))
     : resumeTime(previous);
+  // Recreating the controls must restore the current session rather than apply
+  // the original clip entry again (including a loop the user already exited).
+  if (!recovering) restoredPlayback.value = undefined;
+  else if (player && (ready || pendingSeekPosition !== undefined)) {
+    restoredPlayback.value = { time: position, playing: shouldPlay,
+      moment: activeMoment.value ? { ...activeMoment.value } : undefined };
+  }
   await destroyPlayer();
   if (request !== version || disposed) return;
   activeId = target;
@@ -241,6 +264,9 @@ const load = async (recovering = false) => {
   needsPlay.value = false;
   subtitleText.value = '';
   cues = [];
+  frameReady.value = false;
+  canStart.value = false;
+  posterFailed.value = false;
   message.value = recovering ? '正在重新连接…' : loadingText;
   sourceAbort = new AbortController();
   const controller = sourceAbort;
@@ -263,6 +289,7 @@ const load = async (recovering = false) => {
     const instance = new Player({
       el: mount, url: source.playUrl, width: '100%', height: '100%', lang: 'zh-cn',
       autoplay: false, videoInit: true, playsinline: true, preload: 'metadata',
+      poster: props.poster || '',
       volume: sound.volume, videoConfig: { muted: sound.muted },
       isMobileSimulateMode: 'mobile', seekedStatus: 'auto', startTime: resumePosition,
       defaultPlaybackRate: previous?.rate || 1, closePauseVideoFocus: false,
@@ -290,9 +317,36 @@ const load = async (recovering = false) => {
       return !downloadMobileShell(source.playUrl, `${props.title || '视频'}.mp4`);
     });
     const media = instance.video as HTMLVideoElement;
+    if (props.poster) media.poster = props.poster;
     instance.muted = sound.muted;
     playerRoot.value = instance.root || undefined;
     const current = () => !disposed && !inactive && player === instance && request === version;
+    const revealFirstFrame = () => {
+      if (!current()) return;
+      frameReady.value = true;
+      media.removeAttribute('poster');
+      instance.getPlugin('poster')?.hide?.();
+    };
+    const revealPlayingFrame = () => {
+      if (frameReady.value || cancelFrameReveal) return;
+      // loadeddata only confirms decoding, not presentation. Keep the cover
+      // through the paused/native placeholder until playback presents a frame.
+      if (typeof media.requestVideoFrameCallback === 'function') {
+        const handle = media.requestVideoFrameCallback(() => {
+          if (player === instance && request === version) cancelFrameReveal = undefined;
+          revealFirstFrame();
+        });
+        cancelFrameReveal = () => media.cancelVideoFrameCallback?.(handle);
+      } else {
+        let handle = requestAnimationFrame(() => {
+          handle = requestAnimationFrame(() => {
+            if (player === instance && request === version) cancelFrameReveal = undefined;
+            if (!instance.paused) revealFirstFrame();
+          });
+        });
+        cancelFrameReveal = () => cancelAnimationFrame(handle);
+      }
+    };
     // Use the public progress hooks: dragging updates the controls only, while
     // release/click goes through the same latest-target scheduler as moments.
     type ProgressControl = { updatePercent: (percent: number) => void; updateTime: (time: number) => void };
@@ -312,6 +366,11 @@ const load = async (recovering = false) => {
     const previewFirstFrame = () => {
       if (previewInitialized || !current()) return;
       previewInitialized = true;
+      canStart.value = true;
+      if (!wantedPlaying && !failed.value && !needsPlay.value) {
+        message.value = '';
+        window.clearTimeout(stallTimer);
+      }
       if (resumePosition > 0 || wantedPlaying || !instance.paused) return;
       if (Number.isFinite(instance.duration) && instance.duration > 0 && instance.currentTime === 0) {
         try { instance.currentTime = Math.min(0.01, instance.duration / 2); }
@@ -319,6 +378,7 @@ const load = async (recovering = false) => {
       }
     };
     instance.on(Events.LOADED_METADATA, previewFirstFrame);
+    syncMetadata = previewFirstFrame;
     if (media.readyState >= 1) previewFirstFrame();
     // 声音是手机播放器的共用偏好，不随资源或分集切换重置。
     instance.on(Events.VOLUME_CHANGE, () => {
@@ -326,6 +386,7 @@ const load = async (recovering = false) => {
     });
     const onLoadedData = () => {
       if (!current()) return;
+      canStart.value = true;
       ready = true;
       failed.value = false;
       retryableFailure = false;
@@ -353,6 +414,7 @@ const load = async (recovering = false) => {
     });
     instance.on(Events.PLAYING, () => {
       if (!current()) return;
+      revealPlayingFrame();
       emit('playing');
       void queuePlaybackPreview(activeId);
       playbackStalled.value = false;
@@ -363,7 +425,7 @@ const load = async (recovering = false) => {
       playbackStalled.value = false;
       if (!document.hidden && !(failed.value && retryableFailure)) wantedPlaying = false;
       window.clearTimeout(stallTimer);
-      if (!document.hidden && ready && !media.seeking && isLoading.value) message.value = '';
+      if (!document.hidden && (ready || canStart.value) && !media.seeking && isLoading.value) message.value = '';
       saveProgress();
     });
     instance.on(Events.ENDED, () => {
@@ -398,6 +460,7 @@ const load = async (recovering = false) => {
     // 避免大文件拖动时不断销毁播放器、重复请求同一位置。
     let lastProgressAt = Date.now();
     let lastBuffer = '';
+    const awaitingUserPlay = () => canStart.value && !ready && !wantedPlaying && pendingSeekPosition === undefined;
     const bufferSnapshot = () => {
       const ranges = media.buffered;
       const parts = [String(instance.currentTime), String(media.readyState)];
@@ -406,7 +469,7 @@ const load = async (recovering = false) => {
     };
     const checkBuffering = () => {
       window.clearTimeout(stallTimer);
-      if (!current() || hidden || retryableFailure || media.error) return;
+      if (!current() || hidden || retryableFailure || media.error || awaitingUserPlay()) return;
       const snapshot = bufferSnapshot();
       if (snapshot !== lastBuffer) {
         lastBuffer = snapshot;
@@ -420,7 +483,7 @@ const load = async (recovering = false) => {
       stallTimer = window.setTimeout(checkBuffering, 5000);
     };
     const buffering = () => {
-      if (!current() || hidden) return;
+      if (!current() || hidden || awaitingUserPlay()) return;
       lastProgressAt = Date.now();
       lastBuffer = bufferSnapshot();
       if (!failed.value && !needsPlay.value) message.value = loadingText;
@@ -430,7 +493,7 @@ const load = async (recovering = false) => {
     instance.on(Events.WAITING, () => { if (wantedPlaying) buffering(); });
     // STALLED 也可能发生在暂停且已有预览画面时，不应把它当作失败。
     instance.on(Events.STALLED, () => {
-      if (wantedPlaying || !ready) {
+      if (wantedPlaying || (!ready && (!canStart.value || pendingSeekPosition !== undefined))) {
         if (current() && !hidden && media.readyState < 3 && !failed.value && !needsPlay.value) message.value = loadingText;
         checkBuffering();
       }
@@ -499,7 +562,8 @@ const onVisibility = () => {
   if (hidden) { progressDragging = false; saveProgress(); clearTimers(); }
   else if (failed.value && retryableFailure) { retries = 0; void load(true); }
   else {
-    // 缓存页停用期间可能已经收到首帧事件，激活时补齐就绪状态。
+    // 缓存页停用期间可能已收到元数据或首帧事件，激活时补齐就绪状态。
+    if (player && !ready && (player.video as HTMLVideoElement).readyState >= 1) syncMetadata?.();
     if (player && !ready && (player.video as HTMLVideoElement).readyState >= 2) syncLoadedData?.();
     if (player && (!ready || (wantedPlaying && (player.video as HTMLVideoElement).readyState < 3))) watchBuffering?.();
     if (wantedPlaying && player?.paused) void continuePlay();
@@ -574,6 +638,11 @@ onBeforeUnmount(() => {
 .phone-player-stage { width: 100%; aspect-ratio: 16 / 9; background: #000; position: relative; }
 .phone-player-stage:fullscreen { width: 100%; height: 100%; aspect-ratio: auto; }
 .phone-player-host { width: 100%; height: 100%; }
+.phone-player-splash { position: absolute; inset: 0; overflow: hidden; z-index: 6; pointer-events: none; background: radial-gradient(ellipse at 50% 40%, #1c2b3b, #0c1118 75%); }
+.phone-player-splash img { width: 100%; height: 100%; object-fit: contain; opacity: .92; }
+.phone-splash-play { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 20; width: 54px; height: 54px; padding: 12px; border: 1px solid #ffffff80; border-radius: 50%; background: #101820b3; color: #fff; cursor: pointer; }
+.phone-splash-play svg { display: block; width: 100%; height: 100%; }
+.phone-splash-play:focus-visible { outline: 2px solid var(--el-color-primary); outline-offset: 4px; }
 .phone-subtitle { position: absolute; bottom: 68px; left: 5%; width: 90%; text-align: center; white-space: pre-line; pointer-events: none; color: white; text-shadow: 0 1px 3px #000; font-size: clamp(16px, 3vw, 25px); z-index: 15; }
 .phone-player-message { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: max-content; max-width: 90%; border-radius: 8px; display: flex; justify-content: center; align-items: center; gap: 12px; padding: 10px; background: #000b; color: #fff; z-index: 20; font-size: 14px; }
 .phone-loading-spinner { width: 16px; height: 16px; flex: 0 0 16px; border: 2px solid #ffffff40; border-top-color: #fff; border-radius: 50%; animation: phone-loading-spin .8s linear infinite; }

@@ -230,6 +230,7 @@ import MomentCover from './MomentCover.vue'
 import LoopPlaybackStatus from './LoopPlaybackStatus.vue'
 const props = defineProps<{
   initialMoment?: MomentPlayback
+  restoredPlayback?: { time: number; playing: boolean; moment?: MomentPlayback }
   dramaSeriesId: string
   pageOverlay?: boolean
   activityRoot?: HTMLElement
@@ -536,26 +537,37 @@ onMounted(() => {
     const duration = props.getDuration()
     if (!initialApplied && duration > 0 && Number.isFinite(duration)) {
       initialApplied = true
-      const fromRoute =
-        route?.params.dramaSeriesId === props.dramaSeriesId && route.query.t !== undefined
-      if (props.initialMoment || fromRoute) {
-        const start = props.initialMoment?.start ?? Number(route.query.t),
-          end =
-            props.initialMoment?.end ??
-            (route.query.end === undefined ? 0 : Number(route.query.end))
-        if (canPlayMoment(start, end, duration)) {
-          lastSeekRevision = props.getSeekRevision?.()
-          awaitingLoopSeek = true
-          props.seek(start)
-          if (Number.isFinite(end) && end > start && end <= duration)
-            loop.value = {
-              start,
-              end,
-              title:
-                props.initialMoment?.title ??
-                (typeof route.query.momentTitle === 'string' ? route.query.momentTitle : undefined),
-            }
-          if (props.initialMoment && props.initialMoment.autoplay !== false) void props.play()
+      if (props.restoredPlayback) {
+        const restored = props.restoredPlayback
+        lastSeekRevision = props.getSeekRevision?.()
+        awaitingLoopSeek = true
+        props.seek(Math.max(0, Math.min(restored.time, Math.max(0, duration - 0.2))))
+        const range = restored.moment
+        if (range && canPlayMoment(range.start, range.end, duration) && range.end > range.start)
+          loop.value = { ...range }
+        if (restored.playing) void props.play()
+      } else {
+        const fromRoute =
+          route?.params.dramaSeriesId === props.dramaSeriesId && route.query.t !== undefined
+        if (props.initialMoment || fromRoute) {
+          const start = props.initialMoment?.start ?? Number(route.query.t),
+            end =
+              props.initialMoment?.end ??
+              (route.query.end === undefined ? 0 : Number(route.query.end))
+          if (canPlayMoment(start, end, duration)) {
+            lastSeekRevision = props.getSeekRevision?.()
+            awaitingLoopSeek = true
+            props.seek(start)
+            if (Number.isFinite(end) && end > start && end <= duration)
+              loop.value = {
+                start,
+                end,
+                title:
+                  props.initialMoment?.title ??
+                  (typeof route.query.momentTitle === 'string' ? route.query.momentTitle : undefined),
+              }
+            if (props.initialMoment && props.initialMoment.autoplay !== false) void props.play()
+          }
         }
       }
     }

@@ -261,6 +261,35 @@ describe('片段收藏和时间轴', () => {
     expect(play).not.toHaveBeenCalled()
     wrapper.unmount()
   })
+  it.each([false, true])('重试恢复当前进度和播放状态，保留循环范围（playing=%s）', async (playing) => {
+    let time = 0
+    const seek = vi.fn((value: number) => { time = value })
+    const play = vi.fn()
+    const wrapper = mount(MomentTools, { props: {
+      dramaSeriesId: 'd', initialMoment: { start: 10, end: 20, title: '原片段', autoplay: !playing },
+      restoredPlayback: { time: 16, playing, moment: { start: 10, end: 20, title: '当前循环' } },
+      getTime: () => time, getDuration: () => 90, seek, play,
+    }, global })
+    await vi.advanceTimersByTimeAsync(600)
+    expect(seek).toHaveBeenCalledExactlyOnceWith(16)
+    expect(play).toHaveBeenCalledTimes(playing ? 1 : 0)
+    expect(wrapper.find('.loop-status').text()).toContain('当前循环')
+    wrapper.unmount()
+  })
+  it('重试保留已退出循环的状态，不重新套用原始片段或路由', async () => {
+    route.query = { t: '10', end: '20' }
+    const seek = vi.fn(), play = vi.fn()
+    const wrapper = mount(MomentTools, { props: {
+      dramaSeriesId: 'd', initialMoment: { start: 10, end: 20, title: '原片段' },
+      restoredPlayback: { time: 40, playing: false },
+      getTime: () => 40, getDuration: () => 90, seek, play,
+    }, global })
+    await vi.advanceTimersByTimeAsync(600)
+    expect(seek).toHaveBeenCalledExactlyOnceWith(40)
+    expect(play).not.toHaveBeenCalled()
+    expect(wrapper.find('.loop-status').exists()).toBe(false)
+    wrapper.unmount()
+  })
   it.each([{start:10,end:100}, {start:100,end:0}])('视频替换变短后拒绝越界片段并提示，保留收藏数据 %j', async (initialMoment) => {
     const seek = vi.fn(), play = vi.fn()
     const wrapper = mount(MomentTools, { props: {
