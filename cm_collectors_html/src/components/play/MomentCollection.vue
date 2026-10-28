@@ -101,7 +101,7 @@
   </section>
 </template>
 <script setup lang="ts">
-import { onActivated, onDeactivated, onBeforeUnmount, ref, watch } from 'vue'
+import { nextTick, onActivated, onDeactivated, onBeforeUnmount, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElInput, ElPagination } from 'element-plus'
 import { isMobile } from '@/assets/mobile'
@@ -149,7 +149,7 @@ const loading = ref(false),
 watch(error, message => emit('load-error', !!message), { immediate: true })
 let page = 1,
   version = 0
-async function load(append = false, targetPage = 1) {
+async function load(append = false, targetPage = 1, preserveScroll = false) {
   const v = ++version
   const requestedPage = append ? page + 1 : 1
   loading.value = true
@@ -167,8 +167,11 @@ async function load(append = false, targetPage = 1) {
       libraryTotal.value = result.data.total
       libraryPage.value = targetPage
       coverRefresh.value++
+      const list = collectionRoot.value?.querySelector('.collection-list')
+      const scrollTop = preserveScroll ? list?.scrollTop || 0 : 0
       items.value = result.data.items
-      collectionRoot.value?.querySelector('.collection-list')?.scrollTo?.({ top: 0 })
+      await nextTick()
+      if (v === version) list?.scrollTo?.({ top: scrollTop })
     }
     return
   }
@@ -227,7 +230,7 @@ watch(
 )
 let active = true
 const unsubscribe = subscribeMomentChanges(() => {
-  if (active) void load(false, props.filesBasesId ? libraryPage.value : 1)
+  if (active) void load(false, props.filesBasesId ? libraryPage.value : 1, true)
 })
 onDeactivated(() => {
   active = false
@@ -235,7 +238,8 @@ onDeactivated(() => {
 })
 onActivated(() => {
   active = true
-  refresh()
+  if (props.filesBasesId) void load(false, libraryPage.value, true)
+  else refresh()
 })
 onBeforeUnmount(() => {
   unsubscribe()

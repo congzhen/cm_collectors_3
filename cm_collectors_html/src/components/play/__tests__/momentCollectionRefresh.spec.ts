@@ -2,6 +2,8 @@ import { flushPromises, mount } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import MomentCollection from '../MomentCollection.vue'
 import { momentApi } from '@/server/videoMoments.server'
+import { defineComponent, h, KeepAlive, ref } from 'vue'
+import ElementPlus, { ElPagination } from 'element-plus'
 
 const mocks = vi.hoisted(() => ({ request: vi.fn() }))
 vi.mock('@/assets/request', () => ({ default: (...args: unknown[]) => mocks.request(...args) }))
@@ -71,5 +73,28 @@ describe('收藏列表自动同步', () => {
     await momentApi.save(item)
     await flushPromises()
     expect(mocks.request).toHaveBeenCalledTimes(1)
+  })
+  it('从播放页返回缓存收藏列表时保留当前库页码和滚动位置', async () => {
+    mocks.request.mockImplementation(async ({ params }: { params: { page: number } }) => ({ status: true,
+      data: { total: 65, items: [{ ...item, title: '第' + params.page + '页' }] },
+    }))
+    const active = ref(true)
+    const wrapper = mount(defineComponent({ setup: () => () => h(KeepAlive, null, {
+      default: () => active.value ? h(MomentCollection, { filesBasesId: 'library-a' }) : h('div'),
+    }) }), { global: { plugins: [ElementPlus], stubs: { MomentCover: true } } })
+    await flushPromises()
+    wrapper.findComponent(ElPagination).vm.$emit('current-change', 2)
+    await flushPromises()
+    const list = wrapper.get('.collection-list').element
+    Object.defineProperty(list, 'scrollTo', { value: ({ top }: { top: number }) => { list.scrollTop = top } })
+    list.scrollTop = 137
+    active.value = false
+    await flushPromises()
+    active.value = true
+    await flushPromises()
+    expect(wrapper.findComponent(ElPagination).props('currentPage')).toBe(2)
+    expect(list.scrollTop).toBe(137)
+    expect(wrapper.get('.collection-card').text()).toContain('第2页')
+    wrapper.unmount()
   })
 })
