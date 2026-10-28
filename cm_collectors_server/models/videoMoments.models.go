@@ -2,7 +2,7 @@ package models
 
 import "time"
 
-// VideoMoment stores positions only; deleting the source does not delete the user's notes.
+// VideoMoment stores positions only. Missing files retain bookmarks; permanent resource deletion removes them.
 type VideoMoment struct {
 	ID            string    `json:"id" gorm:"primaryKey;type:char(20)"`
 	DramaSeriesID string    `json:"dramaSeriesId" gorm:"index;type:char(20)"`

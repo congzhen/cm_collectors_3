@@ -20,7 +20,7 @@ func sidebarTestDB(t *testing.T) *gorm.DB {
 	sqlDB, _ := db.DB()
 	sqlDB.SetMaxOpenConns(1)
 	t.Cleanup(func() { sqlDB.Close() })
-	if err := db.AutoMigrate(&Performer{}, &Resources{}, &ResourcesPerformers{}, &ResourcesDirectors{}, &FilesRelatedPerformerBases{}, &ResourcePlayDaily{}); err != nil {
+	if err := db.AutoMigrate(&Performer{}, &Resources{}, &ResourcesPerformers{}, &ResourcesDirectors{}, &FilesRelatedPerformerBases{}, &ResourcePlayDaily{}, &VideoMoment{}); err != nil {
 		t.Fatal(err)
 	}
 	return db

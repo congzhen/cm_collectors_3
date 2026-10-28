@@ -22,6 +22,20 @@ var videoMomentCapture = captureVideoMomentCover
 func momentCoverDir(id string) string {
 	return filepath.Join(momentCoverRoot, fmt.Sprintf("%x", sha256.Sum256([]byte(id))))
 }
+
+// Called only after the resource deletion transaction commits. The mutex also
+// prevents an in-flight cover capture from recreating a deleted moment's files.
+func deleteMomentCovers(ids []string) error {
+	momentCoverMutex.Lock()
+	defer momentCoverMutex.Unlock()
+	var result error
+	for _, id := range ids {
+		if err := os.RemoveAll(momentCoverDir(id)); err != nil {
+			result = errors.Join(result, err)
+		}
+	}
+	return result
+}
 func momentCoverPath(v models.VideoMoment) string {
 	return filepath.Join(momentCoverDir(v.ID), fmt.Sprintf("%x.jpg", sha256.Sum256([]byte(strconv.FormatFloat(v.Start, 'g', -1, 64)))))
 }

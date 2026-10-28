@@ -125,6 +125,7 @@
       <div v-if="formData.mode == E_resourceDramaSeriesType.Movies">
         <el-button @click="videoThumbnailPosterHandle">获取视频预览图</el-button>
         <el-button @click="scraperVideoInfoHandle">刮削视频信息</el-button>
+        <ResourceMomentsManager v-if="editorOpened && formData.id" :key="formData.id" :resource-id="formData.id" />
       </div>
     </template>
   </drawerForm>
@@ -161,6 +162,8 @@ import { resourceServer } from '@/server/resource.server';
 import { getResourceCoverPoster } from '@/common/photo';
 import scraperOneResourceDialog from '../importResource/scraperOneResourceDialog.vue';
 import draggable from 'vuedraggable';
+import ResourceMomentsManager from './ResourceMomentsManager.vue';
+const editorOpened = ref(false);
 import { AppLang } from '@/language/app.lang'
 const appLang = AppLang()
 
@@ -213,6 +216,7 @@ const selectedPerformerData = computed(() => performers.value.map(id => knownPer
 const selectedDirectorData = computed(() => directors.value.map(id => knownPerformers.value[id]).filter(Boolean));
 let formSession = 0;
 const resourceEditorClosed = () => {
+  editorOpened.value = false;
   formSession++;
   performerEditLoading.value = false;
   performerFormDrawerRef.value?.close();
@@ -433,6 +437,7 @@ const success = (data: I_resource) => {
 
 const open = (_mode: 'add' | 'edit', res: I_resource | null = null) => {
   init(_mode, res);
+  editorOpened.value = true;
   drawerFormRef.value?.open();
 }
 const close = () => {

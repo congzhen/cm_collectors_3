@@ -25,6 +25,10 @@ import (
 
 type VideoMoments struct{}
 
+// Serialize final bookmark writes with permanent resource deletion. Expensive
+// duration probes and cover capture run outside this short critical section.
+var resourceMomentWriteMutex sync.Mutex
+
 const previewRoot = "./runtime/cache/videoPreviews"
 
 // Injectable database accessor keeps feature tests isolated from the application database.
@@ -75,6 +79,25 @@ func validateMoment(v *models.VideoMoment, duration float64) error {
 	return nil
 }
 
+func momentUpdateResult(result *gorm.DB, id string) error {
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected > 0 {
+		return nil
+	}
+	// MySQL may report zero affected rows for an unchanged value. Distinguish
+	// that case from a bookmark deleted after the initial lookup.
+	var current models.VideoMoment
+	if err := videoMomentsDB().Select("id").First(&current, "id = ?", id).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return errors.New("片段已删除，请刷新后重试")
+		}
+		return err
+	}
+	return nil
+}
+
 func (VideoMoments) Save(id string, input models.VideoMoment) (*models.VideoMoment, error) {
 	var old models.VideoMoment
 	if id != "" {
@@ -93,8 +116,11 @@ func (VideoMoments) Save(id string, input models.VideoMoment) (*models.VideoMome
 		}
 		old.Title, old.Note, old.UpdatedAt = input.Title, input.Note, time.Now()
 		old.Available, old.ResourceTitle = err == nil, r.Title
-		e := videoMomentsDB().Model(&models.VideoMoment{}).Where("id = ?", id).Select("Title", "Note", "UpdatedAt").Updates(&old).Error
-		return &old, e
+		result := videoMomentsDB().Model(&models.VideoMoment{}).Where("id = ?", id).Select("Title", "Note", "UpdatedAt").Updates(&old)
+		if err := momentUpdateResult(result, id); err != nil {
+			return nil, err
+		}
+		return &old, nil
 	}
 	if err != nil {
 		return nil, err
@@ -126,11 +152,23 @@ func (VideoMoments) Save(id string, input models.VideoMoment) (*models.VideoMome
 	input.ResourceID = r.ID
 	input.SourceKey = key
 	input.UpdatedAt = time.Now()
-	if id == "" {
-		err = videoMomentsDB().Create(&input).Error
-	} else {
-		err = videoMomentsDB().Model(&models.VideoMoment{}).Where("id = ?", id).Select("Title", "Note", "Start", "End", "ResourceID", "SourceKey", "UpdatedAt").Updates(&input).Error
-	}
+	err = func() error {
+		resourceMomentWriteMutex.Lock()
+		defer resourceMomentWriteMutex.Unlock()
+		// The resource may have been deleted while its duration was being probed.
+		_, currentResource, _, sourceErr := momentSource(input.DramaSeriesID)
+		if sourceErr != nil {
+			return sourceErr
+		}
+		if currentResource.ID != input.ResourceID {
+			return errors.New("资源已变更，请重新打开视频后收藏")
+		}
+		if id == "" {
+			return videoMomentsDB().Create(&input).Error
+		}
+		result := videoMomentsDB().Model(&models.VideoMoment{}).Where("id = ?", id).Select("Title", "Note", "Start", "End", "ResourceID", "SourceKey", "UpdatedAt").Updates(&input)
+		return momentUpdateResult(result, id)
+	}()
 	if err != nil {
 		return nil, err
 	}

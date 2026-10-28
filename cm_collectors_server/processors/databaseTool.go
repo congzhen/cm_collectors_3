@@ -8,6 +8,7 @@ import (
 	"cm_collectors_server/utils"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"path/filepath"
 	"time"
@@ -146,35 +147,54 @@ func (t DatabaseTool) DatabaseCleanup(filesBasesIds []string, clearItems []datat
 		}
 	}
 	db := core.DBS()
-	return db.Transaction(func(tx *gorm.DB) error {
-		for _, filesBases := range *filesBasesList {
-			for _, clearItem := range clearItems {
-				switch clearItem {
-				case datatype.ENUM_DatabaseCleanupClearItem_Resource:
-					t.clear_resource(tx, &filesBases)
-				case datatype.ENUM_DatabaseCleanupClearItem_Performer:
-					t.clear_performer(tx, &filesBases)
-				case datatype.ENUM_DatabaseCleanupClearItem_Tags:
-					t.clear_tags(tx, &filesBases)
-				case datatype.ENUM_DatabaseCleanupClearItem_TagClass:
-					t.clear_tagClass(tx, &filesBases)
-				case datatype.ENUM_DatabaseCleanupClearItem_FileDatabaseConfig:
-					FilesBases{}.ClearFilesBasesConfig(tx, filesBases.ID, []datatype.Config_Field{datatype.Config_Field_FilesBases})
-				case datatype.ENUM_DatabaseCleanupClearItem_ImportConfig:
-					FilesBases{}.ClearFilesBasesConfig(tx, filesBases.ID, []datatype.Config_Field{datatype.Config_Field_ScanDisk})
-				case datatype.ENUM_DatabaseCleanupClearItem_ResourceScraperConfig:
-					FilesBases{}.ClearFilesBasesConfig(tx, filesBases.ID, []datatype.Config_Field{datatype.Config_Field_Scraper})
-				case datatype.ENUM_DatabaseCleanupClearItem_PerformerScraperConfig:
-					FilesBases{}.ClearFilesBasesConfig(tx, filesBases.ID, []datatype.Config_Field{datatype.Config_Field_ScraperPerformer})
-				case datatype.ENUM_DatabaseCleanupClearItem_GeneralConfig:
-					core.ResetConfig()
-				case datatype.ENUM_DatabaseCleanupClearItem_CronJobs:
-					CronJobs{}.DeleteByFilesBasesID(tx, filesBases.ID)
+	var momentIDs []string
+	err = func() error {
+		resourceMomentWriteMutex.Lock()
+		defer resourceMomentWriteMutex.Unlock()
+		return db.Transaction(func(tx *gorm.DB) error {
+			for _, filesBases := range *filesBasesList {
+				for _, clearItem := range clearItems {
+					switch clearItem {
+					case datatype.ENUM_DatabaseCleanupClearItem_Resource:
+						resources := tx.Model(&models.Resources{}).Select("id").Where("filesBases_id = ?", filesBases.ID)
+						var ids []string
+						if err := tx.Model(&models.VideoMoment{}).Where("resource_id IN (?)", resources).Pluck("id", &ids).Error; err != nil {
+							return err
+						}
+						momentIDs = append(momentIDs, ids...)
+						if err := t.clear_resource(tx, &filesBases); err != nil {
+							return err
+						}
+					case datatype.ENUM_DatabaseCleanupClearItem_Performer:
+						t.clear_performer(tx, &filesBases)
+					case datatype.ENUM_DatabaseCleanupClearItem_Tags:
+						t.clear_tags(tx, &filesBases)
+					case datatype.ENUM_DatabaseCleanupClearItem_TagClass:
+						t.clear_tagClass(tx, &filesBases)
+					case datatype.ENUM_DatabaseCleanupClearItem_FileDatabaseConfig:
+						FilesBases{}.ClearFilesBasesConfig(tx, filesBases.ID, []datatype.Config_Field{datatype.Config_Field_FilesBases})
+					case datatype.ENUM_DatabaseCleanupClearItem_ImportConfig:
+						FilesBases{}.ClearFilesBasesConfig(tx, filesBases.ID, []datatype.Config_Field{datatype.Config_Field_ScanDisk})
+					case datatype.ENUM_DatabaseCleanupClearItem_ResourceScraperConfig:
+						FilesBases{}.ClearFilesBasesConfig(tx, filesBases.ID, []datatype.Config_Field{datatype.Config_Field_Scraper})
+					case datatype.ENUM_DatabaseCleanupClearItem_PerformerScraperConfig:
+						FilesBases{}.ClearFilesBasesConfig(tx, filesBases.ID, []datatype.Config_Field{datatype.Config_Field_ScraperPerformer})
+					case datatype.ENUM_DatabaseCleanupClearItem_GeneralConfig:
+						core.ResetConfig()
+					case datatype.ENUM_DatabaseCleanupClearItem_CronJobs:
+						CronJobs{}.DeleteByFilesBasesID(tx, filesBases.ID)
+					}
 				}
 			}
+			return nil
+		})
+	}()
+	if err == nil {
+		if cleanupErr := deleteMomentCovers(momentIDs); cleanupErr != nil {
+			log.Printf("资源已清理，清理片段封面失败: %v", cleanupErr)
 		}
-		return nil
-	})
+	}
+	return err
 
 }
 func (DatabaseTool) clear_resource(db *gorm.DB, filesBases *models.FilesBases) error {

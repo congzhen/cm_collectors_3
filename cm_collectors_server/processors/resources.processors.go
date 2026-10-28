@@ -7,6 +7,7 @@ import (
 	"cm_collectors_server/models"
 	"cm_collectors_server/utils"
 	"fmt"
+	"log"
 	"net/url"
 	"os"
 	"path"
@@ -375,38 +376,52 @@ func (t Resources) DeleteResource(resourceId string) error {
 		return err
 	}
 	db := core.DBS()
-	return db.Transaction(func(tx *gorm.DB) error {
-		if err := deleteDiscardableVideoTranscodeTasksByResourceIDs(tx, []string{resourceId}); err != nil {
-			return err
+	var momentIDs []string
+	err = func() error {
+		resourceMomentWriteMutex.Lock()
+		defer resourceMomentWriteMutex.Unlock()
+		return db.Transaction(func(tx *gorm.DB) error {
+			if err := tx.Model(&models.VideoMoment{}).Where("resource_id = ?", resourceId).Pluck("id", &momentIDs).Error; err != nil {
+				return err
+			}
+			if err := deleteDiscardableVideoTranscodeTasksByResourceIDs(tx, []string{resourceId}); err != nil {
+				return err
+			}
+			err := ResourcesDirectors{}.DeleteByResourcesID(tx, resourceId)
+			if err != nil {
+				return err
+			}
+			err = ResourcesPerformers{}.DeleteByResourcesID(tx, resourceId)
+			if err != nil {
+				return err
+			}
+			err = ResourcesTags{}.DeleteByResourcesID(tx, resourceId)
+			if err != nil {
+				return err
+			}
+			vfM := models.VideoFingerprint{}
+			err = vfM.DeleteByResourcesID(tx, resourceId)
+			if err != nil {
+				return err
+			}
+			err = ResourcesDramaSeries{}.DeleteByResourcesID(tx, resourceId)
+			if err != nil {
+				return err
+			}
+			err = t.DeleteById(tx, resourceId)
+			if err != nil {
+				return err
+			}
+			t.DeleteResourcePhoto(info.FilesBasesID, info.CoverPoster)
+			return nil
+		})
+	}()
+	if err == nil {
+		if cleanupErr := deleteMomentCovers(momentIDs); cleanupErr != nil {
+			log.Printf("资源已删除，清理片段封面失败: %v", cleanupErr)
 		}
-		err := ResourcesDirectors{}.DeleteByResourcesID(tx, resourceId)
-		if err != nil {
-			return err
-		}
-		err = ResourcesPerformers{}.DeleteByResourcesID(tx, resourceId)
-		if err != nil {
-			return err
-		}
-		err = ResourcesTags{}.DeleteByResourcesID(tx, resourceId)
-		if err != nil {
-			return err
-		}
-		vfM := models.VideoFingerprint{}
-		err = vfM.DeleteByResourcesID(tx, resourceId)
-		if err != nil {
-			return err
-		}
-		err = ResourcesDramaSeries{}.DeleteByResourcesID(tx, resourceId)
-		if err != nil {
-			return err
-		}
-		err = t.DeleteById(tx, resourceId)
-		if err != nil {
-			return err
-		}
-		t.DeleteResourcePhoto(info.FilesBasesID, info.CoverPoster)
-		return nil
-	})
+	}
+	return err
 }
 
 func (t Resources) DeleteByFilesBasesID(db *gorm.DB, filesBases_id string, coverPosterSlc []string) error {
