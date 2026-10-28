@@ -4,6 +4,7 @@
       <div class="mobile-toolbar-row mobile-database-row">
         <el-select v-model="selectedDataBaseId" class="mobile-database-select" aria-label="选择资源库"
           @change="changeDataBase">
+          <template #prefix><el-icon><Collection /></el-icon></template>
           <el-option v-for="filesBase in store.filesBasesStoreData.filesBasesStatus" :key="filesBase.id"
             :label="filesBase.name" :value="filesBase.id" />
         </el-select>
@@ -12,7 +13,7 @@
           <span>桌面版</span>
         </el-button>
         <el-dropdown v-if="shellSettingsAvailable" trigger="click" @command="openShellSettings">
-          <el-button circle aria-label="更多"><el-icon><More /></el-icon></el-button>
+          <el-button class="mobile-more-button" aria-label="更多" title="更多"><el-icon><More /></el-icon></el-button>
           <template #dropdown><el-dropdown-menu>
             <el-dropdown-item command="server">服务器</el-dropdown-item>
           </el-dropdown-menu></template>
@@ -20,15 +21,15 @@
       </div>
 
       <div class="mobile-toolbar-row mobile-search-row">
-        <el-button @click="router.push('/moments')">片段</el-button>
         <el-input v-model="searchText" class="mobile-search-input" clearable placeholder="搜索资源、标签、演员…"
           aria-label="搜索资源" @keyup.enter="applySearch" @clear="applySearch">
           <template #prefix><el-icon><Search /></el-icon></template>
         </el-input>
+        <el-button class="mobile-moments-button" @click="router.push('/moments')"><el-icon><VideoPlay /></el-icon><span>片段</span></el-button>
         <el-button class="mobile-filter-button" :class="{ active: activeFilterCount > 0 }"
+          aria-label="筛选" title="筛选" :aria-expanded="filterDrawerVisible"
           @click="filterDrawerVisible = true">
           <el-icon><Filter /></el-icon>
-          <span>筛选</span>
           <span v-if="activeFilterCount > 0" class="mobile-filter-count">{{ activeFilterCount }}</span>
         </el-button>
       </div>
@@ -71,7 +72,7 @@
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, onActivated, onDeactivated, nextTick, ref, watch } from 'vue'
-import { ArrowLeft, ArrowRight, Filter, Monitor, More, Search } from '@element-plus/icons-vue'
+import { ArrowLeft, ArrowRight, Collection, Filter, Monitor, More, Search, VideoPlay } from '@element-plus/icons-vue'
 import { onBeforeRouteLeave, useRouter } from 'vue-router'
 import { useMobileShellSettings } from '@/common/mobileShell'
 import MobileResourceLayout from '@/components/mobile/MobileResourceLayout.vue'
@@ -396,11 +397,10 @@ onBeforeUnmount(() => {
   z-index: 2;
   flex: 0 0 auto;
   display: grid;
-  gap: 9px;
-  padding: calc(10px + env(safe-area-inset-top)) 12px 10px;
-  background: var(--mobile-surface);
+  gap: 10px;
+  padding: calc(8px + env(safe-area-inset-top)) 12px 12px;
+  background: var(--mobile-bg);
   border-bottom: 1px solid var(--mobile-border);
-  box-shadow: 0 5px 18px rgba(0, 0, 0, 0.12);
 }
 
 .mobile-toolbar-row {
@@ -417,13 +417,27 @@ onBeforeUnmount(() => {
 }
 
 .mobile-desktop-button,
+.mobile-moments-button,
+.mobile-more-button,
 .mobile-filter-button {
   flex: 0 0 auto;
-  height: 36px;
+  height: 40px;
+  margin: 0;
+  padding: 0 12px;
+  border-radius: 12px;
+  font-size: 13px;
   color: var(--mobile-text);
-  background: var(--mobile-surface-raised);
-  border-color: var(--mobile-border);
+  background: var(--mobile-surface);
+  border-color: transparent;
+  :deep(> span) { gap: 5px; }
+  .el-icon { font-size: 16px; }
 }
+
+.mobile-desktop-button { color: var(--mobile-muted); background: transparent; }
+.mobile-more-button { width: 40px; padding: 0; color: var(--mobile-muted); background: transparent; }
+.mobile-moments-button { color: var(--mobile-accent); background: color-mix(in srgb, var(--mobile-accent) 9%, var(--mobile-bg)); }
+.mobile-filter-button { position: relative; width: 40px; padding: 0; }
+.mobile-toolbar .el-button:focus-visible { outline: 2px solid var(--mobile-accent); outline-offset: 2px; }
 
 .mobile-filter-button.active {
   color: var(--mobile-accent);
@@ -432,6 +446,9 @@ onBeforeUnmount(() => {
 }
 
 .mobile-filter-count {
+  position: absolute;
+  top: -4px;
+  right: -4px;
   display: inline-grid;
   min-width: 18px;
   height: 18px;
@@ -515,11 +532,17 @@ onBeforeUnmount(() => {
 
 :deep(.mobile-database-select .el-select__wrapper),
 :deep(.mobile-search-input .el-input__wrapper) {
-  min-height: 36px;
+  min-height: 40px;
+  border-radius: 12px;
   color: var(--mobile-text);
-  background: var(--mobile-surface-raised);
-  box-shadow: 0 0 0 1px var(--mobile-border) inset;
+  background: var(--mobile-surface);
+  box-shadow: none;
 }
+
+:deep(.mobile-database-select .el-select__wrapper) { padding-inline: 0 8px; background: transparent; }
+:deep(.mobile-database-select .el-select__prefix) { color: var(--mobile-accent); font-size: 18px; }
+:deep(.mobile-database-select .el-select__selected-item) { font-size: 17px; font-weight: 600; }
+:deep(.mobile-search-input .el-input__wrapper.is-focus) { box-shadow: 0 0 0 1px var(--mobile-accent) inset; }
 
 :deep(.mobile-database-select .el-select__selected-item),
 :deep(.mobile-search-input .el-input__inner) {
@@ -589,9 +612,7 @@ onBeforeUnmount(() => {
     display: none;
   }
 
-  .mobile-desktop-button,
-  .mobile-filter-button {
-    padding-inline: 11px;
-  }
+  .mobile-desktop-button { padding-inline: 8px; }
+  .mobile-moments-button { padding-inline: 9px; }
 }
 </style>
