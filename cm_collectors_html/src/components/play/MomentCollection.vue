@@ -42,7 +42,7 @@
       }}
     </p>
     <div class="collection-list">
-      <article v-for="item in items" :key="item.id" class="collection-card">
+      <article v-for="item in items" :key="item.id" class="collection-card" :class="{ 'collection-card--active': item.id === activeMomentId }" :aria-current="item.id === activeMomentId ? 'true' : undefined">
         <button
           type="button"
           class="cover-button"
@@ -79,7 +79,7 @@
           <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
             <path d="m7 4 14 8-14 8Z" />
           </svg>
-          播放
+          {{ item.id === activeMomentId ? '当前片段' : '播放' }}
         </button>
       </article>
     </div>
@@ -123,6 +123,7 @@ const props = withDefaults(
     showHeading?: boolean
     showResourceTitle?: boolean
     disabled?: boolean
+    activeMomentId?: string
   }>(),
   { resourceId: '', filesBasesId: '', playMode: 'page', layout: 'grid', showHeading: true, showResourceTitle: undefined },
 )
@@ -130,10 +131,12 @@ const emit = defineEmits<{
   play: [moment: VideoMoment]
   'has-items-change': [hasItems: boolean]
   'load-error': [failed: boolean]
+  'items-change': [items: VideoMoment[]]
 }>()
 const router = useRouter()
 const collectionRoot = ref<HTMLElement>()
 const items = ref<VideoMoment[]>([])
+watch(items, value => emit('items-change', value))
 watch(() => items.value.length > 0, hasItems => emit('has-items-change', hasItems), { immediate: true })
 const coverRefresh = ref(0)
 const keyword = ref(''),
@@ -335,6 +338,10 @@ onBeforeUnmount(() => {
 }
 .collection-card:hover {
   border-color: var(--el-border-color, #ffffff30);
+}
+.collection-card--active {
+  border-color: var(--el-color-primary);
+  background: var(--el-color-primary-light-9);
 }
 .cover-button {
   position: relative;

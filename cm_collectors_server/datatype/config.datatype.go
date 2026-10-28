@@ -165,6 +165,7 @@ type Config_FilesBases struct {
 	SampleShowMax                int                       `json:"sampleShowMax"`                       // 剧照最大显示数量
 	VideoPreviewGeneration       string                    `json:"videoPreviewGeneration"`              // 片段预览生成方式
 	VideoMomentOpenMode          string                    `json:"videoMomentOpenMode"`                 // 片段收藏打开方式
+	VideoMomentLibraryMode       string                    `json:"videoMomentLibraryMode"`              // 本库片段默认视图
 	VideoPreviewInterval         int                       `json:"videoPreviewInterval"`                // 默认预览抽图间隔
 	SampleFolder                 string                    `json:"sampleFolder"`                        // 剧照文件夹
 }

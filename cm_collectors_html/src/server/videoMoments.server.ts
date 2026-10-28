@@ -1,5 +1,6 @@
 import request from '@/assets/request'
 export interface MomentPlayback {
+  autoplay?: boolean
   start: number
   end: number
   title: string

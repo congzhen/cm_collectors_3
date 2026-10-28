@@ -37,6 +37,7 @@ import { downloadMobileShell, notifyMobileShell } from '@/common/mobileShell';
 const props = withDefaults(defineProps<{ resourceId: string; dramaSeriesId: string; title: string; autoplay?: boolean; initialMoment?: MomentPlayback;
   sourceLoader?: (id: string, signal?: AbortSignal) => Promise<MobileSource> }>(), { sourceLoader: resolveMobileSource });
 const activeMoment = ref<MomentPlayback>();
+const emit = defineEmits<{ playing: [] }>();
 const stageRef = ref<HTMLElement>();
 const hostRef = ref<HTMLElement>();
 const playerRoot = shallowRef<HTMLElement>();
@@ -318,6 +319,7 @@ const load = async (recovering = false) => {
     });
     instance.on(Events.PLAYING, () => {
       if (!current()) return;
+      emit('playing');
       void queuePlaybackPreview(activeId);
       playbackStalled.value = false;
       retries = 0; failed.value = false; retryableFailure = false; message.value = ''; clearTimers();

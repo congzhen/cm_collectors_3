@@ -246,6 +246,20 @@ describe('片段收藏和时间轴', () => {
     expect(play).toHaveBeenCalledTimes(2)
     wrapper.unmount()
   })
+  it('放映室预载片段定位到起点并设置循环，但保持待播放状态', async () => {
+    let time = 0
+    const seek = vi.fn((value: number) => { time = value })
+    const play = vi.fn()
+    const wrapper = mount(MomentTools, { props: {
+      dramaSeriesId: 'd', initialMoment: { start: 10, end: 20, title: '首个片段', autoplay: false },
+      getTime: () => time, getDuration: () => 90, isPlaying: () => false, seek, play,
+    }, global })
+    await vi.advanceTimersByTimeAsync(600)
+    expect(seek).toHaveBeenCalledWith(10)
+    expect(wrapper.find('.loop-status').text()).toContain('首个片段')
+    expect(play).not.toHaveBeenCalled()
+    wrapper.unmount()
+  })
   it.each([{start:10,end:100}, {start:100,end:0}])('视频替换变短后拒绝越界片段并提示，保留收藏数据 %j', async (initialMoment) => {
     const seek = vi.fn(), play = vi.fn()
     const wrapper = mount(MomentTools, { props: {

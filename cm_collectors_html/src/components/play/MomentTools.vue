@@ -544,7 +544,7 @@ onMounted(() => {
                 props.initialMoment?.title ??
                 (typeof route.query.momentTitle === 'string' ? route.query.momentTitle : undefined),
             }
-          if (props.initialMoment) void props.play()
+          if (props.initialMoment && props.initialMoment.autoplay !== false) void props.play()
         }
       }
     }

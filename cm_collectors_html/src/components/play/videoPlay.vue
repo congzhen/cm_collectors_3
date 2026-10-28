@@ -31,7 +31,7 @@
       <!-- 移动端使用原生播放器 -->
       <video v-else ref="nativeVideoRef" class="native-video-player" :controls="!props.hideControls" preload="auto" width="100%"
         playsinline webkit-playsinline x5-playsinline x5-video-player-type="h5" x5-video-player-fullscreen="true"
-        x5-video-orientation="portraint" @playing="queuePlaybackPreview(videoId)" @play="handleNativePlay" @pause="handleNativePause"
+        x5-video-orientation="portraint" @playing="handlePlaying" @play="handleNativePlay" @pause="handleNativePause"
         @ended="handleNativePause" @timeupdate="handleNativeTimeUpdate">
         <source :src="videoSrc" :type="isHls ? 'application/x-mpegURL' : 'video/mp4'">
       </video>
@@ -58,6 +58,11 @@ import type { MomentPlayback } from '@/server/videoMoments.server';
 import type { PropType } from 'vue';
 import { createPlaybackPreviewTrigger } from '@/server/videoMoments.server';
 const queuePlaybackPreview = createPlaybackPreviewTrigger();
+const emit = defineEmits<{ playing: [] }>();
+const handlePlaying = () => {
+  void queuePlaybackPreview(videoId.value);
+  emit('playing');
+};
 import videojs from 'video.js'
 import 'video.js/dist/video-js.css'
 import videoPlayControls from './videoPlayControls.vue';
@@ -305,7 +310,7 @@ const setupPlayerEventListeners = () => {
     showControls()
   });
 
-  player.value.on('playing', () => { void queuePlaybackPreview(videoId.value) });
+  player.value.on('playing', handlePlaying);
 
   // 监听暂停事件
   player.value.on('pause', function () {

@@ -53,7 +53,7 @@ func SharedConfigFields(module string) []string {
 		 pageLimit resourcesShowMode showVideoDuration coverPosterBoxInfoWidth coverPosterWaterfallColumn coverTitleAlign
 		 resourceJustifyContent detailsDramaSeriesMode resourceDetailsShowMode detailsVisibleFields coverDisplayTagAttribute
 		 coverDisplayTagRgbas coverDisplayTagColors coverDisplayTagFontSize casualViewModule casualViewNumber historyModule
-		 historyNumber hotModule hotNumber sampleStatus sampleShowMax videoPreviewGeneration videoPreviewInterval videoMomentOpenMode openResModeMovies openResModeMovies_SoftType
+		 historyNumber hotModule hotNumber sampleStatus sampleShowMax videoPreviewGeneration videoPreviewInterval videoMomentOpenMode videoMomentLibraryMode openResModeMovies openResModeMovies_SoftType
 		 openResModeComic openResModeAtlas videoPreviewImageCount performer_Text director_Text showPerformerResourceCount
 		 plugInUnit_Cup plugInUnit_Cup_Text coverPosterWidthStatus coverPosterWidthBase coverPosterHeightStatus
 		 coverPosterHeightBase coverPosterGap contentPadding`)
@@ -237,6 +237,9 @@ func SaveSharedConfig(db *gorm.DB, module string, revision int, raw string) erro
 		}
 		if typed.VideoMomentOpenMode != "dialog" && typed.VideoMomentOpenMode != "page" {
 			return errors.New("片段收藏打开方式必须为弹窗播放器或详情播放页")
+		}
+		if typed.VideoMomentLibraryMode != "" && typed.VideoMomentLibraryMode != "theater" && typed.VideoMomentLibraryMode != "collection" {
+			return errors.New("片段默认视图必须为片段放映室或片段收藏")
 		}
 		if typed.VideoPreviewInterval != 10 && typed.VideoPreviewInterval != 30 && typed.VideoPreviewInterval != 60 && typed.VideoPreviewInterval != 120 {
 			return errors.New("默认抽图间隔必须为10、30、60或120秒")

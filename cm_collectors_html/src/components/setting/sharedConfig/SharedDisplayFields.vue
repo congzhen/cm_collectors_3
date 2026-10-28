@@ -236,6 +236,13 @@
     <slot name="sample" />
     <SettingSectionTitle>参数设置</SettingSectionTitle>
     <SettingFieldsScope :disabled="readonly">
+      <el-form-item label="片段默认视图">
+        <el-select v-model="config.videoMomentLibraryMode">
+          <el-option label="片段放映室（默认）" value="theater" />
+          <el-option label="片段收藏" value="collection" />
+        </el-select>
+        <div class="preview-setting-hint">主页片段入口的默认视图，打开后可随时切换。</div>
+      </el-form-item>
       <el-form-item label="片段收藏打开方式">
         <el-select v-model="config.videoMomentOpenMode">
           <el-option label="弹窗播放器（默认）" value="dialog" />

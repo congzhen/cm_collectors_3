@@ -72,6 +72,32 @@ func TestSharedConfigUsesProductionTableNames(t *testing.T) {
 	}
 }
 
+func TestSharedConfigMomentLibraryMode(t *testing.T) {
+	db := sharedTestDB(t)
+	value, _ := parseConfig(displayTestConfig(t, 32))
+	value["videoMomentLibraryMode"] = "collection"
+	raw, _ := json.Marshal(value)
+	if err := SaveSharedConfig(db, "display", 0, string(raw)); err != nil {
+		t.Fatal(err)
+	}
+	if err := db.Transaction(func(tx *gorm.DB) error { return SetLibraryConfigFollow(tx, "A", "display", true, 1) }); err != nil {
+		t.Fatal(err)
+	}
+	effective, err := EffectiveLibraryConfig(db, "A", "display", `{"videoMomentLibraryMode":"theater"}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	config, _ := parseConfig(effective)
+	if config["videoMomentLibraryMode"] != "collection" {
+		t.Fatalf("shared moment mode not applied: %s", effective)
+	}
+	value["videoMomentLibraryMode"] = "invalid"
+	raw, _ = json.Marshal(value)
+	if err := SaveSharedConfig(db, "display", 1, string(raw)); err == nil {
+		t.Fatal("accepted an invalid moment library mode")
+	}
+}
+
 func displayTestConfig(t *testing.T, limit int) string {
 	t.Helper()
 	data, _ := json.Marshal(datatype.Config_FilesBases{})
