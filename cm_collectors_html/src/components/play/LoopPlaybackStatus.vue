@@ -16,6 +16,7 @@
     >
       <div class="loop-progress-fill" :style="{ width: progressPercent + '%' }" />
       <input
+        ref="seekInput"
         class="loop-seek"
         type="range"
         min="0"
@@ -24,6 +25,11 @@
         :value="relativeTime"
         aria-label="片段播放进度"
         @input="seekWithinClip"
+        @pointerdown="startScrub"
+        @change="finishSeek"
+        @pointerup="finishSeek"
+        @blur="finishSeek"
+        @pointercancel="cancelScrub"
       />
     </div>
   </Teleport>
@@ -49,6 +55,7 @@ import {
   onMounted,
   shallowRef,
   ref,
+  watch,
 } from 'vue'
 import { momentTime } from '@/server/videoMoments.server'
 const props = defineProps<{
@@ -61,6 +68,7 @@ const props = defineProps<{
   getDuration: () => number
   seek?: (time: number) => void
 }>()
+const emit = defineEmits<{ 'scrub-change': [value: boolean] }>()
 const progressTarget = shallowRef<HTMLElement | null>(null)
 const timeTarget = shallowRef<HTMLElement | null>(null)
 const customControls = ref(false)
@@ -96,16 +104,49 @@ const rangeStyle = computed(() => {
   return { left: `${start * 100}%`, width: `${(end - start) * 100}%` }
 })
 const compactTime = (seconds: number) => momentTime(seconds).replace(/^00:/, '')
+const scrubbing = ref(false)
+const scrubTime = ref<number>()
+const seekInput = ref<HTMLInputElement>()
+function startScrub() {
+  scrubbing.value = true
+  emit('scrub-change', true)
+}
+function cancelScrub() {
+  scrubbing.value = false
+  scrubTime.value = undefined
+  time.value = props.getTime()
+  // Native range input can change before Vue has rendered its preview value.
+  if (seekInput.value) seekInput.value.value = String(Math.max(0, Math.min(props.end - props.start, time.value - props.start)))
+  emit('scrub-change', false)
+}
+function cancelHiddenScrub() {
+  if (document.hidden) cancelScrub()
+}
+watch(() => [props.start, props.end], cancelScrub)
 const relativeTime = computed(() =>
-  Math.max(0, Math.min(props.end - props.start, time.value - props.start)),
+  Math.max(0, Math.min(props.end - props.start, scrubTime.value ?? (time.value - props.start))),
 )
 const progressPercent = computed(() => (relativeTime.value / (props.end - props.start)) * 100)
 function seekWithinClip(event: Event) {
   const value = Number((event.target as HTMLInputElement).value)
   if (!Number.isFinite(value)) return
+  if (scrubbing.value) {
+    scrubTime.value = value
+    return
+  }
+  commitSeek(value)
+}
+function commitSeek(value: number) {
+  if (!Number.isFinite(value)) return
   const target = props.start + Math.max(0, Math.min(props.end - props.start, value))
   time.value = target
   props.seek?.(target)
+}
+function finishSeek(event: Event) {
+  if (!scrubbing.value) return
+  const value = Number((event.target as HTMLInputElement).value)
+  cancelScrub()
+  commitSeek(value)
 }
 const length = computed(() => compactTime(props.end - props.start))
 const elapsed = computed(() =>
@@ -121,10 +162,17 @@ function startUpdates() {
   update()
   timer = setInterval(update, 150)
 }
-onMounted(startUpdates)
+onMounted(() => {
+  startUpdates()
+  document.addEventListener('visibilitychange', cancelHiddenScrub)
+})
 onActivated(startUpdates)
-onDeactivated(() => clearInterval(timer))
-onBeforeUnmount(() => clearInterval(timer))
+onDeactivated(() => { clearInterval(timer); cancelScrub() })
+onBeforeUnmount(() => {
+  clearInterval(timer)
+  cancelScrub()
+  document.removeEventListener('visibilitychange', cancelHiddenScrub)
+})
 </script>
 <style scoped>
 /* Replace the third-party progress control while looping, preserving its idle/fullscreen container. */

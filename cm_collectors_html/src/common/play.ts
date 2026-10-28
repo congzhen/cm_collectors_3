@@ -111,10 +111,10 @@ export const playOpenResourceFolder = async (resourceId: string) => {
   }
 }
 
-export const getPlayVideoURLAndType = async (dramaSeriesId: string): Promise<I_playVideoData> => {
-  const result = await appDataServer.playVideoInfo(dramaSeriesId);
+export const getPlayVideoURLAndType = async (dramaSeriesId: string, signal?: AbortSignal): Promise<I_playVideoData> => {
+  const result = await appDataServer.playVideoInfo(dramaSeriesId, signal);
   if (!result || !result.status) {
-    ElMessage.error(result.msg);
+    if (!signal?.aborted) ElMessage.error(result?.msg || '播放地址加载失败');
     return {
       playUrl: '',
       playType: 'mp4',

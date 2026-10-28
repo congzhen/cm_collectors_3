@@ -1,0 +1,40 @@
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { createPlaybackSeek } from '../playbackSeek'
+
+afterEach(() => vi.useRealTimers())
+
+describe('连续播放定位', () => {
+  it('首次立即定位，密集点击只提交最新目标，持续操作仍定期响应', () => {
+    vi.useFakeTimers()
+    const apply = vi.fn()
+    const seek = createPlaybackSeek(apply)
+    seek.request(10)
+    expect(apply).toHaveBeenCalledExactlyOnceWith(10)
+    seek.request(20)
+    seek.request(30)
+    expect(seek.pending()).toBe(true)
+    vi.advanceTimersByTime(120)
+    expect(apply.mock.calls).toEqual([[10], [30]])
+    expect(seek.pending()).toBe(false)
+    seek.request(40)
+    vi.advanceTimersByTime(50)
+    seek.request(50)
+    vi.advanceTimersByTime(70)
+    expect(apply.mock.calls).toEqual([[10], [30], [50]])
+    seek.cancel()
+  })
+  it('切源或卸载取消旧目标，下次播放立即响应；无效时间不打断目标', () => {
+    vi.useFakeTimers()
+    const apply = vi.fn()
+    const seek = createPlaybackSeek(apply)
+    seek.request(10)
+    seek.request(20)
+    seek.request(NaN)
+    seek.cancel()
+    vi.advanceTimersByTime(500)
+    expect(apply).toHaveBeenCalledExactlyOnceWith(10)
+    seek.request(30)
+    expect(apply).toHaveBeenLastCalledWith(30)
+    expect(vi.getTimerCount()).toBe(0)
+  })
+})

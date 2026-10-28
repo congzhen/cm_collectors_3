@@ -32,7 +32,7 @@
       <video v-else ref="nativeVideoRef" class="native-video-player" :controls="!props.hideControls" preload="auto" width="100%"
         playsinline webkit-playsinline x5-playsinline x5-video-player-type="h5" x5-video-player-fullscreen="true"
         x5-video-orientation="portraint" @playing="handlePlaying" @play="handleNativePlay" @pause="handleNativePause"
-        @ended="handleNativePause" @timeupdate="handleNativeTimeUpdate">
+        @ended="handleNativePause" @timeupdate="handleNativeTimeUpdate" @seeked="handleSeeked">
         <source :src="videoSrc" :type="isHls ? 'application/x-mpegURL' : 'video/mp4'">
       </video>
       <button v-if="showCenterPlayButton" class="center-play-button" type="button" aria-label="播放视频"
@@ -42,11 +42,11 @@
       <div v-if="activeSubtitleText" class="custom-subtitle-display">{{ activeSubtitleText }}</div>
     </div>
     <videoPlayControls :loop-range="activeMoment" v-if="useVideoPlayControls && !props.hideControls && !isMobile()" :drama-series-id="videoId" ref="videoControlsRef" @play="handlePlay"
-      @pause="handlePause" @seek="handleSeek" @volume-change="handleVolumeChange" @mute-toggle="handleMuteToggle"
+      @scrub-change="scrubbing = $event" @pause="handlePause" @seek="handleSeek" @volume-change="handleVolumeChange" @mute-toggle="handleMuteToggle"
       @playback-rate-change="handlePlaybackRateChange" @rotate="handleRotate" @fullscreen="handleFullscreen"
       @picture-in-picture="handlePictureInPicture" @maximize="handleMaximize" @open-in-player="handleOpenInPlayer"
       @open-cloud-player="handleOpenCloudPlayer" />
-    <MomentTools @loop-change="activeMoment = $event" :initial-moment="props.initialMoment" :activity-root="videoPlayContainerElementRef || undefined" v-if="videoId && !props.hideControls" :key="videoId" :drama-series-id="videoId" :is-playing="isPlaying" :is-ended="() => isMobile() ? !!nativeVideoRef?.ended : !!player?.ended()" :get-time="getCurrentTime" :get-duration="() => isLoading ? 0 : getDuration()" :seek="setCurrentTime" :play="play" />
+    <MomentTools @loop-change="activeMoment = $event" :initial-moment="props.initialMoment" :activity-root="videoPlayContainerElementRef || undefined" v-if="videoId && !props.hideControls" :key="videoId" :drama-series-id="videoId" :is-playing="isPlaying" :is-seeking="isSeeking" :get-seek-revision="getSeekRevision" :cancel-pending-seek="playbackSeek.cancel" :is-ended="() => isMobile() ? !!nativeVideoRef?.ended : !!player?.ended()" :get-time="getCurrentTime" :get-duration="() => isLoading ? 0 : getDuration()" :seek="setCurrentTime" :play="play" />
     <playCloudCheckPromptDialog ref="playCloudCheckPromptDialogRef" />
     </div>
   </Teleport>
@@ -54,6 +54,7 @@
 
 <script lang="ts" setup>
 import MomentTools from './MomentTools.vue';
+import { createPlaybackSeek } from '@/common/playbackSeek';
 import type { MomentPlayback } from '@/server/videoMoments.server';
 import type { PropType } from 'vue';
 import { createPlaybackPreviewTrigger } from '@/server/videoMoments.server';
@@ -123,6 +124,7 @@ const props = defineProps({
 const isMobile = () => !props.forceDesktop && isMobileLayout();
 const appStore = appStoreData()
 const activeMoment = ref<MomentPlayback>();
+const scrubbing = ref(false);
 const indexkey = ref(0);
 const isLoading = ref(false);
 const loadingText = ref('正在加载视频...');
@@ -311,6 +313,7 @@ const setupPlayerEventListeners = () => {
   });
 
   player.value.on('playing', handlePlaying);
+  player.value.on('seeked', handleSeeked);
 
   // 监听暂停事件
   player.value.on('pause', function () {
@@ -402,9 +405,7 @@ const handlePause = () => {
 
 // 处理进度条拖动事件
 const handleSeek = (time: number) => {
-  if (player.value) {
-    player.value.currentTime(time);
-  }
+  setCurrentTime(time);
 };
 
 // 处理音量变化事件
@@ -810,7 +811,7 @@ const getProgress = (): number => {
 };
 
 // 设置播放位置
-const setCurrentTime = (time: number) => {
+const playbackSeek = createPlaybackSeek((time) => {
   if (isMobile()) {
     if (nativeVideoRef.value) nativeVideoRef.value.currentTime = time;
     return;
@@ -818,7 +819,13 @@ const setCurrentTime = (time: number) => {
   if (player.value) {
     player.value.currentTime(time);
   }
-};
+});
+let seekRevision = 0;
+const handleSeeked = () => { seekRevision++; };
+const getSeekRevision = () => seekRevision;
+const setCurrentTime = (time: number) => playbackSeek.request(time);
+const isSeeking = () => scrubbing.value || playbackSeek.pending() || (isMobile()
+  ? !!nativeVideoRef.value?.seeking : !!player.value?.seeking?.());
 
 // 从视频路径中提取ID
 const extractVideoIdFromPath = (path: string): string => {
@@ -855,6 +862,7 @@ const setVideoSource = (
   retryCount = 0,
   errorCallback: (error?: unknown) => void = () => undefined,
 ) => {
+  playbackSeek.cancel()
   window.clearTimeout(sourceRetryTimer)
   sourceRetryTimer = undefined
   clearSubtitleCues()
@@ -984,8 +992,10 @@ const setVideoSource = (
         }
         // 重新应用旋转效果
         if (rotation.value !== 0) {
+          const loadedPlayer = player.value;
           setTimeout(() => {
-            const videoElement = player.value.el().querySelector('.vjs-tech');
+            if (!loadedPlayer || player.value !== loadedPlayer) return;
+            const videoElement = loadedPlayer.el()?.querySelector('.vjs-tech');
             if (videoElement) {
               applyRotationTransformation(videoElement);
             }
@@ -1102,6 +1112,7 @@ const removeAllTextTracks = () => {
 
 // 添加重置播放器的方法  该方法有可能 触发  player.value.on('error'
 const resetPlayer = () => {
+  playbackSeek.cancel()
   isPlaybackActive.value = false
   if (nativeVideoRef.value) {
     nativeSourceVersion++
@@ -1149,6 +1160,8 @@ const resetPlayer = () => {
 // 主动卸载媒体源并中止浏览器仍在进行的 Range/HLS 请求。
 // 仅 pause 不会释放 Windows 上由服务端持有的源文件句柄。
 const releaseSource = () => {
+  playbackSeek.cancel()
+  scrubbing.value = false
   playerSetupVersion++
   window.clearTimeout(playerSetupTimer)
   playerSetupTimer = undefined
@@ -1170,10 +1183,10 @@ const releaseSource = () => {
   if (player.value) {
     try {
       player.value.pause()
-      const mediaElement = player.value.el()?.querySelector('video')
-      mediaElement?.removeAttribute('src')
-      mediaElement?.querySelectorAll('source').forEach((source: Element) => source.remove())
-      mediaElement?.load()
+      // Dispose video.js as well as its media element: VHS can keep fetching
+      // segments after a raw <video>.load(), and old retry handlers must stop.
+      player.value.dispose()
+      player.value = null
     } catch (error) {
       console.warn('Failed to release video source:', error)
     }
@@ -1252,6 +1265,7 @@ onMounted(() => {
 
 // 组件销毁前释放播放器资源
 onBeforeUnmount(() => {
+  playbackSeek.cancel()
   const shouldExitBrowserFullscreen = browserFullscreenActive && document.fullscreenElement !== null
   const shouldExitHostFullscreen = appStore.runtimeBridgeStatus && isFullscreen.value
   document.removeEventListener('keydown', handleMaximizeKeydown)

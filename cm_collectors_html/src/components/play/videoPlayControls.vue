@@ -20,6 +20,7 @@
       </div>
       <div class="progress-slider-container">
         <input
+          ref="seekInput"
           type="range"
           min="0"
           :max="seekLength || 100"
@@ -27,6 +28,11 @@
           step="0.1"
           class="progress-slider"
           @input="onSeek"
+          @pointerdown="startScrub"
+          @change="finishSeek"
+          @pointerup="finishSeek"
+          @blur="finishSeek"
+          @pointercancel="cancelScrub"
           @click.stop
         />
         <div
@@ -213,7 +219,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount, toRef } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, onDeactivated, toRef, watch } from 'vue'
 import { previewImage, type MomentPlayback } from '@/server/videoMoments.server'
 import { useVideoPreview } from './useVideoPreview'
 const props = withDefaults(defineProps<{ dramaSeriesId?: string; loopRange?: MomentPlayback }>(), {
@@ -256,8 +262,29 @@ const seekStart = computed(() => props.loopRange?.start ?? 0)
 const seekLength = computed(() =>
   props.loopRange ? props.loopRange.end - props.loopRange.start : duration.value,
 )
+const scrubbing = ref(false)
+const scrubTime = ref<number>()
+const seekInput = ref<HTMLInputElement>()
+function startScrub() {
+  scrubbing.value = true
+  emit('scrub-change', true)
+}
+function cancelScrub() {
+  scrubbing.value = false
+  scrubTime.value = undefined
+  if (seekInput.value) seekInput.value.value = String(Math.max(0, Math.min(seekLength.value, currentTime.value - seekStart.value)))
+  emit('scrub-change', false)
+}
+function cancelHiddenScrub() {
+  if (document.hidden) {
+    cancelScrub()
+    previewVisible.value = false
+  }
+}
+watch(() => [props.dramaSeriesId, props.loopRange], cancelScrub)
+onDeactivated(cancelScrub)
 const displayTime = computed(() =>
-  Math.max(0, Math.min(seekLength.value, currentTime.value - seekStart.value)),
+  Math.max(0, Math.min(seekLength.value, scrubTime.value ?? (currentTime.value - seekStart.value))),
 )
 const progressPercent = computed(() => {
   if (seekLength.value <= 0) return 0
@@ -289,8 +316,21 @@ const onVolumeChange = () => {
 // 进度条控制
 const onSeek = (event: Event) => {
   const target = event.target as HTMLInputElement
-  const time = seekStart.value + Math.max(0, Math.min(seekLength.value, parseFloat(target.value)))
-  emit('seek', time)
+  if (scrubbing.value) {
+    scrubTime.value = parseFloat(target.value)
+    return
+  }
+  commitSeek(parseFloat(target.value))
+}
+const commitSeek = (value: number) => {
+  if (!Number.isFinite(value)) return
+  emit('seek', seekStart.value + Math.max(0, Math.min(seekLength.value, value)))
+}
+const finishSeek = (event: Event) => {
+  if (!scrubbing.value) return
+  const value = parseFloat((event.target as HTMLInputElement).value)
+  cancelScrub()
+  commitSeek(value)
 }
 
 // 添加进度条点击功能
@@ -364,10 +404,13 @@ const handleClickOutside = (event: MouseEvent) => {
 
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
+  document.addEventListener('visibilitychange', cancelHiddenScrub)
 })
 
 onBeforeUnmount(() => {
+  cancelScrub()
   document.removeEventListener('click', handleClickOutside)
+  document.removeEventListener('visibilitychange', cancelHiddenScrub)
 })
 
 // 定义事件发射器
@@ -375,6 +418,7 @@ const emit = defineEmits<{
   (e: 'play'): void
   (e: 'pause'): void
   (e: 'seek', time: number): void
+  (e: 'scrub-change', value: boolean): void
   (e: 'volume-change', volume: number): void
   (e: 'mute-toggle', isMuted: boolean): void
   (e: 'playback-rate-change', rate: number): void

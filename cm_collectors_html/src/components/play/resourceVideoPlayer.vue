@@ -23,17 +23,25 @@ const desktop = ref<InstanceType<typeof VideoPlay>>();
 const mode = resolvePlayerMode(appStoreData().appConfig);
 const error = ref('');
 let version = 0;
+let sourceAbort: AbortController | undefined;
+let resumeAfterLoad = false;
 const loadDesktop = async () => {
   const request = ++version;
+  sourceAbort?.abort();
   error.value = '';
   if (mode !== 'desktop' || !props.dramaSeriesId) return;
   await nextTick();
+  if (request !== version) return;
   const vp = desktop.value;
   if (!vp) return;
   const id = props.dramaSeriesId;
-  const wasPlaying = vp.isPlaying();
+  // Repeated episode changes may arrive after the previous change released
+  // its media source. Preserve the original intent until the latest load wins.
+  resumeAfterLoad = vp.isPlaying() || resumeAfterLoad;
+  vp.releaseSource();
+  sourceAbort = new AbortController();
   try {
-    const { playUrl, playType } = await getPlayVideoURLAndType(id);
+    const { playUrl, playType } = await getPlayVideoURLAndType(id, sourceAbort.signal);
     if (request !== version) return;
     if (!playUrl) throw new Error('播放地址加载失败');
     const episode = props.resource.dramaSeries.find(item => item.id === id);
@@ -42,14 +50,17 @@ const loadDesktop = async () => {
       vp.addTextTrack(`/api/video/subtitle/${encodeURIComponent(id)}`, '默认字幕', 'zh', true);
       const dimensions = vp.getVideoDimensions();
       if (dimensions) emit('dimensions', dimensions.width, dimensions.height);
-      if (wasPlaying) vp.play();
+      if (resumeAfterLoad) {
+        resumeAfterLoad = false;
+        vp.play();
+      }
     }, episode?.src || props.resource.title);
   } catch {
     if (request === version) error.value = '播放地址加载失败，请重试';
   }
 };
 watch(() => [props.resource.id, props.dramaSeriesId], loadDesktop, { immediate: true });
-onBeforeUnmount(() => { version++; });
+onBeforeUnmount(() => { version++; sourceAbort?.abort(); });
 defineExpose({
   setAspectRatio: (ratio: string) => desktop.value?.setAspectRatio(ratio),
   getVideoDimensions: () => desktop.value?.getVideoDimensions(),

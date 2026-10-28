@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => ({
   fullscreen: (_value: boolean) => {},
   events: new Map<string, () => void>(), previewRequest: vi.fn(),
   paused: vi.fn(() => false), pause: vi.fn(), play: vi.fn(),
+  currentTime: vi.fn(), dispose: vi.fn(),
 }));
 vi.mock('@/assets/request', () => ({ default: mocks.previewRequest }));
 vi.mock('../MomentTools.vue', () => ({ default: defineComponent({ setup: () => () => h('div') }) }));
@@ -18,7 +19,7 @@ vi.mock('@/common/runtimeBridge', () => ({
 }));
 vi.mock('video.js', () => ({ default: Object.assign(vi.fn(() => ({
   on: (event: string, callback: () => void) => mocks.events.set(event, callback), ready: vi.fn(), aspectRatio: vi.fn(), paused: mocks.paused,
-  pause: mocks.pause, play: mocks.play, dispose: vi.fn(),
+  pause: mocks.pause, play: mocks.play, dispose: mocks.dispose, currentTime: mocks.currentTime,
 })), { getComponent: () => class {}, registerComponent: vi.fn() }) }));
 vi.mock('../playCloudCheckPromptDialog.vue', () => ({ default: defineComponent({ setup: () => () => h('div') }) }));
 vi.mock('../videoPlayControls.vue', () => ({ default: defineComponent({
@@ -96,6 +97,20 @@ describe('PC 全屏播放器触控唤出控制条', () => {
     expect(mocks.previewRequest).toHaveBeenCalledOnce();
     expect(mocks.previewRequest).toHaveBeenCalledWith({ url: '/videoPreviews/episode/playback', method: 'post' });
     wrapper.unmount();
+  });
+  it('释放源同时销毁播放器并取消待提交定位，旧目标不落到后续视频', async () => {
+    const wrapper = mount(VideoPlay, { props: { forceDesktop: true }, global: { stubs: { 'el-icon': true } } });
+    wrapper.vm.setVideoSource('/api/video/mp4/episode/v.mp4', 'mp4', () => {});
+    await nextTick(); await vi.advanceTimersByTimeAsync(100);
+    wrapper.vm.setCurrentTime(10);
+    wrapper.vm.setCurrentTime(20);
+    expect(mocks.currentTime).toHaveBeenCalledExactlyOnceWith(10);
+    wrapper.vm.releaseSource();
+    await vi.advanceTimersByTimeAsync(120);
+    expect(mocks.currentTime).toHaveBeenCalledExactlyOnceWith(10);
+    expect(mocks.dispose).toHaveBeenCalledOnce();
+    wrapper.unmount();
+    expect(mocks.dispose).toHaveBeenCalledOnce();
   });
 
 });

@@ -10,12 +10,15 @@ interface MockPlayer {
   currentTime: number; duration: number; playbackRate: number; paused: boolean;
   muted: boolean; volume: number;
   downloadHook?: () => boolean;
+  progressHooks: Record<string, (plugin: unknown, event: Event, data: { percent: number; currentTime: number; seekTime: number }) => boolean>;
   on: (event: string, callback: () => void) => void;
   fire: (event: string) => void; play: ReturnType<typeof vi.fn>; destroy: ReturnType<typeof vi.fn>;
 }
 // These controls have their own tests; playback lifecycle tests do not make preview API requests.
 vi.mock('@/assets/request', () => ({ default: mocks.previewRequest }));
-vi.mock('../MomentTools.vue', () => ({ default: defineComponent({ setup: () => () => h('div') }) }));
+vi.mock('../MomentTools.vue', () => ({ default: defineComponent({
+  name: 'MomentTools', props: ['isSeeking', 'getSeekRevision'], setup: () => () => h('div'),
+}) }));
 vi.mock('../MobileSeekPreview.vue', () => ({ default: defineComponent({ setup: () => () => h('div') }) }));
 vi.mock('@/common/mobilePlaybackSource', () => ({ resolveMobileSource: mocks.source, MobileSourceError: class extends Error {} }));
 vi.mock('xgplayer-hls', () => ({ default: { isSupported: () => true } }));
@@ -33,8 +36,10 @@ vi.mock('xgplayer', () => ({
     pause = vi.fn(() => { this.paused = true; this.fire('PAUSE'); });
     destroy = vi.fn(); focus = vi.fn(); getPlugin = () => ({ config: {} });
     downloadHook?: () => boolean;
-    usePluginHooks(plugin: string, _event: string, callback: () => boolean) {
+    progressHooks: MockPlayer['progressHooks'] = {};
+    usePluginHooks(plugin: string, event: string, callback: MockPlayer['progressHooks'][string] & (() => boolean)) {
       if (plugin === 'download') this.downloadHook = callback;
+      if (plugin === 'progress') this.progressHooks[event] = callback;
     }
     constructor(config: Record<string, unknown>) {
       this.config = config; this.root = config.el as HTMLElement; mocks.instances.push(this);
@@ -254,6 +259,111 @@ describe('手机播放恢复与请求隔离', () => {
     expect(player.root.textContent).not.toContain('重试');
     wrapper.unmount(); await flushPromises();
   });
+  it('手机进度条点击统一合并定位，拖动起点只预览，切集取消未提交的旧位置', async () => {
+    vi.useFakeTimers();
+    const wrapper = mount(MobileVideoPlayer, { props: { resourceId: 'r', dramaSeriesId: 'e', title: '测试' } });
+    await flushPromises();
+    const player = mocks.instances[0]; player.fire('LOADED_DATA');
+    const progress = { updatePercent: vi.fn(), updateTime: vi.fn() };
+    const event = new Event('mouseup');
+    const target = (time: number) => ({ percent: time / 200, currentTime: time, seekTime: time });
+    expect(player.progressHooks.dragstart(progress, event, target(20))).toBe(false);
+    expect(player.currentTime).toBe(0);
+    expect(progress.updateTime).toHaveBeenLastCalledWith(20);
+    player.progressHooks.dragend(progress, event, target(40));
+    expect(player.currentTime).toBe(40);
+    player.progressHooks.dragend(progress, event, target(80));
+    player.progressHooks.dragend(progress, event, target(120));
+    expect(player.currentTime).toBe(40);
+    await vi.advanceTimersByTimeAsync(120);
+    expect(player.currentTime).toBe(120);
+    expect(player.play).not.toHaveBeenCalled();
+    player.progressHooks.dragend(progress, event, target(160));
+    await wrapper.setProps({ dramaSeriesId: 'e2' }); await flushPromises();
+    const next = mocks.instances[1]; next.fire('LOADED_DATA');
+    await vi.advanceTimersByTimeAsync(120);
+    expect(next.currentTime).toBe(0);
+    expect(player.destroy).toHaveBeenCalledOnce();
+    wrapper.unmount(); await flushPromises();
+  });
+  it.each([0, 1])('首帧尚未就绪时点击进度条仍保留最新目标，不被历史恢复位置覆盖（readyState=%s）', async (readyState) => {
+    saveMobilePlayback('r/e', { time: 50, duration: 200, rate: 1, playing: false });
+    const wrapper = mount(MobileVideoPlayer, { props: { resourceId: 'r', dramaSeriesId: 'e', title: '测试' } });
+    await flushPromises();
+    const player = mocks.instances[0];
+    Object.defineProperty(player.video, 'readyState', { value: readyState });
+    const progress = { updatePercent: vi.fn(), updateTime: vi.fn() };
+    player.progressHooks.dragend(progress, new Event('mouseup'), { percent: 0.6, currentTime: 120, seekTime: 120 });
+    expect(player.currentTime).toBe(readyState >= 1 ? 120 : 0);
+    player.fire('LOADED_DATA');
+    expect(player.currentTime).toBe(120);
+    expect(player.play).not.toHaveBeenCalled();
+    wrapper.unmount(); await flushPromises();
+  });
+  it('拖动被切到后台中断，返回后不残留阻止循环的定位状态', async () => {
+    const wrapper = mount(MobileVideoPlayer, { props: { resourceId: 'r', dramaSeriesId: 'e', title: '测试' } });
+    await flushPromises();
+    const player = mocks.instances[0]; player.fire('LOADED_DATA');
+    const tools = wrapper.getComponent({ name: 'MomentTools' });
+    (player.config.progress as { onMoveStart: () => void }).onMoveStart();
+    expect(tools.props('isSeeking')()).toBe(true);
+    Object.defineProperty(document, 'hidden', { configurable: true, value: true });
+    document.dispatchEvent(new Event('visibilitychange'));
+    Object.defineProperty(document, 'hidden', { configurable: true, value: false });
+    document.dispatchEvent(new Event('visibilitychange'));
+    expect(tools.props('isSeeking')()).toBe(false);
+    expect(player.play).not.toHaveBeenCalled();
+    wrapper.unmount(); await flushPromises();
+  });
+  it.each([0, 120])('首帧前定位到 %s 后遇到连接重试，仍使用用户目标而不是旧历史', async (target) => {
+    vi.useFakeTimers();
+    saveMobilePlayback('r/e', { time: 50, duration: 200, rate: 1, playing: false });
+    const wrapper = mount(MobileVideoPlayer, { props: { resourceId: 'r', dramaSeriesId: 'e', title: '测试' } });
+    await flushPromises();
+    const player = mocks.instances[0];
+    const progress = { updatePercent: vi.fn(), updateTime: vi.fn() };
+    player.progressHooks.dragend(progress, new Event('mouseup'), { percent: target / 200, currentTime: target, seekTime: target });
+    player.fire('ERROR');
+    await vi.advanceTimersByTimeAsync(1000); await flushPromises();
+    const recovered = mocks.instances[1];
+    expect(recovered.config.startTime).toBe(target);
+    recovered.fire('LOADED_DATA');
+    expect(recovered.currentTime).toBe(target);
+    expect(recovered.play).not.toHaveBeenCalled();
+    wrapper.unmount(); await flushPromises();
+  });
+  it.each([0, 120])('首帧前定位到 %s 后关闭重开，恢复用户已提交的位置', async (target) => {
+    saveMobilePlayback('r/e', { time: 50, duration: 200, rate: 1, playing: false });
+    const props = { resourceId: 'r', dramaSeriesId: 'e', title: '测试' };
+    const wrapper = mount(MobileVideoPlayer, { props });
+    await flushPromises();
+    const player = mocks.instances[0];
+    Object.defineProperty(player.video, 'readyState', { value: 1 });
+    player.progressHooks.dragend({ updatePercent: vi.fn(), updateTime: vi.fn() }, new Event('mouseup'),
+      { percent: target / 200, currentTime: target, seekTime: target });
+    wrapper.unmount(); await flushPromises();
+    expect(readMobilePlayback('r/e')?.time).toBe(target);
+    const reopened = mount(MobileVideoPlayer, { props });
+    await flushPromises();
+    expect(mocks.instances[1].config.startTime).toBe(target);
+    reopened.unmount(); await flushPromises();
+  });
+  it('首帧前定位后切集，只保存旧分集目标，不把待定位状态带入新分集', async () => {
+    const wrapper = mount(MobileVideoPlayer, { props: { resourceId: 'r', dramaSeriesId: 'e', title: '测试' } });
+    await flushPromises();
+    const player = mocks.instances[0];
+    Object.defineProperty(player.video, 'readyState', { value: 1 });
+    player.progressHooks.dragend({ updatePercent: vi.fn(), updateTime: vi.fn() }, new Event('mouseup'),
+      { percent: 0.6, currentTime: 120, seekTime: 120 });
+    await wrapper.setProps({ dramaSeriesId: 'e2' }); await flushPromises();
+    expect(readMobilePlayback('r/e')?.time).toBe(120);
+    const next = mocks.instances[1];
+    expect(next.config.startTime).toBe(0);
+    next.fire('LOADED_DATA');
+    expect(next.currentTime).toBe(0);
+    expect(readMobilePlayback('r/e')?.time).toBe(120);
+    wrapper.unmount(); await flushPromises();
+  });
   it('首帧慢加载切回前台继续等待原请求，不重新创建播放器', async () => {
     vi.useFakeTimers();
     const wrapper = mount(MobileVideoPlayer, { props: { resourceId: 'r', dramaSeriesId: 'e', title: '测试' } });
@@ -380,6 +490,26 @@ describe('手机播放恢复与请求隔离', () => {
     player.currentTime = 42; player.fire('SEEKED');
     expect(readMobilePlayback('r/e')?.time).toBe(42);
     expect(mocks.instances).toHaveLength(1); expect(player.play).not.toHaveBeenCalled();
+    wrapper.unmount(); await flushPromises();
+  });
+  it('拖动中离开缓存页会清除交互状态，seeked 事件只更新当前播放器', async () => {
+    const visible = ref(true);
+    const wrapper = mount(defineComponent({ setup: () => () => h(KeepAlive, null, {
+      default: () => visible.value ? h(MobileVideoPlayer, { resourceId: 'r', dramaSeriesId: 'e', title: '测试' }) : h('div'),
+    }) }));
+    await flushPromises();
+    const player = mocks.instances[0]; player.fire('LOADED_DATA');
+    const tools = wrapper.getComponent({ name: 'MomentTools' });
+    const progress = player.config.progress as { onMoveStart: () => void };
+    progress.onMoveStart();
+    expect(tools.props('isSeeking')()).toBe(true);
+    visible.value = false; await nextTick();
+    player.fire('SEEKED');
+    visible.value = true; await nextTick();
+    expect(tools.props('isSeeking')()).toBe(false);
+    expect(tools.props('getSeekRevision')()).toBe(0);
+    player.fire('SEEKED');
+    expect(tools.props('getSeekRevision')()).toBe(1);
     wrapper.unmount(); await flushPromises();
   });
   it('连接失败最多自动重试三次，避免无限重载', async () => {

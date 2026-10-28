@@ -53,7 +53,7 @@ import { resourceServer } from '@/server/resource.server'
 import { filesBasesServer } from '@/server/filesBases.server'
 import { createDefaultConfigApp, E_config_type } from '@/dataType/config.dataType'
 import type { I_resource } from '@/dataType/resource.dataType'
-import type { VideoMoment } from '@/server/videoMoments.server'
+import type { MomentPlayback, VideoMoment } from '@/server/videoMoments.server'
 import MomentCollection from './MomentCollection.vue'
 import ResourceVideoPlayer from './resourceVideoPlayer.vue'
 import VideoPlayDialog from './videoPlayDialog.vue'
@@ -69,9 +69,7 @@ const loading = ref(false)
 const error = ref('')
 const session = ref(0)
 const autoplay = ref(false)
-const initialPlayback = computed(() => selected.value ? {
-  start: selected.value.start, end: selected.value.end, title: selected.value.title, autoplay: autoplay.value,
-} : undefined)
+const initialPlayback = shallowRef<MomentPlayback>()
 let historyRecorded = false
 let contextVersion = 0
 function recordPlayback() {
@@ -96,7 +94,9 @@ function onClose() {
   if (!opened.value) stopPlayback()
 }
 let version = 0
+let resourceAbort: AbortController | undefined
 function stopPlayback() {
+  resourceAbort?.abort()
   version++
   contextVersion++
   resource.value = undefined
@@ -148,14 +148,21 @@ async function play(item: VideoMoment, shouldAutoplay = true) {
     return
   }
   const request = ++version
+  resourceAbort?.abort()
+  const reuse = resource.value?.id === item.resourceId && selected.value?.dramaSeriesId === item.dramaSeriesId
   historyRecorded = false
   autoplay.value = shouldAutoplay
   selected.value = item
+  initialPlayback.value = { start: item.start, end: item.end, title: item.title, autoplay: shouldAutoplay }
+  // Keep the media element, decoder and buffered ranges for the same episode.
+  // A fresh playback object also allows clicking the selected moment to restart it.
+  if (reuse) return
   resource.value = undefined
   error.value = ''
   loading.value = true
+  resourceAbort = new AbortController()
   try {
-    const result = await resourceServer.info(item.resourceId)
+    const result = await resourceServer.info(item.resourceId, resourceAbort.signal)
     if (request !== version || !opened.value) return
     if (!result.status) throw new Error(result.msg || '资源加载失败')
     if (!result.data.dramaSeries.some(episode => episode.id === item.dramaSeriesId)) {

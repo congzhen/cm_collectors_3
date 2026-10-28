@@ -6,7 +6,7 @@ import type { I_resource } from '@/dataType/resource.dataType';
 import { appStoreData } from '@/storeData/app.storeData';
 import ResourceVideoPlayer from '../resourceVideoPlayer.vue';
 
-const mocks = vi.hoisted(() => ({ source: vi.fn(), setSource: vi.fn(), subtitle: vi.fn(), destroy: vi.fn() }));
+const mocks = vi.hoisted(() => ({ source: vi.fn(), setSource: vi.fn(), subtitle: vi.fn(), destroy: vi.fn(), release: vi.fn(), isPlaying: vi.fn(), play: vi.fn() }));
 vi.mock('@/storeData/app.storeData', async () => {
   const { defineStore } = await import('pinia');
   return { appStoreData: defineStore('app', { state: () => ({ appConfig: {} }) }) };
@@ -14,7 +14,7 @@ vi.mock('@/storeData/app.storeData', async () => {
 vi.mock('@/common/play', () => ({ getPlayVideoURLAndType: mocks.source }));
 vi.mock('../videoPlay.vue', () => ({ default: defineComponent({
   setup(_, { expose }) {
-    expose({ isPlaying: () => false, setVideoSource: mocks.setSource, addTextTrack: mocks.subtitle, getVideoDimensions: () => ({ width: 1920, height: 1080 }) });
+    expose({ isPlaying: mocks.isPlaying, play: mocks.play, releaseSource: mocks.release, setVideoSource: mocks.setSource, addTextTrack: mocks.subtitle, getVideoDimensions: () => ({ width: 1920, height: 1080 }) });
     return () => h('div', { class: 'desktop-player' });
   },
 }) }));
@@ -31,13 +31,14 @@ describe('桌面页面复用移动播放器', () => {
     vi.stubGlobal('navigator', { userAgent: 'Android Tablet' });
     vi.stubGlobal('innerWidth', 800); vi.stubGlobal('innerHeight', 1280);
     mocks.source.mockResolvedValue({ playUrl: '/video.mp4', playType: 'mp4' });
+    mocks.isPlaying.mockReturnValue(false);
   });
   afterEach(() => vi.unstubAllGlobals());
   it('旧配置加载桌面视频并保留字幕', async () => {
     const wrapper = mount(ResourceVideoPlayer, { props: { resource, dramaSeriesId: 'e' } });
     await flushPromises();
     expect(wrapper.find('.desktop-player').exists()).toBe(true);
-    expect(mocks.source).toHaveBeenCalledWith('e');
+    expect(mocks.source).toHaveBeenCalledWith('e', expect.any(AbortSignal));
     mocks.setSource.mock.calls[0][2]();
     expect(mocks.subtitle).toHaveBeenCalledWith('/api/video/subtitle/e', '默认字幕', 'zh', true);
     wrapper.unmount();
@@ -76,10 +77,25 @@ describe('桌面页面复用移动播放器', () => {
     let resolveOld!: (value: { playUrl: string; playType: string }) => void;
     mocks.source.mockImplementationOnce(() => new Promise(resolve => { resolveOld = resolve; }));
     const wrapper = mount(ResourceVideoPlayer, { props: { resource, dramaSeriesId: 'e' } });
-    await flushPromises(); await wrapper.setProps({ dramaSeriesId: 'e2' }); await flushPromises();
+    await flushPromises();
+    const oldSignal = mocks.source.mock.calls[0][1] as AbortSignal;
+    await wrapper.setProps({ dramaSeriesId: 'e2' }); await flushPromises();
+    expect(oldSignal.aborted).toBe(true);
     resolveOld({ playUrl: '/old.mp4', playType: 'mp4' }); await flushPromises();
     expect(mocks.setSource).toHaveBeenCalledOnce();
     expect(mocks.setSource.mock.calls[0][0]).toBe('/video.mp4');
+    wrapper.unmount();
+  });
+  it('播放中连续切集即使旧媒体已释放，最后一集仍恢复播放', async () => {
+    const wrapper = mount(ResourceVideoPlayer, { props: { resource, dramaSeriesId: 'e' } });
+    await flushPromises();
+    mocks.isPlaying.mockReturnValue(true);
+    mocks.source.mockImplementationOnce(() => new Promise(() => {}));
+    await wrapper.setProps({ dramaSeriesId: 'e2' }); await flushPromises();
+    mocks.isPlaying.mockReturnValue(false);
+    await wrapper.setProps({ dramaSeriesId: 'e3' }); await flushPromises();
+    mocks.setSource.mock.calls.at(-1)![2]();
+    expect(mocks.play).toHaveBeenCalledOnce();
     wrapper.unmount();
   });
 });

@@ -47,6 +47,9 @@ function end() {
   progress = undefined
   visible.value = false
 }
+function endWhenHidden() {
+  if (document.hidden) end()
+}
 watch(
   () => props.root,
   (root, _, cleanup) => {
@@ -57,6 +60,7 @@ watch(
     document.addEventListener('touchend', end, true)
     document.addEventListener('touchcancel', end, true)
     document.addEventListener('mouseup', end, true)
+    document.addEventListener('visibilitychange', endWhenHidden)
     cleanup(() => {
       root.removeEventListener('touchstart', start, true)
       root.removeEventListener('mousedown', start, true)
@@ -65,6 +69,7 @@ watch(
       document.removeEventListener('touchend', end, true)
       document.removeEventListener('touchcancel', end, true)
       document.removeEventListener('mouseup', end, true)
+      document.removeEventListener('visibilitychange', endWhenHidden)
       end()
     })
   },

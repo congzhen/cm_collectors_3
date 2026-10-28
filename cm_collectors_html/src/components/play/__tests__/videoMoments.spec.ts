@@ -7,6 +7,7 @@ import MomentCollection from '../MomentCollection.vue'
 import VideoPreviewSetting from '../../setting/VideoPreviewSetting.vue'
 import VideoTimeline from '../VideoTimeline.vue'
 import { useVideoPreview } from '../useVideoPreview'
+import { createPlaybackSeek } from '@/common/playbackSeek'
 import {
   previewImage,
   momentTime,
@@ -357,7 +358,7 @@ describe('片段收藏和时间轴', () => {
     expect(previewImage(readyPreview, Number.NaN)).toBe('')
     expect(momentTime(3661)).toBe('01:01:01')
   })
-  it('慢速定位只发起一次循环跳转，暂停时不自动播放', async () => {
+  it.each([false, true])('慢速定位只发起一次循环跳转，暂停时不自动播放（提供 seeking：%s）', async (withSeeking) => {
     route.query = { t: '10', end: '20' }
     let time = 10,
       playing = false
@@ -369,6 +370,7 @@ describe('片段收藏和时间轴', () => {
         getTime: () => time,
         getDuration: () => 90,
         isPlaying: () => playing,
+        isSeeking: withSeeking ? () => false : undefined,
         seek,
         play,
       },
@@ -388,6 +390,70 @@ describe('片段收藏和时间轴', () => {
     time = 20
     await vi.advanceTimersByTimeAsync(160)
     expect(seek).toHaveBeenCalledTimes(2)
+    wrapper.unmount()
+  })
+  it('连续用户定位尚未完成时不被循环回跳覆盖，完成后恢复循环', async () => {
+    let time = 10, seeking = false
+    const seek = vi.fn(), play = vi.fn()
+    const wrapper = mount(MomentTools, { props: {
+      dramaSeriesId: 'd', initialMoment: { start: 10, end: 20, title: '片段', autoplay: false },
+      getTime: () => time, getDuration: () => 90, isSeeking: () => seeking,
+      isPlaying: () => true, seek, play,
+    }, global })
+    await vi.advanceTimersByTimeAsync(160)
+    seek.mockClear()
+    seeking = true
+    time = 20
+    await vi.advanceTimersByTimeAsync(600)
+    expect(seek).not.toHaveBeenCalled()
+    time = 5
+    await vi.advanceTimersByTimeAsync(600)
+    expect(seek).not.toHaveBeenCalled()
+    time = 15
+    seeking = false
+    await vi.advanceTimersByTimeAsync(160)
+    expect(seek).not.toHaveBeenCalled()
+    time = 20
+    await vi.advanceTimersByTimeAsync(160)
+    expect(seek).toHaveBeenCalledExactlyOnceWith(10)
+    wrapper.unmount()
+  })
+  it('通过 seeked 完成事件恢复循环，不依赖定时器碰巧观察到 seeking 或起点', async () => {
+    let time = 30, revision = 0
+    const seek = vi.fn()
+    const wrapper = mount(MomentTools, { props: {
+      dramaSeriesId: 'd', initialMoment: { start: 10, end: 20, title: '片段', autoplay: false },
+      getTime: () => time, getDuration: () => 90, isSeeking: () => false,
+      getSeekRevision: () => revision, isPlaying: () => true, seek, play: vi.fn(),
+    }, global })
+    await vi.advanceTimersByTimeAsync(600)
+    expect(seek).toHaveBeenCalledExactlyOnceWith(10)
+    // A fast later user seek completed at the end between timer ticks.
+    time = 20
+    revision++
+    await vi.advanceTimersByTimeAsync(160)
+    expect(seek).toHaveBeenCalledTimes(2)
+    await vi.advanceTimersByTimeAsync(900)
+    expect(seek).toHaveBeenCalledTimes(2)
+    wrapper.unmount()
+  })
+  it('退出循环会取消尚未提交的自动回跳，继续停留在退出时的位置', async () => {
+    let time = 0
+    const seek = createPlaybackSeek(value => { time = value })
+    const wrapper = mount(MomentTools, { props: {
+      dramaSeriesId: 'd', initialMoment: { start: 10, end: 20, title: '片段', autoplay: false },
+      getTime: () => time, getDuration: () => 90, isPlaying: () => true,
+      isSeeking: seek.pending, seek: seek.request, cancelPendingSeek: seek.cancel, play: vi.fn(),
+    }, global })
+    await vi.advanceTimersByTimeAsync(270)
+    seek.request(20)
+    expect(time).toBe(20)
+    await vi.advanceTimersByTimeAsync(40)
+    expect(seek.pending()).toBe(true)
+    await wrapper.get('.moment-exit').trigger('click')
+    await vi.advanceTimersByTimeAsync(600)
+    expect(time).toBe(20)
+    expect(seek.pending()).toBe(false)
     wrapper.unmount()
   })
   it('加载更多失败后重试同一页', async () => {

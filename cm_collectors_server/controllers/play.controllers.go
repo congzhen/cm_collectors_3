@@ -3,6 +3,8 @@ package controllers
 import (
 	"cm_collectors_server/processors"
 	"cm_collectors_server/response"
+	"context"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -100,7 +102,26 @@ func (Play) VideoM3u8StreamHLS(c *gin.Context) {
 	var duration float64
 	GetUrlParameter_Param(c, "duration", &duration)
 	fmt.Printf("处理HLS视频流请求: dramaSeriesId=%s, start=%f, duration=%f\n", dramaSeriesId, start, duration)
+	// Media readers use a child context which is cancelled even on normal
+	// cleanup. Only the original client context represents a disconnected client.
+	requestContext := c.Request.Context()
 	err := processors.Video{}.VideoM3u8StreamHLS(c, dramaSeriesId, start, duration)
+	finishVideoM3u8Stream(c, requestContext, err)
+}
+
+func finishVideoM3u8Stream(c *gin.Context, requestContext context.Context, err error) {
+	if requestContext.Err() != nil || errors.Is(err, context.Canceled) {
+		return
+	}
+	if err != nil && c.Writer.Written() {
+		// Never append a JSON error to an already streaming MPEG-TS response.
+		logrus.Errorf("HLS stream failed: %v; Api:%s", err, c.Request.URL.String())
+		c.Abort()
+		return
+	}
+	if err != nil {
+		c.Writer.Header().Del("Content-Type")
+	}
 	if err := ResError(c, err); err != nil {
 		fmt.Printf("处理HLS视频流时出错: %v\n", err)
 		return

@@ -1,6 +1,7 @@
 <template>
   <div class="moment-tools" @pointerdown.stop @click.stop @touchstart.stop @keydown.stop>
     <LoopPlaybackStatus
+      @scrub-change="scrubbing = $event"
       v-if="loop"
       :root="activityRoot"
       :start="loop.start"
@@ -237,6 +238,9 @@ const props = defineProps<{
   seek: (time: number) => void
   isPlaying?: () => boolean
   isEnded?: () => boolean
+  isSeeking?: () => boolean
+  getSeekRevision?: () => number
+  cancelPendingSeek?: () => void
   play: () => unknown
 }>()
 const emit = defineEmits<{ 'loop-change': [range: MomentPlayback | undefined] }>()
@@ -319,7 +323,9 @@ const coverRefresh = ref(0)
 const loading = ref(false),
   hasMore = ref(false)
 let awaitingLoopSeek = false
+let lastSeekRevision = props.getSeekRevision?.()
 const loop = ref<{ start: number; end: number; title?: string }>()
+const scrubbing = ref(false)
 let loopNotice: ReturnType<typeof ElMessage> | undefined
 function showLoopNotice() {
   loopNotice?.close()
@@ -438,6 +444,7 @@ async function remove(item: VideoMoment) {
   }
 }
 function exitLoop() {
+  props.cancelPendingSeek?.()
   loop.value = undefined
   awaitingLoopSeek = false
   showEntry()
@@ -466,6 +473,7 @@ function canPlayMoment(start: number, end: number, duration: number) {
 }
 function jump(item: VideoMoment) {
   if (!canPlayMoment(item.start, item.end, props.getDuration())) return
+  lastSeekRevision = props.getSeekRevision?.()
   awaitingLoopSeek = item.end > item.start
   loop.value =
     item.end > item.start ? { start: item.start, end: item.end, title: item.title } : undefined
@@ -499,6 +507,7 @@ watch(
       ? [props.initialMoment]
       : [route?.params.dramaSeriesId, route?.query.t, route?.query.end, route?.query.momentTitle],
   () => {
+    props.cancelPendingSeek?.()
     initialApplied = false
     awaitingLoopSeek = false
     loop.value = undefined
@@ -506,6 +515,7 @@ watch(
 )
 let inactive = false
 onDeactivated(() => {
+  props.cancelPendingSeek?.()
   contextVersion++
   version++
   saving.value = false
@@ -534,6 +544,7 @@ onMounted(() => {
             props.initialMoment?.end ??
             (route.query.end === undefined ? 0 : Number(route.query.end))
         if (canPlayMoment(start, end, duration)) {
+          lastSeekRevision = props.getSeekRevision?.()
           awaitingLoopSeek = true
           props.seek(start)
           if (Number.isFinite(end) && end > start && end <= duration)
@@ -552,6 +563,14 @@ onMounted(() => {
     if (!range) {
       awaitingLoopSeek = false
       return
+    }
+    // A user's latest seek takes precedence over loop correction. currentTime
+    // can already report the target while the corresponding frame is loading.
+    if (scrubbing.value || props.isSeeking?.()) return
+    const seekRevision = props.getSeekRevision?.()
+    if (seekRevision !== lastSeekRevision) {
+      awaitingLoopSeek = false
+      lastSeekRevision = seekRevision
     }
     const time = props.getTime()
     if (time < range.start) {

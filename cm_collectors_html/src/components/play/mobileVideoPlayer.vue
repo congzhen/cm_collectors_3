@@ -2,7 +2,7 @@
   <div ref="stageRef" class="phone-player-stage">
     <div ref="hostRef" class="phone-player-host" />
     <Teleport v-if="playerRoot" :to="playerRoot">
-      <MomentTools @loop-change="activeMoment = $event" :initial-moment="props.initialMoment" :activity-root="playerRoot" :page-overlay="!full" :key="props.dramaSeriesId" :drama-series-id="props.dramaSeriesId" :is-playing="() => !!player && !player.paused" :is-ended="() => !!player?.ended" :get-time="() => player?.currentTime || 0" :get-duration="() => ready ? player?.duration || 0 : 0" :seek="seekMoment" :play="continuePlay" />
+      <MomentTools @loop-change="activeMoment = $event" :initial-moment="props.initialMoment" :activity-root="playerRoot" :page-overlay="!full" :key="props.dramaSeriesId" :drama-series-id="props.dramaSeriesId" :is-playing="() => !!player && !player.paused" :is-seeking="isSeeking" :get-seek-revision="getSeekRevision" :cancel-pending-seek="playbackSeek.cancel" :is-ended="() => !!player?.ended" :get-time="() => player?.currentTime || 0" :get-duration="() => ready ? player?.duration || 0 : 0" :seek="seekMoment" :play="continuePlay" />
       <MobileSeekPreview :get-range="() => activeMoment" :drama-series-id="props.dramaSeriesId" :root="playerRoot" :get-rotation="() => player?.rotateDeg || 0" :get-duration="() => player?.duration || 0" />
       <div v-if="subtitleText" class="phone-subtitle">{{ subtitleText }}</div>
       <div v-if="displayMessage" class="phone-player-message" role="status">
@@ -22,6 +22,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onActivated, onBeforeUnmount, onDeactivated, onMounted, ref, shallowRef, watch } from 'vue';
 import MomentTools from './MomentTools.vue';
+import { createPlaybackSeek } from '@/common/playbackSeek';
 import type { MomentPlayback } from '@/server/videoMoments.server';
 import { createPlaybackPreviewTrigger } from '@/server/videoMoments.server';
 const queuePlaybackPreview = createPlaybackPreviewTrigger();
@@ -55,6 +56,9 @@ let version = 0;
 let activeId = '';
 let activeResourceId = '';
 let ready = false;
+let seekRevision = 0;
+const getSeekRevision = () => seekRevision;
+let progressDragging = false;
 let wantedPlaying = false;
 let hidden = document.hidden;
 let retries = 0;
@@ -67,6 +71,7 @@ let browserFullscreen = false;
 let disposed = false;
 let inactive = false;
 let resumePosition = 0;
+let pendingSeekPosition: number | undefined;
 let cues: ReturnType<typeof parseMobileVtt> = [];
 let subtitleAbort: AbortController | undefined;
 let sourceAbort: AbortController | undefined;
@@ -76,9 +81,13 @@ let syncLoadedData: (() => void) | undefined;
 const playbackId = () => `${activeResourceId}/${activeId}`;
 
 const saveProgress = () => {
-  if (!player || !activeId || !ready) return;
+  if (!player || !activeId) return;
+  const duration = player.duration || 0;
+  // Metadata plus an explicit target is enough to save an early user seek.
+  // Keep ignoring ordinary preload events until the first frame is ready.
+  if (!ready && (pendingSeekPosition === undefined || !Number.isFinite(duration) || duration <= 0)) return;
   saveMobilePlayback(playbackId(), {
-    time: Math.max(0, player.currentTime || 0), duration: player.duration || 0,
+    time: Math.max(0, Math.min(pendingSeekPosition ?? (player.currentTime || 0), duration || Infinity)), duration,
     rate: player.playbackRate || 1, playing: wantedPlaying,
   });
 };
@@ -192,6 +201,9 @@ const reportFailure = (retryable: boolean) => {
 };
 const retry = () => { retries = 0; void load(true); };
 const destroyPlayer = async () => {
+  playbackSeek.cancel();
+  pendingSeekPosition = undefined;
+  progressDragging = false;
   clearTimers();
   watchBuffering = undefined;
   syncLoadedData = undefined;
@@ -215,7 +227,9 @@ const load = async (recovering = false) => {
   const target = props.dramaSeriesId;
   const shouldPlay = recovering ? wantedPlaying : Boolean(props.autoplay);
   const previous = readMobilePlayback(`${props.resourceId}/${target}`);
-  const position = recovering && player && ready ? player.currentTime : resumeTime(previous);
+  const position = recovering && player
+    ? pendingSeekPosition ?? (ready ? player.currentTime : resumeTime(previous))
+    : resumeTime(previous);
   await destroyPlayer();
   if (request !== version || disposed) return;
   activeId = target;
@@ -256,6 +270,7 @@ const load = async (recovering = false) => {
       download: true,
       fullscreen: { switchCallback: toggleFullscreen },
       mobile: { gestureX: false, gestureY: false, disablePress: true, isTouchingSeek: false, moveDuration: 90000 },
+      progress: { isDraggingSeek: false, onMoveStart: () => { progressDragging = true; }, onMoveEnd: () => { progressDragging = false; } },
       plugins: hls ? [HlsPlugin] : [],
       hls: { retryCount: 2, retryDelay: 1000, loadTimeout: 60000 },
       ignores: ['error', 'pc', 'keyboard'],
@@ -278,6 +293,20 @@ const load = async (recovering = false) => {
     instance.muted = sound.muted;
     playerRoot.value = instance.root || undefined;
     const current = () => !disposed && !inactive && player === instance && request === version;
+    // Use the public progress hooks: dragging updates the controls only, while
+    // release/click goes through the same latest-target scheduler as moments.
+    type ProgressControl = { updatePercent: (percent: number) => void; updateTime: (time: number) => void };
+    type ProgressTarget = { percent: number; currentTime: number; seekTime: number };
+    const previewSeek = (progress: ProgressControl, _event: Event, data: ProgressTarget) => {
+      if (current()) { progress.updatePercent(data.percent); progress.updateTime(data.currentTime); }
+      return false;
+    };
+    instance.usePluginHooks('progress', 'dragstart', previewSeek);
+    instance.usePluginHooks('progress', 'dragend', (progress: ProgressControl, event: Event, data: ProgressTarget) => {
+      previewSeek(progress, event, data);
+      if (current()) seekMoment(Math.max(0, Math.min(Number(data.seekTime), Math.max(0, instance.duration - 0.2))));
+      return false;
+    });
     // 与原 videoPlay 的移动预览逻辑一致：定位到开头附近，只解码预览、不调用 play。
     let previewInitialized = false;
     const previewFirstFrame = () => {
@@ -301,7 +330,12 @@ const load = async (recovering = false) => {
       failed.value = false;
       retryableFailure = false;
       window.clearTimeout(stallTimer);
-      if (resumePosition > 0 && Number.isFinite(instance.duration)) {
+      if (pendingSeekPosition !== undefined && Number.isFinite(instance.duration)) {
+        // A click made while the first frame was loading overrides history.
+        const targetTime = Math.max(0, Math.min(pendingSeekPosition, instance.duration));
+        if (instance.currentTime !== targetTime) instance.currentTime = targetTime;
+        pendingSeekPosition = undefined;
+      } else if (resumePosition > 0 && Number.isFinite(instance.duration)) {
         instance.currentTime = Math.min(resumePosition, Math.max(0, instance.duration - 1));
       }
       resumePosition = 0;
@@ -349,7 +383,11 @@ const load = async (recovering = false) => {
       subtitleText.value = cues.filter(cue => time >= cue.start && time <= cue.end).map(cue => cue.text).join('\n');
       if (Date.now() - lastSave > 3000) { lastSave = Date.now(); saveProgress(); }
     });
-    instance.on(Events.SEEKED, saveProgress);
+    instance.on(Events.SEEKED, () => {
+      if (!current()) return;
+      seekRevision++;
+      saveProgress();
+    });
     instance.on(Events.RATE_CHANGE, saveProgress);
     instance.on(Events.ERROR, () => {
       if (!current()) return;
@@ -458,7 +496,7 @@ const load = async (recovering = false) => {
 const onVisibility = () => {
   if (inactive) return;
   hidden = document.hidden;
-  if (hidden) { saveProgress(); clearTimers(); }
+  if (hidden) { progressDragging = false; saveProgress(); clearTimers(); }
   else if (failed.value && retryableFailure) { retries = 0; void load(true); }
   else {
     // 缓存页停用期间可能已经收到首帧事件，激活时补齐就绪状态。
@@ -477,14 +515,25 @@ const onShellQuery = () => {
     notifyMobileShell(true, video.videoWidth > video.videoHeight);
   }
 };
-const seekMoment = (time: number) => { if (player && ready) { player.currentTime = time; saveProgress(); } };
+const playbackSeek = createPlaybackSeek((time) => {
+  if (!player) return;
+  if (!ready) pendingSeekPosition = time;
+  // Metadata is sufficient for seeking; waiting for decoded first-frame data
+  // would discard an early click and force loading the old history position.
+  if (ready || (player.video as HTMLVideoElement).readyState >= 1) {
+    player.currentTime = time;
+  }
+  saveProgress();
+});
+const seekMoment = (time: number) => playbackSeek.request(time);
+const isSeeking = () => progressDragging || playbackSeek.pending() || !!(player?.video as HTMLVideoElement | undefined)?.seeking;
 const pause = () => {
   wantedPlaying = false;
   player?.pause();
   saveProgress();
 };
 defineExpose({ isPlaying: () => wantedPlaying, pause });
-onDeactivated(() => { inactive = true; pause(); clearTimers(); void exitFullscreen(); });
+onDeactivated(() => { inactive = true; progressDragging = false; playbackSeek.cancel(); pause(); clearTimers(); void exitFullscreen(); });
 onActivated(() => {
   if (!inactive) return;
   inactive = false;

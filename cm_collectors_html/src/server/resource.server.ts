@@ -3,10 +3,11 @@ import type { I_dramaSeriesWithResource, I_resource, I_resource_base, I_resource
 import type { I_searchData } from "@/dataType/search.dataType";
 const routerGroupUri = '';
 export const resourceServer = {
-  info: async (id: string) => {
+  info: async (id: string, signal?: AbortSignal) => {
     return await request<I_resource>({
       url: `${routerGroupUri}/resource/info/${id}`,
       method: 'get',
+      ...(signal ? { signal } : {}),
     })
   },
   dataList: async (filesBasesId: string, fetchCount: boolean, page: number, limit: number, searchData: I_searchData, randomSeed = '') => {

@@ -46,10 +46,11 @@ export const appDataServer = {
     }
     return await request<boolean>(obj);
   },
-  playVideoInfo: async (dramaSeriesId: string) => {
+  playVideoInfo: async (dramaSeriesId: string, signal?: AbortSignal) => {
     return await request<I_playVideoInfo>({
       url: `${routerGroupUri}/play/video/info/${dramaSeriesId}`,
       method: 'get',
+      ...(signal ? { signal } : {}),
     });
   },
   getAppConfig: async () => {

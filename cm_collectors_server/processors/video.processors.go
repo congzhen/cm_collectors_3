@@ -335,39 +335,8 @@ func (v Video) VideoM3u8StreamHLS(c *gin.Context, dramaSeriesId string, start, d
 	unlockMedia := lockMediaForRead(dramaSeries.Src)
 	defer unlockMedia()
 
-	formatInfo, err := processorscache.CacheVideoInfoLastUse{}.GetVideoInfoHandle(dramaSeries.Src)
+	key, err := videoSegmentKey(dramaSeries.Src, start, duration)
 	if err != nil {
-		writePlaybackDiagnosticRateLimited(playbackDiagnosticRecord{
-			Event:         "media_probe_failed",
-			MediaID:       dramaSeriesId,
-			FileName:      filepath.Base(dramaSeries.Src),
-			PlaybackMode:  "hls_transcode",
-			UserAgent:     c.Request.UserAgent(),
-			SegmentStart:  start,
-			SegmentLength: duration,
-			FFmpegVersion: playbackFFmpegVersion(),
-			Error:         err.Error(),
-		}, time.Minute)
-		return fmt.Errorf("无法获取视频信息: %v", err)
-	}
-
-	cmd, err := processorsffmpeg.M3U8{}.PlayVideoM3u8Context(
-		c.Request.Context(), dramaSeries.Src, start, duration, false, true,
-	)
-	if err != nil {
-		diagnosticInfo := sanitizedMediaInfo(formatInfo)
-		writePlaybackDiagnosticRateLimited(playbackDiagnosticRecord{
-			Event:         "ffmpeg_command_create_failed",
-			MediaID:       dramaSeriesId,
-			FileName:      filepath.Base(dramaSeries.Src),
-			PlaybackMode:  "hls_transcode",
-			UserAgent:     c.Request.UserAgent(),
-			MediaInfo:     &diagnosticInfo,
-			SegmentStart:  start,
-			SegmentLength: duration,
-			FFmpegVersion: playbackFFmpegVersion(),
-			Error:         err.Error(),
-		}, time.Minute)
 		return err
 	}
 	// 设置正确的MPEG-TS响应头
@@ -376,24 +345,77 @@ func (v Video) VideoM3u8StreamHLS(c *gin.Context, dramaSeriesId string, start, d
 	c.Header("Pragma", "no-cache")
 	c.Header("Expires", "0")
 	c.Header("Connection", "keep-alive")
+	return playbackSegments.stream(c.Request.Context(), key, c.Writer, func(output io.Writer) error {
+		formatInfo, err := processorscache.CacheVideoInfoLastUse{}.GetVideoInfoHandle(dramaSeries.Src)
+		if err != nil {
+			writePlaybackDiagnosticRateLimited(playbackDiagnosticRecord{
+				Event:         "media_probe_failed",
+				MediaID:       dramaSeriesId,
+				FileName:      filepath.Base(dramaSeries.Src),
+				PlaybackMode:  "hls_transcode",
+				UserAgent:     c.Request.UserAgent(),
+				SegmentStart:  start,
+				SegmentLength: duration,
+				FFmpegVersion: playbackFFmpegVersion(),
+				Error:         err.Error(),
+			}, time.Minute)
+			return fmt.Errorf("无法获取视频信息: %v", err)
+		}
 
-	// 直接将输出连接到响应
-	cmd.Stdout = c.Writer
-	stderr := &limitedDiagnosticBuffer{limit: 64 * 1024}
-	cmd.Stderr = stderr
-
-	// 执行命令
-	runErr := cmd.Run()
-	stderrText := stderr.String()
-	if runErr != nil {
-		// 忽略客户端断开连接的错误
-		if !strings.Contains(runErr.Error(), "broken pipe") &&
-			!strings.Contains(runErr.Error(), "连接被对方关闭") &&
-			!strings.Contains(runErr.Error(), "The pipe has been ended") {
-			fmt.Printf("FFmpeg执行错误: %v\n", runErr)
+		cmd, err := processorsffmpeg.M3U8{}.PlayVideoM3u8Context(
+			c.Request.Context(), dramaSeries.Src, start, duration, false, true,
+		)
+		if err != nil {
 			diagnosticInfo := sanitizedMediaInfo(formatInfo)
 			writePlaybackDiagnosticRateLimited(playbackDiagnosticRecord{
-				Event:         "ffmpeg_segment_failed",
+				Event:         "ffmpeg_command_create_failed",
+				MediaID:       dramaSeriesId,
+				FileName:      filepath.Base(dramaSeries.Src),
+				PlaybackMode:  "hls_transcode",
+				UserAgent:     c.Request.UserAgent(),
+				MediaInfo:     &diagnosticInfo,
+				SegmentStart:  start,
+				SegmentLength: duration,
+				FFmpegVersion: playbackFFmpegVersion(),
+				Error:         err.Error(),
+			}, time.Minute)
+			return err
+		}
+
+		// 直接将输出连接到响应
+		cmd.Stdout = output
+		stderr := &limitedDiagnosticBuffer{limit: 64 * 1024}
+		cmd.Stderr = stderr
+
+		// 执行命令
+		runErr := cmd.Run()
+		stderrText := stderr.String()
+		if runErr != nil {
+			// 忽略客户端断开连接的错误
+			if c.Request.Context().Err() == nil && !strings.Contains(runErr.Error(), "broken pipe") &&
+				!strings.Contains(runErr.Error(), "连接被对方关闭") &&
+				!strings.Contains(runErr.Error(), "The pipe has been ended") {
+				fmt.Printf("FFmpeg执行错误: %v\n", runErr)
+				diagnosticInfo := sanitizedMediaInfo(formatInfo)
+				writePlaybackDiagnosticRateLimited(playbackDiagnosticRecord{
+					Event:         "ffmpeg_segment_failed",
+					MediaID:       dramaSeriesId,
+					FileName:      filepath.Base(dramaSeries.Src),
+					PlaybackMode:  "hls_transcode",
+					UserAgent:     c.Request.UserAgent(),
+					MediaInfo:     &diagnosticInfo,
+					SegmentStart:  start,
+					SegmentLength: duration,
+					FFmpegVersion: playbackFFmpegVersion(),
+					FFmpegCommand: sanitizedFFmpegCommand(cmd.Args, dramaSeries.Src),
+					Error:         runErr.Error(),
+					FFmpegStderr:  stderrText,
+				}, time.Minute)
+			}
+		} else if hasFFmpegWarning(stderrText) {
+			diagnosticInfo := sanitizedMediaInfo(formatInfo)
+			writePlaybackDiagnosticRateLimited(playbackDiagnosticRecord{
+				Event:         "ffmpeg_segment_warning",
 				MediaID:       dramaSeriesId,
 				FileName:      filepath.Base(dramaSeries.Src),
 				PlaybackMode:  "hls_transcode",
@@ -403,25 +425,9 @@ func (v Video) VideoM3u8StreamHLS(c *gin.Context, dramaSeriesId string, start, d
 				SegmentLength: duration,
 				FFmpegVersion: playbackFFmpegVersion(),
 				FFmpegCommand: sanitizedFFmpegCommand(cmd.Args, dramaSeries.Src),
-				Error:         runErr.Error(),
 				FFmpegStderr:  stderrText,
-			}, time.Minute)
+			}, 5*time.Minute)
 		}
-	} else if hasFFmpegWarning(stderrText) {
-		diagnosticInfo := sanitizedMediaInfo(formatInfo)
-		writePlaybackDiagnosticRateLimited(playbackDiagnosticRecord{
-			Event:         "ffmpeg_segment_warning",
-			MediaID:       dramaSeriesId,
-			FileName:      filepath.Base(dramaSeries.Src),
-			PlaybackMode:  "hls_transcode",
-			UserAgent:     c.Request.UserAgent(),
-			MediaInfo:     &diagnosticInfo,
-			SegmentStart:  start,
-			SegmentLength: duration,
-			FFmpegVersion: playbackFFmpegVersion(),
-			FFmpegCommand: sanitizedFFmpegCommand(cmd.Args, dramaSeries.Src),
-			FFmpegStderr:  stderrText,
-		}, 5*time.Minute)
-	}
-	return nil
+		return runErr
+	})
 }

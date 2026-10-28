@@ -190,6 +190,28 @@ describe('本库片段放映室与收藏', () => {
     expect(mocks.playUpdate).toHaveBeenCalledExactlyOnceWith('r', 'd')
     wrapper.unmount()
   })
+  it('同一视频切片段或重复点击保留播放器实例和缓冲，不再请求资源', async () => {
+    mocks.request.mockImplementation(async ({ url }: { url: string }) => ({ status: true,
+      data: url.startsWith('/resource/info/') ? { id: 'r', dramaSeries: [{ id: 'd' }] }
+        : { items: [item, { ...item, id: 'm2', start: 30, end: 40 }], total: 2 },
+    }))
+    const wrapper = mount(LibraryMomentsButton, { props: { filesBasesId: 'library-a' }, global })
+    await wrapper.find('button').trigger('click')
+    await flushPromises()
+    const player = wrapper.getComponent({ name: 'ResourceVideoPlayer' })
+    const instance = player.vm
+    const initial = player.props('initialMoment')
+    await wrapper.findAll('.collection-play')[1].trigger('click')
+    await flushPromises()
+    expect(wrapper.getComponent({ name: 'ResourceVideoPlayer' }).vm).toBe(instance)
+    expect(player.props('initialMoment')).toEqual({ start: 30, end: 40, title: item.title, autoplay: true })
+    const repeated = player.props('initialMoment')
+    expect(repeated).not.toBe(initial)
+    await wrapper.findAll('.collection-play')[1].trigger('click')
+    expect(player.props('initialMoment')).not.toBe(repeated)
+    expect(mocks.request.mock.calls.filter(([request]) => request.url.startsWith('/resource/info/'))).toHaveLength(1)
+    wrapper.unmount()
+  })
   it('保存期间不重设片段位置，旧保存结果不切换重新打开的窗口', async () => {
     let finish!: (value: unknown) => void
     mocks.saveConfig.mockImplementation(() => new Promise(resolve => { finish = resolve }))
