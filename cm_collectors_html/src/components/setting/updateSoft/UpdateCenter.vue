@@ -12,6 +12,7 @@
       </template>
       <el-alert
         v-if="error || state?.error"
+        class="update-error"
         :title="error || state?.error || ''"
         type="error"
         :closable="false"
@@ -319,6 +320,15 @@ onBeforeUnmount(() => {
 .update-center p {
   margin: 0;
   line-height: 1.6;
+}
+.update-error :deep(.el-alert__content) {
+  min-width: 0;
+  flex: 1;
+}
+.update-error :deep(.el-alert__title) {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 .update-changelog {
   max-height: 200px;
