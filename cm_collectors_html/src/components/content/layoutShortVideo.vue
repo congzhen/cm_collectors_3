@@ -35,10 +35,11 @@
     </div>
     <div class="shortVideoPlay" :class="{ 'mobile-layout': isMobile() }">
       <div ref="shortVideoPlayContainerRef" class="shortVideoPlayContainer">
-        <videoPlay ref="videoPlayRef" />
+        <videoPlay v-if="!selection?.active.value" ref="videoPlayRef" />
+        <div v-if="selection?.active.value" class="management-player-placeholder">正在管理资源，请在资源列表中勾选</div>
       </div>
       <div class="tool">
-        <el-button-group :size="isMobile() ? 'small' : 'default'">
+        <el-button-group v-if="!selection?.active.value" :size="isMobile() ? 'small' : 'default'">
           <el-button icon="ArrowLeft" :disabled="currentPlayIndex == 0" @click="prevHandle()">上一个</el-button>
           <el-button @click="nextHandle()" :disabled="currentPlayIndex >= (dataListWrapper.length - 1)">
             下一个
@@ -56,7 +57,7 @@ import { Waterfall } from 'vue-waterfall-plugin-next'
 import { isMobile } from '@/assets/mobile';
 import { getResourceCoverPoster } from '@/common/photo';
 import type { I_resource } from '@/dataType/resource.dataType';
-import { computed, nextTick, ref, type PropType, onMounted, watch, onBeforeUnmount } from 'vue';
+import { computed, nextTick, ref, inject, type PropType, onMounted, watch, onBeforeUnmount } from 'vue';
 import type { ElScrollbar } from 'element-plus';
 import { debounce } from '@/assets/debounce';
 import videoPlay from '@/components/play/videoPlay.vue';
@@ -65,6 +66,8 @@ import contentRightClickMenu from './contentRightClickMenu.vue';
 import contentVideoDurationBadge from './contentVideoDurationBadge.vue';
 import { appStoreData } from '@/storeData/app.storeData';
 
+import { resourceSelectionKey } from './resourceSelection';
+const selection = inject(resourceSelectionKey, undefined);
 const store = {
   appStoreData: appStoreData(),
 }
@@ -157,6 +160,10 @@ const waterfallBreakpoints_C = computed(() => {
 });
 
 const syncCurrentPlayIndex = () => {
+  if (selection?.active.value) {
+    currentPlayIndex.value = -1;
+    return;
+  }
   if (dataListWrapper.value.length === 0) {
     currentPlayIndex.value = -1;
     return;
@@ -209,6 +216,7 @@ const onImageLoad = debounce(() => {
 }, 100);
 
 const setVideoSource = async (dramaSeriesId: string) => {
+  if (selection?.active.value) return;
   const vp = videoPlayRef.value;
   if (!vp || dramaSeriesId == '') return;
   currentPlayingDramaSeriesId.value = dramaSeriesId;
@@ -344,6 +352,7 @@ const change = () => {
 defineExpose({ change, });
 </script>
 <style lang="scss" scoped>
+.management-player-placeholder { display: grid; place-items: center; height: 100%; min-height: 120px; color: var(--el-text-color-secondary); font-size: 13px; }
 .layout-short-video {
   width: 100%;
   height: 100%;

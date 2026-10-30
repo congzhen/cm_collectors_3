@@ -3,8 +3,8 @@
     <div class="list">
       <contentList ref="contentListRef" v-if="!store.appStoreData.adminResourceStatus" :data-list="dataList"
         @select-resources="selectResourcesHandle"></contentList>
-      <contentListAdmin v-else :data-list="dataList" @select-resources="selectResourcesHandle"
-        @update-data="init_DataList"></contentListAdmin>
+      <contentListAdmin ref="contentListAdminRef" v-else :data-list="dataList"
+        @update-data="init_DataList(() => {}, true)"></contentListAdmin>
     </div>
     <div class="paging" :class="{
       'paging--modern': isModernAppearance,
@@ -85,6 +85,7 @@ const isModernAppearance = computed(() =>
 const isBrightTheme = computed(() => store.appStoreData.appConfig.theme === 'bright');
 const emits = defineEmits(['selectResources']);
 
+const contentListAdminRef = ref<InstanceType<typeof contentListAdmin>>();
 const contentListRef = ref<InstanceType<typeof contentList>>();
 
 
@@ -156,6 +157,7 @@ const init = async () => {
 
 const init_DataList = async (fn: () => void = () => { }, fetch: boolean = false) => {
   if (fetch) {
+    resetFileSizeStats();
     fetchCount = true;
   }
   await getDataList(fn);
@@ -170,6 +172,7 @@ const currentRandomSeed = () => {
 }
 
 const executeGetDataList = debounce(async (requestVersion: number, fn: () => void) => {
+  if (requestVersion !== dataListRequestVersion) return;
   const filesBasesId = store.appStoreData.currentFilesBases.id;
   const shouldFetchCount = fetchCount;
   try {
@@ -286,8 +289,11 @@ const showDataList = () => {
 
 const changePageHandle = () => {
   if (!isInitializing.value) {
+    // 管理模式按本页选择，发起翻页时立即移除旧页，避免慢请求或失败时操作上一页。
+    if (store.appStoreData.adminResourceStatus) dataList.value = [];
     getDataList();
     contentListRef.value?.change();
+    contentListAdminRef.value?.change();
   }
 }
 const selectResourcesHandle = (item: I_resource) => {
@@ -303,6 +309,9 @@ onMounted(async () => {
   await init()
 })
 onUnmounted(() => {
+  dataListRequestVersion++;
+  fileSizeStatsRequestVersion++;
+  window.clearTimeout(durationRefreshTimer);
   eventBus.off('resource-add-time-exchanged', resourceAddTimeExchangedHandle);
 })
 defineExpose({ init, init_DataList, showDataList });

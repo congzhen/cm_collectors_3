@@ -16,13 +16,14 @@
 
     <div class="short-video-play" :class="{ 'mobile-layout': isMobile() }">
       <div ref="videoPlayContainerRef" class="short-video-play-container">
-        <videoPlay ref="videoPlayRef" />
-        <div v-if="showUnavailableMessage" class="unavailable-message">
+        <videoPlay v-if="!selection?.active.value" ref="videoPlayRef" />
+        <div v-if="selection?.active.value" class="management-player-placeholder">正在管理资源，请在资源列表中勾选</div>
+        <div v-if="showUnavailableMessage && !selection?.active.value" class="unavailable-message">
           暂无可播放资源
         </div>
       </div>
       <div class="tool">
-        <el-button-group :size="isMobile() ? 'small' : 'default'">
+        <el-button-group v-if="!selection?.active.value" :size="isMobile() ? 'small' : 'default'">
           <el-button
             icon="ArrowLeft"
             :disabled="currentPlayIndex <= 0"
@@ -51,6 +52,7 @@
 <script setup lang="ts">
 import {
   computed,
+  inject,
   nextTick,
   onBeforeUnmount,
   onMounted,
@@ -67,6 +69,8 @@ import videoPlay from '@/components/play/videoPlay.vue';
 
 import layoutCoverPosterMosaic from './layoutCoverPosterMosaic.vue';
 
+import { resourceSelectionKey } from './resourceSelection';
+const selection = inject(resourceSelectionKey, undefined);
 const store = {
   appStoreData: appStoreData(),
 };
@@ -134,6 +138,10 @@ watch(currentPlayIndex, (newIndex) => {
 });
 
 const syncCurrentPlayIndex = () => {
+  if (selection?.active.value) {
+    currentPlayIndex.value = -1;
+    return;
+  }
   if (dataListWrapper.value.length === 0) {
     currentPlayIndex.value = -1;
     return;
@@ -184,6 +192,7 @@ const clearUnavailablePlayback = () => {
 };
 
 const setVideoSource = async (dramaSeriesId: string) => {
+  if (selection?.active.value) return;
   const player = videoPlayRef.value;
   if (!player || !dramaSeriesId) return;
 
@@ -333,6 +342,7 @@ defineExpose({ change });
 </script>
 
 <style lang="scss" scoped>
+.management-player-placeholder { display: grid; place-items: center; height: 100%; min-height: 120px; color: var(--el-text-color-secondary); font-size: 13px; }
 .layout-cover-poster-mosaic-short-video {
   display: flex;
   width: 100%;

@@ -2,7 +2,8 @@
   <div class="layout-short-video-top-bottom">
     <section class="video-section">
       <div ref="videoContainerRef" class="video-container">
-        <videoPlay ref="videoPlayRef" class="fit-video-player" />
+        <videoPlay v-if="!selection?.active.value" ref="videoPlayRef" class="fit-video-player" />
+        <div v-if="selection?.active.value" class="management-player-placeholder">正在管理资源，请在资源列表中勾选</div>
       </div>
     </section>
 
@@ -32,7 +33,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch, type PropType } from 'vue';
+import { computed, inject, nextTick, onBeforeUnmount, onMounted, ref, watch, type PropType } from 'vue';
 import type { ElScrollbar } from 'element-plus';
 import { isMobile } from '@/assets/mobile';
 import { getResourceCoverPoster } from '@/common/photo';
@@ -43,6 +44,8 @@ import videoPlay from '@/components/play/videoPlay.vue';
 import contentRightClickMenu from './contentRightClickMenu.vue';
 import contentVideoDurationBadge from './contentVideoDurationBadge.vue';
 
+import { resourceSelectionKey } from './resourceSelection';
+const selection = inject(resourceSelectionKey, undefined);
 const store = {
   appStoreData: appStoreData(),
 };
@@ -90,6 +93,10 @@ watch(currentPlayIndex, newIndex => {
 });
 
 function syncCurrentPlayIndex() {
+  if (selection?.active.value) {
+    currentPlayIndex.value = -1;
+    return;
+  }
   if (dataListWrapper.value.length === 0) {
     currentPlayIndex.value = -1;
     return;
@@ -128,6 +135,7 @@ function getResourceDramaSeriesId(index: number) {
 }
 
 async function setVideoSource(dramaSeriesId: string) {
+  if (selection?.active.value) return;
   const videoPlayer = videoPlayRef.value;
   if (!videoPlayer || dramaSeriesId === '') return;
 
@@ -222,6 +230,7 @@ defineExpose({ change });
 </script>
 
 <style lang="scss" scoped>
+.management-player-placeholder { display: grid; place-items: center; height: 100%; min-height: 120px; color: var(--el-text-color-secondary); font-size: 13px; }
 .layout-short-video-top-bottom {
   width: 100%;
   height: 100%;

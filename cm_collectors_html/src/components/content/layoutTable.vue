@@ -1,10 +1,16 @@
 <template>
   <div class="layout-table-style1">
     <el-table ref="tableRef" :data="props.dataList" border height="100%" style="width: 100%" size="small"
-      @row-click="selectResourcesHandle">
+      @row-click="selectResourcesHandle" :row-class-name="selectionRowClass">
+      <el-table-column v-if="selection?.active.value" width="44" align="center">
+        <template #default="{ row }">
+          <el-checkbox :model-value="selection.selectedIds.value.has(row.id)" :aria-label="`选择资源：${row.title}`"
+            @click.stop @change="selection.toggle(row)" />
+        </template>
+      </el-table-column>
       <el-table-column label="-" width="32" align="center">
         <template #default="scope">
-          <div v-if="scope.row.coverPoster != ''" @click.stop="playResource(scope.row)">
+          <div v-if="scope.row.coverPoster != ''" @click.stop="playOrSelectResource(scope.row)">
             <el-popover placement="right-start" trigger="hover" :width="(scope.row.coverPosterWidth + 26) + 'px'">
               <el-image
                 :style="{ width: scope.row.coverPosterWidth + 'px', height: scope.row.coverPosterHeight + 'px' }"
@@ -16,7 +22,7 @@
               </template>
             </el-popover>
           </div>
-          <div class="playDiv" v-else @click.stop="playResource(scope.row)">
+          <div class="playDiv" v-else @click.stop="playOrSelectResource(scope.row)">
             <el-icon class="video-play" size="16">
               <VideoPlay />
             </el-icon>
@@ -75,13 +81,20 @@
 </template>
 <script lang="ts" setup>
 import type { I_resource } from '@/dataType/resource.dataType';
-import { ref, type PropType } from 'vue';
+import { ref, inject, type PropType } from 'vue';
 import { getResourceCoverPoster } from '@/common/photo';
 import { playResource } from '@/common/play';
 import type { ElTable } from 'element-plus';
 import { appStoreData } from '@/storeData/app.storeData';
 import { getResourceDurationText } from '@/common/videoDuration';
 
+import { resourceSelectionKey } from './resourceSelection';
+const selection = inject(resourceSelectionKey, undefined);
+const selectionRowClass = ({ row }: { row: I_resource }) => selection?.active.value && selection.selectedIds.value.has(row.id) ? 'management-selected-row' : '';
+const playOrSelectResource = (resource: I_resource) => {
+  if (selection?.active.value) selection.toggle(resource);
+  else playResource(resource);
+};
 const store = {
   appStoreData: appStoreData(),
 }
@@ -95,6 +108,10 @@ const props = defineProps({
 const emits = defineEmits(['selectResources']);
 const tableRef = ref<InstanceType<typeof ElTable>>();
 const selectResourcesHandle = (item: I_resource) => {
+  if (selection?.active.value) {
+    selection.toggle(item);
+    return;
+  }
   emits('selectResources', item)
 }
 
@@ -105,6 +122,11 @@ const change = () => {
 defineExpose({ change });
 </script>
 <style lang="scss" scoped>
+:deep(.management-selected-row) {
+  --el-table-tr-bg-color: color-mix(in srgb, var(--el-color-primary) 12%, var(--el-bg-color));
+  --el-table-row-hover-bg-color: color-mix(in srgb, var(--el-color-primary) 18%, var(--el-bg-color));
+}
+:deep(.management-selected-row > td:first-child) { box-shadow: inset 2px 0 var(--el-color-primary); }
 .layout-table-style1 {
   width: 100%;
   height: 100%;
