@@ -200,6 +200,18 @@ describe('资源管理视图', () => {
     } finally { wrapper.unmount(); }
   });
 
+  it('管理表格以本页组号标记成员，同组同号且不受选中状态影响', async () => {
+    const wrapper = mountAdmin();
+    try {
+      await wrapper.setProps({dataList:[{...resources[0],associationGroupId:'g1'},{...resources[1],associationGroupId:'g1'},{...resources[0],id:'c',associationGroupId:'g2'}]});
+      await wrapper.findComponent(ElRadioGroup).setValue('table');
+      await flushPromises();
+      expect(wrapper.findAll('.resource-group-mark').map(mark=>mark.text())).toEqual(['组 1','组 1','组 2']);
+      await wrapper.get('.management-selection input').setValue(true);
+      await flushPromises();
+      expect(wrapper.findAll('.resource-group-mark').map(mark=>mark.text())).toEqual(['组 1','组 1','组 2']);
+    } finally { wrapper.unmount(); }
+  });
   it('管理表格刷新为相同 ID 的新对象时保留选择并使用最新数据', async () => {
     const wrapper = mountAdmin();
     try {
@@ -294,16 +306,17 @@ describe('当前布局的选择隔离', () => {
     const active = ref(true);
     const toggle = vi.fn();
     const wrapper = mount(ContentRightClickMenu, {
-      props: { resource: resources[0] },
+      props: { resource: {...resources[0], associationGroupId:'g1'} },
       slots: { default: defineComponent({ setup: () => ({ play: mocks.play }), template: '<button @click.stop="play">播放</button>' }) },
       global: { plugins: [ElementPlus], components: icons, provide: { [resourceSelectionKey as symbol]: {
-        active: computed(() => active.value), selectedIds: computed(() => new Set(['a'])), toggle,
+        active: computed(() => active.value), selectedIds: computed(() => new Set(['a'])), groupLabels:computed(()=>new Map([['g1','组 1']])), toggle,
       } }, stubs: { contentMenu: { template: '<div><slot /></div>' } } },
     });
     try {
       expect(wrapper.attributes('aria-checked')).toBe('true');
+      expect(wrapper.get('.resource-management-group').text()).toBe('组 1');
       await wrapper.get('button').trigger('click');
-      expect(toggle).toHaveBeenCalledWith(resources[0]);
+      expect(toggle).toHaveBeenCalledWith(expect.objectContaining({id:'a',associationGroupId:'g1'}));
       expect(mocks.play).not.toHaveBeenCalled();
       await wrapper.trigger('keydown', { key: ' ' });
       await wrapper.trigger('keydown', { key: ' ', repeat: true });

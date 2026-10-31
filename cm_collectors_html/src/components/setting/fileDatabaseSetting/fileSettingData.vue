@@ -25,6 +25,18 @@
       </el-form-item>
 
       <SharedDisplayFields :config="filesConfig" :readonly="!!sharedBar?.state?.following">
+        <template #resourceGroups>
+          <el-form-item label="合并同组资源">
+            <el-switch v-model="filesConfig.mergeResourceGroups" />
+            <span class="performer-sort-hint">仅本库 PC 主列表生效；表格和管理模式保持平铺，不跟随公共配置。</span>
+          </el-form-item>
+          <el-form-item label="关联组封面样式">
+            <selectResourceGroupCoverStyle v-model="filesConfig.resourceGroupCoverStyle" />
+          </el-form-item>
+          <el-form-item label="关联组展开样式">
+            <selectResourceGroupExpandStyle v-model="filesConfig.resourceGroupExpandStyle" />
+          </el-form-item>
+        </template>
         <template #actors>
           <el-form-item label="优先显示演员">
             <selectPerformer ref="selectPerformerRef" v-model="filesConfig.performerPreferred" multiple
@@ -85,6 +97,8 @@ import SharedDisplayFields from '@/components/setting/sharedConfig/SharedDisplay
 import { E_performerCareerType } from '@/dataType/app.dataType';
 import selectPerformer from '@/components/com/form/selectPerformer.vue';
 import selectTag from '@/components/com/form/selectTag.vue';
+import selectResourceGroupCoverStyle from '@/components/com/form/selectResourceGroupCoverStyle.vue';
+import selectResourceGroupExpandStyle from '@/components/com/form/selectResourceGroupExpandStyle.vue';
 //import selectPlayAtlasMode from '@/components/com/form/selectPlayAtlasMode.vue';
 import coverPosterAdmin from './coverPosterAdmin.vue';
 //import routeConversionAdmin from './routeConversionAdmin.vue';

@@ -21,3 +21,5 @@
 - [视频文件转码与源文件替换](video-transcoding.md)：持久化转码队列、FFmpeg 参数、安全替换、异常恢复和元数据刷新协议。
 
 - [视频采集排除规则](video-metadata-exclusions.md)：默认与自定义后缀排除、历史分批整理、批量处理及人工恢复。
+
+- [资源关联组](resource-association-groups.md)：同库资源关联、当前页叠牌展示、点击式管理和独立显示开关。

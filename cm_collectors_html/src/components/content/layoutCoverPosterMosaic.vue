@@ -30,7 +30,8 @@
                   }"
                   @click="cardClickHandle(item.data.resource)"
                 >
-                  <el-image
+                  <ResourceGroupCover
+                    :resource="item.data.resource"
                     :src="item.data.src"
                     :title="item.data.resource.title"
                     fit="cover"
@@ -87,6 +88,7 @@
 import type { ElScrollbar } from 'element-plus';
 import {
   computed,
+  provide,
   nextTick,
   onBeforeUnmount,
   onMounted,
@@ -102,8 +104,12 @@ import type { I_resource } from '@/dataType/resource.dataType';
 import { appStoreData } from '@/storeData/app.storeData';
 
 import contentRightClickMenu from './contentRightClickMenu.vue';
+import ResourceGroupCover from './ResourceGroupCover.vue';
 import contentVideoDurationBadge from './contentVideoDurationBadge.vue';
 import { createMosaicRows, type I_mosaicSource } from './mosaicLayout';
+
+import { resourceGroupSelectKey } from './resourceGroups';
+provide(resourceGroupSelectKey, resource => playResourceHandle(resource));
 
 interface I_mosaicResource {
   resource: I_resource;
@@ -240,9 +246,17 @@ const selectResourcesHandle = (resource: I_resource) => {
   emits('selectResources', resource);
 };
 
-const cardClickHandle = (resource: I_resource) => {
+const playResourceHandle = (resource: I_resource) => {
   if (props.playerMode) {
     emits('playResource', resource);
+    return;
+  }
+  void playResource(resource);
+};
+
+const cardClickHandle = (resource: I_resource) => {
+  if (props.playerMode) {
+    playResourceHandle(resource);
     return;
   }
   selectResourcesHandle(resource);
@@ -253,7 +267,7 @@ const cardActionHandle = (resource: I_resource) => {
     selectResourcesHandle(resource);
     return;
   }
-  playResource(resource);
+  playResourceHandle(resource);
 };
 
 const change = () => {

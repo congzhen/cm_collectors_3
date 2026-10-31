@@ -14,7 +14,7 @@
       <ul class="list-ul"
         :class="{ 'mobile-layout': isMobileDevice, 'mobile-layout-columns-two': isMobileLayoutColumnsTwo() }"
         :style="contentLayoutStyle_C">
-        <li v-for="(item, key) in props.dataList" :key="key">
+        <li v-for="item in props.dataList" :key="item.id">
           <contentStyleIndex :resources="item" :resourcesShowMode="props.resourcesShowMode"
             @selectResources="selectResourcesHandle(item)" />
         </li>

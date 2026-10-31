@@ -6,7 +6,7 @@
           <article class="compact-card" :class="{ selected: selectedResourceId === resource.id }"
             :style="cardStyle(resource)"
             @click="selectResource(resource)">
-            <el-image class="compact-cover" :src="getResourceCoverPoster(resource)" fit="cover" />
+            <ResourceGroupCover :resource="resource" class="compact-cover" :src="getResourceCoverPoster(resource)" fit="cover" />
             <div class="compact-shade"></div>
 
             <contentTagDisplay class="compact-tags" :resource="resource" font-size-disable />
@@ -42,6 +42,7 @@ import type { ElScrollbar } from 'element-plus'
 import contentRightClickMenu from './contentRightClickMenu.vue'
 import contentTagDisplay from './contentTagDisplay.vue'
 import contentVideoDurationBadge from './contentVideoDurationBadge.vue'
+import ResourceGroupCover from './ResourceGroupCover.vue'
 import { coverPosterSize, getResourceCoverPoster } from '@/common/photo'
 import { playResource } from '@/common/play'
 import type { I_resource } from '@/dataType/resource.dataType'
@@ -73,7 +74,10 @@ const wallStyle = computed(() => {
     paddingLeft: `${padding}%`,
   }
 })
-const titleAlign = computed(() => store.currentConfigApp.coverTitleAlign || 'left')
+const titleAlign = computed(() => {
+  const value = store.currentConfigApp.coverTitleAlign;
+  return value === 'center' || value === 'right' ? value : 'left';
+})
 const cardStyle = (resource: I_resource) => {
   const size = coverPosterSize(
     resource.coverPosterWidth,

@@ -11,7 +11,7 @@
                   :class="{ active: index === currentPlayIndex, ['waterfall-item-' + index]: true, 'duration-adaptive-container': isMobile() }"
                   @click.stop="clickResourceHandle(index)">
 
-                  <el-image :src="item.src" :title="item.title" :fit="fit_C" @load="onImageLoad" />
+                  <ResourceGroupCover :resource="props.dataList[index]" :src="item.src" :title="item.title" :fit="fit_C" @load="onImageLoad" />
                   <contentVideoDurationBadge :resource="props.dataList[index]" offset-bottom="8px" offset-right="4px"
                     :compact-text="isMobile()" :adaptive-mobile="isMobile()">
                   </contentVideoDurationBadge>
@@ -53,20 +53,27 @@
   </div>
 </template>
 <script setup lang="ts">
+import { ElMessage } from 'element-plus';
 import { Waterfall } from 'vue-waterfall-plugin-next'
 import { isMobile } from '@/assets/mobile';
 import { getResourceCoverPoster } from '@/common/photo';
 import type { I_resource } from '@/dataType/resource.dataType';
-import { computed, nextTick, ref, inject, type PropType, onMounted, watch, onBeforeUnmount } from 'vue';
+import { computed, nextTick, ref, inject, provide, type PropType, onMounted, watch, onBeforeUnmount } from 'vue';
 import type { ElScrollbar } from 'element-plus';
 import { debounce } from '@/assets/debounce';
 import videoPlay from '@/components/play/videoPlay.vue';
 import { getPlayVideoURLAndType } from '@/common/play';
+import ResourceGroupCover from './ResourceGroupCover.vue';
 import contentRightClickMenu from './contentRightClickMenu.vue';
 import contentVideoDurationBadge from './contentVideoDurationBadge.vue';
 import { appStoreData } from '@/storeData/app.storeData';
 
 import { resourceSelectionKey } from './resourceSelection';
+import { resourceGroupKeepOpenKey, resourceGroupPlaybackList, resourceGroupSelectKey } from './resourceGroups';
+provide(resourceGroupKeepOpenKey, true);
+const selectedGroupResource = ref<I_resource | null>(null);
+const selectedFromGroup = ref(false);
+provide(resourceGroupSelectKey, resource => selectGroupResource(resource));
 const selection = inject(resourceSelectionKey, undefined);
 const store = {
   appStoreData: appStoreData(),
@@ -96,7 +103,7 @@ const currentPlayIndex = ref(-1);
 const currentPlayingDramaSeriesId = ref('');
 let sourceRequestVersion = 0;
 let resetScrollAfterFilesBaseChange = false;
-const dataListWrapper = computed(() => props.dataList);
+const dataListWrapper = computed(() => resourceGroupPlaybackList(props.dataList, selectedFromGroup.value ? selectedGroupResource.value : null, store.appStoreData.currentFilesBases.id));
 
 watch(dataListWrapper, () => {
   syncCurrentPlayIndex()
@@ -113,7 +120,7 @@ watch(() => store.appStoreData.currentFilesBases.id, () => {
 
 watch(currentPlayIndex, (newVal) => {
   if (newVal < 0) return;
-  scrollToCurrentItem();
+  if (!selectedFromGroup.value || dataListWrapper.value[newVal]?.id !== selectedGroupResource.value?.id) scrollToCurrentItem();
   const dramaSeriesId = currentPlayDramaSeriesId_C.value;
   if (dramaSeriesId === currentPlayingDramaSeriesId.value) return;
   setVideoSource(dramaSeriesId);
@@ -170,7 +177,10 @@ const syncCurrentPlayIndex = () => {
   }
 
   if (currentPlayingDramaSeriesId.value === '') {
-    currentPlayIndex.value = 0;
+    // No active video can mean a deliberately selected member without videos.
+    // Keep that selection when durations or page resources refresh.
+    currentPlayIndex.value = Math.max(0, dataListWrapper.value.findIndex(resource =>
+      resource.id === selectedGroupResource.value?.id));
     return;
   }
 
@@ -184,6 +194,8 @@ const resetPlaybackForFilesBaseChange = () => {
   // 同库翻页保留播放状态；切库时必须立即隔离旧库的播放器和异步请求。
   sourceRequestVersion++;
   currentPlayingDramaSeriesId.value = '';
+  selectedGroupResource.value = null;
+  selectedFromGroup.value = false;
   currentPlayIndex.value = -1;
   videoPlayRef.value?.pause();
   resetScrollAfterFilesBaseChange = true;
@@ -204,8 +216,28 @@ const selectResourcesHandle = (item: I_resource) => {
   emits('selectResources', item)
 }
 
+const selectGroupResource = async (resource: I_resource, keepOffPage = true) => {
+  const previousRequestVersion = sourceRequestVersion;
+  selectedFromGroup.value = keepOffPage;
+  selectedGroupResource.value = resource;
+  // 等列表同步当前播放索引后，再切换到组内成员；支持连续选择两个页外成员。
+  await nextTick();
+  if (selectedGroupResource.value?.id !== resource.id || store.appStoreData.currentFilesBases.id !== resource.filesBases_id) return;
+  currentPlayIndex.value = dataListWrapper.value.findIndex(item => item.id === resource.id);
+  await nextTick();
+  if (selectedGroupResource.value?.id !== resource.id || store.appStoreData.currentFilesBases.id !== resource.filesBases_id) return;
+  const dramaSeriesId = resource.dramaSeries[0]?.id || '';
+  if (!dramaSeriesId) {
+    sourceRequestVersion++;
+    currentPlayingDramaSeriesId.value = '';
+    videoPlayRef.value?.pause();
+    return;
+  }
+  if (previousRequestVersion === sourceRequestVersion && dramaSeriesId !== currentPlayingDramaSeriesId.value) void setVideoSource(dramaSeriesId);
+};
 const clickResourceHandle = (index: number) => {
-  currentPlayIndex.value = index;
+  const resource = props.dataList[index];
+  if (resource) void selectGroupResource(resource, false);
 }
 
 // 图片加载完成事件处理
@@ -224,8 +256,14 @@ const setVideoSource = async (dramaSeriesId: string) => {
   const isPlaying = vp.isPlaying() || false;
   // 异步获取新播放地址期间先停止旧音轨，防止切换后旧声音残留。
   vp.pause();
-  const { playUrl, playType } = await getPlayVideoURLAndType(dramaSeriesId)
+  const playData = await getPlayVideoURLAndType(dramaSeriesId).catch(() => null);
   if (requestVersion !== sourceRequestVersion) return;
+  if (!playData?.playUrl) {
+    currentPlayingDramaSeriesId.value = '';
+    if (!playData) ElMessage.error('播放地址加载失败，请重试');
+    return;
+  }
+  const { playUrl, playType } = playData;
   const resource = dataListWrapper.value.find((item) =>
     item.dramaSeries.some((dramaSeries) => dramaSeries.id === dramaSeriesId)
   )
@@ -256,19 +294,24 @@ const setVideoPlaySize = () => {
 }
 
 const getResourceDramaSeriesId = (index: number) => {
-  if (props.dataList[index] && props.dataList[index].dramaSeries.length > 0) {
-    return props.dataList[index].dramaSeries[0].id;
+  if (dataListWrapper.value[index] && dataListWrapper.value[index].dramaSeries.length > 0) {
+    return dataListWrapper.value[index].dramaSeries[0].id;
   }
   return '';
 }
 
+const selectPlaybackIndex = (index: number) => {
+  const resource = dataListWrapper.value[index];
+  if (resource) void selectGroupResource(resource, !props.dataList.some(item => item.id === resource.id));
+};
+
 const prevHandle = () => {
   if (currentPlayIndex.value <= 0) return;
-  currentPlayIndex.value = currentPlayIndex.value - 1;
+  selectPlaybackIndex(currentPlayIndex.value - 1);
 }
 const nextHandle = () => {
   if (currentPlayIndex.value >= (dataListWrapper.value.length - 1)) return;
-  currentPlayIndex.value = currentPlayIndex.value + 1;
+  selectPlaybackIndex(currentPlayIndex.value + 1);
 }
 
 // 滚动到当前选中的项目
@@ -305,26 +348,62 @@ const scrollToCurrentItem = () => {
 }
 
 // 键盘事件处理函数
-const isInputTarget = (target: EventTarget | null) => {
-  const el = target as HTMLElement | null;
-  if (!el) return false;
-  const tagName = el.tagName?.toLowerCase();
-  return tagName === 'input' || tagName === 'textarea' || tagName === 'select' || el.isContentEditable;
-}
+const isInteractiveTarget = (target: EventTarget | null) => {
+  if (!(target instanceof Element)) return false;
+  return Boolean(
+    target.closest(
+      [
+        'input',
+        'textarea',
+        'select',
+        'button',
+        'a',
+        'video',
+        'audio',
+        '[contenteditable="true"]',
+        '[role="slider"]',
+        '[role="dialog"]',
+        '[role="menu"]',
+        '.el-dialog',
+        '.el-drawer',
+        '.el-popper',
+      ].join(','),
+    ),
+  );
+};
+
+const hasOpenFloatingLayer = () => {
+  return Array.from(
+    document.querySelectorAll<HTMLElement>(
+      '.el-overlay, .el-popper, .el-message-box',
+    ),
+  ).some(
+    (layer) =>
+      layer.getClientRects().length > 0 &&
+      getComputedStyle(layer).visibility !== 'hidden',
+  );
+};
 
 const handleKeyDown = (event: KeyboardEvent) => {
-  if (isInputTarget(event.target)) return;
-  // 上/左箭头键触发上一个
+  if (
+    selection?.active.value || event.defaultPrevented ||
+    event.altKey ||
+    event.ctrlKey ||
+    event.metaKey ||
+    event.shiftKey ||
+    isInteractiveTarget(event.target) ||
+    hasOpenFloatingLayer()
+  ) {
+    return;
+  }
   if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') {
     event.preventDefault();
     prevHandle();
-  }
-  // 下/右箭头键触发下一个
-  else if (event.key === 'ArrowDown' || event.key === 'ArrowRight') {
+  } else if (event.key === 'ArrowDown' || event.key === 'ArrowRight') {
     event.preventDefault();
     nextHandle();
   }
-}
+};
 
 onMounted(() => {
   syncCurrentPlayIndex();

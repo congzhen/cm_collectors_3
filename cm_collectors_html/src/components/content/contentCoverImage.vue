@@ -1,8 +1,9 @@
 <template>
-  <el-image :src="getResourceCoverPoster(props.resource)" :fit="fit_C" />
+  <ResourceGroupCover :resource="resource" :src="getResourceCoverPoster(props.resource)" :fit="fit_C" />
 </template>
 <script setup lang="ts">
 import { getResourceCoverPoster } from '@/common/photo';
+import ResourceGroupCover from './ResourceGroupCover.vue';
 import type { I_resource } from '@/dataType/resource.dataType';
 import { appStoreData } from '@/storeData/app.storeData';
 import { computed, type PropType } from 'vue';

@@ -4,6 +4,8 @@ import type { I_tag } from "./tag.dataType";
 import type { I_videoMetadata } from "./videoMetadata.dataType";
 
 export interface I_resource_base {
+  associationGroupId?: string;
+  associationGroupSort?: number;
   id: string;
   filesBases_id: string;
   mode: E_resourceDramaSeriesType;
@@ -72,4 +74,11 @@ export interface I_dramaSeriesWithResource {
   resources_id: string;
   src: string;
   title: string;
+}
+
+export interface I_resourceGroupSummary {
+  id: string;
+  filesBasesId: string;
+  count: number;
+  preview: I_resource_base[];
 }

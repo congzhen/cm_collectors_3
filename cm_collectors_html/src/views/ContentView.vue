@@ -1,7 +1,7 @@
 <template>
   <div class="content-view" v-loading="loading">
     <div class="list">
-      <contentList ref="contentListRef" v-if="!store.appStoreData.adminResourceStatus" :data-list="dataList"
+      <contentList ref="contentListRef" v-if="!store.appStoreData.adminResourceStatus" :data-list="dataList" :group-page="groupPage"
         @select-resources="selectResourcesHandle"></contentList>
       <contentListAdmin ref="contentListAdminRef" v-else :data-list="dataList"
         @update-data="init_DataList(() => {}, true)"></contentListAdmin>
@@ -12,7 +12,8 @@
     }">
       <div class="paging-main">
         <div class="paging-summary">
-          <span>{{ isModernAppearance ? `共 ${dataCount} 项` : `Total ${dataCount}` }}</span>
+          <span>{{ isModernAppearance ? `共 ${dataCount} 个资源` : `Total ${dataCount}` }}</span>
+          <span v-if="groupingActive" class="group-page-count">本页展示 {{ groupedPageCount }} 项</span>
           <el-popover trigger="hover" :width="260" :show-after="250" @before-enter="handleFileSizeStatsShow">
             <template #reference>
               <el-icon class="file-size-stats-trigger" title="当前筛选结果的视频文件统计">
@@ -53,6 +54,18 @@
           :total="dataCount" :page-size="pageSize" :pager-count="5" size="small" @change="changePageHandle" />
       </div>
       <div class="bottom-btns">
+        <el-tooltip v-if="!isMobile()" :content="store.appStoreData.adminResourceStatus ? '管理模式按单个资源展示' : store.appStoreData.currentConfigApp.resourcesShowMode === 'table' ? '表格模式按单个资源展示' : '只合并当前页的同组资源，分页仍按资源计算'">
+          <div v-admin class="group-display" role="group" aria-label="资源分组显示方式" :aria-busy="savingGroupDisplay">
+            <button type="button" :class="{ 'is-active': store.appStoreData.currentConfigApp.mergeResourceGroups === false }"
+              :aria-pressed="store.appStoreData.currentConfigApp.mergeResourceGroups === false" :disabled="groupDisplayDisabled" @click="setGroupDisplay(false)">
+              <el-icon><Grid /></el-icon><span>独立显示</span>
+            </button>
+            <button type="button" :class="{ 'is-active': store.appStoreData.currentConfigApp.mergeResourceGroups !== false }"
+              :aria-pressed="store.appStoreData.currentConfigApp.mergeResourceGroups !== false" :disabled="groupDisplayDisabled" @click="setGroupDisplay(true)">
+              <el-icon :class="{ 'is-loading': savingGroupDisplay }"><Loading v-if="savingGroupDisplay" /><Collection v-else /></el-icon><span>合并同组</span>
+            </button>
+          </div>
+        </el-tooltip>
         <LibraryMomentsButton :files-bases-id="store.appStoreData.currentFilesBases.id || ''" />
         <playListBtn :modern="isModernAppearance"></playListBtn>
         <coverAdjuster v-admin></coverAdjuster>
@@ -71,10 +84,14 @@ import { appStoreData } from '@/storeData/app.storeData';
 import { searchStoreData } from '@/storeData/search.storeData';
 import type { I_resource, I_resourceFileSizeStats } from '@/dataType/resource.dataType';
 import { ElMessage } from 'element-plus';
+import { Collection, Grid, Loading } from '@element-plus/icons-vue';
 import { resourceServer } from '@/server/resource.server';
 import { debounce } from '@/assets/debounce';
 import { E_searchSort } from '@/dataType/search.dataType';
 import { eventBus } from '@/main';
+import { isMobile } from '@/assets/mobile';
+import { resourceGroupServer } from '@/server/resourceGroup.server';
+import { mergeResourceGroupPage, resourceGroupPageKey, type ResourceGroupPage } from '@/components/content/resourceGroups';
 const store = {
   appStoreData: appStoreData(),
   searchStoreData: searchStoreData(),
@@ -92,7 +109,27 @@ const contentListRef = ref<InstanceType<typeof contentList>>();
 const isInitializing = ref(false);
 const loading = ref(false);
 const dataList = ref<I_resource[]>([]);
+const groupPage = ref<ResourceGroupPage>();
 const dataCount = ref(0);
+const savingGroupDisplay = ref(false);
+const groupDisplayDisabled = computed(() => store.appStoreData.adminResourceStatus
+  || store.appStoreData.currentConfigApp.resourcesShowMode === 'table' || savingGroupDisplay.value);
+const groupingActive = computed(() => !isMobile() && !store.appStoreData.adminResourceStatus
+  && store.appStoreData.currentConfigApp.resourcesShowMode !== 'table' && store.appStoreData.currentConfigApp.mergeResourceGroups !== false);
+const groupedPageCount = computed(() => mergeResourceGroupPage(dataList.value, groupingActive.value).length);
+const setGroupDisplay = async (value: string | number | boolean) => {
+  if (groupDisplayDisabled.value || !!value === (store.appStoreData.currentConfigApp.mergeResourceGroups !== false)) return;
+  const library = store.appStoreData.currentFilesBases.id;
+  const config = store.appStoreData.currentConfigApp;
+  const enabled = !!value;
+  savingGroupDisplay.value = true;
+  try {
+    const result = await resourceGroupServer.setDisplay(library, enabled);
+    if (!result.status) { ElMessage.error(result.msg || '分组显示设置保存失败'); return; }
+    if (library === store.appStoreData.currentFilesBases.id && config === store.appStoreData.currentConfigApp) config.mergeResourceGroups = enabled;
+  } catch { ElMessage.error('分组显示设置保存失败，请重试'); }
+  finally { savingGroupDisplay.value = false; }
+};
 const fileSizeStats = ref<I_resourceFileSizeStats | null>(null);
 const fileSizeStatsLoading = ref(false);
 const fileSizeStatsError = ref('');
@@ -171,6 +208,18 @@ const currentRandomSeed = () => {
   return randomSeed;
 }
 
+const prepareGroupPage = async (resources: I_resource[], library: string): Promise<ResourceGroupPage | undefined> => {
+  if (!groupingActive.value) return undefined;
+  const page: ResourceGroupPage = { key: resourceGroupPageKey(library, resources), summaries: [] };
+  const ids = [...new Set(resources.map(resource => resource.associationGroupId).filter((id): id is string => !!id))];
+  if (!ids.length) return page;
+  try {
+    const result = await resourceGroupServer.summaries(library, ids);
+    if (result.status) page.summaries = result.data.dataList;
+  } catch { /* 摘要不可用时仍展示资源，组内成员可通过悬停加载。 */ }
+  return page;
+};
+
 const executeGetDataList = debounce(async (requestVersion: number, fn: () => void) => {
   if (requestVersion !== dataListRequestVersion) return;
   const filesBasesId = store.appStoreData.currentFilesBases.id;
@@ -180,6 +229,9 @@ const executeGetDataList = debounce(async (requestVersion: number, fn: () => voi
     const result = await resourceServer.dataList(filesBasesId, shouldFetchCount, currentPage.value, pageSize.value, store.searchStoreData.searchData, currentRandomSeed());
     if (requestVersion !== dataListRequestVersion || filesBasesId !== store.appStoreData.currentFilesBases.id) return;
     if (result && result.status) {
+      const nextGroupPage = await prepareGroupPage(result.data.dataList, filesBasesId);
+      if (requestVersion !== dataListRequestVersion || filesBasesId !== store.appStoreData.currentFilesBases.id) return;
+      groupPage.value = nextGroupPage;
       dataList.value = result.data.dataList;
       if (shouldFetchCount) {
         dataCount.value = result.data.total;
@@ -193,7 +245,12 @@ const executeGetDataList = debounce(async (requestVersion: number, fn: () => voi
   } catch (error) {
     console.log(error);
   } finally {
-    if (requestVersion === dataListRequestVersion) loading.value = false;
+    if (requestVersion === dataListRequestVersion) {
+      loading.value = false;
+      // Failure or a newer refresh may bypass init's success callback.
+      // The latest completed request must always release pagination.
+      isInitializing.value = false;
+    }
   }
 }, 200)
 
@@ -213,11 +270,23 @@ const scheduleDurationRefresh = () => {
   const requestVersion = dataListRequestVersion;
   const filesBasesId = store.appStoreData.currentFilesBases.id;
   durationRefreshTimer = window.setTimeout(async () => {
-    if (requestVersion !== dataListRequestVersion || filesBasesId !== store.appStoreData.currentFilesBases.id) return;
-    const result = await resourceServer.dataList(filesBasesId, false, currentPage.value, pageSize.value, store.searchStoreData.searchData, currentRandomSeed());
-    if (requestVersion === dataListRequestVersion && filesBasesId === store.appStoreData.currentFilesBases.id && result && result.status) {
-      dataList.value = result.data.dataList;
-    }
+    if (!store.appStoreData.currentConfigApp.showVideoDuration
+      || requestVersion !== dataListRequestVersion || filesBasesId !== store.appStoreData.currentFilesBases.id) return;
+    try {
+      const result = await resourceServer.dataList(filesBasesId, false, currentPage.value, pageSize.value, store.searchStoreData.searchData, currentRandomSeed());
+      if (requestVersion === dataListRequestVersion && filesBasesId === store.appStoreData.currentFilesBases.id && result && result.status) {
+        // This poll only fills in asynchronously collected durations. Replacing the
+        // whole list remounts covers and clears group summaries 2.5s after paging.
+        const refreshed = new Map(result.data.dataList.map(resource => [resource.id, resource]));
+        for (const resource of dataList.value) {
+          const durations = new Map((refreshed.get(resource.id)?.dramaSeries || []).map(series => [series.id, series.durationSeconds]));
+          for (const series of resource.dramaSeries || []) {
+            const duration = durations.get(series.id);
+            if (typeof duration === 'number') series.durationSeconds = duration;
+          }
+        }
+      }
+    } catch { /* 后台补采失败保留当前画面，正常刷新时再尝试采集时长。 */ }
   }, 2500);
 }
 
@@ -338,11 +407,12 @@ defineExpose({ init, init_DataList, showDataList });
     justify-content: space-between;
 
     .paging-main {
-      display: flex;
+      display: flex; flex-wrap: wrap;
       align-items: center;
       min-width: 0;
     }
 
+    .group-page-count { color: var(--el-text-color-secondary); }
     .paging-summary {
       display: flex;
       align-items: center;
@@ -359,10 +429,49 @@ defineExpose({ init, init_DataList, showDataList });
     }
 
     .bottom-btns {
-      display: flex;
+      display: flex; flex-wrap: wrap;
       gap: 5px;
       align-items: center;
     }
+  }
+}
+
+.group-display {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--paging-border, var(--el-border-color));
+  border-radius: 8px;
+  background: var(--paging-control-bg, var(--el-fill-color-light));
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 26px;
+    padding: 0 10px;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    background: transparent;
+    color: var(--el-text-color-secondary);
+    font: inherit;
+    font-size: 12px;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background .15s, color .15s, border-color .15s;
+
+    &:hover:not(:disabled) { color: var(--paging-accent, var(--el-color-primary)); }
+    &.is-active {
+      color: var(--paging-accent, var(--el-color-primary));
+      border-color: color-mix(in srgb, var(--paging-accent, var(--el-color-primary)) 25%, transparent);
+      background: var(--paging-accent-soft, var(--el-color-primary-light-9));
+      font-weight: 500;
+    }
+    &:focus-visible { outline: 2px solid var(--paging-accent, var(--el-color-primary)); outline-offset: 1px; }
+    &:disabled { opacity: .45; cursor: not-allowed; }
   }
 }
 

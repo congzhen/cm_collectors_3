@@ -46,6 +46,8 @@
             </div>
           </el-popover>
         </div>
+        <ResourceGroupManager :selected="selectedResources" :files-bases-id="currentLibraryId" :page-resources="props.dataList"
+          @changed="emits('updateData')" @clear-selection="clearSelection" />
         <div class="batch-actions">
           <el-button icon="PriceTag" :disabled="!selectedResources.length" @click="batchAddTagHandle">添加标签</el-button>
           <el-button icon="Remove" :disabled="!selectedResources.length" @click="batchDeleteTagHandle">移除标签</el-button>
@@ -78,6 +80,9 @@
           </template>
         </el-table-column>
         <el-table-column prop="title" label="标题" min-width="180" />
+        <el-table-column label="关联组" width="100">
+          <template #default="{ row }"><ResourceGroupMark :group-id="row.associationGroupId" /></template>
+        </el-table-column>
         <el-table-column prop="issueNumber" label="版号、番号、刊号" width="140" />
         <el-table-column prop="issuingDate" label="年份" width="100" />
         <el-table-column prop="country" label="国家" width="120">
@@ -122,6 +127,9 @@ import { playResource, playOpenResourceFolder } from '@/common/play'
 import { resourceDelete, resourceBatchDelete } from '@/common/resource'
 import { computed, nextTick, provide, ref, watch, type PropType } from 'vue';
 import contentList from './contentList.vue';
+import ResourceGroupManager from './ResourceGroupManager.vue';
+import ResourceGroupMark from './ResourceGroupMark.vue';
+import { appStoreData } from '@/storeData/app.storeData';
 import { resourceSelectionKey } from './resourceSelection';
 import { ElMessage, ElMessageBox, type ElTable } from 'element-plus';
 import { AppLang } from '@/language/app.lang'
@@ -146,6 +154,7 @@ defineExpose({ change: () => { layoutRef.value?.change(); tableRef.value?.setScr
 const addingTranscode = ref(false);
 const managementView = ref<'layout' | 'table'>('layout');
 const selectedResources = ref<I_resource[]>([]);
+const currentLibraryId = computed(() => appStoreData().currentFilesBases.id || '');
 const selectionPreviewVisible = ref(false);
 const removeSelection = (id: string) => {
   selectedResources.value = selectedResources.value.filter(resource => resource.id !== id);
@@ -154,6 +163,14 @@ watch(() => selectedResources.value.length, count => {
   if (!count) selectionPreviewVisible.value = false;
 });
 const selectedIds = computed(() => new Set(selectedResources.value.map(resource => resource.id)));
+const groupLabels = computed(() => {
+  const labels = new Map<string, string>();
+  props.dataList.forEach(resource => {
+    const id = resource.associationGroupId;
+    if (id && !labels.has(id)) labels.set(id, `组 ${labels.size + 1}`);
+  });
+  return labels;
+});
 const selectionRowClass = ({ row }: { row: I_resource }) =>
   selectedIds.value.has(row.id) ? 'management-selected-row' : '';
 const allSelected = computed(() => props.dataList.length > 0 && props.dataList.every(resource => selectedIds.value.has(resource.id)));
@@ -164,6 +181,7 @@ let tableSyncVersion = 0;
 provide(resourceSelectionKey, {
   active: computed(() => managementView.value === 'layout'),
   selectedIds,
+  groupLabels,
   toggle(resource) {
     selectedResources.value = selectedIds.value.has(resource.id)
       ? selectedResources.value.filter(item => item.id !== resource.id)

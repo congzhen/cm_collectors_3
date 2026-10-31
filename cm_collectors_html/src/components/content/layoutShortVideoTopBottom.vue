@@ -16,7 +16,7 @@
               <div class="material-item"
                 :class="{ active: index === currentPlayIndex, ['material-item-' + index]: true }"
                 @click.stop="clickResourceHandle(index)">
-                <el-image :src="item.src" :title="item.title" fit="contain"
+                <ResourceGroupCover :resource="props.dataList[index]" :src="item.src" :title="item.title" fit="contain"
                   @load="onMaterialImageLoad(item.id, $event)" />
                 <contentVideoDurationBadge :resource="props.dataList[index]" offset-bottom="8px" offset-right="4px"
                   :compact-text="isMobile()" :adaptive-mobile="isMobile()" />
@@ -33,7 +33,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, nextTick, onBeforeUnmount, onMounted, ref, watch, type PropType } from 'vue';
+import { ElMessage } from 'element-plus';
+import { computed, inject, provide, nextTick, onBeforeUnmount, onMounted, ref, watch, type PropType } from 'vue';
 import type { ElScrollbar } from 'element-plus';
 import { isMobile } from '@/assets/mobile';
 import { getResourceCoverPoster } from '@/common/photo';
@@ -41,10 +42,16 @@ import { getPlayVideoURLAndType } from '@/common/play';
 import type { I_resource } from '@/dataType/resource.dataType';
 import { appStoreData } from '@/storeData/app.storeData';
 import videoPlay from '@/components/play/videoPlay.vue';
+import ResourceGroupCover from './ResourceGroupCover.vue';
 import contentRightClickMenu from './contentRightClickMenu.vue';
 import contentVideoDurationBadge from './contentVideoDurationBadge.vue';
 
 import { resourceSelectionKey } from './resourceSelection';
+import { resourceGroupKeepOpenKey, resourceGroupPlaybackList, resourceGroupSelectKey } from './resourceGroups';
+provide(resourceGroupKeepOpenKey, true);
+const selectedGroupResource = ref<I_resource | null>(null);
+const selectedFromGroup = ref(false);
+provide(resourceGroupSelectKey, resource => selectGroupResource(resource));
 const selection = inject(resourceSelectionKey, undefined);
 const store = {
   appStoreData: appStoreData(),
@@ -70,7 +77,7 @@ let sourceRequestVersion = 0;
 let resizeObserver: ResizeObserver | undefined;
 let resetScrollAfterFilesBaseChange = false;
 
-const dataListWrapper = computed(() => props.dataList);
+const dataListWrapper = computed(() => resourceGroupPlaybackList(props.dataList, selectedFromGroup.value ? selectedGroupResource.value : null, store.appStoreData.currentFilesBases.id));
 const dataList_C = computed(() => props.dataList.map(item => ({
   ...item,
   src: getResourceCoverPoster(item),
@@ -86,7 +93,7 @@ watch(dataListWrapper, () => {
 watch(() => store.appStoreData.currentFilesBases.id, resetPlaybackForFilesBaseChange, { flush: 'sync' });
 watch(currentPlayIndex, newIndex => {
   if (newIndex < 0) return;
-  scrollToCurrentItem();
+  if (!selectedFromGroup.value || dataListWrapper.value[newIndex]?.id !== selectedGroupResource.value?.id) scrollToCurrentItem();
   const dramaSeriesId = getResourceDramaSeriesId(newIndex);
   if (dramaSeriesId === currentPlayingDramaSeriesId.value) return;
   void setVideoSource(dramaSeriesId);
@@ -102,7 +109,10 @@ function syncCurrentPlayIndex() {
     return;
   }
   if (currentPlayingDramaSeriesId.value === '') {
-    currentPlayIndex.value = 0;
+    // No active video can mean a deliberately selected member without videos.
+    // Keep that selection when durations or page resources refresh.
+    currentPlayIndex.value = Math.max(0, dataListWrapper.value.findIndex(resource =>
+      resource.id === selectedGroupResource.value?.id));
     return;
   }
   currentPlayIndex.value = dataListWrapper.value.findIndex(resource =>
@@ -114,6 +124,8 @@ function resetPlaybackForFilesBaseChange() {
   // 同库翻页保留播放状态；切库时必须立即隔离旧库的播放器和异步请求。
   sourceRequestVersion++;
   currentPlayingDramaSeriesId.value = '';
+  selectedGroupResource.value = null;
+  selectedFromGroup.value = false;
   currentPlayIndex.value = -1;
   videoPlayRef.value?.pause();
   resetScrollAfterFilesBaseChange = true;
@@ -131,7 +143,7 @@ function resetResourceScroll() {
 }
 
 function getResourceDramaSeriesId(index: number) {
-  return props.dataList[index]?.dramaSeries[0]?.id || '';
+  return dataListWrapper.value[index]?.dramaSeries[0]?.id || '';
 }
 
 async function setVideoSource(dramaSeriesId: string) {
@@ -143,8 +155,14 @@ async function setVideoSource(dramaSeriesId: string) {
   const requestVersion = ++sourceRequestVersion;
   const shouldResume = videoPlayer.isPlaying();
   videoPlayer.pause();
-  const { playUrl, playType } = await getPlayVideoURLAndType(dramaSeriesId);
+  const playData = await getPlayVideoURLAndType(dramaSeriesId).catch(() => null);
   if (requestVersion !== sourceRequestVersion) return;
+  if (!playData?.playUrl) {
+    currentPlayingDramaSeriesId.value = '';
+    if (!playData) ElMessage.error('播放地址加载失败，请重试');
+    return;
+  }
+  const { playUrl, playType } = playData;
   const resource = dataListWrapper.value.find((item) =>
     item.dramaSeries.some((dramaSeries) => dramaSeries.id === dramaSeriesId)
   );
@@ -157,8 +175,28 @@ async function setVideoSource(dramaSeriesId: string) {
   }, dramaSeries?.src || resource?.title || '');
 }
 
+const selectGroupResource = async (resource: I_resource, keepOffPage = true) => {
+  const previousRequestVersion = sourceRequestVersion;
+  selectedFromGroup.value = keepOffPage;
+  selectedGroupResource.value = resource;
+  // 等列表同步当前播放索引后，再切换到组内成员；支持连续选择两个页外成员。
+  await nextTick();
+  if (selectedGroupResource.value?.id !== resource.id || store.appStoreData.currentFilesBases.id !== resource.filesBases_id) return;
+  currentPlayIndex.value = dataListWrapper.value.findIndex(item => item.id === resource.id);
+  await nextTick();
+  if (selectedGroupResource.value?.id !== resource.id || store.appStoreData.currentFilesBases.id !== resource.filesBases_id) return;
+  const dramaSeriesId = resource.dramaSeries[0]?.id || '';
+  if (!dramaSeriesId) {
+    sourceRequestVersion++;
+    currentPlayingDramaSeriesId.value = '';
+    videoPlayRef.value?.pause();
+    return;
+  }
+  if (previousRequestVersion === sourceRequestVersion && dramaSeriesId !== currentPlayingDramaSeriesId.value) void setVideoSource(dramaSeriesId);
+};
 function clickResourceHandle(index: number) {
-  currentPlayIndex.value = index;
+  const resource = props.dataList[index];
+  if (resource) void selectGroupResource(resource, false);
 }
 
 function selectResourcesHandle(item: I_resource) {

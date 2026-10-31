@@ -19,6 +19,8 @@
 
 - [视频片段收藏与画面预览](design/video-moments-previews.md)：片段收藏、时间轴、进度条预览、手动删除和缓存容量管理。
 
+- [资源关联组](design/resource-association-groups.md)：同库资源关联、当前页叠牌展示、点击式管理和独立显示开关。
+
 ## Testing
 
 - [测试指南](testing/testing-guide.md)：已有测试入口、建议验证方式和验收清单。

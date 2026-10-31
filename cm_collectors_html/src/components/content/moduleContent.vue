@@ -32,11 +32,15 @@ import { contentLayoutStyle_C } from '@/common/content';
 import type { I_resource } from '@/dataType/resource.dataType';
 import { resourceServer } from '@/server/resource.server';
 import { appStoreData } from '@/storeData/app.storeData';
-import { ref, onMounted, watch, computed, type PropType } from 'vue';
+import { ref, onMounted, watch, computed, inject, provide, type PropType } from 'vue';
 import contentStyleIndex from './contentStyleIndex.vue';
 import type { T_resourcesShowMode } from '@/dataType/app.dataType';
 import { ElMessage } from 'element-plus';
 import { filesBasesServer } from '@/server/filesBases.server';
+import { resourceGroupContextKey } from './resourceGroups';
+const groupContext = inject(resourceGroupContextKey, undefined);
+// 推荐模块始终保持原样，即便某个推荐资源同时出现在当前分页中。
+if (groupContext) provide(resourceGroupContextKey, { ...groupContext, enabled: computed(() => false) });
 const store = {
   appStoreData: appStoreData(),
 }

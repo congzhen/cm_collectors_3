@@ -1,18 +1,23 @@
 <template>
-  <div v-if="durationText" class="video-duration-badge" :class="{ 'is-mobile-adaptive': props.adaptiveMobile }"
+  <div v-if="durationText || groupCount" class="video-duration-badge" :class="{ 'is-mobile-adaptive': props.adaptiveMobile }"
     :style="{ right: props.offsetRight, bottom: props.offsetBottom }">
-    {{ durationText }}
+    <span v-if="groupCount" class="group-count" :aria-label="`关联组共 ${groupCount} 个资源`"><Collection aria-hidden="true" />{{ groupCount }} 项</span>
+    <span v-if="groupCount && durationText" class="badge-divider" aria-hidden="true">·</span>
+    <span v-if="durationText" class="duration-text">{{ durationText }}</span>
   </div>
 </template>
 <script setup lang="ts">
-import { computed, type PropType } from 'vue';
+import { computed, inject, type PropType } from 'vue';
+import { Collection } from '@element-plus/icons-vue';
 import type { I_resource } from '@/dataType/resource.dataType';
 import { appStoreData } from '@/storeData/app.storeData';
 import { getResourceDurationText } from '@/common/videoDuration';
+import { resourceGroupContextKey } from './resourceGroups';
 
 const store = {
   appStoreData: appStoreData(),
 }
+const groupContext = inject(resourceGroupContextKey, undefined);
 
 const props = defineProps({
   resource: {
@@ -42,8 +47,13 @@ const props = defineProps({
   },
 })
 
+const groupCount = computed(() => {
+  if (!groupContext?.enabled.value || !groupContext.pageIds.value.has(props.resource.id)) return 0;
+  const count = groupContext.summaries.value.get(props.resource.associationGroupId || '')?.count;
+  return count && Number.isFinite(count) && count > 1 ? count : 0;
+});
 const durationText = computed(() => {
-  // 文件库级开关关闭时，角标完全隐藏，也不会展示历史上已采集过的时长。
+  // 时长开关仅隐藏时长，合并组仍保留成员数量。
   if (!store.appStoreData.currentConfigApp.showVideoDuration) {
     return '';
   }
@@ -52,6 +62,10 @@ const durationText = computed(() => {
 </script>
 <style lang="scss" scoped>
 .video-duration-badge {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  box-sizing: border-box;
   position: absolute;
   right: 6px;
   bottom: 6px;
@@ -67,6 +81,11 @@ const durationText = computed(() => {
   overflow: hidden;
   text-overflow: ellipsis;
   pointer-events: none;
+
+  .group-count { display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0; }
+  .group-count svg { width: 12px; height: 12px; flex-shrink: 0; }
+  .badge-divider { opacity: .6; flex-shrink: 0; }
+  .duration-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 
   &.is-mobile-adaptive {
     padding: 1px 4px;

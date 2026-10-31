@@ -8,6 +8,9 @@
             @click.stop @change="selection.toggle(row)" />
         </template>
       </el-table-column>
+      <el-table-column v-if="selection?.active.value" label="关联组" width="100">
+        <template #default="{ row }"><ResourceGroupMark :group-id="row.associationGroupId" /></template>
+      </el-table-column>
       <el-table-column label="-" width="32" align="center">
         <template #default="scope">
           <div v-if="scope.row.coverPoster != ''" @click.stop="playOrSelectResource(scope.row)">
@@ -89,6 +92,7 @@ import { appStoreData } from '@/storeData/app.storeData';
 import { getResourceDurationText } from '@/common/videoDuration';
 
 import { resourceSelectionKey } from './resourceSelection';
+import ResourceGroupMark from './ResourceGroupMark.vue';
 const selection = inject(resourceSelectionKey, undefined);
 const selectionRowClass = ({ row }: { row: I_resource }) => selection?.active.value && selection.selectedIds.value.has(row.id) ? 'management-selected-row' : '';
 const playOrSelectResource = (resource: I_resource) => {

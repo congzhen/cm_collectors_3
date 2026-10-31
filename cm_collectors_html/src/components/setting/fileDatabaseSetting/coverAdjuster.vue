@@ -78,6 +78,14 @@
                 </el-radio-group>
               </div>
               <el-checkbox v-model="showVideoDuration" label="显示视频时长" />
+              <div class="modern-option-item modern-group-style">
+                <span class="modern-control-label">关联组封面样式</span>
+                <selectResourceGroupCoverStyle v-model="resourceGroupCoverStyle" />
+              </div>
+              <div class="modern-option-item modern-group-style">
+                <span class="modern-control-label">关联组展开样式</span>
+                <selectResourceGroupExpandStyle v-model="resourceGroupExpandStyle" />
+              </div>
             </section>
           </div>
 
@@ -118,7 +126,7 @@
           </section>
         </div>
         <div class="modern-actions">
-          <el-button type="primary" @click="saveConfig">保存</el-button>
+          <el-button type="primary" :loading="savingConfig" @click="saveConfig">保存</el-button>
         </div>
       </div>
 
@@ -194,6 +202,14 @@
                   style="width:160px;" />
               </div>
               <div class="setting-item">
+                <span class="setting-label">关联组封面样式</span>
+                <selectResourceGroupCoverStyle v-model="resourceGroupCoverStyle" />
+              </div>
+              <div class="setting-item">
+                <span class="setting-label">关联组展开样式</span>
+                <selectResourceGroupExpandStyle v-model="resourceGroupExpandStyle" />
+              </div>
+              <div class="setting-item">
                 <span class="setting-label">封面标题对齐方式</span>
                 <el-radio-group v-model="coverTitleAlign" size="small">
                   <el-radio-button label="左对齐" value="left" />
@@ -210,7 +226,7 @@
           </div>
         </div>
         <div class="actions">
-          <el-button type="primary" plain @click="saveConfig">保存</el-button>
+          <el-button type="primary" plain :loading="savingConfig" @click="saveConfig">保存</el-button>
         </div>
       </div>
     </el-popover>
@@ -218,25 +234,39 @@
 </template>
 <script setup lang="ts">
 import { appStoreData } from '@/storeData/app.storeData';
-import { computed } from 'vue';
+import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import dataset from '@/assets/dataset';
 import { debounceNow } from '@/assets/debounce';
 import { filesBasesServer } from '@/server/filesBases.server';
 import { ElMessage } from 'element-plus';
 import selectLeftColumnMode from '@/components/com/form/selectLeftColumnMode.vue';
+import selectResourceGroupCoverStyle from '@/components/com/form/selectResourceGroupCoverStyle.vue';
+import selectResourceGroupExpandStyle from '@/components/com/form/selectResourceGroupExpandStyle.vue';
 import selectResourceDetailsShowMode from '@/components/com/form/selectResourceDetailsShowMode.vue';
 import { Grid, Menu, Operation, Picture, SetUp } from '@element-plus/icons-vue';
 import { useTheme } from '@/common/theme';
+import type { T_resourcesShowMode } from '@/dataType/app.dataType';
 
 const store = {
   appStoreData: appStoreData(),
 }
 
-const resourcesShowModeList = dataset.resourcesShowMode;
+const resourcesShowModeList = dataset.resourcesShowMode as T_resourcesShowMode[];
 const isModernAppearance = computed(() =>
   (store.appStoreData.appConfig.appearanceStyle || store.appStoreData.appConfig.headerStyle || 'modern') === 'modern'
 );
 const { isBrightTheme } = useTheme();
+const resourceGroupCoverStyle = computed({
+  get: () => { const value = store.appStoreData.currentConfigApp.resourceGroupCoverStyle; return value === 'triptych' || value === 'book' || value === 'adaptive' ? value : 'stack'; },
+  set: (value: 'stack' | 'triptych' | 'book' | 'adaptive') => { store.appStoreData.currentConfigApp.resourceGroupCoverStyle = value; },
+});
+const resourceGroupExpandStyle = computed({
+  get: () => {
+    const style = store.appStoreData.currentConfigApp.resourceGroupExpandStyle;
+    return style === 'strip' || style === 'fold' || style === 'spine' || style === 'magazine' ? style : 'fan';
+  },
+  set: (value: 'fan' | 'strip' | 'fold' | 'spine' | 'magazine') => { store.appStoreData.currentConfigApp.resourceGroupExpandStyle = value; },
+});
 
 const resourcesShowMode = computed({
   get: () => store.appStoreData.currentConfigApp.resourcesShowMode,
@@ -389,16 +419,36 @@ const showVideoDuration = computed({
   }
 });
 
+const savingConfig = ref(false);
+let saveVersion = 0;
+onBeforeUnmount(() => { saveVersion++; });
+watch(() => store.appStoreData.currentFilesBases.id, () => {
+  saveVersion++;
+  savingConfig.value = false;
+}, { flush: 'sync' });
 const saveConfig = debounceNow(async () => {
-  const result = await filesBasesServer.setFilesBasesConfigById(store.appStoreData.currentFilesBases.id, store.appStoreData.currentConfigApp);
-  if (!result.status) {
-    ElMessage.error(result.msg);
-    await store.appStoreData.initCurrentFilesBases(store.appStoreData.currentFilesBases.id);
-    return;
-  } else {
-    ElMessage.success('保存成功');
+  if (savingConfig.value) return;
+  const version = ++saveVersion;
+  const library = store.appStoreData.currentFilesBases.id;
+  const config = store.appStoreData.currentConfigApp;
+  const snapshot = JSON.stringify(config);
+  const isCurrent = () => version === saveVersion && library === store.appStoreData.currentFilesBases.id
+    && config === store.appStoreData.currentConfigApp;
+  savingConfig.value = true;
+  try {
+    const result = await filesBasesServer.setFilesBasesConfigById(library, JSON.parse(snapshot));
+    if (!isCurrent()) return;
+    if (!result?.status) {
+      ElMessage.error(result?.msg || '设置保存失败，请重试');
+      return;
+    }
+    ElMessage.success(snapshot === JSON.stringify(config) ? '保存成功' : '已保存提交的设置，后续修改请再次保存');
+  } catch {
+    if (isCurrent()) ElMessage.error('设置保存失败，请重试');
+  } finally {
+    if (version === saveVersion) savingConfig.value = false;
   }
-})
+});
 
 </script>
 <style lang="scss" scoped>
@@ -497,6 +547,7 @@ const saveConfig = debounceNow(async () => {
     grid-template-columns: 270px minmax(0, 1fr) 270px;
     gap: 12px;
     padding: 12px;
+    align-items: stretch;
   }
 
   .modern-main-settings {
@@ -504,6 +555,8 @@ const saveConfig = debounceNow(async () => {
     display: flex;
     flex-direction: column;
     gap: 12px;
+
+    > .modern-settings-card:last-child { flex: 1; }
   }
 
   .modern-settings-card {
@@ -533,10 +586,12 @@ const saveConfig = debounceNow(async () => {
   }
 
   .modern-mode-card {
-    padding: 10px;
+    display: flex;
+    flex-direction: column;
   }
 
   .modern-mode-list {
+    flex: 1;
     overflow: hidden;
     border: 1px solid var(--adjuster-border);
     border-radius: 8px;
@@ -662,6 +717,17 @@ const saveConfig = debounceNow(async () => {
     :deep(.el-select) {
       width: 100%;
     }
+  }
+
+  .modern-group-style {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 14px;
+    margin-top: 10px;
+    margin-bottom: 0;
+
+    > .modern-control-label { margin-bottom: 0; white-space: nowrap; }
   }
 
   .modern-module-options {

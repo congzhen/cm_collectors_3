@@ -50,12 +50,14 @@
 </template>
 
 <script setup lang="ts">
+import { ElMessage } from 'element-plus';
 import {
   computed,
   inject,
   nextTick,
   onBeforeUnmount,
   onMounted,
+  provide,
   ref,
   watch,
   type PropType,
@@ -70,6 +72,9 @@ import videoPlay from '@/components/play/videoPlay.vue';
 import layoutCoverPosterMosaic from './layoutCoverPosterMosaic.vue';
 
 import { resourceSelectionKey } from './resourceSelection';
+import { resourceGroupKeepOpenKey, resourceGroupPlaybackList, resourceGroupSelectKey } from './resourceGroups';
+provide(resourceGroupKeepOpenKey, true);
+const selectedGroupResource = ref<I_resource | null>(null);
 const selection = inject(resourceSelectionKey, undefined);
 const store = {
   appStoreData: appStoreData(),
@@ -93,7 +98,7 @@ let sourceRequestVersion = 0;
 let resetScrollAfterFilesBaseChange = false;
 let resizeObserver: ResizeObserver | undefined;
 
-const dataListWrapper = computed(() => props.dataList);
+const dataListWrapper = computed(() => resourceGroupPlaybackList(props.dataList, selectedGroupResource.value, store.appStoreData.currentFilesBases.id));
 const currentPlayResourceId = computed(
   () => dataListWrapper.value[currentPlayIndex.value]?.id || '',
 );
@@ -127,7 +132,7 @@ watch(
 
 watch(currentPlayIndex, (newIndex) => {
   if (newIndex < 0) return;
-  mosaicRef.value?.scrollToResource(currentPlayResourceId.value);
+  if (currentPlayResourceId.value !== selectedGroupResource.value?.id) mosaicRef.value?.scrollToResource(currentPlayResourceId.value);
   const dramaSeriesId = currentPlayDramaSeriesId.value;
   if (!dramaSeriesId) {
     clearUnavailablePlayback();
@@ -148,7 +153,10 @@ const syncCurrentPlayIndex = () => {
   }
 
   if (!currentPlayingDramaSeriesId.value) {
-    currentPlayIndex.value = 0;
+    // No active video can mean a deliberately selected member without videos.
+    // Keep that selection when durations or page resources refresh.
+    currentPlayIndex.value = Math.max(0, dataListWrapper.value.findIndex(resource =>
+      resource.id === selectedGroupResource.value?.id));
     return;
   }
 
@@ -162,6 +170,7 @@ const syncCurrentPlayIndex = () => {
 const resetPlaybackForFilesBaseChange = () => {
   sourceRequestVersion++;
   currentPlayingDramaSeriesId.value = '';
+  selectedGroupResource.value = null;
   currentPlayIndex.value = -1;
   videoPlayRef.value?.pause();
   resetScrollAfterFilesBaseChange = true;
@@ -178,10 +187,17 @@ const selectResourcesHandle = (resource: I_resource) => {
   emits('selectResources', resource);
 };
 
-const clickResourceHandle = (resource: I_resource) => {
-  currentPlayIndex.value = dataListWrapper.value.findIndex(
-    (item) => item.id === resource.id,
-  );
+const clickResourceHandle = async (resource: I_resource) => {
+  const previousRequestVersion = sourceRequestVersion;
+  selectedGroupResource.value = resource;
+  await nextTick();
+  if (selectedGroupResource.value?.id !== resource.id || store.appStoreData.currentFilesBases.id !== resource.filesBases_id) return;
+  currentPlayIndex.value = dataListWrapper.value.findIndex(item => item.id === resource.id);
+  await nextTick();
+  if (selectedGroupResource.value?.id !== resource.id || store.appStoreData.currentFilesBases.id !== resource.filesBases_id) return;
+  const dramaSeriesId = resource.dramaSeries[0]?.id || '';
+  if (!dramaSeriesId) { clearUnavailablePlayback(); return; }
+  if (previousRequestVersion === sourceRequestVersion && dramaSeriesId !== currentPlayingDramaSeriesId.value) void setVideoSource(dramaSeriesId);
 };
 
 const clearUnavailablePlayback = () => {
@@ -201,10 +217,14 @@ const setVideoSource = async (dramaSeriesId: string) => {
   const shouldResume = player.isPlaying() || false;
   player.pause();
 
-  const { playUrl, playType } =
-    await getPlayVideoURLAndType(dramaSeriesId);
+  const playData = await getPlayVideoURLAndType(dramaSeriesId).catch(() => null);
   if (requestVersion !== sourceRequestVersion) return;
-
+  if (!playData?.playUrl) {
+    currentPlayingDramaSeriesId.value = '';
+    if (!playData) ElMessage.error('播放地址加载失败，请重试');
+    return;
+  }
+  const { playUrl, playType } = playData;
   const resource = dataListWrapper.value.find((item) =>
     item.dramaSeries.some(
       (dramaSeries) => dramaSeries.id === dramaSeriesId,
@@ -247,7 +267,8 @@ const getResourceDramaSeriesId = (index: number) => {
 
 const prevHandle = () => {
   if (currentPlayIndex.value <= 0) return;
-  currentPlayIndex.value--;
+  const resource = dataListWrapper.value[currentPlayIndex.value - 1];
+  if (resource) void clickResourceHandle(resource);
 };
 
 const nextHandle = () => {
@@ -257,7 +278,8 @@ const nextHandle = () => {
   ) {
     return;
   }
-  currentPlayIndex.value++;
+  const resource = dataListWrapper.value[currentPlayIndex.value + 1];
+  if (resource) void clickResourceHandle(resource);
 };
 
 const isInteractiveTarget = (target: EventTarget | null) => {
@@ -298,6 +320,7 @@ const hasOpenFloatingLayer = () => {
 
 const handleKeyDown = (event: KeyboardEvent) => {
   if (
+    selection?.active.value || event.defaultPrevented ||
     event.altKey ||
     event.ctrlKey ||
     event.metaKey ||

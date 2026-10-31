@@ -2,35 +2,35 @@
   <div class="content-list" :style="contentListStyleObj_C">
     <layoutCoverPoster ref="layoutCoverPosterRef"
       v-if="isLayoutCoverPoster(store.appStoreData.currentConfigApp.resourcesShowMode)"
-      :resourcesShowMode="store.appStoreData.currentConfigApp.resourcesShowMode" :data-list="props.dataList"
+      :resourcesShowMode="store.appStoreData.currentConfigApp.resourcesShowMode" :data-list="renderedList"
       @select-resources="selectResourcesHandle">
     </layoutCoverPoster>
     <layoutCoverPosterWaterfall ref="layoutCoverPosterWaterfallRef"
       v-else-if="store.appStoreData.currentConfigApp.resourcesShowMode == 'coverPosterWaterfall'"
-      :data-list="props.dataList" @select-resources="selectResourcesHandle">
+      :data-list="renderedList" @select-resources="selectResourcesHandle">
     </layoutCoverPosterWaterfall>
     <layoutCoverPosterMosaic ref="layoutCoverPosterMosaicRef"
       v-else-if="store.appStoreData.currentConfigApp.resourcesShowMode == 'coverPosterMosaic'"
-      :data-list="props.dataList" @select-resources="selectResourcesHandle">
+      :data-list="renderedList" @select-resources="selectResourcesHandle">
     </layoutCoverPosterMosaic>
     <layoutCoverPosterMosaicShortVideo ref="layoutCoverPosterMosaicShortVideoRef"
       v-else-if="store.appStoreData.currentConfigApp.resourcesShowMode == 'coverPosterMosaicShortVideo'"
-      :data-list="props.dataList" @select-resources="selectResourcesHandle">
+      :data-list="renderedList" @select-resources="selectResourcesHandle">
     </layoutCoverPosterMosaicShortVideo>
     <layoutCoverPosterCompactWall ref="layoutCoverPosterCompactWallRef"
       v-else-if="store.appStoreData.currentConfigApp.resourcesShowMode == 'coverPosterCompactWall'"
-      :data-list="props.dataList" @select-resources="selectResourcesHandle">
+      :data-list="renderedList" @select-resources="selectResourcesHandle">
     </layoutCoverPosterCompactWall>
     <layoutShortVideo ref="layoutShortVideoRef"
-      v-else-if="store.appStoreData.currentConfigApp.resourcesShowMode == 'shortVideo'" :data-list="props.dataList"
+      v-else-if="store.appStoreData.currentConfigApp.resourcesShowMode == 'shortVideo'" :data-list="renderedList"
       @select-resources="selectResourcesHandle">
     </layoutShortVideo>
     <layoutShortVideoTopBottom ref="layoutShortVideoTopBottomRef"
       v-else-if="store.appStoreData.currentConfigApp.resourcesShowMode == 'shortVideoTopBottom'"
-      :data-list="props.dataList" @select-resources="selectResourcesHandle">
+      :data-list="renderedList" @select-resources="selectResourcesHandle">
     </layoutShortVideoTopBottom>
     <layoutTable ref="layoutTableRef" v-else-if="store.appStoreData.currentConfigApp.resourcesShowMode == 'table'"
-      :data-list="props.dataList" @select-resources="selectResourcesHandle">
+      :data-list="renderedList" @select-resources="selectResourcesHandle">
     </layoutTable>
   </div>
 </template>
@@ -44,20 +44,60 @@ import layoutShortVideo from './layoutShortVideo.vue';
 import layoutShortVideoTopBottom from './layoutShortVideoTopBottom.vue';
 import layoutTable from './layoutTable.vue';
 import type { I_resource } from '@/dataType/resource.dataType';
-import { ref, computed, provide, type PropType } from 'vue';
+import { ref, computed, provide, inject, watch, onBeforeUnmount, type PropType } from 'vue';
 import { appStoreData } from '@/storeData/app.storeData';
 import { A_layoutCoverPosterSlc, type T_resourcesShowMode } from '@/dataType/app.dataType';
 
+import { isMobile } from '@/assets/mobile';
+import { resourceGroupServer } from '@/server/resourceGroup.server';
+import type { I_resourceGroupSummary } from '@/dataType/resource.dataType';
+import { mergeResourceGroupPage, resourceGroupContextKey, resourceGroupPageKey, type ResourceGroupPage } from './resourceGroups';
+import { resourceSelectionKey } from './resourceSelection';
+const selection = inject(resourceSelectionKey, undefined);
 const store = {
   appStoreData: appStoreData(),
 }
 const props = defineProps({
+  groupPage: Object as PropType<ResourceGroupPage>,
   dataList: {
     type: Array as PropType<I_resource[]>,
     default: () => [],
   },
 })
 provide('resource-list-page', computed(() => props.dataList));
+const groupingEnabled = computed(() => !isMobile() && !selection?.active.value
+  && store.appStoreData.currentConfigApp.resourcesShowMode !== 'table'
+  && store.appStoreData.currentConfigApp.mergeResourceGroups !== false);
+const renderedList = computed(() => mergeResourceGroupPage(props.dataList, groupingEnabled.value));
+const groupSummaries = ref(new Map<string, I_resourceGroupSummary>());
+provide(resourceGroupContextKey, {
+  enabled: groupingEnabled,
+  pageIds: computed(() => new Set(props.dataList.map(resource => resource.id))),
+  summaries: groupSummaries,
+});
+let groupRequestVersion = 0;
+let summaryLibrary = '';
+watch(() => [props.dataList, props.groupPage, groupingEnabled.value, store.appStoreData.currentFilesBases.id] as const, async () => {
+  const version = ++groupRequestVersion;
+  const library = store.appStoreData.currentFilesBases.id;
+  if (!groupingEnabled.value) { groupSummaries.value = new Map(); return; }
+  if (props.groupPage?.key === resourceGroupPageKey(library, props.dataList)) {
+    summaryLibrary = library;
+    groupSummaries.value = new Map(props.groupPage.summaries.map(group => [group.id, group]));
+    return;
+  }
+  const groups = [...new Set(props.dataList.map(resource => resource.associationGroupId).filter((id): id is string => !!id))];
+  // Keep known current-page covers steady while refreshing; never carry them across libraries.
+  groupSummaries.value = new Map(summaryLibrary === library
+    ? [...groupSummaries.value].filter(([id]) => groups.includes(id)) : []);
+  summaryLibrary = library;
+  if (!groups.length) return;
+  try {
+    const result = await resourceGroupServer.summaries(library, groups);
+    if (version === groupRequestVersion && result.status) groupSummaries.value = new Map(result.data.dataList.map(group => [group.id, group]));
+  } catch { /* 摘要失败仍保留资源卡片，悬停面板可重试获取整组。 */ }
+}, { immediate: true });
+onBeforeUnmount(() => { groupRequestVersion++; });
 const emits = defineEmits(['selectResources']);
 
 const layoutCoverPosterRef = ref<typeof layoutCoverPoster>();

@@ -93,6 +93,9 @@ export interface I_config_app {
   routeConversion: I_routeConversion[];// 路由转换
   shieldNoPerformerPhoto: boolean; // 屏蔽无照片演员
   showPreviewImage: boolean; // 显示预览图片
+  mergeResourceGroups: boolean; // 本库独立：PC 主列表合并同组资源
+  resourceGroupCoverStyle: 'stack' | 'triptych' | 'book' | 'adaptive'; // 本库独立：关联组静态封面样式
+  resourceGroupExpandStyle: 'fan' | 'strip' | 'fold' | 'spine' | 'magazine'; // 本库独立：关联组悬浮展开样式
   showVideoDuration: boolean; // 封面显示视频时长
   sortMode: string; // 排序模式
   tagMode: string; // 标签模式
@@ -154,6 +157,9 @@ export const defualtConfigApp: I_config_app = {
   youLikeTagClass: [],
   resourceDetailsShowMode: 'right',
   showPreviewImage: false,
+  mergeResourceGroups: true,
+  resourceGroupCoverStyle: 'stack',
+  resourceGroupExpandStyle: 'fan',
   showVideoDuration: false,
   previewImageFolder: '/',
   videoPreviewInterval: 30,

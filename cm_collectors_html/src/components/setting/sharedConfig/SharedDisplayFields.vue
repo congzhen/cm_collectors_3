@@ -64,6 +64,9 @@
       <el-form-item label="资源显示模式">
         <selectResourcesMode v-model="config.resourcesShowMode" />
       </el-form-item>
+    </SettingFieldsScope>
+    <slot name="resourceGroups" />
+    <SettingFieldsScope :disabled="readonly">
       <el-form-item label="显示视频时长">
         <el-switch
           v-model="config.showVideoDuration"
