@@ -98,6 +98,8 @@ func publicRouter(router *gin.Engine) {
 
 	routerGroup.GET("/resource/info/:resourceId", controllers.Resource{}.Info)
 	routerGroup.POST("/resource/dataList", controllers.Resource{}.DataList)
+	routerGroup.POST("/resource/groups/summaries", controllers.ResourceGroups{}.Summaries)
+	routerGroup.GET("/resource/groups/:filesBasesId/:groupId", controllers.ResourceGroups{}.Info)
 	routerGroup.POST("/resource/fileSizeStats", controllers.Resource{}.FileSizeStats)
 	routerGroup.GET("/videoMoments/:id/cover", controllers.VideoMoments{}.Cover)
 	routerGroup.GET("/videoMoments", controllers.VideoMoments{}.List)
@@ -171,6 +173,8 @@ func AdminRouter(router *gin.Engine) {
 	routerGroup.DELETE("database/deleteAutoBackup/:fileName", controllers.App{}.DeleteAutoBackup)
 
 	routerGroup.POST("resource/create", controllers.Resource{}.CreateResource)
+	routerGroup.POST("resource/groups/manage/:action", controllers.ResourceGroups{}.Mutate)
+	routerGroup.PUT("filesBases/resourceGroupDisplay", controllers.ResourceGroups{}.SetDisplay)
 	routerGroup.PUT("resource/update", controllers.Resource{}.UpdateResource)
 	routerGroup.PUT("resource/update/performer", controllers.Resource{}.UpdateResourcePerformer)
 	routerGroup.PUT("resource/update/tag", controllers.Resource{}.UpdateResourceTag)

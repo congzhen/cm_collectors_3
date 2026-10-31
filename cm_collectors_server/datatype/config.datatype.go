@@ -148,6 +148,9 @@ type Config_FilesBases struct {
 	RouteConversion              []IRouteConversion        `json:"routeConversion"`                     // 路由转换
 	ShieldNoPerformerPhoto       bool                      `json:"shieldNoPerformerPhoto"`              // 屏蔽无照片演员
 	ShowPreviewImage             bool                      `json:"showPreviewImage"`                    // 显示预览图片
+	MergeResourceGroups          *bool                     `json:"mergeResourceGroups,omitempty"`       // 本库独立：缺省合并同组资源
+	ResourceGroupCoverStyle      string                    `json:"resourceGroupCoverStyle,omitempty"`   // 本库独立：stack（缺省）、triptych、book 或 adaptive
+	ResourceGroupExpandStyle     string                    `json:"resourceGroupExpandStyle,omitempty"`  // 本库独立：fan（缺省）、strip、fold、spine 或 magazine
 	ShowVideoDuration            bool                      `json:"showVideoDuration"`                   // 封面显示视频时长
 	SortMode                     string                    `json:"sortMode"`                            // 排序模式
 	TagMode                      string                    `json:"tagMode"`                             // 标签模式

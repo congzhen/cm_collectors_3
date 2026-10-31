@@ -14,6 +14,8 @@ import (
 )
 
 type Resources struct {
+	AssociationGroupID    string                  `json:"associationGroupId" gorm:"column:association_group_id;type:char(20);index:idx_resource_association_group;default:''"`
+	AssociationGroupSort  int                     `json:"associationGroupSort" gorm:"column:association_group_sort;default:0"`
 	ID                    string                  `json:"id" gorm:"primaryKey;type:char(20);"`
 	FilesBasesID          string                  `json:"filesBases_id" gorm:"column:filesBases_id;type:char(20);index:idx_resources_filesBasesID"`
 	Title                 string                  `json:"title" gorm:"type:varchar(200);"`
@@ -696,11 +698,24 @@ func (Resources) CoverPosterSlcByFilesBasesID(db *gorm.DB, filesBasesID string) 
 }
 
 func (Resources) Update(db *gorm.DB, resources *Resources, fields []string) error {
-	result := db.Model(&resources).Select(fields).Updates(resources)
-	if result.RowsAffected == 0 {
-		return nil
-	}
-	return result.Error
+	return db.Transaction(func(tx *gorm.DB) error {
+		// 资源跨库移动时解除原组关系，避免组成员跨库。
+		for _, field := range fields {
+			if field == "filesBases_id" {
+				var previous Resources
+				if err := tx.Select("id", "filesBases_id", "association_group_id").First(&previous, "id = ?", resources.ID).Error; err != nil {
+					return err
+				}
+				if previous.FilesBasesID != resources.FilesBasesID && previous.AssociationGroupID != "" {
+					if err := (ResourceGroups{}).Remove(tx, previous.FilesBasesID, previous.AssociationGroupID, []string{resources.ID}); err != nil {
+						return err
+					}
+				}
+				break
+			}
+		}
+		return tx.Model(resources).Select(fields).Updates(resources).Error
+	})
 }
 
 // SwapAddTime 交换同一文件库中两个未置顶资源的添加时间。
@@ -750,6 +765,15 @@ func (Resources) Create(db *gorm.DB, resources *Resources) error {
 
 func (Resources) DeleteById(db *gorm.DB, id string) error {
 	return db.Transaction(func(tx *gorm.DB) error {
+		var previous Resources
+		if err := tx.Select("id", "filesBases_id", "association_group_id").Where("id = ?", id).Find(&previous).Error; err != nil {
+			return err
+		}
+		if previous.AssociationGroupID != "" {
+			if err := (ResourceGroups{}).Remove(tx, previous.FilesBasesID, previous.AssociationGroupID, []string{id}); err != nil {
+				return err
+			}
+		}
 		if err := tx.Where("resource_id = ?", id).Delete(&VideoMoment{}).Error; err != nil {
 			return err
 		}
