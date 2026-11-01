@@ -16,6 +16,44 @@
         </div>
       </el-timeline-item>
       -->
+      <el-timeline-item center timestamp="2026/11/1" placement="top">
+        <h4 class="version-title">版本: v 3.4.0</h4>
+        <div class="rawContent">
+          <h5 class="section-title">新特性</h5>
+          <p class="logContent">新增视频片段收藏，支持收藏当前时刻、标记起止时间、编辑名称与备注，并按片段循环播放</p>
+          <p class="logContent">新增桌面与手机片段放映室，支持搜索、分页和连续切换片段，按文件库记忆收藏列表或放映室视图</p>
+          <p class="logContent">新增视频时间轴画面预览，支持播放时自动生成、手动生成、进度条预览及缓存容量管理</p>
+          <p class="logContent">新增资源关联组，支持同库资源创建分组、加入、移出、排序与解散，并按当前页合并展示</p>
+          <p class="logContent">关联组支持叠牌、三联切片、侧翻书页和自适应拼封，以及多种悬停展开样式和组内播放</p>
+          <p class="logContent">资源管理支持在当前布局直接多选，提供已选资源预览，并可切换管理表格执行批量操作</p>
+          <p class="logContent">新增文件库公共配置，基础展示、导入规则和刮削参数可分别跟随，退出跟随时可恢复原参数或保留公共值</p>
+          <p class="logContent">新增软件在线更新，支持静默检测、更新提醒、下载校验、等待任务完成、备份及安装重启，并提供七天免打扰</p>
+          <p class="logContent">新增大屏移动设备播放器配置，可为平板等设备选择播放器类型及尺寸阈值</p>
+          <p class="logContent">侧栏演员新增资源数量、累计热度和近期偏好排序</p>
+        </div>
+        <div class="rawContent">
+          <h5 class="section-title optimization">优化</h5>
+          <p class="logContent">优化桌面与手机连续定位、进度拖动和片段切换，同视频切换片段时复用播放器与缓冲</p>
+          <p class="logContent">优化在线播放分片复用与转码并发，减少重复生成并改善连续播放体验</p>
+          <p class="logContent">资源详情支持直接查看和管理片段收藏，可按库选择弹窗或详情页播放，弹出详情自适应多列展示</p>
+          <p class="logContent">视频元数据采集支持自定义非视频排除规则、历史记录预览和批量整理，并保留人工补录与恢复操作</p>
+          <p class="logContent">优化公共配置独立编辑弹窗、跟随只读提示、设置分组及明暗主题显示</p>
+          <p class="logContent">优化手机片库顶部工具栏、播放器待播封面及弹出播放器标题栏，恢复手机视频下载入口</p>
+          <p class="logContent">Docker 新镜像支持持久化应用目录与容器内在线更新，旧实例需按迁移说明调整部署</p>
+        </div>
+        <div class="rawContent">
+          <h5 class="section-title bug-fix">BUG修复</h5>
+          <p class="logContent">修复触屏全屏播放时无法通过轻触或滑动唤出控制条的问题</p>
+          <p class="logContent">修复手机播放器慢首帧、重试和缓存页面返回时进度或循环状态恢复异常的问题</p>
+          <p class="logContent">修复片段连续定位与循环回跳互相覆盖，以及切源、切库和关闭后旧请求影响当前状态的问题</p>
+          <p class="logContent">修复非视频文件进入采集失败列表、失败统计重复计数及单条操作后列表未刷新的问题</p>
+          <p class="logContent">修复公共配置关联库查询报错，完善配置保存冲突及本库未保存参数的保护</p>
+          <p class="logContent">修复剧照读取目录不一致的问题，统一从视频所在目录读取剧照</p>
+          <p class="logContent">完善资源永久删除时的关联片段清理，以及关联组在删除和跨库移动后的自动维护</p>
+          <p class="logContent">修复资源管理视图切换或刷新时选择状态丢失，以及关联组翻页和时长补采引起的封面闪动</p>
+          <p class="logContent">修复软件更新弹窗长错误信息被截断的问题</p>
+        </div>
+      </el-timeline-item>
       <el-timeline-item center timestamp="2026/9/11" placement="top">
         <h4 class="version-title">版本: v 3.3.0</h4>
         <div class="rawContent">

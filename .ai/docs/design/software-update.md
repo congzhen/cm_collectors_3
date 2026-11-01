@@ -38,7 +38,7 @@ GitHub digest 文档：https://docs.github.com/en/rest/releases/assets
 4. 发布匹配版本的正式 GitHub tag（例如 v3.4.0），上传对应 ZIP，确认 API 中 digest 非空后再发布指向该版本的检测清单。推荐固定 `/releases/download/v3.4.0/...` 链接；兼容原 latest 链接但会拒绝版本不一致。
 5. 现有用户需手动升级一次至含更新器的版本；本次代码不会自行发布发行包或修改线上清单。
 
-其他构建入口必须同样注入 `-ldflags "-X cm_collectors_server/internal/selfupdate.Version=版本号"`。源码直接构建的默认版本为当前 3.3.0。
+其他构建入口必须同样注入 `-ldflags "-X cm_collectors_server/internal/selfupdate.Version=版本号"`。源码直接构建的默认版本为当前 3.4.0。
 
 ## Docker 一次性迁移
 

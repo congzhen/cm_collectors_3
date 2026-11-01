@@ -16,7 +16,7 @@ import (
 )
 
 // Version is set by release builds with -ldflags -X.
-var Version = "3.3.0"
+var Version = "3.4.0"
 var versionPattern = regexp.MustCompile(`^v?(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$`)
 
 type Manifest struct {
