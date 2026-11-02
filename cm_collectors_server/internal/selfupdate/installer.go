@@ -203,8 +203,15 @@ func apply(p Plan) error {
 			if !st.Mode().IsRegular() {
 				return rollback(fmt.Errorf("目标不是普通文件: %s", rel))
 			}
+			same, err := sameFileContents(filepath.Join(stage, rel), dst)
+			if err != nil {
+				return rollback(fmt.Errorf("比较文件 %s 失败: %w", rel, err))
+			}
+			if same {
+				continue
+			}
 			if e := copyFile(dst, filepath.Join(p.Attempt, "original", rel), st.Mode().Perm()); e != nil {
-				return rollback(e)
+				return rollback(fmt.Errorf("备份原文件 %s 失败: %w", rel, e))
 			}
 			// Windows-created ZIPs often omit Unix execute bits on bundled helpers.
 			if runtime.GOOS != "windows" {
@@ -228,7 +235,7 @@ func apply(p Plan) error {
 		}
 		if e := replaceFile(filepath.Join(stage, rel), dst); e != nil {
 			changes = changes[:len(changes)-1]
-			return rollback(e)
+			return rollback(fmt.Errorf("替换文件 %s 失败，请关闭使用该文件的程序并确认目录写入权限: %w", rel, e))
 		}
 	}
 	if e := os.WriteFile(filepath.Join(p.Attempt, "files-applied"), []byte("applied"), 0600); e != nil {

@@ -77,6 +77,40 @@ func copyFile(src, dst string, mode os.FileMode) error {
 	}
 	return ce
 }
+
+// Avoid replacing unchanged bundled programs, which Windows may keep locked while running.
+func sameFileContents(a, b string) (bool, error) {
+	var sums [2][sha256.Size]byte
+	var size int64
+	for i, name := range []string{a, b} {
+		f, e := os.Open(name)
+		if e != nil {
+			return false, e
+		}
+		st, e := f.Stat()
+		if e != nil {
+			f.Close()
+			return false, e
+		}
+		if i == 0 {
+			size = st.Size()
+		} else if st.Size() != size {
+			f.Close()
+			return false, nil
+		}
+		h := sha256.New()
+		_, e = io.Copy(h, f)
+		ce := f.Close()
+		if e != nil {
+			return false, e
+		}
+		if ce != nil {
+			return false, ce
+		}
+		copy(sums[i][:], h.Sum(nil))
+	}
+	return sums[0] == sums[1], nil
+}
 func within(root, name string) bool {
 	rel, e := filepath.Rel(root, name)
 	return e == nil && rel != ".." && !strings.HasPrefix(rel, ".."+string(os.PathSeparator)) && !filepath.IsAbs(rel)
