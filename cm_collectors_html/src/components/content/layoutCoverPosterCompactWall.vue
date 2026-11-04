@@ -9,6 +9,7 @@
             <ResourceGroupCover :resource="resource" class="compact-cover" :src="getResourceCoverPoster(resource)" fit="cover" />
             <div class="compact-shade"></div>
 
+            <ResourceQuickStarsPopover :resource="resource" />
             <contentTagDisplay class="compact-tags" :resource="resource" font-size-disable />
             <contentVideoDurationBadge :resource="resource" offset-right="5px" offset-bottom="38px"
               compact-text />
@@ -37,6 +38,7 @@
 </template>
 
 <script setup lang="ts">
+import ResourceQuickStarsPopover from './ResourceQuickStarsPopover.vue';
 import { computed, ref, type PropType } from 'vue'
 import type { ElScrollbar } from 'element-plus'
 import contentRightClickMenu from './contentRightClickMenu.vue'

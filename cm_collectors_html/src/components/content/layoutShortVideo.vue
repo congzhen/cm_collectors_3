@@ -12,6 +12,7 @@
                   @click.stop="clickResourceHandle(index)">
 
                   <ResourceGroupCover :resource="props.dataList[index]" :src="item.src" :title="item.title" :fit="fit_C" @load="onImageLoad" />
+                  <ResourceQuickStarsPopover :resource="props.dataList[index]" />
                   <contentVideoDurationBadge :resource="props.dataList[index]" offset-bottom="8px" offset-right="4px"
                     :compact-text="isMobile()" :adaptive-mobile="isMobile()">
                   </contentVideoDurationBadge>
@@ -53,6 +54,7 @@
   </div>
 </template>
 <script setup lang="ts">
+import ResourceQuickStarsPopover from './ResourceQuickStarsPopover.vue';
 import { ElMessage } from 'element-plus';
 import { Waterfall } from 'vue-waterfall-plugin-next'
 import { isMobile } from '@/assets/mobile';

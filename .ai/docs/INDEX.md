@@ -21,6 +21,8 @@
 
 - [资源关联组](design/resource-association-groups.md)：同库资源关联、当前页叠牌展示、点击式管理和独立显示开关。
 
+- [资源快捷评星](design/resource-quick-stars.md)：本库独立开启、桌面点击与拖动评星、各展示模式适配及保存同步。
+
 ## Testing
 
 - [测试指南](testing/testing-guide.md)：已有测试入口、建议验证方式和验收清单。

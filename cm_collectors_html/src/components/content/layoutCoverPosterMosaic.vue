@@ -36,6 +36,7 @@
                     :title="item.data.resource.title"
                     fit="cover"
                   />
+                  <ResourceQuickStarsPopover :resource="item.data.resource" />
                   <contentVideoDurationBadge
                     :resource="item.data.resource"
                     :offset-bottom="props.playerMode ? '8px' : '30px'"
@@ -85,6 +86,7 @@
 </template>
 
 <script lang="ts" setup>
+import ResourceQuickStarsPopover from './ResourceQuickStarsPopover.vue';
 import type { ElScrollbar } from 'element-plus';
 import {
   computed,

@@ -8,6 +8,7 @@
             <contentRightClickMenu :resource="props.dataList[index]">
               <div class="waterfall-item" @click="selectResourcesHandle(item)">
                 <ResourceGroupCover :resource="props.dataList[index]" :src="item.src" :title="item.title" :fit="fit_C" @load="onImageLoad" />
+                <ResourceQuickStarsPopover :resource="props.dataList[index]" />
                 <contentVideoDurationBadge :resource="props.dataList[index]" offset-bottom="8px" offset-right="4px">
                 </contentVideoDurationBadge>
                 <div class="play-icon" @click.stop="playResource(item)">
@@ -29,6 +30,7 @@
   </div>
 </template>
 <script lang="ts" setup>
+import ResourceQuickStarsPopover from './ResourceQuickStarsPopover.vue';
 import { Waterfall } from 'vue-waterfall-plugin-next'
 import 'vue-waterfall-plugin-next/dist/style.css'
 import type { I_resource } from '@/dataType/resource.dataType';

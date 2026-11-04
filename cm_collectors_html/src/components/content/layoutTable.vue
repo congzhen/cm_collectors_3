@@ -40,9 +40,10 @@
       </el-table-column>
       <el-table-column prop="title" label="名称" min-width="180" :show-overflow-tooltip="true"></el-table-column>
       <el-table-column prop="issueNumber" label="版号、番号、刊号" width="120" :show-overflow-tooltip="true" />
-      <el-table-column label="评星" width="80">
+      <el-table-column label="评星" width="100">
         <template #default="scope">
-          <div v-if="scope.row.stars > 0">
+          <ResourceQuickStarsPopover v-if="quickStarsEnabled" :resource="scope.row" table />
+          <div v-else-if="scope.row.stars > 0">
             <el-icon v-for="s, key in scope.row.stars" :key="key" color="#F7BA2A">
               <StarFilled />
             </el-icon>
@@ -83,6 +84,9 @@
   </div>
 </template>
 <script lang="ts" setup>
+import ResourceQuickStarsPopover from './ResourceQuickStarsPopover.vue';
+import { trackResourceStars, useQuickResourceStars } from '@/common/resourceStars';
+const { enabled: quickStarsEnabled } = useQuickResourceStars();
 import type { I_resource } from '@/dataType/resource.dataType';
 import { ref, inject, type PropType } from 'vue';
 import { getResourceCoverPoster } from '@/common/photo';
@@ -110,6 +114,7 @@ const props = defineProps({
   },
 })
 const emits = defineEmits(['selectResources']);
+trackResourceStars(() => props.dataList);
 const tableRef = ref<InstanceType<typeof ElTable>>();
 const selectResourcesHandle = (item: I_resource) => {
   if (selection?.active.value) {

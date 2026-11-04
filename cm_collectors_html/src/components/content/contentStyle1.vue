@@ -9,6 +9,7 @@
       <div class="content-cover">
         <contentCoverImage :resource="props.resource"></contentCoverImage>
       </div>
+      <ResourceQuickStarsPopover :resource="props.resource" />
       <contentVideoDurationBadge :resource="props.resource" offset-bottom="24px" offset-right="4px">
       </contentVideoDurationBadge>
 
@@ -24,6 +25,7 @@
   </contentRightClickMenu>
 </template>
 <script setup lang="ts">
+import ResourceQuickStarsPopover from './ResourceQuickStarsPopover.vue';
 import contentCoverImage from './contentCoverImage.vue';
 import type { I_resource } from '@/dataType/resource.dataType';
 import contentTagDisplay from './contentTagDisplay.vue';

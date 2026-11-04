@@ -18,6 +18,7 @@
                 @click.stop="clickResourceHandle(index)">
                 <ResourceGroupCover :resource="props.dataList[index]" :src="item.src" :title="item.title" fit="contain"
                   @load="onMaterialImageLoad(item.id, $event)" />
+                <ResourceQuickStarsPopover :resource="props.dataList[index]" />
                 <contentVideoDurationBadge :resource="props.dataList[index]" offset-bottom="8px" offset-right="4px"
                   :compact-text="isMobile()" :adaptive-mobile="isMobile()" />
                 <div v-if="!isMobile()" class="play-icon" @click.stop="selectResourcesHandle(item)">
@@ -33,6 +34,7 @@
 </template>
 
 <script setup lang="ts">
+import ResourceQuickStarsPopover from './ResourceQuickStarsPopover.vue';
 import { ElMessage } from 'element-plus';
 import { computed, inject, provide, nextTick, onBeforeUnmount, onMounted, ref, watch, type PropType } from 'vue';
 import type { ElScrollbar } from 'element-plus';

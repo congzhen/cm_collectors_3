@@ -8,6 +8,7 @@
       <div class="content-cover"
         :style="{ width: coverPosterSize_C.width + 'px', height: coverPosterSize_C.height + 'px' }">
         <contentCoverImage :resource="props.resource"></contentCoverImage>
+        <ResourceQuickStarsPopover :resource="props.resource" />
         <contentVideoDurationBadge :resource="props.resource"></contentVideoDurationBadge>
       </div>
       <div class="play-icon" @click.stop="playResource(props.resource)">
@@ -30,6 +31,7 @@
   </contentRightClickMenu>
 </template>
 <script setup lang="ts">
+import ResourceQuickStarsPopover from './ResourceQuickStarsPopover.vue';
 import contentCoverImage from './contentCoverImage.vue';
 import type { I_resource } from '@/dataType/resource.dataType';
 import contentTagDisplay from './contentTagDisplay.vue';

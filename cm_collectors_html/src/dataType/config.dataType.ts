@@ -93,6 +93,7 @@ export interface I_config_app {
   routeConversion: I_routeConversion[];// 路由转换
   shieldNoPerformerPhoto: boolean; // 屏蔽无照片演员
   showPreviewImage: boolean; // 显示预览图片
+  resourceQuickStars: boolean; // 本库独立：仅桌面资源列表快捷评星
   mergeResourceGroups: boolean; // 本库独立：PC 主列表合并同组资源
   resourceGroupCoverStyle: 'stack' | 'triptych' | 'book' | 'adaptive'; // 本库独立：关联组静态封面样式
   resourceGroupExpandStyle: 'fan' | 'strip' | 'fold' | 'spine' | 'magazine'; // 本库独立：关联组悬浮展开样式
@@ -157,6 +158,7 @@ export const defualtConfigApp: I_config_app = {
   youLikeTagClass: [],
   resourceDetailsShowMode: 'right',
   showPreviewImage: false,
+  resourceQuickStars: false,
   mergeResourceGroups: true,
   resourceGroupCoverStyle: 'stack',
   resourceGroupExpandStyle: 'fan',

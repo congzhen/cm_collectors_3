@@ -3,6 +3,7 @@
     <div class="content-style content-style3" :style="{ width: coverPosterSize_C.width + 'px' }">
       <div class="content-cover" :style="{ height: coverPosterSize_C.height + 'px' }">
         <contentCoverImage :resource="props.resource"></contentCoverImage>
+        <ResourceQuickStarsPopover :resource="props.resource" />
         <contentVideoDurationBadge :resource="props.resource"></contentVideoDurationBadge>
         <div class="play-icon" @click.stop="playResource(props.resource)">
           <el-icon>
@@ -20,7 +21,7 @@
         <div class="block-two">
           <div>{{ props.resource.issuingDate }}</div>
           <div>
-            <el-rate v-model="localStars" disabled />
+            <el-rate :model-value="props.resource.stars" disabled />
           </div>
         </div>
         <div class="title" :style="titleStyleObj_C">{{ props.resource.title }}</div>
@@ -29,10 +30,11 @@
   </contentRightClickMenu>
 </template>
 <script setup lang="ts">
+import ResourceQuickStarsPopover from './ResourceQuickStarsPopover.vue';
 import type { I_resource } from '@/dataType/resource.dataType';
 import contentRightClickMenu from './contentRightClickMenu.vue';
 import contentTagDisplay from './contentTagDisplay.vue';
-import { computed, ref, type PropType } from 'vue';
+import { computed, type PropType } from 'vue';
 import { playResource } from '@/common/play';
 import { appStoreData } from '@/storeData/app.storeData';
 import contentCoverImage from './contentCoverImage.vue';
@@ -48,7 +50,6 @@ const props = defineProps({
     required: true,
   },
 })
-const localStars = ref(props.resource.stars)
 const coverPosterSize_C = computed(() => {
   const { width, height } = coverPosterSize(props.resource.coverPosterWidth, props.resource.coverPosterHeight, store.appStoreData.currentConfigApp.coverPosterWidthStatus, store.appStoreData.currentConfigApp.coverPosterWidthBase, store.appStoreData.currentConfigApp.coverPosterHeightStatus, store.appStoreData.currentConfigApp.coverPosterHeightBase)
   return {
@@ -115,7 +116,6 @@ const titleStyleObj_C = computed(() => {
   .info {
     height: 90px;
     overflow: hidden;
-
 
     .block-two {
       display: flex;

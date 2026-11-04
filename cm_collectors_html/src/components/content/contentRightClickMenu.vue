@@ -1,9 +1,9 @@
 <template>
-  <div ref="groupAnchor" class="content-right-click-menu" :class="{ 'resource-group-stack': isGroupStack, 'resource-group-composite': isGroupStack && groupCoverStyle !== 'stack', 'resource-selectable': selection?.active.value, 'resource-selected': isSelected }"
+  <div ref="groupAnchor" class="content-right-click-menu" :class="{ 'has-quick-stars': quickStarsEnabled, 'resource-group-stack': isGroupStack, 'resource-group-composite': isGroupStack && groupCoverStyle !== 'stack', 'resource-selectable': selection?.active.value, 'resource-selected': isSelected }"
     :tabindex="selection?.active.value ? 0 : undefined" :role="selection?.active.value ? 'checkbox' : undefined"
     :aria-checked="selection?.active.value ? isSelected : undefined"
     :aria-label="selection?.active.value ? `选择资源：${props.resource.title}` : undefined"
-    @pointerenter="openGroupFan" @pointermove="trackGroupPointer" @pointerleave="leaveGroupFan" @focusin="openGroupFan" @focusout="leaveGroupFan" @keydown.esc="closeGroupFan"
+    @pointerover.capture="trackQuickStarsHover" @pointerenter="openGroupFan" @pointermove="trackGroupPointer" @pointerleave="leaveGroupFan" @focusin="openGroupFan" @focusout="leaveGroupFan" @keydown.esc="closeGroupFan"
     @click.capture="handleSelectionClick" @keydown.capture="handleSelectionKey" @contextmenu.capture="handleSelectionContextMenu">
     <ResourceGroupMark v-if="selection?.active.value && props.resource.associationGroupId"
       class="resource-management-group" :group-id="props.resource.associationGroupId" />
@@ -52,6 +52,7 @@ import { resourceSelectionKey } from './resourceSelection';
 import { claimResourceGroupFan, releaseResourceGroupFan, resourceGroupContextKey, resourceGroupKeepOpenKey, resourceGroupSelectKey } from './resourceGroups';
 import ResourceGroupPanel from './ResourceGroupPanel.vue';
 import ResourceGroupMark from './ResourceGroupMark.vue';
+import { trackResourceStars, useQuickResourceStars } from '@/common/resourceStars';
 import { getResourceCoverPoster } from '@/common/photo';
 const props = defineProps({
   resource: {
@@ -59,6 +60,8 @@ const props = defineProps({
     required: true,
   },
 })
+trackResourceStars(() => [props.resource]);
+const { enabled: quickStarsEnabled } = useQuickResourceStars();
 const groupContext = inject(resourceGroupContextKey, undefined);
 const groupAction = inject(resourceGroupSelectKey, playResource);
 const keepOpenAfterSelect = inject(resourceGroupKeepOpenKey, false);
@@ -72,6 +75,14 @@ let groupOpenTimer: ReturnType<typeof setTimeout> | undefined;
 let groupCloseTimer: ReturnType<typeof setTimeout> | undefined;
 let groupPointer: { x: number; y: number } | undefined;
 let groupAnchorPosition: { top: number; left: number } | undefined;
+const quickStarsHovered = ref(false);
+const isQuickStarsTarget = (target: EventTarget | null) => target instanceof Element && !!target.closest('.resource-quick-stars-entry, .resource-quick-stars-popper');
+const trackQuickStarsHover = (event: PointerEvent) => {
+  const wasHovered = quickStarsHovered.value;
+  quickStarsHovered.value = isQuickStarsTarget(event.target);
+  if (quickStarsHovered.value) closeGroupFan();
+  else if (wasHovered) openGroupFan(event);
+};
 const pointerInsideGroupFan = () => !!groupPointer && [groupAnchor.value, groupSurface.value].some(element => {
   const rect = element?.getBoundingClientRect();
   return rect && rect.width > 0 && rect.height > 0 && groupPointer!.x >= rect.left && groupPointer!.x <= rect.right
@@ -87,6 +98,7 @@ const scheduleGroupLeave = () => {
   if (!groupCloseTimer) groupCloseTimer = setTimeout(finishGroupLeave, 400);
 };
 const trackGroupPointer = (event: PointerEvent) => {
+  if (isQuickStarsTarget(event.target)) { closeGroupFan(); return; }
   if (!isGroupStack.value) return;
   groupPointer = { x: event.clientX, y: event.clientY };
   if (!groupVisible.value) return;
@@ -107,6 +119,7 @@ const closeGroupFan = () => {
 const insideGroupFan = (target: EventTarget | null) => target instanceof Node
   && (!!groupAnchor.value?.contains(target) || !!groupSurface.value?.contains(target));
 const leaveGroupFan = (event: PointerEvent | FocusEvent) => {
+  if ('clientX' in event) quickStarsHovered.value = false;
   if ('clientX' in event) groupPointer = { x: event.clientX, y: event.clientY };
   if (insideGroupFan(event.relatedTarget)) return;
   clearTimeout(groupOpenTimer);
@@ -115,6 +128,7 @@ const leaveGroupFan = (event: PointerEvent | FocusEvent) => {
   scheduleGroupLeave();
 };
 const openGroupFan = (event: PointerEvent | FocusEvent) => {
+  if (quickStarsHovered.value || isQuickStarsTarget(event.target)) { closeGroupFan(); return; }
   if (!isGroupStack.value) return;
   if ('clientX' in event) groupPointer = { x: event.clientX, y: event.clientY };
   keepGroupFan();
@@ -420,6 +434,13 @@ const contentMenuItems_C = computed(() => {
 </script>
 
 <style scoped lang="scss">
+.content-right-click-menu { position: relative; }
+.content-right-click-menu:hover :deep(.resource-quick-stars-entry),
+.content-right-click-menu:focus-within :deep(.resource-quick-stars-entry) { opacity: 1; pointer-events: auto; }
+.has-quick-stars :deep(.top-bar),
+.has-quick-stars :deep(.cover-display-tags),
+.has-quick-stars :deep(.cinema-gallery-config-tags),
+.has-quick-stars :deep(.compact-tags) { max-width: calc(100% - 52px); box-sizing: border-box; }
 .resource-management-group { position: absolute; top: 8px; left: 8px; z-index: 21; max-width: calc(100% - 48px); box-shadow: 0 1px 5px rgba(0,0,0,.2); }
 .resource-selected .resource-management-group { max-width: calc(100% - 94px); }
 .resource-group-stack { position: relative; isolation: isolate; overflow: hidden; border-radius: 6px; }

@@ -26,6 +26,10 @@
 
       <SharedDisplayFields :config="filesConfig" :readonly="!!sharedBar?.state?.following">
         <template #resourceGroups>
+          <el-form-item label="资源快捷评星">
+            <el-switch v-model="filesConfig.resourceQuickStars" />
+            <span class="performer-sort-hint">仅电脑端显示，可点击或按住拖动选星，松手保存；手机端不提供。本库独立设置，不跟随公共配置；修改需要管理员权限。</span>
+          </el-form-item>
           <el-form-item label="合并同组资源">
             <el-switch v-model="filesConfig.mergeResourceGroups" />
             <span class="performer-sort-hint">仅本库 PC 主列表生效；表格和管理模式保持平铺，不跟随公共配置。</span>

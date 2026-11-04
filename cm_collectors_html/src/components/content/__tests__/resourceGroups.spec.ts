@@ -33,7 +33,7 @@ vi.mock('@/storeData/search.storeData', () => ({ searchStoreData: () => ({ searc
 vi.mock('@/server/resource.server', () => ({ resourceServer: { dataListCasualView: mocks.recommendations } }));
 vi.mock('@/server/videoTranscode.server', () => ({ videoTranscodeServer: {} }));
 vi.mock('@/server/tvboxRecommend.server', () => ({ tvboxRecommendServer: {} }));
-vi.mock('@/assets/mobile', () => ({ isMobile: () => mocks.mobile }));
+vi.mock('@/assets/mobile', () => ({ isMobile: () => mocks.mobile, isMobileDevice: () => mocks.mobile }));
 import { appStoreData } from '@/storeData/app.storeData';
 import { playResource } from '@/common/play';
 
@@ -46,6 +46,7 @@ beforeEach(() => {
   vi.clearAllMocks(); mocks.mobile = false;
   appStoreData().currentConfigApp.resourcesShowMode = 'coverPoster';
   appStoreData().currentConfigApp.mergeResourceGroups = true;
+  appStoreData().currentConfigApp.resourceQuickStars = false;
   appStoreData().currentConfigApp.resourceGroupExpandStyle = 'fan';
   appStoreData().currentConfigApp.resourceGroupCoverStyle = 'stack';
   appStoreData().currentConfigApp.resourceDetailsShowMode = 'right';
@@ -128,6 +129,32 @@ it('单个命中成员也显示叠牌，推荐模块中的资源不叠牌，选�
     enabled.value = false; await nextTick();
     expect(wrapper.classes()).not.toContain('resource-group-stack');
   } finally { wrapper.unmount(); }
+});
+
+it('进入评星区取消关联组展开，已展开的面板关闭，返回封面后仍能正常展开', async () => {
+  vi.useFakeTimers();
+  appStoreData().currentConfigApp.resourceQuickStars = true;
+  const popover = defineComponent({ name: 'ElPopover', props: ['visible'], template: '<div><slot /></div>' });
+  const wrapper = mount(ContentMenu, { props: { resource: a }, slots: { default: '<div class="resource-quick-stars-entry"><button>评星</button></div>' }, global: { ...globals,
+    provide: { [resourceGroupContextKey as symbol]: { enabled: computed(() => true), pageIds: computed(() => new Set(['a'])), summaries: ref(new Map()) } },
+    stubs: { ElPopover: popover, contentMenu: { template: '<div><slot /></div>' }, ResourceGroupPanel: true },
+  } });
+  const visible = () => wrapper.findComponent(popover).props('visible');
+  try {
+    await wrapper.trigger('pointerenter');
+    await vi.advanceTimersByTimeAsync(100);
+    await wrapper.get('.resource-quick-stars-entry').trigger('pointerover');
+    await vi.advanceTimersByTimeAsync(200);
+    expect(visible()).toBe(false);
+    await wrapper.trigger('pointerover');
+    await vi.advanceTimersByTimeAsync(180);
+    expect(visible()).toBe(true);
+    await wrapper.get('.resource-quick-stars-entry').trigger('pointermove', { clientX: 10, clientY: 10 });
+    expect(visible()).toBe(false);
+    await wrapper.get('.resource-quick-stars-entry button').trigger('focusin');
+    await vi.advanceTimersByTimeAsync(200);
+    expect(visible()).toBe(false);
+  } finally { wrapper.unmount(); vi.useRealTimers(); }
 });
 
 it('原资源与浮层交接不关闭，离开后延迟关闭，可取消未完成的展开并重新进入', async () => {

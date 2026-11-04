@@ -6,6 +6,7 @@
         <div class="cinema-gallery-config-tags" @click.stop>
           <contentTagDisplay :resource="props.resource" />
         </div>
+        <ResourceQuickStarsPopover :resource="props.resource" />
         <contentVideoDurationBadge :resource="props.resource" offset-bottom="7px" offset-right="7px" />
         <button type="button" class="cinema-gallery-play" aria-label="播放" @click.stop="playResource(props.resource)">
           <el-icon><VideoPlay /></el-icon>
@@ -38,6 +39,7 @@
 </template>
 
 <script setup lang="ts">
+import ResourceQuickStarsPopover from './ResourceQuickStarsPopover.vue';
 import { computed, type PropType } from 'vue';
 
 import dataset from '@/assets/dataset';

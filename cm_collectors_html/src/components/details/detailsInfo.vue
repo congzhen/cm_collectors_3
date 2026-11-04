@@ -102,6 +102,7 @@
 </template>
 <script lang="ts" setup>
 import VideoDetailsExtras from "./VideoDetailsExtras.vue";
+import { trackResourceStars } from '@/common/resourceStars';
 import type { I_resource, I_resourceDramaSeries } from '@/dataType/resource.dataType';
 import { ref, watch, computed, type PropType } from 'vue';
 import { appStoreData } from '@/storeData/app.storeData';
@@ -146,6 +147,7 @@ const props = defineProps({
     default: 'list',
   },
 })
+trackResourceStars(() => props.resource ? [props.resource] : []);
 // 本地响应式变量，用于替代直接修改 props.resource.stars
 const localStars = ref(props.resource?.stars || 0);
 
