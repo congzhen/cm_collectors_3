@@ -77,6 +77,32 @@ it('分类分页与快捷按钮共用原底栏，翻页仍由分类浏览处理'
   }finally{w.unmount();}
 });
 
+it('分类底栏资源按钮返回普通列表，保留配置并可切回分类浏览', async () => {
+  appStoreData().adminResourceStatus = false;
+  appStoreData().currentConfigApp.categoryBrowseEnabled = true;
+  const w = mountView();
+  try {
+    await flushPromises();
+    const back = w.get('.bottom-btns [aria-label="返回资源浏览"]');
+    expect(back.text()).toBe('资源');
+    await back.trigger('click');
+    await flushPromises();
+    expect(w.find('.category-view').exists()).toBe(false);
+    expect(w.findComponent(ContentList).exists()).toBe(true);
+    expect(w.find('[aria-label="返回资源浏览"]').exists()).toBe(false);
+    expect(appStoreData().currentConfigApp.categoryBrowseEnabled).toBe(true);
+    expect(mocks.list).toHaveBeenCalledOnce();
+    const requests = mocks.list.mock.calls.length;
+    await w.get('.bottom-btns [aria-label="分类浏览"]').trigger('click');
+    await flushPromises();
+    expect(w.find('.category-view').exists()).toBe(true);
+    expect(w.find('.bottom-btns [aria-label="返回资源浏览"]').exists()).toBe(true);
+    expect(mocks.list).toHaveBeenCalledTimes(requests);
+  } finally {
+    w.unmount();
+  }
+});
+
 describe('管理操作后的列表刷新', () => {
   it('分页开关保存独立设置，不重新请求资源列表，管理模式暂停开关', async () => {
     appStoreData().adminResourceStatus = false;

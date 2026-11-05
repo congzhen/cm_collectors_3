@@ -62,6 +62,7 @@
           @update:current-page="categoryBrowseRef?.setPage($event)" />
       </div>
       <div class="bottom-btns">
+        <el-button v-if="categoryActive" size="small" :icon="Grid" title="返回资源浏览" aria-label="返回资源浏览" @click="exitCategoryBrowse"><span class="toolbar-button-label">资源</span></el-button>
         <el-button v-if="categoryDismissed && store.appStoreData.currentConfigApp.categoryBrowseEnabled" size="small" :icon="Collection" title="分类浏览" aria-label="分类浏览" @click="categoryDismissed=false"><span class="toolbar-button-label">分类</span></el-button>
         <el-tooltip v-if="!isMobile()&&!categoryActive" :content="store.appStoreData.adminResourceStatus ? '管理模式按单个资源展示' : store.appStoreData.currentConfigApp.resourcesShowMode === 'table' ? '表格模式按单个资源展示' : '只合并当前页的同组资源，分页仍按资源计算'">
           <div v-admin class="group-display" role="group" aria-label="资源分组显示方式" :aria-busy="savingGroupDisplay">
