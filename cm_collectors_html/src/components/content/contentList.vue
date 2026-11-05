@@ -58,6 +58,7 @@ const store = {
   appStoreData: appStoreData(),
 }
 const props = defineProps({
+  plain: Boolean,
   groupPage: Object as PropType<ResourceGroupPage>,
   dataList: {
     type: Array as PropType<I_resource[]>,
@@ -65,7 +66,8 @@ const props = defineProps({
   },
 })
 provide('resource-list-page', computed(() => props.dataList));
-const groupingEnabled = computed(() => !isMobile() && !selection?.active.value
+provide('resource-collection-scope', props.plain);
+const groupingEnabled = computed(() => !props.plain && !isMobile() && !selection?.active.value
   && store.appStoreData.currentConfigApp.resourcesShowMode !== 'table'
   && store.appStoreData.currentConfigApp.mergeResourceGroups !== false);
 const renderedList = computed(() => mergeResourceGroupPage(props.dataList, groupingEnabled.value));

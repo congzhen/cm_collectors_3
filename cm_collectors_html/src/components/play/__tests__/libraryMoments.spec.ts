@@ -130,7 +130,8 @@ describe('本库片段放映室与收藏', () => {
       data: url.startsWith('/resource/info/') ? { id: 'r', dramaSeries: [{ id: 'd' }] } : { items: [item], total: 65 },
     }))
     const wrapper = mount(LibraryMomentsButton, { props: { filesBasesId: 'library-a' }, global })
-    expect(wrapper.find('button').text()).toBe('片段放映室')
+    expect(wrapper.find('button').text()).toBe('片段')
+    expect(wrapper.find('button').attributes('aria-label')).toBe('片段放映室')
     await wrapper.find('button').trigger('click')
     await flushPromises()
     expect(wrapper.find('.is-theater').exists()).toBe(true)

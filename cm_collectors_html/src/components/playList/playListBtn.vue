@@ -1,7 +1,7 @@
 <template>
   <div>
-    <el-button icon="Memo" size="small" title="播放列表" @click="openPlayListHandle">
-      <span v-if="props.modern">播放列表</span>
+    <el-button icon="Memo" size="small" title="播放列表" aria-label="播放列表" @click="openPlayListHandle">
+      <span class="toolbar-button-label">待播</span>
     </el-button>
     <playListDrawer ref="playListDrawerRef"></playListDrawer>
   </div>
@@ -9,7 +9,7 @@
 <script lang="ts" setup>
 import { ref } from 'vue';
 import playListDrawer from './playListDrawer.vue';
-const props = defineProps({
+defineProps({
   modern: {
     type: Boolean,
     default: false,

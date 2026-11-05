@@ -1,13 +1,13 @@
 <template>
   <div class="layout-cover-poster-style1">
     <el-scrollbar ref="scrollbarRef">
-      <moduleContent v-if="store.appStoreData.currentConfigApp.casualViewModule && !isMobileDevice && !selection?.active.value"
+      <moduleContent v-if="!collectionScope && store.appStoreData.currentConfigApp.casualViewModule && !isMobileDevice && !selection?.active.value"
         :resourcesShowMode="props.resourcesShowMode" moduleType="casualView"
         @select-resources="selectResourcesHandle"></moduleContent>
-      <moduleContent v-if="store.appStoreData.currentConfigApp.historyModule && !isMobileDevice && !selection?.active.value"
+      <moduleContent v-if="!collectionScope && store.appStoreData.currentConfigApp.historyModule && !isMobileDevice && !selection?.active.value"
         :resourcesShowMode="props.resourcesShowMode" moduleType="history"
         @select-resources="selectResourcesHandle"></moduleContent>
-      <moduleContent v-if="store.appStoreData.currentConfigApp.hotModule && !isMobileDevice && !selection?.active.value"
+      <moduleContent v-if="!collectionScope && store.appStoreData.currentConfigApp.hotModule && !isMobileDevice && !selection?.active.value"
         :resourcesShowMode="props.resourcesShowMode" moduleType="hot"
         @select-resources="selectResourcesHandle"></moduleContent>
       <h2 v-if="showH2()" class="all-h" style="font-size: 16px;">全部资源</h2>
@@ -36,6 +36,7 @@ import type { T_resourcesShowMode } from '@/dataType/app.dataType';
 import { appStoreData } from '@/storeData/app.storeData';
 import { resourceSelectionKey } from './resourceSelection';
 const selection = inject(resourceSelectionKey, undefined);
+const collectionScope = inject('resource-collection-scope', false);
 const store = {
   appStoreData: appStoreData(),
 }
@@ -56,7 +57,7 @@ const scrollbarRef = ref<InstanceType<typeof ElScrollbar>>();
 const isMobileDevice = ref(false);
 
 const showH2 = () => {
-  if (isMobileDevice.value || selection?.active.value) {
+  if (collectionScope || isMobileDevice.value || selection?.active.value) {
     return false;
   } else if (store.appStoreData.currentConfigApp.casualViewModule || store.appStoreData.currentConfigApp.historyModule || store.appStoreData.currentConfigApp.hotModule) {
     return true;

@@ -1,5 +1,8 @@
 <template>
   <div class="setting-data" v-loading="loading">
+    <el-alert v-if="loadError" title="文件库设置加载失败" type="error" :closable="false" show-icon>
+      <span>{{ loadError }}</span><el-button size="small" :loading="loading" style="margin-left:8px" @click="init">重试</el-button>
+    </el-alert>
     <el-form v-if="finish" label-width="auto">
       <SharedConfigBar ref="sharedBar" :files-bases-id="props.filesBasesId" module="display" :config="filesConfig"
         local-hint="标签与演员选择、路径、自定义头像及封面预设列表保持本库独立。" @config="applySharedConfig" @saved="emit('setSuccess', props.filesBasesId)" />
@@ -26,6 +29,7 @@
 
       <SharedDisplayFields :config="filesConfig" :readonly="!!sharedBar?.state?.following">
         <template #resourceGroups>
+          <el-form-item label="分类浏览设置"><CategoryBrowseFields ref="categoryFields" :config="filesConfig" :files-bases-id="props.filesBasesId" /></el-form-item>
           <el-form-item label="资源快捷评星">
             <el-switch v-model="filesConfig.resourceQuickStars" />
             <span class="performer-sort-hint">仅电脑端显示，可点击或按住拖动选星，松手保存；手机端不提供。本库独立设置，不跟随公共配置；修改需要管理员权限。</span>
@@ -86,16 +90,17 @@
 
     <div class="save-button-container">
       <el-button-group>
-        <el-button :disabled="sharedBar?.state?.following || sharedBar?.dialogOpen" @click="importHandle">导入</el-button>
-        <el-button @click="exportHandle">导出</el-button>
+        <el-button :disabled="loading || !finish || sharedBar?.state?.following || sharedBar?.dialogOpen" @click="importHandle">导入</el-button>
+        <el-button :disabled="loading || !finish" @click="exportHandle">导出</el-button>
       </el-button-group>
-      <el-button type="primary" @click="saveHandle" :disabled="sharedBar?.dialogOpen" icon="Edit">保存本库设置</el-button>
+      <el-button type="primary" @click="saveHandle" :disabled="loading || !finish || sharedBar?.dialogOpen" icon="Edit">保存本库设置</el-button>
     </div>
   </div>
 </template>
 <script lang="ts" setup>
+import CategoryBrowseFields from './CategoryBrowseFields.vue';
 import SettingSectionTitle from '@/components/setting/SettingSectionTitle.vue';
-import { onMounted, ref } from 'vue';
+import { nextTick, onMounted, ref } from 'vue';
 import SharedConfigBar from '@/components/setting/SharedConfigBar.vue';
 import SharedDisplayFields from '@/components/setting/sharedConfig/SharedDisplayFields.vue';
 import { E_performerCareerType } from '@/dataType/app.dataType';
@@ -132,9 +137,11 @@ const selectPerformerRef = ref<InstanceType<typeof selectPerformer>>()
 const selectTagRef = ref<InstanceType<typeof selectTag>>()
 
 const sharedBar = ref<InstanceType<typeof SharedConfigBar>>();
+const categoryFields = ref<InstanceType<typeof CategoryBrowseFields>>();
 const applySharedConfig = (config: object) => { filesConfig.value = config as I_config_app; };
 const finish = ref(false);
 const loading = ref(false);
+const loadError = ref('');
 const filesBasesInfo = ref<I_filesBases_base>({} as I_filesBases_base);
 const mainPerformerBasesId = ref('');
 const filesBasesRelatedPerformerBases = ref<string[]>([]);
@@ -148,58 +155,72 @@ const init = async () => {
 const getFielsBasesInfo = async () => {
   // 开始加载时设置加载状态为true
   loading.value = true;
-  // 调用后端API，根据ID获取信息
-  const result = await filesBasesServer.infoById(props.filesBasesId);
+  finish.value = false;
+  loadError.value = '';
+  try {
+    // 调用后端API，根据ID获取信息
+    const result = await filesBasesServer.infoById(props.filesBasesId);
 
-  // 如果获取信息失败，显示错误消息并返回
-  if (!result.status) {
-    ElMessage.error(result.msg);
-    return;
-  }
-
-  // 更新FielsBases信息
-  filesBasesInfo.value = {
-    id: result.data.id,
-    name: result.data.name,
-    sort: result.data.sort,
-    addTime: result.data.addTime,
-    status: result.data.status,
-  }
-
-  // 初始化关联信息数组
-  filesBasesRelatedPerformerBases.value = [];
-  // 遍历结果中的关联执信息
-  result.data.filesRelatedPerformerBases.forEach(item => {
-    if (item.main) {
-      // 设置主演员集ID
-      mainPerformerBasesId.value = item.performerBases_id;
+    // 如果获取信息失败，显示错误消息并返回
+    if (!result.status) {
+      loadError.value = result.msg || '无法读取文件库设置，请重试';
+      return;
     }
-    // 将演员集ID添加到关联信息数组中
-    filesBasesRelatedPerformerBases.value.push(item.performerBases_id);
-  });
 
-  // 解析配置数据
-  if (result.data.filesBasesSetting.config_json_data != '') {
-    const parsedConfig = JSON.parse(result.data.filesBasesSetting.config_json_data);
-    const mergedConfig: I_config_app = createDefaultConfigApp();
-    // 如果配置数据不存在，则使用默认配置值
-    for (const key in defualtConfigApp) {
-      if (parsedConfig.hasOwnProperty(key)) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (mergedConfig as any)[key] = parsedConfig[key];
+    // 更新FielsBases信息
+    filesBasesInfo.value = {
+      id: result.data.id,
+      name: result.data.name,
+      sort: result.data.sort,
+      addTime: result.data.addTime,
+      status: result.data.status,
+    }
+
+    // 初始化关联信息数组
+    filesBasesRelatedPerformerBases.value = [];
+    // 遍历结果中的关联执信息
+    result.data.filesRelatedPerformerBases.forEach(item => {
+      if (item.main) {
+        // 设置主演员集ID
+        mainPerformerBasesId.value = item.performerBases_id;
       }
+      // 将演员集ID添加到关联信息数组中
+      filesBasesRelatedPerformerBases.value.push(item.performerBases_id);
+    });
+
+    // 解析配置数据
+    if (result.data.filesBasesSetting.config_json_data != '') {
+      const parsedConfig = JSON.parse(result.data.filesBasesSetting.config_json_data);
+      if (!parsedConfig || typeof parsedConfig !== 'object' || Array.isArray(parsedConfig)) {
+        throw new SyntaxError('文件库配置必须是对象');
+      }
+      const mergedConfig: I_config_app = createDefaultConfigApp();
+      // 如果配置数据不存在，则使用默认配置值
+      for (const key in defualtConfigApp) {
+        if (Object.prototype.hasOwnProperty.call(parsedConfig, key)) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (mergedConfig as any)[key] = parsedConfig[key];
+        }
+      }
+      filesConfig.value = mergedConfig;
+    } else {
+      filesConfig.value = createDefaultConfigApp();
     }
-    filesConfig.value = mergedConfig;
-  } else {
-    filesConfig.value = createDefaultConfigApp();
+    finish.value = true
+  } catch (error) {
+    loadError.value = error instanceof SyntaxError ? '文件库配置无法解析，请检查配置或重试' : '读取文件库设置失败，请重试';
+  } finally {
+    loading.value = false;
   }
-  finish.value = true
-  // 加载完成后设置加载状态为false
-  loading.value = false;
 }
 
 const saveHandle = debounceNow(async () => {
-  if (sharedBar.value?.dialogOpen) return;
+  if (loading.value || !finish.value || sharedBar.value?.dialogOpen) return;
+  if (categoryFields.value?.validate() === false) {
+    await nextTick();
+    categoryFields.value?.$el.scrollIntoView?.({ block: 'nearest' });
+    return;
+  }
   if (!filesBasesRelatedPerformerBases.value.includes(mainPerformerBasesId.value)) {
     ElMessage.error('请设置主演员集');
     return;

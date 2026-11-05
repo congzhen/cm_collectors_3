@@ -1,6 +1,6 @@
 <template>
-  <el-button size="small" :icon="CollectionTag" :disabled="!filesBasesId" @click="open">
-    {{ defaultMode === 'theater' ? '片段放映室' : '片段收藏' }}
+  <el-button size="small" :icon="CollectionTag" :disabled="!filesBasesId" :title="defaultMode === 'theater' ? '片段放映室' : '片段收藏'" :aria-label="defaultMode === 'theater' ? '片段放映室' : '片段收藏'" @click="open">
+    <span class="toolbar-button-label">片段</span>
   </el-button>
   <component :is="mode === 'theater' ? ElDialog : ElDrawer" v-model="opened" :title="mode === 'theater' ? '片段放映室' : '片段收藏'"
     width="min(1500px, 96vw)" size="min(1040px, 92vw)" direction="rtl" top="4vh" class="library-moments-dialog"

@@ -1,10 +1,10 @@
 <template>
   <div class="cover-adjuster-wrapper">
-    <el-popover placement="top" :width="isModernAppearance ? 980 : 800" trigger="click"
+    <el-popover placement="top" :width="isModernAppearance ? 1240 : 800" trigger="click"
       :popper-class="isModernAppearance ? 'cover-adjuster-popover-modern' : ''">
       <template #reference>
-        <el-button icon="Monitor" size="small" title="显示设置">
-          <span v-if="isModernAppearance">显示设置</span>
+        <el-button icon="Monitor" size="small" title="显示设置" aria-label="显示设置">
+          <span class="toolbar-button-label">显示</span>
         </el-button>
       </template>
       <div v-if="isModernAppearance" class="cover-adjuster-container cover-adjuster-container--modern"
@@ -25,7 +25,6 @@
             </div>
           </section>
 
-          <div class="modern-main-settings">
             <section class="modern-settings-card">
               <div class="modern-section-title">
                 <el-icon><Operation /></el-icon>
@@ -62,19 +61,22 @@
               </div>
               <div class="modern-option-item">
                 <span class="modern-control-label">封面图填充方式</span>
-                <el-radio-group v-model="coverImageFit" size="small">
-                  <el-radio-button v-for="item, index in dataset.coverImageFit" :key="index" :label="item"
-                    :value="item" />
+                <el-radio-group v-model="coverImageFit" size="small" class="modern-cover-options">
+                  <el-radio-button label="拉伸" value="fill" title="拉伸图片填满封面" />
+                  <el-radio-button label="适应" value="contain" title="保持比例，完整显示图片" />
+                  <el-radio-button label="裁剪" value="cover" title="保持比例，裁剪填满封面" />
+                  <el-radio-button label="原图" value="none" title="按图片原始尺寸显示" />
+                  <el-radio-button label="缩小" value="scale-down" title="仅在图片过大时缩小，完整显示" />
                 </el-radio-group>
               </div>
               <div class="modern-option-item">
                 <span class="modern-control-label">资源对齐方式</span>
-                <el-radio-group v-model="resourceJustifyContent" size="small">
-                  <el-radio-button label="start" value="flex-start" />
-                  <el-radio-button label="center" value="center" />
-                  <el-radio-button label="end" value="flex-end" />
-                  <el-radio-button label="between" value="space-between" />
-                  <el-radio-button label="around" value="space-around" />
+                <el-radio-group v-model="resourceJustifyContent" size="small" class="modern-cover-options">
+                  <el-radio-button label="靠左" value="flex-start" />
+                  <el-radio-button label="居中" value="center" />
+                  <el-radio-button label="靠右" value="flex-end" />
+                  <el-radio-button label="两端" value="space-between" title="两端对齐，中间等距" />
+                  <el-radio-button label="均布" value="space-around" title="资源两侧均分间距" />
                 </el-radio-group>
               </div>
               <el-checkbox v-model="showVideoDuration" label="显示视频时长" />
@@ -87,7 +89,6 @@
                 <selectResourceGroupExpandStyle v-model="resourceGroupExpandStyle" />
               </div>
             </section>
-          </div>
 
           <section class="modern-settings-card modern-page-card">
             <div class="modern-section-title">
@@ -124,9 +125,12 @@
               </div>
             </div>
           </section>
+          <section class="modern-settings-card modern-category-card">
+            <CategoryBrowseQuickSettings horizontal :disabled="savingConfig || props.disabled" @saving="categorySaving=$event" />
+          </section>
         </div>
         <div class="modern-actions">
-          <el-button type="primary" :loading="savingConfig" @click="saveConfig">保存</el-button>
+          <el-button type="primary" :loading="savingConfig" :disabled="categorySaving || props.disabled" @click="saveConfig">保存</el-button>
         </div>
       </div>
 
@@ -209,6 +213,7 @@
                 <span class="setting-label">关联组展开样式</span>
                 <selectResourceGroupExpandStyle v-model="resourceGroupExpandStyle" />
               </div>
+              <CategoryBrowseQuickSettings :disabled="savingConfig || props.disabled" @saving="categorySaving=$event" />
               <div class="setting-item">
                 <span class="setting-label">封面标题对齐方式</span>
                 <el-radio-group v-model="coverTitleAlign" size="small">
@@ -226,13 +231,14 @@
           </div>
         </div>
         <div class="actions">
-          <el-button type="primary" plain :loading="savingConfig" @click="saveConfig">保存</el-button>
+          <el-button type="primary" plain :loading="savingConfig" :disabled="categorySaving || props.disabled" @click="saveConfig">保存</el-button>
         </div>
       </div>
     </el-popover>
   </div>
 </template>
 <script setup lang="ts">
+import CategoryBrowseQuickSettings from './CategoryBrowseQuickSettings.vue';
 import { appStoreData } from '@/storeData/app.storeData';
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import dataset from '@/assets/dataset';
@@ -246,6 +252,9 @@ import selectResourceDetailsShowMode from '@/components/com/form/selectResourceD
 import { Grid, Menu, Operation, Picture, SetUp } from '@element-plus/icons-vue';
 import { useTheme } from '@/common/theme';
 import type { T_resourcesShowMode } from '@/dataType/app.dataType';
+
+const props = defineProps<{ disabled?: boolean }>();
+const emit = defineEmits<{ saving: [value: boolean] }>();
 
 const store = {
   appStoreData: appStoreData(),
@@ -420,14 +429,16 @@ const showVideoDuration = computed({
 });
 
 const savingConfig = ref(false);
+const categorySaving = ref(false);
+watch(() => savingConfig.value || categorySaving.value, value => emit('saving', value), { flush: 'sync' });
 let saveVersion = 0;
-onBeforeUnmount(() => { saveVersion++; });
-watch(() => store.appStoreData.currentFilesBases.id, () => {
+onBeforeUnmount(() => { saveVersion++; emit('saving', false); });
+watch(() => [store.appStoreData.currentFilesBases.id, store.appStoreData.currentConfigApp], () => {
   saveVersion++;
   savingConfig.value = false;
 }, { flush: 'sync' });
 const saveConfig = debounceNow(async () => {
-  if (savingConfig.value) return;
+  if (savingConfig.value || categorySaving.value || props.disabled) return;
   const version = ++saveVersion;
   const library = store.appStoreData.currentFilesBases.id;
   const config = store.appStoreData.currentConfigApp;
@@ -453,6 +464,8 @@ const saveConfig = debounceNow(async () => {
 </script>
 <style lang="scss" scoped>
 .cover-adjuster-content {
+  max-height: calc(100vh - 150px);
+  overflow-y: auto;
   display: flex;
   gap: 20px;
   margin-bottom: 20px;
@@ -543,20 +556,14 @@ const saveConfig = debounceNow(async () => {
   }
 
   .modern-adjuster-grid {
+    max-height: calc(100vh - 160px);
+    overflow-y: auto;
     display: grid;
-    grid-template-columns: 270px minmax(0, 1fr) 270px;
+    grid-template-columns: 210px repeat(2, minmax(0, 1fr)) 240px;
+    grid-template-rows: 1fr auto;
     gap: 12px;
     padding: 12px;
     align-items: stretch;
-  }
-
-  .modern-main-settings {
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-
-    > .modern-settings-card:last-child { flex: 1; }
   }
 
   .modern-settings-card {
@@ -585,7 +592,12 @@ const saveConfig = debounceNow(async () => {
     }
   }
 
+  .modern-category-card { grid-column: 2 / 4; }
+  .modern-page-card { grid-column: 4; grid-row: 1 / span 2; }
+
   .modern-mode-card {
+    grid-row: 1 / span 2;
+    align-self: stretch;
     display: flex;
     flex-direction: column;
   }
@@ -698,8 +710,17 @@ const saveConfig = debounceNow(async () => {
 
       :deep(.el-radio-button__inner) {
         width: 100%;
+        box-sizing: border-box;
         padding-left: 8px;
         padding-right: 8px;
+      }
+
+      &.modern-cover-options {
+        flex-wrap: wrap;
+
+        :deep(.el-radio-button) {
+          flex: 1 0 54px;
+        }
       }
     }
   }
@@ -778,6 +799,21 @@ const saveConfig = debounceNow(async () => {
       --el-button-hover-bg-color: #22b8b6;
       --el-button-hover-border-color: #22b8b6;
     }
+  }
+}
+
+@media (max-width: 1100px) {
+  .cover-adjuster-container--modern .modern-adjuster-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: none;
+  }
+  .cover-adjuster-container--modern .modern-mode-card {grid-row:auto;align-self:start;}
+  .cover-adjuster-container--modern .modern-page-card {grid-column:auto;grid-row:auto;}
+  .cover-adjuster-container--modern .modern-category-card {grid-column:1 / -1;}
+}
+@media (max-width: 620px) {
+  .cover-adjuster-container--modern .modern-adjuster-grid {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 

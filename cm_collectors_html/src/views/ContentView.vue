@@ -1,7 +1,8 @@
 <template>
   <div class="content-view" v-loading="loading">
     <div class="list">
-      <contentList ref="contentListRef" v-if="!store.appStoreData.adminResourceStatus" :data-list="dataList" :group-page="groupPage"
+      <CategoryBrowse v-if="categoryActive" ref="categoryBrowseRef" external-footer @select="selectResourcesHandle" @clear-selection="emits('selectResources', undefined, true)" @exit="exitCategoryBrowse" />
+      <contentList ref="contentListRef" v-else-if="!store.appStoreData.adminResourceStatus" :data-list="dataList" :group-page="groupPage"
         @select-resources="selectResourcesHandle"></contentList>
       <contentListAdmin ref="contentListAdminRef" v-else :data-list="dataList"
         @update-data="init_DataList(() => {}, true)"></contentListAdmin>
@@ -10,10 +11,10 @@
       'paging--modern': isModernAppearance,
       'paging--bright': isModernAppearance && isBrightTheme,
     }">
-      <div class="paging-main">
-        <div class="paging-summary">
-          <span>{{ isModernAppearance ? `共 ${dataCount} 个资源` : `Total ${dataCount}` }}</span>
-          <span v-if="groupingActive" class="group-page-count">本页展示 {{ groupedPageCount }} 项</span>
+      <div class="paging-main" v-if="!categoryActive">
+        <div class="paging-summary" :title="`共 ${dataCount} 个资源${groupingActive ? `，当前页展示 ${groupedPageCount} 项（关联组合并后）` : ''}`">
+          <span>{{ dataCount }} 资源</span>
+          <span v-if="groupingActive" class="group-page-count">· 本页 {{ groupedPageCount }} 项</span>
           <el-popover trigger="hover" :width="260" :show-after="250" @before-enter="handleFileSizeStatsShow">
             <template #reference>
               <el-icon class="file-size-stats-trigger" title="当前筛选结果的视频文件统计">
@@ -53,27 +54,36 @@
         <el-pagination background layout="prev, pager, next, jumper" v-model:current-page="currentPage"
           :total="dataCount" :page-size="pageSize" :pager-count="5" size="small" @change="changePageHandle" />
       </div>
+      <div v-else class="paging-main">
+        <div class="paging-summary" :title="categoryBrowseRef?.pagination?.summary"><span>{{ categoryBrowseRef?.pagination?.shortSummary || categoryBrowseRef?.pagination?.summary }}</span></div>
+        <el-pagination v-if="categoryBrowseRef?.pagination?.visible" background layout="prev, pager, next, jumper"
+          :current-page="categoryBrowseRef.pagination.page" :total="categoryBrowseRef.pagination.total"
+          :page-size="categoryBrowseRef.pagination.pageSize" :pager-count="5" size="small"
+          @update:current-page="categoryBrowseRef?.setPage($event)" />
+      </div>
       <div class="bottom-btns">
-        <el-tooltip v-if="!isMobile()" :content="store.appStoreData.adminResourceStatus ? '管理模式按单个资源展示' : store.appStoreData.currentConfigApp.resourcesShowMode === 'table' ? '表格模式按单个资源展示' : '只合并当前页的同组资源，分页仍按资源计算'">
+        <el-button v-if="categoryDismissed && store.appStoreData.currentConfigApp.categoryBrowseEnabled" size="small" :icon="Collection" title="分类浏览" aria-label="分类浏览" @click="categoryDismissed=false"><span class="toolbar-button-label">分类</span></el-button>
+        <el-tooltip v-if="!isMobile()&&!categoryActive" :content="store.appStoreData.adminResourceStatus ? '管理模式按单个资源展示' : store.appStoreData.currentConfigApp.resourcesShowMode === 'table' ? '表格模式按单个资源展示' : '只合并当前页的同组资源，分页仍按资源计算'">
           <div v-admin class="group-display" role="group" aria-label="资源分组显示方式" :aria-busy="savingGroupDisplay">
-            <button type="button" :class="{ 'is-active': store.appStoreData.currentConfigApp.mergeResourceGroups === false }"
+            <button type="button" title="独立显示" aria-label="独立显示" :class="{ 'is-active': store.appStoreData.currentConfigApp.mergeResourceGroups === false }"
               :aria-pressed="store.appStoreData.currentConfigApp.mergeResourceGroups === false" :disabled="groupDisplayDisabled" @click="setGroupDisplay(false)">
-              <el-icon><Grid /></el-icon><span>独立显示</span>
+              <el-icon><Grid /></el-icon><span>独立</span>
             </button>
-            <button type="button" :class="{ 'is-active': store.appStoreData.currentConfigApp.mergeResourceGroups !== false }"
+            <button type="button" title="合并同组" aria-label="合并同组" :class="{ 'is-active': store.appStoreData.currentConfigApp.mergeResourceGroups !== false }"
               :aria-pressed="store.appStoreData.currentConfigApp.mergeResourceGroups !== false" :disabled="groupDisplayDisabled" @click="setGroupDisplay(true)">
-              <el-icon :class="{ 'is-loading': savingGroupDisplay }"><Loading v-if="savingGroupDisplay" /><Collection v-else /></el-icon><span>合并同组</span>
+              <el-icon :class="{ 'is-loading': savingGroupDisplay }"><Loading v-if="savingGroupDisplay" /><Collection v-else /></el-icon><span>合并</span>
             </button>
           </div>
         </el-tooltip>
         <LibraryMomentsButton :files-bases-id="store.appStoreData.currentFilesBases.id || ''" />
         <playListBtn :modern="isModernAppearance"></playListBtn>
-        <coverAdjuster v-admin></coverAdjuster>
+        <coverAdjuster v-admin :disabled="savingGroupDisplay" @saving="savingDisplaySettings=$event"></coverAdjuster>
       </div>
     </div>
   </div>
 </template>
 <script setup lang="ts">
+import CategoryBrowse from '@/components/content/CategoryBrowse.vue';
 import contentList from '@/components/content/contentList.vue'
 import LibraryMomentsButton from '@/components/play/LibraryMomentsButton.vue'
 import contentListAdmin from '@/components/content/contentListAdmin.vue';
@@ -104,6 +114,12 @@ const emits = defineEmits(['selectResources']);
 
 const contentListAdminRef = ref<InstanceType<typeof contentListAdmin>>();
 const contentListRef = ref<InstanceType<typeof contentList>>();
+const categoryBrowseRef=ref<InstanceType<typeof CategoryBrowse>>();
+const categoryDismissed=ref(false);
+const categoryActive=computed(()=>!isMobile()&&!store.appStoreData.adminResourceStatus&&store.appStoreData.currentConfigApp.categoryBrowseEnabled===true&&!categoryDismissed.value);
+const exitCategoryBrowse=()=>{categoryDismissed.value=true;};
+watch(()=>[store.appStoreData.currentFilesBases.id,store.appStoreData.currentConfigApp.categoryBrowseEnabled,store.appStoreData.currentConfigApp.categoryBrowseSource],()=>{categoryDismissed.value=false;});
+watch(categoryActive,()=>{dataListRequestVersion++;window.clearTimeout(durationRefreshTimer);void init();});
 
 
 const isInitializing = ref(false);
@@ -112,8 +128,10 @@ const dataList = ref<I_resource[]>([]);
 const groupPage = ref<ResourceGroupPage>();
 const dataCount = ref(0);
 const savingGroupDisplay = ref(false);
-const groupDisplayDisabled = computed(() => store.appStoreData.adminResourceStatus
-  || store.appStoreData.currentConfigApp.resourcesShowMode === 'table' || savingGroupDisplay.value);
+const savingDisplaySettings = ref(false);
+let groupDisplaySaveVersion = 0;
+const groupDisplayDisabled = computed(() => categoryActive.value || store.appStoreData.adminResourceStatus
+  || store.appStoreData.currentConfigApp.resourcesShowMode === 'table' || savingGroupDisplay.value || savingDisplaySettings.value);
 const groupingActive = computed(() => !isMobile() && !store.appStoreData.adminResourceStatus
   && store.appStoreData.currentConfigApp.resourcesShowMode !== 'table' && store.appStoreData.currentConfigApp.mergeResourceGroups !== false);
 const groupedPageCount = computed(() => mergeResourceGroupPage(dataList.value, groupingActive.value).length);
@@ -122,14 +140,21 @@ const setGroupDisplay = async (value: string | number | boolean) => {
   const library = store.appStoreData.currentFilesBases.id;
   const config = store.appStoreData.currentConfigApp;
   const enabled = !!value;
+  const version = ++groupDisplaySaveVersion;
+  const isCurrent = () => version === groupDisplaySaveVersion && library === store.appStoreData.currentFilesBases.id && config === store.appStoreData.currentConfigApp;
   savingGroupDisplay.value = true;
   try {
     const result = await resourceGroupServer.setDisplay(library, enabled);
+    if (!isCurrent()) return;
     if (!result.status) { ElMessage.error(result.msg || '分组显示设置保存失败'); return; }
     if (library === store.appStoreData.currentFilesBases.id && config === store.appStoreData.currentConfigApp) config.mergeResourceGroups = enabled;
-  } catch { ElMessage.error('分组显示设置保存失败，请重试'); }
-  finally { savingGroupDisplay.value = false; }
+  } catch { if (isCurrent()) ElMessage.error('分组显示设置保存失败，请重试'); }
+  finally { if (version === groupDisplaySaveVersion) savingGroupDisplay.value = false; }
 };
+watch(() => [store.appStoreData.currentFilesBases.id, store.appStoreData.currentConfigApp], () => {
+  groupDisplaySaveVersion++;
+  savingGroupDisplay.value = false;
+}, { flush: 'sync' });
 const fileSizeStats = ref<I_resourceFileSizeStats | null>(null);
 const fileSizeStatsLoading = ref(false);
 const fileSizeStatsError = ref('');
@@ -146,6 +171,7 @@ watch(
   () => store.searchStoreData.searchData,
   () => {
     randomSeed = store.searchStoreData.searchData.sort === E_searchSort.Random ? createRandomSeed() : '';
+    if(categoryActive.value){emits('selectResources',undefined,true);return;}
     init();
   },
   { deep: true }
@@ -154,6 +180,7 @@ watch(
 watch(
   () => store.appStoreData.currentConfigApp.pageLimit,
   () => {
+    if(categoryActive.value)return;
     init();
   },
 )
@@ -172,6 +199,7 @@ watch(
 )
 
 const init = async () => {
+  if(categoryActive.value){dataList.value=[];loading.value=false;isInitializing.value=false;emits('selectResources',undefined,true);await categoryBrowseRef.value?.refresh();return;}
   isInitializing.value = true;
   dataList.value = [];
   dataCount.value = 0;
@@ -193,6 +221,7 @@ const init = async () => {
 }
 
 const init_DataList = async (fn: () => void = () => { }, fetch: boolean = false) => {
+  if(categoryActive.value){const current=++dataListRequestVersion;await categoryBrowseRef.value?.refresh();if(current===dataListRequestVersion&&categoryActive.value)fn();return;}
   if (fetch) {
     resetFileSizeStats();
     fetchCount = true;
@@ -221,7 +250,7 @@ const prepareGroupPage = async (resources: I_resource[], library: string): Promi
 };
 
 const executeGetDataList = debounce(async (requestVersion: number, fn: () => void) => {
-  if (requestVersion !== dataListRequestVersion) return;
+  if (requestVersion !== dataListRequestVersion || categoryActive.value) return;
   const filesBasesId = store.appStoreData.currentFilesBases.id;
   const shouldFetchCount = fetchCount;
   try {
@@ -353,6 +382,7 @@ const formatFileSize = (size: number) => {
 }
 
 const showDataList = () => {
+  if(categoryActive.value)return categoryBrowseRef.value?.showDataList()||[];
   return dataList.value;
 }
 
@@ -372,12 +402,17 @@ const selectResourcesHandle = (item: I_resource) => {
 const resourceAddTimeExchangedHandle = () => {
   init_DataList();
 }
+const categoryBrowseAppliedHandle=()=>{categoryDismissed.value=false;};
 
 onMounted(async () => {
+  eventBus.on('category-browse-applied',categoryBrowseAppliedHandle);
   eventBus.on('resource-add-time-exchanged', resourceAddTimeExchangedHandle);
-  await init()
+  if(categoryActive.value)emits('selectResources',undefined,true);
+  else await init()
 })
 onUnmounted(() => {
+  groupDisplaySaveVersion++;
+  eventBus.off('category-browse-applied',categoryBrowseAppliedHandle);
   dataListRequestVersion++;
   fileSizeStatsRequestVersion++;
   window.clearTimeout(durationRefreshTimer);
@@ -387,6 +422,8 @@ defineExpose({ init, init_DataList, showDataList });
 </script>
 <style lang="scss" scoped>
 .content-view {
+  container-type: inline-size;
+  container-name: resource-view;
   width: 100%;
   height: 100%;
   overflow: hidden;
@@ -405,9 +442,13 @@ defineExpose({ init, init_DataList, showDataList });
     flex-shrink: 0;
     display: flex;
     justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    overflow-x: auto;
 
     .paging-main {
-      display: flex; flex-wrap: wrap;
+      display: flex; flex-wrap: nowrap;
+      flex-shrink: 0;
       align-items: center;
       min-width: 0;
     }
@@ -429,7 +470,9 @@ defineExpose({ init, init_DataList, showDataList });
     }
 
     .bottom-btns {
-      display: flex; flex-wrap: wrap;
+      display: flex; flex-wrap: nowrap;
+      flex-shrink: 0;
+      margin-left: auto;
       gap: 5px;
       align-items: center;
     }
@@ -633,10 +676,10 @@ defineExpose({ init, init_DataList, showDataList });
     gap: 7px;
 
     :deep(.el-button) {
-      min-width: 92px;
+      min-width: 60px;
       height: 30px;
       margin: 0;
-      padding: 0 11px;
+      padding: 0 8px;
       border-color: var(--paging-border);
       border-radius: 7px;
       color: var(--paging-text);
@@ -665,5 +708,23 @@ defineExpose({ init, init_DataList, showDataList });
   to {
     transform: rotate(360deg);
   }
+}
+
+@container resource-view (max-width: 900px) {
+  .content-view .paging .group-page-count {display:none;}
+  .content-view .paging :deep(.el-pagination__jump) { display: none; }
+  .content-view .paging.paging--modern .paging-main { gap: 7px; }
+  .content-view .paging .paging-summary { padding:0 7px;gap:3px; }
+  .content-view .paging.paging--modern .bottom-btns {gap:4px;}
+}
+@container resource-view (max-width: 600px) {
+  .content-view .paging .paging-summary { display: none; }
+  .content-view .paging.paging--modern :deep(.el-pagination) {gap:3px;}
+  .content-view .paging.paging--modern :deep(.el-pagination .el-pager) {gap:3px;}
+  .content-view .paging.paging--modern :deep(.el-pagination.is-background .btn-prev),
+  .content-view .paging.paging--modern :deep(.el-pagination.is-background .btn-next),
+  .content-view .paging.paging--modern :deep(.el-pagination.is-background .el-pager li) {min-width:24px;}
+  .content-view .paging .group-display button {padding:0 6px;gap:4px;}
+  .content-view .paging.paging--modern .bottom-btns :deep(.el-button) {min-width:54px;padding:0 6px;}
 }
 </style>

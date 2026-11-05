@@ -16,11 +16,11 @@ import { appStoreData } from '@/storeData/app.storeData';
 import { getResourceCoverPoster } from '@/common/photo';
 import type { I_resource } from '@/dataType/resource.dataType';
 import { resourceGroupContextKey } from './resourceGroups';
-const props = withDefaults(defineProps<{ resource: I_resource; src: string; fit?: string }>(), { fit: 'cover' });
+const props = withDefaults(defineProps<{ resource: I_resource; src: string; fit?: string; coverStyle?: 'stack'|'triptych'|'book'|'adaptive' }>(), { fit: 'cover' });
 const emit = defineEmits<{ load: [event: Event] }>();
 const context = inject(resourceGroupContextKey, undefined);
 const style = computed(() => {
-  const value = appStoreData().currentConfigApp.resourceGroupCoverStyle;
+  const value = props.coverStyle || appStoreData().currentConfigApp.resourceGroupCoverStyle;
   return value === 'triptych' || value === 'book' || value === 'adaptive' ? value : 'stack';
 });
 const grouped = computed(() => !!context?.enabled.value && !!props.resource.associationGroupId && context.pageIds.value.has(props.resource.id));

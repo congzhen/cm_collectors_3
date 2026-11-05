@@ -1,12 +1,20 @@
 import { flushPromises, mount } from '@vue/test-utils';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import ElementPlus, { ElPagination, ElPopover } from 'element-plus';
+import ElementPlus, { ElPagination, ElPopover, ElMessage } from 'element-plus';
 import ContentView from '../ContentView.vue';
 import ContentList from '@/components/content/contentList.vue';
 import ContentListAdmin from '@/components/content/contentListAdmin.vue';
+import CoverAdjuster from '@/components/setting/fileDatabaseSetting/coverAdjuster.vue';
 import { appStoreData } from '@/storeData/app.storeData';
 
-const mocks = vi.hoisted(() => ({ list: vi.fn(), stats: vi.fn(), setDisplay: vi.fn(), summaries: vi.fn() }));
+const mocks = vi.hoisted(() => ({ list: vi.fn(), stats: vi.fn(), setDisplay: vi.fn(), summaries: vi.fn(), categoryRefresh:vi.fn() }));
+vi.mock('@/components/content/CategoryBrowse.vue',()=>({default:{
+  name:'CategoryBrowse',
+  props:{externalFooter:Boolean},
+  template:'<div class="category-view" />',
+  data:()=>({pagination:{page:1,pageSize:2,total:8,visible:true,summary:'共 4 个分类 · 8 个展示组 · 16 个资源'}}),
+  methods:{refresh:mocks.categoryRefresh,showDataList:()=>[],setPage(this:{pagination:{page:number}},value:number){this.pagination.page=value;}},
+}}));
 vi.mock('@/main', () => ({ eventBus: { on: vi.fn(), off: vi.fn() } }));
 vi.mock('@/assets/debounce', () => ({ debounce: (fn: (...args: unknown[]) => unknown) => fn }));
 vi.mock('@/server/resourceGroup.server', () => ({ resourceGroupServer: { setDisplay: mocks.setDisplay, summaries: mocks.summaries } }));
@@ -20,7 +28,7 @@ vi.mock('@/storeData/search.storeData', () => ({ searchStoreData: () => ({ searc
 vi.mock('@/components/content/contentList.vue', () => ({ default: { props: ['dataList','groupPage'], template: '<div />', methods: { change: vi.fn() } } }));
 vi.mock('@/components/content/contentListAdmin.vue', () => ({ default: { template: '<div />', emits: ['updateData'], methods: { change: vi.fn() } } }));
 vi.mock('@/components/play/LibraryMomentsButton.vue', () => ({ default: { template: '<div />' } }));
-vi.mock('@/components/setting/fileDatabaseSetting/coverAdjuster.vue', () => ({ default: { template: '<div />' } }));
+vi.mock('@/components/setting/fileDatabaseSetting/coverAdjuster.vue', () => ({ default: { props:['disabled'],emits:['saving'],template: '<div />' } }));
 vi.mock('@/components/playList/playListBtn.vue', () => ({ default: { template: '<div />' } }));
 
 const response = (ids: string[], total: number) => ({ status: true, data: { dataList: ids.map(id => ({ id })), total } });
@@ -31,12 +39,43 @@ beforeEach(() => {
   appStoreData().currentFilesBases.id = 'library';
   appStoreData().currentConfigApp.mergeResourceGroups = true;
   appStoreData().currentConfigApp.showVideoDuration = false;
+  appStoreData().currentConfigApp.categoryBrowseEnabled=false;
   mocks.summaries.mockResolvedValue({status:true,data:{dataList:[],total:0}});
   mocks.setDisplay.mockResolvedValue({ status: true, data: true });
   mocks.list.mockResolvedValue(response(['a', 'b'], 3));
   mocks.stats.mockResolvedValue({ status: true, data: { totalSize: 1, totalFiles: 1, countedFiles: 1, uncountedFiles: 0 } });
 });
+
+it('分类浏览初次挂载不重复刷新，外部刷新等待数据完成后再回调',async()=>{
+  appStoreData().adminResourceStatus=false;appStoreData().currentConfigApp.categoryBrowseEnabled=true;
+  let resolve!:()=>void;mocks.categoryRefresh.mockReturnValueOnce(new Promise<void>(done=>{resolve=done;}));
+  const w=mountView();
+  try{await flushPromises();expect(w.find('.category-view').exists()).toBe(true);expect(mocks.list).not.toHaveBeenCalled();expect(mocks.categoryRefresh).not.toHaveBeenCalled();
+    const callback=vi.fn();const completion=w.vm.init_DataList(callback);await flushPromises();expect(callback).not.toHaveBeenCalled();resolve();await completion;expect(callback).toHaveBeenCalledOnce();
+  }finally{w.unmount()}
+});
 afterEach(() => { vi.restoreAllMocks(); vi.useRealTimers(); });
+
+it('分类分页与快捷按钮共用原底栏，翻页仍由分类浏览处理',async()=>{
+  appStoreData().adminResourceStatus=false;
+  appStoreData().currentConfigApp.categoryBrowseEnabled=true;
+  const w=mountView();
+  try{
+    await flushPromises();
+    const footer=w.get('.paging');
+    expect(footer.get('.paging-main .paging-summary').text()).toContain('8 个展示组');
+    expect(footer.find('.bottom-btns').exists()).toBe(true);
+    expect(w.getComponent({name:'CategoryBrowse'}).props('externalFooter')).toBe(true);
+    const pagination=footer.getComponent(ElPagination);
+    expect(pagination.props('background')).toBe(true);
+    pagination.vm.$emit('update:current-page',2);
+    await flushPromises();
+    expect(pagination.props('currentPage')).toBe(2);
+    w.getComponent({name:'CategoryBrowse'}).vm.$emit('clearSelection');
+    expect(w.emitted('selectResources')?.at(-1)).toEqual([undefined,true]);
+    expect(mocks.list).not.toHaveBeenCalled();
+  }finally{w.unmount();}
+});
 
 describe('管理操作后的列表刷新', () => {
   it('分页开关保存独立设置，不重新请求资源列表，管理模式暂停开关', async () => {
@@ -228,4 +267,39 @@ it('关闭时长显示后，已排队的补采不再发送额外资源请求',as
   await vi.advanceTimersByTimeAsync(2500);await flushPromises();
   expect(mocks.list).toHaveBeenCalledTimes(1);
  }finally{wrapper.unmount();}
+});
+
+it('显示面板保存与底栏分组切换互锁，避免旧配置相互覆盖',async()=>{
+ appStoreData().adminResourceStatus=false;
+ let finish!:(value:unknown)=>void;
+ mocks.setDisplay.mockReturnValueOnce(new Promise(resolve=>{finish=resolve;}));
+ const w=mountView();
+ try{
+  await flushPromises();const panel=w.findComponent(CoverAdjuster);
+  panel.vm.$emit('saving',true);await flushPromises();
+  expect(w.get('.group-display button').attributes('disabled')).toBeDefined();
+  panel.vm.$emit('saving',false);await flushPromises();
+  await w.get('.group-display button').trigger('click');await flushPromises();
+  expect(panel.props('disabled')).toBe(true);
+  finish({status:true});await flushPromises();
+  expect(panel.props('disabled')).toBe(false);
+ }finally{w.unmount();}
+});
+it('切库可立即切换新库分组，旧库失败不提示且不解除新库等待',async()=>{
+ appStoreData().adminResourceStatus=false;
+ let first!:(value:unknown)=>void,second!:(value:unknown)=>void;
+ mocks.setDisplay.mockImplementationOnce(()=>new Promise(resolve=>{first=resolve;})).mockImplementationOnce(()=>new Promise(resolve=>{second=resolve;}));
+ const error=vi.spyOn(ElMessage,'error');const w=mountView();
+ try{
+  await flushPromises();await w.get('.group-display button').trigger('click');
+  appStoreData().currentFilesBases.id='B';await flushPromises();
+  expect(w.get('.group-display button').attributes('disabled')).toBeUndefined();
+  await w.get('.group-display button').trigger('click');
+  first({status:false,msg:'old failure'});await flushPromises();
+  expect(error).not.toHaveBeenCalled();
+  expect(w.get('.group-display button').attributes('disabled')).toBeDefined();
+  second({status:true});await flushPromises();
+  expect(appStoreData().currentConfigApp.mergeResourceGroups).toBe(false);
+  expect(w.get('.group-display button').attributes('disabled')).toBeUndefined();
+ }finally{w.unmount();}
 });

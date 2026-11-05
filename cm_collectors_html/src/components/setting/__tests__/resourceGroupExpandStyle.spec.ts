@@ -9,6 +9,7 @@ import { createDefaultConfigApp } from '@/dataType/config.dataType';
 import { appStoreData } from '@/storeData/app.storeData';
 const mocks=vi.hoisted(()=>({save:vi.fn(),init:vi.fn()}));
 vi.mock('@/server/filesBases.server',()=>({filesBasesServer:{setFilesBasesConfigById:mocks.save}}));
+vi.mock('@/main',()=>({eventBus:{emit:vi.fn()}}));
 vi.mock('@/assets/debounce',()=>({debounceNow:(fn:unknown)=>fn}));
 vi.mock('@/common/theme',()=>({useTheme:()=>({isBrightTheme:computed(()=>true)})}));
 vi.mock('@/storeData/app.storeData',async()=>{
@@ -112,4 +113,30 @@ it('切库后可以立即保存新库，旧保存完成不能解除新保存的�
   first({status:false,msg:'old save failed'});await flushPromises();expect(save.props('loading')).toBe(true);expect(error).not.toHaveBeenCalled();
   second({status:true});await flushPromises();expect(save.props('loading')).toBe(false);
  }finally{wrapper.unmount();}
+});
+
+it('底栏分组保存时拒绝通用保存，恢复后对外同步保存状态',async()=>{
+ let finish!:(value:unknown)=>void;
+ mocks.save.mockReturnValueOnce(new Promise(resolve=>{finish=resolve;}));
+ const w=shallowMount(CoverAdjuster,{props:{disabled:true},global:{plugins:[ElementPlus],renderStubDefaultSlot:true,mocks:{$t:(key:string)=>key},stubs:{ElPopover:{template:'<div><slot name="reference"/><slot/></div>'}}}});
+ try{
+  const save=w.findAllComponents({name:'ElButton'}).find(b=>b.text()==='保存')!;
+  save.vm.$emit('click');await flushPromises();expect(mocks.save).not.toHaveBeenCalled();
+  await w.setProps({disabled:false});save.vm.$emit('click');await flushPromises();
+  expect(w.emitted('saving')?.at(-1)).toEqual([true]);
+  finish({status:true});await flushPromises();expect(w.emitted('saving')?.at(-1)).toEqual([false]);
+ }finally{w.unmount();}
+});
+it('同库配置被替换后可立即保存新配置，旧请求不能解除新保存状态',async()=>{
+ let first!:(value:unknown)=>void,second!:(value:unknown)=>void;
+ mocks.save.mockImplementationOnce(()=>new Promise(resolve=>{first=resolve;})).mockImplementationOnce(()=>new Promise(resolve=>{second=resolve;}));
+ const w=shallowMount(CoverAdjuster,{global:{plugins:[ElementPlus],renderStubDefaultSlot:true,mocks:{$t:(key:string)=>key},stubs:{ElPopover:{template:'<div><slot name="reference"/><slot/></div>'}}}});
+ try{
+  const save=w.findAllComponents({name:'ElButton'}).find(b=>b.text()==='保存')!;
+  save.vm.$emit('click');await flushPromises();
+  appStoreData().currentConfigApp={...createDefaultConfigApp(),resourceGroupCoverStyle:'book'};await flushPromises();
+  save.vm.$emit('click');await flushPromises();expect(mocks.save).toHaveBeenCalledTimes(2);
+  first({status:true});await flushPromises();expect(save.props('loading')).toBe(true);
+  second({status:true});await flushPromises();expect(save.props('loading')).toBe(false);
+ }finally{w.unmount();}
 });
