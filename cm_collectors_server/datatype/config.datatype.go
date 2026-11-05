@@ -149,6 +149,12 @@ type Config_FilesBases struct {
 	ShieldNoPerformerPhoto       bool                      `json:"shieldNoPerformerPhoto"`              // 屏蔽无照片演员
 	ShowPreviewImage             bool                      `json:"showPreviewImage"`                    // 显示预览图片
 	ResourceQuickStars           bool                      `json:"resourceQuickStars"`                  // 本库独立：仅桌面资源列表快捷评星
+	CategoryBrowseEnabled        bool                      `json:"categoryBrowseEnabled"`
+	CategoryBrowseSource         string                    `json:"categoryBrowseSource"`
+	CategoryBrowseSort           string                    `json:"categoryBrowseSort"`
+	CategoryBrowseGroupLimit     int                       `json:"categoryBrowseGroupLimit"`
+	CategoryBrowseCoverStyle     string                    `json:"categoryBrowseCoverStyle"`
+	CategoryBrowseExpandStyle    string                    `json:"categoryBrowseExpandStyle"`
 	MergeResourceGroups          *bool                     `json:"mergeResourceGroups,omitempty"`       // 本库独立：缺省合并同组资源
 	ResourceGroupCoverStyle      string                    `json:"resourceGroupCoverStyle,omitempty"`   // 本库独立：stack（缺省）、triptych、book 或 adaptive
 	ResourceGroupExpandStyle     string                    `json:"resourceGroupExpandStyle,omitempty"`  // 本库独立：fan（缺省）、strip、fold、spine 或 magazine
