@@ -51,6 +51,7 @@
         <span>{{ compact ? '封面样式' : '合集封面样式' }}</span
         ><selectResourceGroupCoverStyle
           v-model="config.categoryBrowseCoverStyle"
+          :teleported="false"
           :disabled="!config.categoryBrowseEnabled"
         />
       </div>
@@ -58,6 +59,7 @@
         <span>{{ compact ? '展开样式' : '合集展开样式' }}</span
         ><selectResourceGroupExpandStyle
           v-model="config.categoryBrowseExpandStyle"
+          :teleported="false"
           :disabled="!config.categoryBrowseEnabled"
         />
       </div>

@@ -82,11 +82,11 @@
               <el-checkbox v-model="showVideoDuration" label="显示视频时长" />
               <div class="modern-option-item modern-group-style">
                 <span class="modern-control-label">关联组封面样式</span>
-                <selectResourceGroupCoverStyle v-model="resourceGroupCoverStyle" />
+                <selectResourceGroupCoverStyle v-model="resourceGroupCoverStyle" :teleported="false" />
               </div>
               <div class="modern-option-item modern-group-style">
                 <span class="modern-control-label">关联组展开样式</span>
-                <selectResourceGroupExpandStyle v-model="resourceGroupExpandStyle" />
+                <selectResourceGroupExpandStyle v-model="resourceGroupExpandStyle" :teleported="false" />
               </div>
             </section>
 
@@ -207,11 +207,11 @@
               </div>
               <div class="setting-item">
                 <span class="setting-label">关联组封面样式</span>
-                <selectResourceGroupCoverStyle v-model="resourceGroupCoverStyle" />
+                <selectResourceGroupCoverStyle v-model="resourceGroupCoverStyle" :teleported="false" />
               </div>
               <div class="setting-item">
                 <span class="setting-label">关联组展开样式</span>
-                <selectResourceGroupExpandStyle v-model="resourceGroupExpandStyle" />
+                <selectResourceGroupExpandStyle v-model="resourceGroupExpandStyle" :teleported="false" />
               </div>
               <CategoryBrowseQuickSettings :disabled="savingConfig || props.disabled" @saving="categorySaving=$event" />
               <div class="setting-item">
