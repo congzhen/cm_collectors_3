@@ -1,11 +1,11 @@
 {
-  "edition": "1.0",
-  "date": "2026-10-26",
+  "edition": "1.1",
+  "date": "2026-11-05",
   "status": "complete",
   "output": "CM Collectors 3 使用说明.pdf",
   "chapters": 12,
-  "feature_sections": 66,
-  "pdf_pages": 70,
+  "feature_sections": 79,
+  "pdf_pages": 84,
   "completed": [
     "独立演示环境与原创素材",
     "13种显示形式截图",
@@ -25,9 +25,10 @@
     "整本校验及用户阅读优化：安装前置、制作痕迹清理、显示切换步骤去重、路径和删除说明补齐。",
     "按用户确认修正第9页：Docker统一一种镜像，移除minimal/full分类。",
     "第12、14、16页改为横版摄影封面真实截图，覆盖宽幕卡廊、封面海报盒子-宽图、封面海报精简-扩展。",
-    "第二轮整本校验：补齐人物迁移与标签替换影响，纠正路径替换及人物批量管理配图。"
+    "第二轮整本校验：补齐人物迁移与标签替换影响，纠正路径替换及人物批量管理配图。",
+    "按当前源码及真实独立演示界面补充分类浏览、关联组、当前布局多选、快捷评星、放映室、片段管理和自更新。"
   ],
-  "current_step": "本版制作与验证完成",
+  "current_step": "1.1新功能补充及排版检查完成",
   "next_update": {
     "display": "03-display",
     "resource_tags": "04-tags",
@@ -37,8 +38,8 @@
   "demo": {
     "directory": ".local/runtime",
     "libraries": 4,
-    "resources": 96,
-    "people": 24,
+    "resources": 192,
+    "people": 48,
     "resource_tags": 72,
     "people_tags": 40,
     "moments": 16,
@@ -52,18 +53,21 @@
     "TVBox实机",
     "GPU编码",
     "Wails原生窗口与系统选择器",
-    "Linux和Docker实机部署"
+    "Linux和Docker实机部署",
+    "软件自更新实际下载、安装与Docker卷迁移"
   ],
   "data_isolation": "未读取或复用开发与build数据库、媒体和原配置。演示主机使用独立18345/18346端口，仅使用自行生成材料。",
-  "pdf_size_bytes": 12074754,
+  "pdf_size_bytes": 14803602,
   "verification_summary": "verification-summary.json",
-  "next_work": "等待新功能或用户校对反馈；先运行check_sources.py，再按稳定ID插入或修改章节。",
-  "runtime_status": "本次演示服务已关闭，.local/runtime材料保留。",
+  "next_work": "新功能按现有稳定ID继续插入；先核对源码指纹和新入口，更新当前演示库备份。",
+  "runtime_status": "本次启动的独立API和Vite已关闭；数据库、媒体、图片与截图继续保留本机。",
   "latest_revision": {
-    "date": "2026-10-26",
-    "change": "第二轮整本校验：补齐人物迁移与标签替换影响，纠正路径替换及人物批量管理配图。",
-    "validation": "全本70页重新渲染，通查9张联系表并放大检查最终修改的48、49、50、55页；78个目录链接、书签、正文完整性、图片裁切与边界检查通过。",
-    "runtime": "独立演示服务已关闭；本轮截图只检索和勾选，未提交业务写入。"
+    "date": "2026-11-05",
+    "edition": "1.1",
+    "change": "按当前源码及真实独立演示界面补充分类浏览、关联组、当前布局多选、快捷评星、放映室、片段管理和自更新。",
+    "added_sections": 13,
+    "validation": "84页渲染、11张联系表检查，新增画廊及关键操作页放大复核；91个目录链接、书签、正文和表格完整性及裁切/边界检查通过。",
+    "runtime": "本次启动的独立API和Vite已关闭；数据库、媒体、图片与截图继续保留本机。"
   },
   "internal_chapters": [
     "13-reference"
@@ -74,5 +78,6 @@
     "pdf": "tracked; final PDF at project root",
     "tracked": "正文、脚本、来源清单、功能映射、维护记录及最终PDF",
     "new_clone": "恢复本机素材副本或重新生成和截图后再构建"
-  }
+  },
+  "latest_update": "update-20261105.json"
 }

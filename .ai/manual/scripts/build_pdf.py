@@ -29,7 +29,7 @@ STYLES={
  'small':ParagraphStyle('small',fontName='CN',fontSize=8.2,leading=12,textColor=MUTED,wordWrap='CJK'),
  'cell':ParagraphStyle('cell',fontName='CN',fontSize=9.2,leading=15,textColor=INK,wordWrap='CJK'),
 }
-audit=[];page_map={}
+audit=[];page_map={};publication_date='';publication_edition=''
 def paragraph(c,text,x,top,width,style='body'):
  p=Paragraph(escape(text).replace('\n','<br/>'),STYLES[style]);_,height=p.wrap(width,H)
  p.drawOn(c,x,H-top-height)
@@ -40,7 +40,7 @@ def txt(c,s,x,top,size=10,font='CN',color=INK):
 def header(c,chapter,number):
  txt(c,'CM COLLECTORS 3',M,23,8,'CNB',TEAL);c.setStrokeColor(HexColor('#dce6e7'));c.line(M,H-42,W-M,H-42)
  c.setFont('CN',8);c.setFillColor(MUTED);c.drawRightString(W-M,H-30,chapter)
- c.line(M,38,W-M,38);txt(c,'使用说明 · 2026-10-26',M,H-29,7.5,color=MUTED)
+ c.line(M,38,W-M,38);txt(c,'使用说明 · '+publication_date,M,H-29,7.5,color=MUTED)
  c.setFont('CN',8);c.drawRightString(W-M,23,f'{number:02d}')
 def image_block(c,p,top):
  name=p['image'];file=BASE/'assets/screenshots'/f'{name}.jpg'
@@ -68,6 +68,18 @@ def blocks(c,p,top,x=M,width=CW):
   txt(c,b['title'],x+24,top,11,'CNB')
   top=paragraph(c,b['text'],x+24,top+23,width-24)+13
  return top
+def gallery(c,p,top):
+ items=p['gallery'];columns=p.get('gallery_columns',2);gap=14;cellw=(CW-gap*(columns-1))/columns
+ row_count=math.ceil(len(items)/columns);cellh=p.get('gallery_height',430)/row_count
+ for index,item in enumerate(items):
+  col=index%columns;row=index//columns;x=M+col*(cellw+gap);y=top+row*cellh
+  im=Image.open(BASE/'assets/screenshots'/f"{item['image']}.jpg")
+  if item.get('crop'):im=im.crop(tuple(item['crop']))
+  scale=min(cellw/im.width,(cellh-28)/im.height);iw,ih=im.width*scale,im.height*scale
+  buf=BytesIO();im.save(buf,format='JPEG',quality=90,optimize=True);buf.seek(0)
+  c.drawImage(ImageReader(buf),x+(cellw-iw)/2,H-y-ih,width=iw,height=ih)
+  paragraph(c,item['title'],x+(cellw-iw)/2,y+ih+6,iw,'small')
+ return top+row_count*cellh+10
 def rows(c,data,top):
  cells=[[Paragraph(escape(str(s)),STYLES['cell'])for s in row]for row in data]
  t=Table(cells,colWidths=[CW*.27,CW*.73],hAlign='LEFT')
@@ -75,7 +87,9 @@ def rows(c,data,top):
  _,height=t.wrap(CW,H);t.drawOn(c,M,H-top-height);return top+height
 
 def main():
+ global publication_date,publication_edition
  manifest=json.loads((BASE/'manual.json').read_text(encoding='utf-8'))
+ publication_date=manifest['date'];publication_edition=manifest['edition']
  chapters=[json.loads((BASE/'chapters'/f'{name}.json').read_text(encoding='utf-8'))for name in manifest['chapters']]
  chapter_numbers={ch['id']:i+1 for i,ch in enumerate(chapters)}
  ids=[p['id']for ch in chapters for p in ch['pages']]
@@ -88,7 +102,8 @@ def main():
  first=2+len(toc_chunks)
  for n,p in enumerate(p for ch in chapters for p in ch['pages']):page_map[p['id']]=first+n
  for ch in chapters:page_map[ch['id']]=page_map[ch['pages'][0]['id']]
- c=Canvas(str(OUT),pagesize=(W,H),pageCompression=1)
+ draft=LOCAL/'manual-draft.pdf'
+ c=Canvas(str(draft),pagesize=(W,H),pageCompression=1)
  c.setTitle(manifest['title']);c.setAuthor('CM Collectors 3');c.setSubject('资源管理、显示形式、标签、播放与设置的图文使用手册')
  c.setFillColor(HexColor('#10343e'));c.rect(0,0,W,H,stroke=0,fill=1)
  c.setFillColor(HexColor('#1c5360'))
@@ -97,7 +112,7 @@ def main():
  txt(c,'把收藏整理好',M,175,39,'CNB',white);txt(c,'让每次浏览都有方向',M,234,25,'CN',white)
  txt(c,'使用说明',M,337,46,'CNB',white)
  txt(c,'资源管理 · 13 种显示形式 · 标签体系 · 播放与进阶工具',M,410,11,'CN',HexColor('#c6dcdf'))
- txt(c,'2026.10.26  /  第 1.0 版',M,687,12,'CNB',white)
+ txt(c,f"{publication_date.replace('-','.')}  /  第 {publication_edition} 版",M,687,12,'CNB',white)
  txt(c,'CM Collectors 3 · 图文使用说明',M,726,10,'CN',HexColor('#c6dcdf'))
  c.showPage()
  number=2
@@ -133,17 +148,21 @@ def main():
     end=image_block(c,p,top);body_end=blocks(c,p,top,M+216,CW-216);top=max(end,body_end)
    else:
     if p.get('image'):top=image_block(c,p,top)
+    if p.get('gallery'):top=gallery(c,p,top)
     top=blocks(c,p,top)
    if p.get('rows'):top=rows(c,p['rows'],top+8)
    if top>H-58:raise ValueError(f"page overflow {p['id']}: bottom={top:.1f}, limit={H-58:.1f}")
-   audit.append({'id':p['id'],'chapter':ch['id'],'title':p['title'],'pdf_page':number,'bottom':round(top,1),'image':p.get('image'),'source_hashes':source_hashes,'verification':p.get('verification')})
+   entry={'id':p['id'],'chapter':ch['id'],'title':p['title'],'pdf_page':number,'bottom':round(top,1),'image':p.get('image'),'source_hashes':source_hashes,'verification':p.get('verification')}
+   if p.get('gallery'):entry['gallery']=p['gallery']
+   audit.append(entry)
    c.showPage();number+=1
  c.save()
- pdf=PdfReader(str(OUT))
+ pdf=PdfReader(str(draft))
  if len(pdf.pages)!=number-1:raise ValueError('page count mismatch')
  for entry in audit:
   text=pdf.pages[entry['pdf_page']-1].extract_text()
   if entry['title']not in text:raise ValueError('missing Chinese text: '+entry['id'])
+ draft.replace(OUT)
  (BASE/'feature-map.json').write_text(json.dumps({'edition':manifest['edition'],'date':manifest['date'],'output':OUT.name,'pages':len(pdf.pages),'features':audit},ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
  (LOCAL/'layout-audit.json').write_text(json.dumps({'pages':len(pdf.pages),'size_bytes':OUT.stat().st_size,'overflow_count':0,'entries':audit},ensure_ascii=False,indent=2),encoding='utf-8')
  print(json.dumps({'pdf':str(OUT),'pages':len(pdf.pages),'size_mb':round(OUT.stat().st_size/1024**2,2),'overflow':0},ensure_ascii=False))

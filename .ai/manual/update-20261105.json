@@ -1,0 +1,169 @@
+{
+  "date": "2026-11-05",
+  "edition": "1.1",
+  "status": "complete",
+  "new_features": [
+    {
+      "id": "display-category",
+      "title": "按演员或标签分类浏览",
+      "chapter": "03-display",
+      "pdf_page": 26,
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "display-category-settings",
+      "title": "分类排序、拆组与独立保存",
+      "chapter": "03-display",
+      "pdf_page": 27,
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "display-category-navigation",
+      "title": "在本组与整类资源之间切换",
+      "chapter": "03-display",
+      "pdf_page": 28,
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "resource-management",
+      "title": "在当前布局中多选管理",
+      "chapter": "05-resource",
+      "pdf_page": 42,
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "resource-quick-stars",
+      "title": "在封面上快捷评星",
+      "chapter": "05-resource",
+      "pdf_page": 43,
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "resource-groups",
+      "title": "创建和维护资源关联组",
+      "chapter": "05-resource",
+      "pdf_page": 44,
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "resource-group-covers",
+      "title": "关联组的四种封面样式",
+      "chapter": "05-resource",
+      "pdf_page": 45,
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "resource-group-expand",
+      "title": "悬停展开关联组的五种形式",
+      "chapter": "05-resource",
+      "pdf_page": 46,
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "play-moment-theater",
+      "title": "在片段放映室中连续选看",
+      "chapter": "07-play",
+      "pdf_page": 54,
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "play-moment-manage",
+      "title": "从资源编辑中管理片段收藏",
+      "chapter": "07-play",
+      "pdf_page": 55,
+      "verification": "ui-and-source"
+    },
+    {
+      "id": "system-update",
+      "title": "检测、下载并安装软件更新",
+      "chapter": "10-system",
+      "pdf_page": 76,
+      "verification": "source-reviewed-external-release-not-executed"
+    },
+    {
+      "id": "system-update-recovery",
+      "title": "更新失败与 Docker 版本持久化",
+      "chapter": "10-system",
+      "pdf_page": 77,
+      "verification": "source-reviewed-external-release-not-executed"
+    },
+    {
+      "id": "client-mobile-theater",
+      "title": "手机上的片段放映室",
+      "chapter": "11-clients",
+      "pdf_page": 80,
+      "verification": "ui-and-source"
+    }
+  ],
+  "screenshots": [
+    "category-browse",
+    "category-members",
+    "category-settings",
+    "category-tags",
+    "display-settings",
+    "group-cover-adaptive",
+    "group-cover-book",
+    "group-cover-stack",
+    "group-cover-triptych",
+    "group-expand-fan",
+    "group-expand-fold",
+    "group-expand-magazine",
+    "group-expand-spine",
+    "group-expand-strip",
+    "group-manage",
+    "management",
+    "management-layout",
+    "management-selection",
+    "mobile-moment-theater",
+    "moments-collection",
+    "moments-theater",
+    "resource-moments-manager",
+    "resource-quick-stars",
+    "tag-batch"
+  ],
+  "real_operations_verified": [
+    "当前布局勾选3条，已选预览与标签窗口真实打开，未提交标签变更",
+    "真实创建并读取8成员与4成员关联组，未复制资源或媒体",
+    "分类浏览按演员归集，上限2真实拆组，进入本组并显示全部切换",
+    "分类浏览按演员与题材真实归集，上限2拆组，进入本组并显示全部切换",
+    "快捷评星实际写入4星并重新读取确认，随后恢复原星级",
+    "桌面片段放映室真实载入视频，收藏视图切换；资源编辑的片段管理窗口打开，未删除收藏",
+    "指定有实际收藏的资源打开管理窗口，核对收藏卡片与起止时间，未删除记录"
+  ],
+  "gallery_styles": {
+    "covers": 4,
+    "expanded": 5
+  },
+  "verification": "84页渲染、11张联系表检查，新增画廊及关键操作页放大复核；91个目录链接、书签、正文和表格完整性及裁切/边界检查通过。",
+  "not_executed": [
+    "外部发行包的检测下载、安装重启和Docker卷迁移",
+    "外部AI、远程刮削、电视实机、GPU及Wails原生能力的新一轮验证"
+  ],
+  "data_isolation": "仅使用.ai/manual/.local/runtime与摄影缓存；未打开开发/build数据库、原配置或媒体。",
+  "demo_inventory_before": {
+    "resources": 96,
+    "performer": 24,
+    "tag": 72,
+    "video_moment": 16
+  },
+  "demo_inventory_after": {
+    "resources": 192,
+    "performer": 48,
+    "tag": 72,
+    "video_moment": 16
+  },
+  "inventory_observation": "本轮隔离服务运行期间资源与人物总数增加，未定位增加来源；保留全部演示资料，没有清空或覆盖库。各图使用真实界面，当前备份已与隔离库总数对照。",
+  "restored_backup": {
+    "zip": "20261105_120359.zip",
+    "counts": {
+      "resources": 192,
+      "performer": 48,
+      "tag": 72,
+      "video_moment": 16
+    },
+    "sqlite_integrity": "ok",
+    "note": "仅恢复到手册.local/restore-check，不覆盖任何正在使用的库。"
+  },
+  "pdf_sha256": "86aa2524807dc88fe189f8c03a59716b875b27dde32f99a7120a4e0d83da1fdf",
+  "git_policy": "独立图片与演示数据忽略；提交手册正文、维护脚本及根目录最终PDF。"
+}

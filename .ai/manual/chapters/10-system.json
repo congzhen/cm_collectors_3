@@ -6,7 +6,12 @@
     "cm_collectors_html/src/components/setting/autoBackup/autoBackup.vue",
     "cm_collectors_html/src/components/setting/databaseCleanup/databaseCleanup.vue",
     "cm_collectors_html/src/components/setting/softSettings/generalSet.vue",
-    "cm_collectors_html/src/components/setting/tvboxRecommendSetting/tvboxRecommendSetting.vue"
+    "cm_collectors_html/src/components/setting/tvboxRecommendSetting/tvboxRecommendSetting.vue",
+    "cm_collectors_html/src/components/setting/updateSoft/UpdateCenter.vue",
+    "cm_collectors_html/src/common/softwareUpdate.ts",
+    "cm_collectors_server/update.go",
+    "cm_collectors_server/internal/selfupdate/manager.go",
+    "cm_collectors_server/internal/selfupdate/installer.go"
   ],
   "pages": [
     {
@@ -96,6 +101,66 @@
       "image": "setting-general",
       "status": "documented",
       "verification": "ui-and-source"
+    },
+    {
+      "id": "system-update",
+      "title": "检测、下载并安装软件更新",
+      "lead": "入口：顶部“检测更新”。更新窗口显示服务端版本、平台、更新说明和当前进度。",
+      "blocks": [
+        {
+          "title": "检查与下载",
+          "text": "用管理员身份点击检测，有新版本时查看更新说明并选择“下载更新”。安装包按服务端系统选择，下载在服务端进行；关闭窗口后可稍后回来查看状态。可选择“7 天内不再提示”，手动检测仍可使用。"
+        },
+        {
+          "title": "安装并重启",
+          "text": "下载校验完成后点击“安装并重启”并确认。程序先等待现有请求及扫描、转码等任务完成，再备份 SQLite 数据库和配置，最后替换程序并重启。等待任务阶段可取消安装；更新完成后点击刷新页面。"
+        },
+        {
+          "title": "先确认可更新条件",
+          "text": "需要支持更新器的版本、可写的程序目录和足够空间，且服务端能访问发布来源。MySQL 自动安装会被阻止，应自行备份并手动更新；由 systemd 管理的实例按服务管理方式更新。"
+        }
+      ],
+      "status": "documented",
+      "verification": "source-reviewed-external-release-not-executed",
+      "rows": [
+        [
+          "窗口状态",
+          "应做什么"
+        ],
+        [
+          "下载完成",
+          "核对版本与更新说明，再决定安装"
+        ],
+        [
+          "等待任务完成",
+          "等待播放连接或后台工作结束；也可取消安装"
+        ],
+        [
+          "更新未完成",
+          "阅读完整错误，按下一页逐项排查"
+        ]
+      ]
+    },
+    {
+      "id": "system-update-recovery",
+      "title": "更新失败与 Docker 版本持久化",
+      "lead": "更新程序文件与更新容器中的 Chrome、FFmpeg 等依赖是不同操作。",
+      "blocks": [
+        {
+          "title": "文件占用或权限错误",
+          "text": "按错误中的文件名检查权限和占用。Windows 桌面客户端占用需要替换的文件时，可关闭客户端、保留服务端，再用浏览器重试。不要删除正在使用的更新记录或把未完成的临时文件当作正式版本。"
+        },
+        {
+          "title": "Docker 先持久化应用目录",
+          "text": "支持更新的新镜像需要把 /app 保存到命名卷或持久目录，并保留数据库、媒体和原配置映射。旧容器需先备份并迁移到支持更新的镜像；重建时复用原应用卷，避免丢失已更新的程序。"
+        },
+        {
+          "title": "依赖与恢复资料",
+          "text": "容器内可更新应用和内嵌网页；Chrome、FFmpeg、系统依赖及容器启动器仍需更新镜像。失败时查看程序目录 .cm-updates 中的日志和备份；未确认恢复状态前先保留这些资料。"
+        }
+      ],
+      "status": "documented",
+      "verification": "source-reviewed-external-release-not-executed"
     },
     {
       "id": "system-tvbox",

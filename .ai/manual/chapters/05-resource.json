@@ -4,7 +4,16 @@
   "sources": [
     "cm_collectors_html/src/components/resource/resourceFormDrawer.vue",
     "cm_collectors_html/src/components/content/contentRightClickMenu.vue",
-    "cm_collectors_html/src/components/details/detailsVisibility.ts"
+    "cm_collectors_html/src/components/details/detailsVisibility.ts",
+    "cm_collectors_html/src/components/content/contentListAdmin.vue",
+    "cm_collectors_html/src/components/content/ResourceGroupManager.vue",
+    "cm_collectors_html/src/components/content/ResourceGroupPanel.vue",
+    "cm_collectors_html/src/components/content/ResourceGroupCover.vue",
+    "cm_collectors_html/src/components/content/ResourceQuickStarsPopover.vue",
+    "cm_collectors_html/src/components/content/ResourceQuickStars.vue",
+    "cm_collectors_html/src/common/resourceStars.ts",
+    "cm_collectors_server/models/resourceGroups.models.go",
+    "cm_collectors_html/src/components/setting/fileDatabaseSetting/fileSettingData.vue"
   ],
   "pages": [
     {
@@ -18,7 +27,7 @@
         },
         {
           "title": "选择资源与封面",
-          "text": "“选择资源”浏览服务端允许访问的目录；支持桌面原生选择时会出现“选择本地文件”。上传或裁剪封面，并选择适合的海报预设。"
+          "text": "“选择资源”浏览服务端允许访问的目录；支持原生选择时可用“选择本地文件”。上传或裁剪封面，并选择合适预设；表单底部“片段收藏”可打开该资源的收藏管理清单。"
         },
         {
           "title": "一次核对三件事",
@@ -106,6 +115,204 @@
       "image": "player",
       "status": "documented",
       "verification": "ui-and-source"
+    },
+    {
+      "id": "resource-management",
+      "title": "在当前布局中多选管理",
+      "lead": "入口：顶部“管理模式”。现在可以保留海报、瀑布流等当前布局选择资源，也可切到管理表格。",
+      "blocks": [
+        {
+          "title": "选择与核对",
+          "text": "在“当前布局”中点击卡片勾选，用“全选本页”批选；悬停“查看已选”检查标题和封面，也可逐条取消。切换“管理表格”可核对更多字段，并保留本页选择。"
+        },
+        {
+          "title": "执行批量操作",
+          "text": "选择后可添加标签、移除标签、添加演员、设置评星、加入转码与剪辑或删除资源。当前可见列表不等于已经选中；操作前核对“已选”数量。"
+        },
+        {
+          "title": "翻页与播放",
+          "text": "管理选择以本页为范围，翻页会清理旧页选择。管理模式中点击卡片用于选择；需要正常打开或播放时退出管理模式。推荐区和关联组合并在管理时暂停。"
+        }
+      ],
+      "status": "documented",
+      "verification": "ui-and-source",
+      "image": "management-layout"
+    },
+    {
+      "id": "resource-quick-stars",
+      "crop": [
+        165,
+        95,
+        800,
+        590
+      ],
+      "title": "在封面上快捷评星",
+      "lead": "在“设置 → 文件数据库”选中目标库，开启“资源快捷评星”并保存本库设置。评星与资料评分分别保存。",
+      "blocks": [
+        {
+          "title": "打开星级面板",
+          "text": "桌面端鼠标移到封面，点击或悬停右下角的小星级入口；表格使用评星列入口。浮层显示资源名、五颗星和“清除”。手机及管理选择模式不提供这一入口。"
+        },
+        {
+          "title": "保存或清除",
+          "text": "点击目标星级，或按住鼠标横向拖动后松手保存；悬停仅预览。清除将评星设为 0，不修改评分。管理员可写入，访客只读。关闭快捷评星开关不会清空原评星。"
+        },
+        {
+          "title": "排序何时改变",
+          "text": "保存后当前页面的星级同步更新；评星排序和筛选在下次查询时生效，资源不会在点击保存时立即跳位。按 Escape 可关闭面板或取消尚未提交的拖动。"
+        }
+      ],
+      "status": "documented",
+      "verification": "ui-and-source",
+      "image": "resource-quick-stars"
+    },
+    {
+      "id": "resource-groups",
+      "title": "创建和维护资源关联组",
+      "lead": "把同一文件库中有关联的资源放在一组，便于浏览多个版本或同系列内容。每条资源最多属于一组。",
+      "blocks": [
+        {
+          "title": "创建或加入",
+          "text": "进入管理模式，选中至少两条未分组资源，点击“创建关联组”。选中一个已有组的成员及未分组资源可“加入此组”；也可用“加入已有组”，从本页或同库全部组中查找。"
+        },
+        {
+          "title": "调整成员",
+          "text": "选中同组成员后点击“查看分组”，可排序、移出、继续添加成员或解散。不同已有组不会自动合并；每组最多 1000 条资源。移出后不足两个成员时会自动解散。"
+        },
+        {
+          "title": "合并与独立浏览",
+          "text": "底部“合并”只把当前页命中的同组资源合在一张卡片上；分页仍按资源计算，所以同一组可能出现在不同页。点“独立”恢复逐条显示。解散只解除关系，不删除文件。"
+        }
+      ],
+      "status": "documented",
+      "verification": "ui-and-source",
+      "image": "group-manage"
+    },
+    {
+      "id": "resource-group-covers",
+      "title": "关联组的四种封面样式",
+      "lead": "入口：显示设置 → 封面内容 → 关联组封面样式。以下均为同一真实关联组的界面局部。",
+      "blocks": [
+        {
+          "title": "如何选择",
+          "text": "叠牌突出成组关系；三联切片和侧翻书页保留主封面；自适应拼封最多展示七张封面，展开后仍可访问全部成员。卡片上的“n 项”表示整组成员数。"
+        },
+        {
+          "title": "适用范围",
+          "text": "样式保持本库独立，只在主列表合并同组时生效。管理模式、表格、推荐区域和移动端按单个资源展示。封面样式与展开样式可分别搭配。"
+        }
+      ],
+      "status": "documented",
+      "verification": "ui-and-source",
+      "gallery": [
+        {
+          "image": "group-cover-stack",
+          "title": "叠牌封面",
+          "crop": [
+            265,
+            95,
+            521,
+            451
+          ]
+        },
+        {
+          "image": "group-cover-triptych",
+          "title": "三联切片",
+          "crop": [
+            265,
+            95,
+            521,
+            451
+          ]
+        },
+        {
+          "image": "group-cover-book",
+          "title": "侧翻书页",
+          "crop": [
+            265,
+            95,
+            521,
+            451
+          ]
+        },
+        {
+          "image": "group-cover-adaptive",
+          "title": "自适应拼封",
+          "crop": [
+            265,
+            95,
+            521,
+            451
+          ]
+        }
+      ],
+      "gallery_height": 385
+    },
+    {
+      "id": "resource-group-expand",
+      "title": "悬停展开关联组的五种形式",
+      "lead": "入口：显示设置 → 封面内容 → 关联组展开样式。鼠标悬停合并卡片，读取并展开整组成员。",
+      "blocks": [
+        {
+          "title": "选择和播放",
+          "text": "移入展开区选择成员，点击按资源类型和播放配置打开。短视频布局可在原播放器切换成员；鼠标移出或按 Escape 收起。方向键及 Home / End 可在成员间切换；书脊使用上下方向。"
+        }
+      ],
+      "status": "documented",
+      "verification": "ui-and-source",
+      "gallery": [
+        {
+          "image": "group-expand-fan",
+          "title": "扇形手牌",
+          "crop": [
+            6,
+            7,
+            702,
+            295
+          ]
+        },
+        {
+          "image": "group-expand-strip",
+          "title": "横向封面带",
+          "crop": [
+            102,
+            7,
+            606,
+            295
+          ]
+        },
+        {
+          "image": "group-expand-fold",
+          "title": "封面折屏",
+          "crop": [
+            4,
+            13,
+            740,
+            295
+          ]
+        },
+        {
+          "image": "group-expand-spine",
+          "title": "纵向封面书脊",
+          "crop": [
+            322,
+            4,
+            658,
+            504
+          ]
+        },
+        {
+          "image": "group-expand-magazine",
+          "title": "杂志拼版",
+          "crop": [
+            322,
+            4,
+            898,
+            508
+          ]
+        }
+      ],
+      "gallery_height": 480
     }
   ]
 }

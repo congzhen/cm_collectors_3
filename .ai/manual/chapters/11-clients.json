@@ -5,7 +5,9 @@
     "cm_collectors_html/src/router/index.ts",
     "cm_collectors_html/src/components/setting/softSettings/generalSet.vue",
     "cm_collectors_wails/frontend/src/App.svelte",
-    "cm_collectors_wails/app.go"
+    "cm_collectors_wails/app.go",
+    "cm_collectors_html/src/components/play/MobileMomentTheater.vue",
+    "cm_collectors_html/src/views/MomentsView.vue"
   ],
   "pages": [
     {
@@ -30,6 +32,29 @@
       "portrait": true,
       "status": "documented",
       "verification": "ui-and-source"
+    },
+    {
+      "id": "client-mobile-theater",
+      "title": "手机上的片段放映室",
+      "lead": "手机片库进入“片段”，上方选择“放映室 / 收藏”。默认选择也按文件库保存。",
+      "blocks": [
+        {
+          "title": "上下分区",
+          "text": "上方是播放器，下方是可左右滑动的片段封面带。点选片段定位播放，列表较多时继续加载；不可用片段无法播放。"
+        },
+        {
+          "title": "切换视图",
+          "text": "喜欢列表浏览时切换为“收藏”，再次进入沿用该库保存的选择。放映室和收藏读取同一批数据，不需要重复收藏。"
+        },
+        {
+          "title": "播放与网络",
+          "text": "手机需能访问服务端和媒体文件。浏览器可能要求手动点击播放或允许声音；切换片段后检查当前标题和时间范围。退出页面会停止放映。"
+        }
+      ],
+      "status": "documented",
+      "verification": "ui-and-source",
+      "portrait": true,
+      "image": "mobile-moment-theater"
     },
     {
       "id": "client-wails",

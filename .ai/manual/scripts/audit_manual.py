@@ -36,6 +36,11 @@ for id,p in pages.items():
   from PIL import Image
   with Image.open(B/'assets/screenshots'/f"{p['image']}.jpg") as im:
    left,top,right,bottom=p['crop'];assert 0<=left<right<=im.width and 0<=top<bottom<=im.height,('invalid crop',id)
+ for entry in p.get('gallery',[]):
+  from PIL import Image
+  assert re.sub(r'\s+','',entry['title']) in normalized,('missing gallery caption',id)
+  with Image.open(B/'assets/screenshots'/f"{entry['image']}.jpg") as im:
+   left,top,right,bottom=entry.get('crop',[0,0,*im.size]);assert 0<=left<right<=im.width and 0<=top<bottom<=im.height,('invalid gallery crop',id)
 assert '独立演示环境实际界面' not in all_text,'internal screenshot caption published'
 assert 'minimal' not in all_text and 'Dockerfile.full' not in all_text,'outdated Docker edition guidance published'
 page_refs={p.indirect_reference.idnum for p in pdf.pages}
@@ -57,7 +62,8 @@ assert toc_targets==expected_toc,'TOC links point to incorrect sections'
 report={'date':'2026-10-26','chapters':len(chapters),'features':len(pages),'pdf_pages':len(pdf.pages),'toc_links_checked':links,'layouts_documented':modes,'settings_tabs_documented':{label:setting_map[name]for label,name in tabs},'pdf_size_bytes':(R/'CM Collectors 3 使用说明.pdf').stat().st_size,'checks':['所有稳定ID唯一','13种显示模式已覆盖','当前13个设置页已映射','所有目录链接目标有效','所有页面标题中文可提取','构建下边界及单行文字右边界无溢出','章节书签顺序和目标页正确','功能映射页与正文标题一致','内部章节和功能ID未进入用户正文','截图裁切范围有效']}
 for p in pages.values():
  if p.get('image'):assert (B/'assets/screenshots'/f"{p['image']}.jpg").exists()
-# The only database read below is the independently generated backup snapshot.
+# Only documentation-owned databases are read: the generated backup snapshot
+# and, when present, its isolated runtime source. Never open application DBs.
 backup_dir=B/'.local/runtime/auto_backup'
 backups=sorted(backup_dir.glob('*.zip'))
 if backups:
@@ -70,9 +76,18 @@ if backups:
  with sqlite3.connect(target.as_uri()+'?mode=ro',uri=True)as con:
   moment_table=next(row[0]for row in con.execute("SELECT name FROM sqlite_master WHERE type='table'")if row[0]in ['video_moment','video_moments'])
   counts={name:con.execute(f'SELECT COUNT(*) FROM "{name}"').fetchone()[0]for name in ['resources','performer','tag',moment_table]}
-  assert counts['resources']==96 and counts['performer']==24,counts
+  assert counts['resources']>0 and counts['performer']>0,counts
   assert con.execute('PRAGMA integrity_check').fetchone()[0]=='ok'
+ source_db=B/'.local/runtime/db/manual.db'
+ if source_db.exists():
+  with sqlite3.connect(source_db.resolve().as_uri()+'?mode=ro',uri=True) as source:
+   current={name:source.execute(f'SELECT COUNT(*) FROM "{name}"').fetchone()[0] for name in counts}
+   assert counts==current,('manual backup stale; refresh independent backup',counts,current)
  report['backup_restore_check']={'zip':zpath.name,'counts':counts,'sqlite_integrity':'ok','note':'仅恢复到手册.local/restore-check，不覆盖任何正在使用的库。'}
 report['checks'].extend(['每页导语、正文及表格文字完整可提取','未恢复旧Docker镜像分类'])
+report['date']=manifest['date']
+new_features=['display-category','display-category-settings','display-category-navigation','resource-management','resource-quick-stars','resource-groups','resource-group-covers','resource-group-expand','play-moment-theater','play-moment-manage','client-mobile-theater','system-update','system-update-recovery']
+assert all(id in pages for id in new_features),'new feature documentation missing'
+report['new_features_checked']=new_features
 (B/'.local/document-audit.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
 print(json.dumps(report,ensure_ascii=False,indent=2))

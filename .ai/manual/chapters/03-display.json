@@ -5,7 +5,12 @@
     "cm_collectors_html/src/assets/dataset.ts",
     "cm_collectors_html/src/language/zhCn.ts",
     "cm_collectors_html/src/components/content/contentList.vue",
-    "cm_collectors_html/src/components/setting/sharedConfig/SharedDisplayFields.vue"
+    "cm_collectors_html/src/components/setting/sharedConfig/SharedDisplayFields.vue",
+    "cm_collectors_html/src/components/content/CategoryBrowse.vue",
+    "cm_collectors_html/src/components/content/CategoryBrowseCard.vue",
+    "cm_collectors_html/src/components/setting/fileDatabaseSetting/CategoryBrowseFields.vue",
+    "cm_collectors_html/src/components/setting/fileDatabaseSetting/CategoryBrowseQuickSettings.vue",
+    "cm_collectors_server/models/categoryBrowse.models.go"
   ],
   "pages": [
     {
@@ -15,7 +20,7 @@
       "blocks": [
         {
           "title": "切换显示模式",
-          "text": "在主页底部点击“显示设置”，或进入“设置 → 文件数据库 → 当前库”，找到“资源显示模式”，选择模式并保存。若该库跟随公共展示配置，需在公共配置中修改。"
+          "text": "在主页底部点击“显示”（显示设置），或进入“设置 → 文件数据库 → 当前库”，找到“资源显示模式”，选择模式并保存。若该库跟随公共展示配置，需在公共配置中修改。"
         },
         {
           "title": "配合调整",
@@ -260,7 +265,7 @@
         },
         {
           "title": "调整建议",
-          "text": "表格显示与“管理模式”是两个入口。需要勾选多条资源并批量操作时，开启顶部管理模式。"
+          "text": "表格显示与“管理模式”分别设置。需要批量操作时开启管理模式；可在“当前布局”与“管理表格”切换，先核对已选数量。"
         }
       ],
       "image": "layout-table",
@@ -278,7 +283,7 @@
         },
         {
           "title": "明亮与暗黑",
-          "text": "点击顶部明亮 / 暗黑按钮可切换主题。截图采用明亮主题便于阅读；深色环境中可切换暗黑，再检查封面标签的背景和文字颜色。"
+          "text": "点击顶部明亮 / 暗黑按钮切换主题。本手册包含两种主题示例；切换后检查封面标签、标题与背景的对比度。"
         },
         {
           "title": "详情显示",
@@ -288,6 +293,72 @@
       "image": "home-studio",
       "status": "documented",
       "verification": "ui-and-source"
+    },
+    {
+      "id": "display-category",
+      "title": "按演员或标签分类浏览",
+      "lead": "入口：底部“显示”打开显示设置，在“分类浏览”中启用。把当前库资源归集为演员合集或标签合集。",
+      "blocks": [
+        {
+          "title": "选择分类依据",
+          "text": "选择“演员”，或选择当前库已启用的资源标签分类，例如“题材”。点击分类浏览区域的“应用”，再从合集封面进入。演员分类按资源的演员关系归集，不把导演或人物标签当作分类依据。"
+        },
+        {
+          "title": "筛选继续生效",
+          "text": "搜索、评星、国家、年份、人物和标签筛选仍会缩小内容范围。同一资源可以出现在多个分类中；没有有效关联的资源进入“未关联演员”或“未设置分类标签”，放在末尾。"
+        },
+        {
+          "title": "临时返回普通列表",
+          "text": "点击底部“资源”返回普通浏览，再点“分类”恢复。此操作保留本库已保存的分类设置；管理模式和手机端暂不展示分类浏览。"
+        }
+      ],
+      "status": "documented",
+      "verification": "ui-and-source",
+      "image": "category-browse"
+    },
+    {
+      "id": "display-category-settings",
+      "title": "分类排序、拆组与独立保存",
+      "lead": "分类浏览有独立的应用按钮，分类参数按文件库保存。",
+      "blocks": [
+        {
+          "title": "排序与每组上限",
+          "text": "分类排序可选资源最多、名称顺序、默认顺序；默认顺序为后添加的演员或标签优先。每组资源上限为 0～100：0 不拆组，1～100 按上限连续拆组。组内仍使用资源排序；随机排序时按收录时间稳定分组。"
+        },
+        {
+          "title": "看清数量含义",
+          "text": "“资源最多”依据演员库或标签库的有效资源总量排名；当前卡片数量、拆组和进入后的内容仍受当前筛选限制。一个资源出现在多个分类中时，底部资源总数仍去重统计。"
+        },
+        {
+          "title": "应用当前库配置",
+          "text": "在分类区域点击“应用”，通用显示设置仍使用自己的“保存”。分类依据、排序、上限和合集样式保持本库独立，即使跟随公共展示配置也不会自动同步到其它库。"
+        }
+      ],
+      "status": "documented",
+      "verification": "ui-and-source",
+      "image": "category-settings"
+    },
+    {
+      "id": "display-category-navigation",
+      "title": "在本组与整类资源之间切换",
+      "lead": "合集是当前筛选下的动态浏览结果，资料或排序改变后，小组内容也可能变化。",
+      "blocks": [
+        {
+          "title": "本组与全部",
+          "text": "点击合集封面进入本组；一个分类拆成多组时，可用“本组 / 全部”切换，或通过“查看全部”进入整类。返回“分类列表”会回到之前的分类页。"
+        },
+        {
+          "title": "选择合集外观",
+          "text": "合集封面可选叠牌、三联切片、侧翻书页、自适应拼封；展开可选五种样式，效果见资源关联组样式页。只有一条资源的合集使用单封面。分类样式与手动关联组样式分别保存。"
+        },
+        {
+          "title": "与关联组的区别",
+          "text": "分类浏览会随演员、标签和筛选自动归集，不创建实体分组、不复制资源，也不搬运文件。进入分类后按单个资源展示，不额外合并手动关联组。"
+        }
+      ],
+      "status": "documented",
+      "verification": "ui-and-source",
+      "image": "category-members"
     }
   ]
 }

@@ -5,7 +5,12 @@
     "cm_collectors_html/src/common/play.ts",
     "cm_collectors_html/src/components/play/MomentTools.vue",
     "cm_collectors_html/src/views/MomentsView.vue",
-    "cm_collectors_html/src/components/setting/VideoPreviewSetting.vue"
+    "cm_collectors_html/src/components/setting/VideoPreviewSetting.vue",
+    "cm_collectors_html/src/components/play/LibraryMomentsButton.vue",
+    "cm_collectors_html/src/components/play/MomentCollection.vue",
+    "cm_collectors_html/src/components/resource/ResourceMomentsManager.vue",
+    "cm_collectors_server/processors/videoMoments.processors.go",
+    "cm_collectors_server/processors/videoMomentCover.processors.go"
   ],
   "pages": [
     {
@@ -55,7 +60,7 @@
     {
       "id": "play-moment-library",
       "title": "按文件库集中查看片段收藏",
-      "lead": "入口：主页底部“片段收藏”，或片段收藏页面。",
+      "lead": "入口：主页底部“片段”，或片段收藏页面。可以选择收藏网格或片段放映室。",
       "blocks": [
         {
           "title": "找回收藏",
@@ -63,16 +68,66 @@
         },
         {
           "title": "打开方式",
-          "text": "文件库显示设置可选择“弹窗播放器”或“进入详情播放页”。片段入口的打开方式与资源普通播放方式可分别设置。"
+          "text": "桌面底部“片段”提供收藏与放映室切换，并按当前文件库记住默认视图。普通资源下方片段的打开方式仍可在文件库设置中选择弹窗或详情播放页。"
         },
         {
           "title": "源文件变化",
           "text": "收藏依赖对应源文件。源文件不可用或发生变化时，根据界面提示重新核对；位置记录仍可能保留，不代表视频已经被备份。"
         }
       ],
-      "image": "moments",
+      "image": "moments-collection",
       "status": "documented",
       "verification": "ui-and-source"
+    },
+    {
+      "id": "play-moment-theater",
+      "title": "在片段放映室中连续选看",
+      "lead": "入口：主页底部“片段”。可在“收藏”与“放映室”之间切换，默认视图按当前文件库保存。",
+      "blocks": [
+        {
+          "title": "放映室与收藏视图",
+          "text": "放映室在一个窗口内同时显示播放器和片段列表；收藏视图用网格浏览封面、名称、备注与时间。切换视图不创建或删除片段。"
+        },
+        {
+          "title": "选择片段",
+          "text": "先在列表检索名称、备注或资源标题，再点击可用片段。时间点定位到开始位置；起止片段在范围内循环。再次点击当前片段可从起点重播，同一分集之间切换无需重新打开播放页。"
+        },
+        {
+          "title": "失效与恢复",
+          "text": "源文件不可用时保留收藏资料并禁用播放；先修复文件或路径再重试。永久删除所属资源会连同清理关联片段及其首图，不能依靠片段收藏备份视频。"
+        }
+      ],
+      "status": "documented",
+      "verification": "ui-and-source",
+      "image": "moments-theater"
+    },
+    {
+      "id": "play-moment-manage",
+      "title": "从资源编辑中管理片段收藏",
+      "lead": "入口：右键资源 → 编辑 → 表单底部“片段收藏（数量）”。详情下方片段卡片用于查看和播放。",
+      "blocks": [
+        {
+          "title": "查看与删除",
+          "text": "打开“管理片段收藏”，核对名称、起止时间、备注和源文件状态。确认删除后立即生效，不依赖资源编辑表单的“提交”；关闭编辑窗口不会撤销删除，源视频会保留。"
+        },
+        {
+          "title": "加载更多与长备注",
+          "text": "列表每批加载 50 条，有更多记录时点击“加载更多”。数量未加载完全时会带“+”；长备注可展开阅读，确认操作对象后再删除。"
+        },
+        {
+          "title": "修改时间和名称",
+          "text": "需要新建或修改片段名称、备注及起止位置时，进入播放器的“片段 / 预览 → 管理”面板。资源编辑中的窗口集中提供收藏清单与删除入口。"
+        }
+      ],
+      "status": "documented",
+      "verification": "ui-and-source",
+      "image": "resource-moments-manager",
+      "crop": [
+        345,
+        65,
+        1095,
+        370
+      ]
     },
     {
       "id": "play-previews",
@@ -85,7 +140,7 @@
         },
         {
           "title": "已有预览",
-          "text": "更换视频或调整默认间隔不会自动重建已有预览。需要更新时手动删除旧预览，再重新生成。删除预览不会删除源视频和片段收藏。"
+          "text": "更换视频或调整间隔不会自动重建已有预览；需要更新时手动删除再生成。时间轴预览与收藏首图分别保存：清空预览缓存不会删除收藏首图、源视频或片段记录。"
         },
         {
           "title": "队列与容量",

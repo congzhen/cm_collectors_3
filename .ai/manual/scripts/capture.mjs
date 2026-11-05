@@ -23,12 +23,13 @@ try {
   await p.getByRole('dialog',{name:'设置资源标签'}).getByRole('button',{name:'提交',exact:true}).click();await pageReady(p);
   const changed=await api('/resource/info/'+state.resources[0].id);if(!changed.tags.some(x=>x.name==='精选'))throw Error('single tagging did not persist');console.log('verified: single tag persists');
   await p.getByTitle('开启管理模式').click();await pageReady(p);
+  await p.getByText('管理表格',{exact:true}).click();await pageReady(p);
   for(let i=0;i<3;i++)await p.locator('.el-table__body-wrapper input[type=checkbox]').nth(i).evaluate(el=>el.click());
   console.log('checked rows',await p.locator('.el-table__body-wrapper input:checked').count());await shot(p,'management');
   // Background list refreshes can replace table rows while the screenshot is
   // settling. Reconfirm the real selection immediately before the action.
   for(let i=0;i<3;i++){const box=p.locator('.el-table__body-wrapper input[type=checkbox]').nth(i);if(!await box.isChecked())await box.evaluate(el=>el.click());}
-  await p.getByRole('button',{name:'批量添加标签',exact:true}).click();await p.getByRole('dialog',{name:'批量添加标签'}).locator('label.el-checkbox').filter({hasText:'学习参考'}).click();await shot(p,'tag-batch');
+  await p.getByRole('button',{name:'添加标签',exact:true}).click();await p.getByRole('dialog',{name:'批量添加标签'}).locator('label.el-checkbox').filter({hasText:'学习参考'}).click();await shot(p,'tag-batch');
   await p.getByRole('dialog',{name:'批量添加标签'}).getByRole('button',{name:'提交',exact:true}).click();await pageReady(p);
   console.log('verified: batch tag submitted');
   await home(p);await p.getByTitle('标签管理',{exact:true}).click();await shot(p,'tag-manage');

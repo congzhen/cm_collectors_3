@@ -1,17 +1,17 @@
 {
-  "date": "2026-10-26",
+  "date": "2026-11-05",
   "pdf": {
-    "pages": 70,
-    "size_bytes": 12074754,
-    "sha256": "53598cfcaa97a99e9c8baf08d14137d28e7cd0a9c82753641219961d5bb35912",
-    "toc_links_checked": 78,
+    "pages": 84,
+    "size_bytes": 14803602,
+    "sha256": "86aa2524807dc88fe189f8c03a59716b875b27dde32f99a7120a4e0d83da1fdf",
+    "toc_links_checked": 91,
     "layout_overflow": 0,
-    "rendered_pages": 70,
-    "visual_review": "全本70页重新渲染，通查9张联系表并放大检查最终修改的48、49、50、55页；78个目录链接、书签、正文完整性、图片裁切与边界检查通过。"
+    "rendered_pages": 84,
+    "visual_review": "84页渲染、11张联系表检查，新增画廊及关键操作页放大复核；91个目录链接、书签、正文和表格完整性及裁切/边界检查通过。"
   },
   "coverage": {
     "chapters": 12,
-    "feature_sections": 66,
+    "feature_sections": 79,
     "resource_display_modes": 13,
     "settings_tabs": 13
   },
@@ -43,17 +43,27 @@
     },
     "transcode_output_mode": "new_file; source media preserved",
     "backup_restore": {
-      "zip": "20261026_112527.zip",
+      "zip": "20261105_120359.zip",
       "counts": {
-        "resources": 96,
-        "performer": 24,
+        "resources": 192,
+        "performer": 48,
         "tag": 72,
         "video_moment": 16
       },
       "sqlite_integrity": "ok",
       "note": "仅恢复到手册.local/restore-check，不覆盖任何正在使用的库。"
     },
-    "demo_host": "独立源码主机编译并启动成功；配置在打开数据库前验证所有数据路径位于演示目录内。"
+    "demo_host": "独立源码主机编译并启动成功；配置在打开数据库前验证所有数据路径位于演示目录内。",
+    "update_20261105": [
+      "当前布局勾选3条，已选预览与标签窗口真实打开，未提交标签变更",
+      "真实创建并读取8成员与4成员关联组，未复制资源或媒体",
+      "分类浏览按演员归集，上限2真实拆组，进入本组并显示全部切换",
+      "分类浏览按演员与题材真实归集，上限2拆组，进入本组并显示全部切换",
+      "快捷评星实际写入4星并重新读取确认，随后恢复原星级",
+      "桌面片段放映室真实载入视频，收藏视图切换；资源编辑的片段管理窗口打开，未删除收藏",
+      "指定有实际收藏的资源打开管理窗口，核对收藏卡片与起止时间，未删除记录"
+    ],
+    "software_update": "当前源码及UI实现核对；未对演示主机执行外部下载、安装或重启。"
   },
   "git": {
     "candidate_files_before_summary": 95,
@@ -71,10 +81,11 @@
     "TVBox实机",
     "GPU编码",
     "Wails原生窗口与系统选择器",
-    "Linux和Docker实机部署"
+    "Linux和Docker实机部署",
+    "软件自更新实际下载、安装与Docker卷迁移"
   ],
   "workspace": "仅新增手册工程与.gitignore规则；原有cm_collectors_server/config.yaml改动保留，未读取或修改。",
-  "runtime": "本次启动的独立前端和API服务已关闭；演示数据与素材继续保留。",
+  "runtime": "本次启动的独立API和Vite已关闭；数据库、媒体、图片与截图继续保留本机。",
   "cover_revision": [
     {
       "date": "2026-10-26",
@@ -195,5 +206,13 @@
     "write_actions": [],
     "completed": true,
     "date": "2026-10-26T04:21:04.019Z"
+  },
+  "update_20261105": {
+    "date": "2026-11-05",
+    "edition": "1.1",
+    "change": "按当前源码及真实独立演示界面补充分类浏览、关联组、当前布局多选、快捷评星、放映室、片段管理和自更新。",
+    "added_sections": 13,
+    "validation": "84页渲染、11张联系表检查，新增画廊及关键操作页放大复核；91个目录链接、书签、正文和表格完整性及裁切/边界检查通过。",
+    "runtime": "本次启动的独立API和Vite已关闭；数据库、媒体、图片与截图继续保留本机。"
   }
 }

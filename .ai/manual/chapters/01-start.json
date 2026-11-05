@@ -118,7 +118,7 @@
         },
         {
           "title": "整理资料：编辑、打标签与批量操作",
-          "text": "右键资源选“编辑”修改资料，选“打标签”归类。需要一次处理多条资源时，再打开顶部“管理模式”并勾选资源。文件多了可用“导入刮削”批量扫描；想改变浏览样式可点底部“显示设置”。"
+          "text": "右键“编辑”修改资料，“打标签”进行归类。一次处理多条资源时开启顶部“管理模式”，在当前布局中点选卡片或切换管理表格。底部“显示”可改布局、关联组外观或分类浏览。"
         }
       ],
       "status": "documented",
@@ -131,7 +131,7 @@
       "blocks": [
         {
           "title": "持久化数据",
-          "text": "将主机的数据库目录挂载到容器 /app/db，将媒体目录挂载到例如 /media，并映射 12345 端口。添加资源时选择 /media 下的文件，不填写 Windows 主机盘符。"
+          "text": "映射 12345 端口，媒体挂载到例如 /media，数据库挂载到 /app/db。使用支持自更新的新镜像时，还需持久化 /app 应用目录；配置、更新包与程序版本应在重建容器后保留。"
         },
         {
           "title": "镜像与浏览器",
@@ -152,16 +152,20 @@
           "12345:12345"
         ],
         [
-          "数据库目录",
-          "主机专用数据库目录 → /app/db"
+          "应用目录",
+          "命名卷 cm_collectors_app → /app"
         ],
         [
-          "媒体目录",
+          "数据库",
+          "主机数据库目录 → /app/db"
+        ],
+        [
+          "媒体",
           "主机媒体目录 → /media"
         ],
         [
-          "演示命令",
-          "docker run -d --name cm_collectors_3 -p 12345:12345 -v /srv/cm/db:/app/db -v /srv/cm/media:/media congzhen/cm_collectors_3:latest"
+          "示例命令",
+          "docker run -d --name cm_collectors_3 -p 12345:12345 -v cm_collectors_app:/app -v /srv/cm/db:/app/db -v /srv/cm/media:/media congzhen/cm_collectors_3:latest"
         ]
       ],
       "status": "documented",

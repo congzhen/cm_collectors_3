@@ -6,6 +6,8 @@ PDF 只发布 `manual.json` 的 `chapters` 列表。`internal_chapters` 中的 `
 
 `review-summary.json` 记录最近一次整本内容与排版检查。用户正文不显示稳定功能 ID，也不放制作验证过程；数字图号和章内位置随发布顺序自动生成。显示模式的共用切换步骤集中在本章开头，各模式页保留效果图与特点。入门顺序为概览、安装、添加、日常操作，再介绍 Docker。
 
+当前版为 2026-11-05 / 1.1：12 章、79 个功能小节、84 页。`update-20261105.json` 记录本轮新增位置、操作核对与截图；旧稳定 ID 保持不变。发布日期和版次由 `manual.json` 控制封面与页脚。新功能继续插入对应章节，不使用固定页码定位。
+
 ## 更新已有手册
 
 1. 运行 `python .ai/manual/scripts/check_sources.py`，审阅来源变更。不要仅凭源码指纹就认定操作流程已更新。
@@ -81,6 +83,14 @@ node .ai/manual/scripts/capture_people.mjs
 `node .ai/manual/scripts/verify_workflows.mjs` 会运行演示视频信息采集、指纹计算、预览检查和一项保存新文件的转码，并写入 `.local/runtime/verification.json`。此命令会改变演示操作状态，通常不必为仅修改文字而重复执行。
 
 `node .ai/manual/scripts/capture_review_details.mjs` 补拍资源路径检索和人物批量管理。路径检索以演示库真实路径片段查询，不执行替换；人物只选择三张卡片，不提交标签、迁移或删除。配图分别为 `library-paths.jpg` 和 `performer-batch.jpg`。
+
+## 1.1 新功能截图
+
+先按上文重新编译独立 API 主机，使用现有 `.local/runtime/` 启动 API 和 Vite。依次执行 `node .ai/manual/scripts/capture_update_20261105.mjs`，参数分别为 `overview`、`groups`、`category`、`stars`、`moments`；`manager` 可单独补拍指定资源的片段管理窗口。
+
+该脚本保存并恢复本库显示参数；真实创建的两组演示关联组保留以便复用，重复执行不重复建组。快捷评星在核对保存后恢复原星级。片段只播放和查看，不删除。状态及实际界面裁切范围保存在 `.local/runtime/update-20261105.json`；关联组样式使用 `gallery` 数组逐项引用截图及裁切，构建时在 PDF 内排版，不改原截图。字幕、更新状态或成功结果不得通过模拟接口制作。
+
+补拍后仍需检查画廊裁切和实际按钮；更新软件说明本轮仅核对实现，不在演示主机执行应用安装或服务重启。演示库会保留现有新增资料，备份审计对照当前隔离库的实际数量，不再固定为首次制作时的 96 条资源。
 
 ## 素材与体积
 
