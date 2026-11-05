@@ -46,6 +46,29 @@ afterEach(() => {
   vi.useRealTimers()
   mocks.members.mockReset()
 })
+it.each(['stack', 'triptych', 'book', 'adaptive'] as const)('%s 单资源小组不保留叠牌缩进，分类总量和导航保持原样', async (style) => {
+  const w = create()
+  try {
+    const single = { ...group, part: 3, parts: 3, count: 1, total: 9 }
+    await w.setProps({ coverStyle: style, group: single })
+    expect(w.find('.category-front.is-stack').exists()).toBe(false)
+    expect(w.find('.category-back').exists()).toBe(false)
+    expect(w.get('.category-count').text()).toBe('1 个')
+    expect(w.get('.category-meta').text()).toContain('共 9 个资源')
+    await w.get('.category-cover').trigger('click')
+    expect(w.emitted('enter')?.[0]).toEqual([single, false])
+    await w.setProps({ group: { ...group, count: 2, preview: [...group.preview, { id: 'second' } as CategoryGroup['preview'][number]] } })
+    expect(w.find('.category-front.is-stack').exists()).toBe(style === 'stack')
+    expect(w.findAll('.category-back')).toHaveLength(style === 'stack' ? 1 : 0)
+    await w.setProps({ group: single })
+    expect(w.find('.category-front.is-stack').exists()).toBe(false)
+    expect(w.find('.category-back').exists()).toBe(false)
+    expect(w.get('.category-part').text()).toBe('3 / 3')
+    expect(w.get('.category-meta').text()).toContain('共 9 个资源')
+  } finally {
+    w.unmount()
+  }
+})
 it('慢请求未完成时移出再进入不重复请求，切换分类后可重新加载并忽略旧结果', async () => {
   vi.useFakeTimers()
   let resolve!: (data: unknown) => void

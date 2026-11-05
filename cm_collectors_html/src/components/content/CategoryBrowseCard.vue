@@ -14,7 +14,7 @@
       :aria-label="`查看${group.name}第${group.part}组`"
       @click="emit('enter', group, false)"
     >
-      <template v-if="coverStyle === 'stack'">
+      <template v-if="coverStyle === 'stack' && group.count > 1">
         <img
           v-for="(item, index) in group.preview.slice(1, 3)"
           :key="item.id"
@@ -27,7 +27,7 @@
       <ResourceGroupCover
         v-if="source"
         class="category-front"
-        :class="{ 'is-stack': coverStyle === 'stack' }"
+        :class="{ 'is-stack': coverStyle === 'stack' && group.count > 1 }"
         :resource="source"
         :src="getResourceCoverPoster(source)"
         :cover-style="coverStyle"

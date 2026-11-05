@@ -15,6 +15,32 @@ vi.mock('@/storeData/app.storeData', async () => {
 const a = { id: 'a', associationGroupId: 'g' } as I_resource;
 const b = { id: 'b' } as I_resource;
 const c = { id: 'c' } as I_resource;
+it.each(['stack', 'triptych', 'book', 'adaptive'] as const)('%s 已知只有一个成员时显示普通封面，成员增加后恢复原构图', async style => {
+  const summaries = ref(new Map([['g', { id: 'g', filesBasesId: 'lib', count: 1, preview: [a] }]]));
+  const w = mount(Cover, { props: { resource: a, src: '/cover/a', fit: 'contain', coverStyle: style }, global: { plugins: [ElementPlus], provide: {
+    [resourceGroupContextKey as symbol]: { enabled: computed(() => true), pageIds: computed(() => new Set(['a'])), summaries },
+  } } });
+  try {
+    expect(w.find('.group-cover').exists()).toBe(false);
+    expect(w.findAllComponents({ name: 'ElImage' })).toHaveLength(1);
+    expect(w.findComponent({ name: 'ElImage' }).props('fit')).toBe('contain');
+    w.findComponent({ name: 'ElImage' }).vm.$emit('load', new Event('load'));
+    expect(w.emitted('load')).toHaveLength(1);
+    summaries.value = new Map([['g', { id: 'g', filesBasesId: 'lib', count: 2, preview: [a, b] }]]);
+    await nextTick();
+    expect(w.find('.group-cover').exists()).toBe(style !== 'stack');
+    if (style !== 'stack') {
+      expect(w.findAll('.group-cover-leaf')).toHaveLength(1);
+      expect(w.find('.group-cover-leaf').findComponent({ name: 'ElImage' }).props('src')).toBe('/cover/b');
+    }
+    summaries.value = new Map([['g', { id: 'g', filesBasesId: 'lib', count: 1, preview: [a] }]]);
+    await nextTick();
+    expect(w.find('.group-cover').exists()).toBe(false);
+    expect(w.findAllComponents({ name: 'ElImage' })).toHaveLength(1);
+    expect(w.findComponent({ name: 'ElImage' }).props('src')).toBe('/cover/a');
+    expect(w.findComponent({ name: 'ElImage' }).props('fit')).toBe('contain');
+  } finally { w.unmount(); }
+});
 beforeEach(() => { appStoreData().currentConfigApp.resourceGroupCoverStyle = 'stack'; });
 afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals(); });
 it.each(['triptych', 'book'] as const)('%s 只在本页合并组使用，排除当前封面，保留原加载事件且不复制业务内容', async style => {

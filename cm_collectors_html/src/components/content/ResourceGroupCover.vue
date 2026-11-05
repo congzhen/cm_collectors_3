@@ -23,7 +23,8 @@ const style = computed(() => {
   const value = props.coverStyle || appStoreData().currentConfigApp.resourceGroupCoverStyle;
   return value === 'triptych' || value === 'book' || value === 'adaptive' ? value : 'stack';
 });
-const grouped = computed(() => !!context?.enabled.value && !!props.resource.associationGroupId && context.pageIds.value.has(props.resource.id));
+const grouped = computed(() => !!context?.enabled.value && !!props.resource.associationGroupId && context.pageIds.value.has(props.resource.id)
+  && context.summaries.value.get(props.resource.associationGroupId)?.count !== 1);
 // Composition follows member count, not card dimensions: seven or more always
 // retain the main cover plus six auxiliaries, even in compact layouts.
 const memberLimit = computed(() => style.value === 'adaptive' ? 6 : 2);
