@@ -9,7 +9,7 @@
             <ResourceGroupCover :resource="resource" class="compact-cover" :src="getResourceCoverPoster(resource)" fit="cover" />
             <div class="compact-shade"></div>
 
-            <ResourceQuickStarsPopover :resource="resource" />
+            <ResourceQuickStarsPopover :resource="resource" offset-bottom="38px" />
             <contentTagDisplay class="compact-tags" :resource="resource" font-size-disable />
             <contentVideoDurationBadge :resource="resource" offset-right="5px" offset-bottom="38px"
               compact-text />

@@ -18,7 +18,7 @@
                 @click.stop="clickResourceHandle(index)">
                 <ResourceGroupCover :resource="props.dataList[index]" :src="item.src" :title="item.title" fit="contain"
                   @load="onMaterialImageLoad(item.id, $event)" />
-                <ResourceQuickStarsPopover :resource="props.dataList[index]" />
+                <ResourceQuickStarsPopover :resource="props.dataList[index]" offset-bottom="8px" />
                 <contentVideoDurationBadge :resource="props.dataList[index]" offset-bottom="8px" offset-right="4px"
                   :compact-text="isMobile()" :adaptive-mobile="isMobile()" />
                 <div v-if="!isMobile()" class="play-icon" @click.stop="selectResourcesHandle(item)">

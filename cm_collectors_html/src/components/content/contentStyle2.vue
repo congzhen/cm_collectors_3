@@ -4,7 +4,7 @@
       <div class="content-cover"
         :style="{ width: coverPosterSize_C.width + 'px', height: coverPosterSize_C.height + 'px' }">
         <contentCoverImage :resource="props.resource"></contentCoverImage>
-        <ResourceQuickStarsPopover :resource="props.resource" />
+        <ResourceQuickStarsPopover :resource="props.resource" offset-bottom="52px" />
         <contentVideoDurationBadge :resource="props.resource" offset-bottom="52px"></contentVideoDurationBadge>
         <div class="cover-display-tags" @click.stop>
           <contentTagDisplay :resource="props.resource"></contentTagDisplay>

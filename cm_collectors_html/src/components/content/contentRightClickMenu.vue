@@ -437,10 +437,6 @@ const contentMenuItems_C = computed(() => {
 .content-right-click-menu { position: relative; }
 .content-right-click-menu:hover :deep(.resource-quick-stars-entry),
 .content-right-click-menu:focus-within :deep(.resource-quick-stars-entry) { opacity: 1; pointer-events: auto; }
-.has-quick-stars :deep(.top-bar),
-.has-quick-stars :deep(.cover-display-tags),
-.has-quick-stars :deep(.cinema-gallery-config-tags),
-.has-quick-stars :deep(.compact-tags) { max-width: calc(100% - 52px); box-sizing: border-box; }
 .resource-management-group { position: absolute; top: 8px; left: 8px; z-index: 21; max-width: calc(100% - 48px); box-shadow: 0 1px 5px rgba(0,0,0,.2); }
 .resource-selected .resource-management-group { max-width: calc(100% - 94px); }
 .resource-group-stack { position: relative; isolation: isolate; overflow: hidden; border-radius: 6px; }

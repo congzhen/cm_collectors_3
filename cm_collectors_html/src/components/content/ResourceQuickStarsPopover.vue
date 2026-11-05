@@ -1,11 +1,12 @@
 <template>
   <div v-if="enabled" ref="entry" class="resource-quick-stars-entry" :class="{ 'is-table': table, 'is-open': visible }"
+    :style="{ '--quick-stars-bottom': offsetBottom || '6px' }"
     @pointerenter="enter" @pointerleave="leave" @focusin="focusOpen" @focusout="focusLeave"
     @click.stop @dblclick.stop @pointerdown.stop @contextmenu.stop @keydown.stop @keydown.esc="close">
-    <el-popover :visible="visible" placement="bottom-end" :width="252" :offset="8" :show-arrow="false"
+    <el-popover :visible="visible" :placement="table ? 'bottom-end' : 'top-end'" :width="252" :offset="8" :show-arrow="false"
       :persistent="false" popper-class="resource-quick-stars-popper"
       :popper-style="{ padding: '0', borderRadius: '12px', boxShadow: 'var(--el-box-shadow-light)' }"
-      :popper-options="{ modifiers: [{ name: 'flip', options: { fallbackPlacements: ['top-end', 'bottom-start', 'top-start'] } }, { name: 'preventOverflow', options: { padding: 8 } }] }">
+      :popper-options="{ modifiers: [{ name: 'flip', options: { fallbackPlacements: table ? ['top-end', 'bottom-start', 'top-start'] : ['bottom-end', 'top-start', 'bottom-start'] } }, { name: 'preventOverflow', options: { padding: 8 } }] }">
       <template #reference>
         <button class="quick-stars-trigger" type="button" :aria-label="`评星：${resource.title}，${resource.stars || 0} 星`"
           :aria-expanded="visible" :aria-busy="pending" @click="openImmediately">
@@ -34,7 +35,7 @@ import type { I_resource } from '@/dataType/resource.dataType';
 import { claimQuickStarsPanel, releaseQuickStarsPanel, pendingResourceStars, resourceStarsKey, useQuickResourceStars } from '@/common/resourceStars';
 import ResourceQuickStars from './ResourceQuickStars.vue';
 
-const props = defineProps<{ resource: I_resource; table?: boolean }>();
+const props = defineProps<{ resource: I_resource; table?: boolean; offsetBottom?: string }>();
 const { enabled, editable } = useQuickResourceStars(() => props.resource);
 const visible = ref(false);
 const dragging = ref(false);
@@ -83,7 +84,8 @@ onBeforeUnmount(() => {
 });
 </script>
 <style scoped>
-.resource-quick-stars-entry { position: absolute; top: 6px; right: 6px; z-index: 22; opacity: 0; pointer-events: none; transition: opacity .15s; }
+.resource-quick-stars-entry { position: absolute; bottom: var(--quick-stars-bottom, 6px); right: 6px; z-index: 22; opacity: 0; pointer-events: none; transition: opacity .15s; }
+.resource-quick-stars-entry:not(.is-table):has(~ .video-duration-badge) { bottom: calc(var(--quick-stars-bottom, 6px) + 28px); }
 .resource-quick-stars-entry.is-table { position: static; display: inline-flex; opacity: 1; pointer-events: auto; }
 .resource-quick-stars-entry.is-open, .resource-quick-stars-entry:focus-within { opacity: 1; pointer-events: auto; }
 .quick-stars-trigger { display: inline-flex; align-items: center; justify-content: center; gap: 4px; height: 28px; min-width: 28px; padding: 0 7px; color: #ffcf70; background: rgba(20, 24, 31, .78); border: 1px solid rgba(255,255,255,.2); border-radius: 8px; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.16); }

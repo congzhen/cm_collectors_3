@@ -8,7 +8,7 @@
             <contentRightClickMenu :resource="props.dataList[index]">
               <div class="waterfall-item" @click="selectResourcesHandle(item)">
                 <ResourceGroupCover :resource="props.dataList[index]" :src="item.src" :title="item.title" :fit="fit_C" @load="onImageLoad" />
-                <ResourceQuickStarsPopover :resource="props.dataList[index]" />
+                <ResourceQuickStarsPopover :resource="props.dataList[index]" offset-bottom="8px" />
                 <contentVideoDurationBadge :resource="props.dataList[index]" offset-bottom="8px" offset-right="4px">
                 </contentVideoDurationBadge>
                 <div class="play-icon" @click.stop="playResource(item)">

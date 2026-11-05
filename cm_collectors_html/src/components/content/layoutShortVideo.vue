@@ -12,7 +12,7 @@
                   @click.stop="clickResourceHandle(index)">
 
                   <ResourceGroupCover :resource="props.dataList[index]" :src="item.src" :title="item.title" :fit="fit_C" @load="onImageLoad" />
-                  <ResourceQuickStarsPopover :resource="props.dataList[index]" />
+                  <ResourceQuickStarsPopover :resource="props.dataList[index]" offset-bottom="8px" />
                   <contentVideoDurationBadge :resource="props.dataList[index]" offset-bottom="8px" offset-right="4px"
                     :compact-text="isMobile()" :adaptive-mobile="isMobile()">
                   </contentVideoDurationBadge>

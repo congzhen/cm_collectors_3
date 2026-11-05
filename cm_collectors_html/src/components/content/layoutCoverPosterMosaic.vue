@@ -36,7 +36,7 @@
                     :title="item.data.resource.title"
                     fit="cover"
                   />
-                  <ResourceQuickStarsPopover :resource="item.data.resource" />
+                  <ResourceQuickStarsPopover :resource="item.data.resource" :offset-bottom="props.playerMode ? '8px' : '30px'" />
                   <contentVideoDurationBadge
                     :resource="item.data.resource"
                     :offset-bottom="props.playerMode ? '8px' : '30px'"

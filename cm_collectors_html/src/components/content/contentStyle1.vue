@@ -9,7 +9,7 @@
       <div class="content-cover">
         <contentCoverImage :resource="props.resource"></contentCoverImage>
       </div>
-      <ResourceQuickStarsPopover :resource="props.resource" />
+      <ResourceQuickStarsPopover :resource="props.resource" offset-bottom="24px" />
       <contentVideoDurationBadge :resource="props.resource" offset-bottom="24px" offset-right="4px">
       </contentVideoDurationBadge>
 
