@@ -131,17 +131,27 @@ const setFilterPanelVisible = (visible: boolean) => {
   localStorage.setItem(filterPanelStorageKey, visible ? 'true' : 'false');
 }
 
+let filesBaseSelectionSerial = 0;
 const selectFilesBaseHandle = async (filesBases: I_filesBases) => {
+  const serial = ++filesBaseSelectionSerial;
   loading.value = true;
-  resDetails.value = undefined;
-  const result = await store.appStoreData.initCurrentFilesBases(filesBases.id)
-  if (result && !result.status) {
-    ElMessage.error(result.message);
-    return
+  try {
+    const result = await store.appStoreData.initCurrentFilesBases(filesBases.id);
+    if (serial !== filesBaseSelectionSerial || result?.stale) return;
+    if (result && !result.status) {
+      ElMessage.error(result.message);
+      return;
+    }
+    resDetails.value = undefined;
+    store.searchStoreData.init();
+    await contentViewRef.value?.init();
+  } catch (error) {
+    if (serial === filesBaseSelectionSerial) {
+      ElMessage.error(error instanceof Error ? error.message : '切换文件库失败，请重试');
+    }
+  } finally {
+    if (serial === filesBaseSelectionSerial) loading.value = false;
   }
-  store.searchStoreData.init();
-  contentViewRef.value?.init();
-  loading.value = false;
 };
 
 const selectResourcesHandle = (resource: I_resource | undefined, isInit: boolean) => {

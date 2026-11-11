@@ -37,7 +37,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { createApp, ref } from 'vue'
 import CustomContextMenu from './contentMenu.vue'
 
 // 基本菜单项
@@ -170,7 +170,7 @@ const onContextMenu = (event: any) => {
 }
 
 // 显示列表项菜单
-const showItemMenu = (event: { preventDefault: () => void }, item: { name: string | undefined; id: number }) => {
+const showItemMenu = (event: MouseEvent, item: { name: string | undefined; id: number }) => {
   event.preventDefault()
 
   const itemMenuItems = [
@@ -210,17 +210,15 @@ const showItemMenu = (event: { preventDefault: () => void }, item: { name: strin
   document.body.appendChild(tempMenu)
 
   import('./contentMenu.vue').then(module => {
-    const { createApp } = require('vue')
     const CustomContextMenu = module.default
 
     const app = createApp(CustomContextMenu, {
       items: itemMenuItems
     })
 
-    app.mount(tempMenu)
+    const menuComponent = app.mount(tempMenu) as InstanceType<typeof CustomContextMenu>
 
     // 触发菜单显示
-    const menuComponent = app._instance.proxy
     menuComponent.show(event)
 
     // 菜单关闭后清理

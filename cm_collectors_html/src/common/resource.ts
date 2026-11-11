@@ -31,11 +31,26 @@ export const resourceBatchDelete = (resources: I_resource[], callBackFn: () => v
         try {
           LoadingService.show();
           let refreshTagData = false;
+          let successCount = 0;
           for (let i = 0; i < resources.length; i++) {
-            const deleted = await resourceDeleteExec(resources[i], () => { }, false);
+            let deleted = false;
+            try {
+              deleted = await resourceDeleteExec(resources[i], () => { }, false, false);
+            } catch (error) {
+              console.error(error);
+            }
+            if (deleted) successCount++;
             if (deleted && resources[i].filesBases_id === appStoreData().currentFilesBases.id) {
               refreshTagData = true;
             }
+          }
+          const failedCount = resources.length - successCount;
+          if (failedCount === 0) {
+            ElMessage.success(`成功删除 ${successCount} 项资源`);
+          } else if (successCount === 0) {
+            ElMessage.error(`删除失败，共 ${failedCount} 项资源`);
+          } else {
+            ElMessage.warning(`成功删除 ${successCount} 项资源，失败 ${failedCount} 项`);
           }
           callBackFn();
           if (refreshTagData) {
@@ -56,13 +71,14 @@ const resourceDeleteExec = async (
   resource: I_resource,
   callBackFn: () => void = () => { },
   refreshTagData = true,
+  showMessage = true,
 ): Promise<boolean> => {
   const result = await resourceServer.delete(resource.id);
   if (!result || !result.status) {
-    ElMessage.error(result.msg);
+    if (showMessage) ElMessage.error(result?.msg || '删除失败');
     return false;
   } else {
-    ElMessage.success('删除成功');
+    if (showMessage) ElMessage.success('删除成功');
     callBackFn();
     if (refreshTagData && resource.filesBases_id === appStoreData().currentFilesBases.id) {
       void appStoreData().refreshCurrentTagData();

@@ -296,11 +296,14 @@ const selectResourceHandle = (resource: I_resource) => {
   return playResource(resource)
 }
 
+let filesBaseSelectionSerial = 0
 const changeDataBase = async (selectedId: string) => {
-  if (!selectedId || selectedId === store.appStoreData.currentFilesBases.id) return
+  if (!selectedId) return
+  const serial = ++filesBaseSelectionSerial
   loading.value = true
   try {
     const result = await store.appStoreData.initCurrentFilesBases(selectedId)
+    if (serial !== filesBaseSelectionSerial || result?.stale) return
     if (result && !result.status) {
       selectedDataBaseId.value = store.appStoreData.currentFilesBases.id
       ElMessage.error(result.message)
@@ -313,7 +316,7 @@ const changeDataBase = async (selectedId: string) => {
     pageSize.value = normalizedPageSize()
     getDataList(scrollContentToTop)
   } finally {
-    loading.value = false
+    if (serial === filesBaseSelectionSerial) loading.value = false
   }
 }
 

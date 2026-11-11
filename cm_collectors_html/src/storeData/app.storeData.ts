@@ -29,6 +29,7 @@ export const appStoreData = defineStore('app', {
     currentTagClass: [] as I_tagClass[],
     currentTopPreferredPerformers: [] as I_performer[],
     tagDataRequestSerial: 0,
+    filesBasesRequestSerial: 0,
   }),
   getters: {
     getLogoName(state): string {
@@ -85,92 +86,54 @@ export const appStoreData = defineStore('app', {
         message: 'success'
       };
     },
-    // 初始化
-    async initCurrentFilesBases(filesBasesId: string) {
-      // 获取filesBases信息
-      const info = await filesBasesServer.infoById(filesBasesId);
-      if (!info.status) {
-        return {
-          status: false,
-          message: info.msg
-        };
-      }
-      // 设置当前filesBases
-      this.currentFilesBases = info.data;
-      this.currentPerformerBasesIds = [];
+    // 所有依赖准备完成后再提交，失败时保留当前库；只接受最后一次初始化。
+    async initCurrentFilesBases(filesBasesId: string): Promise<{ status: boolean; message: string; stale?: boolean }> {
+      const requestSerial = ++this.filesBasesRequestSerial;
+      const isStale = () => requestSerial !== this.filesBasesRequestSerial;
+      const staleResult = { status: true, message: 'stale files base request ignored', stale: true };
+      try {
+        const info = await filesBasesServer.infoById(filesBasesId);
+        if (isStale()) return staleResult;
+        if (!info?.status) return { status: false, message: info?.msg || '文件库加载失败' };
 
-      // 设置currentMainPerformerBasesId 与 currentPerformerBasesIds
-      info.data.filesRelatedPerformerBases.forEach((item) => {
-        if (item.main) {
-          this.currentMainPerformerBasesId = item.performerBases_id;
-        }
-        this.currentPerformerBasesIds.push(item.performerBases_id);
-      });
-      if (this.currentMainPerformerBasesId == '') {
-        this.currentMainPerformerBasesId = this.currentPerformerBasesIds[0];
-      }
+        const library = info.data;
+        const performerBasesIds = library.filesRelatedPerformerBases.map(item => item.performerBases_id);
+        const mainPerformerBasesId = [...library.filesRelatedPerformerBases].reverse().find(item => item.main)?.performerBases_id
+          || performerBasesIds[0] || '';
+        const config = {
+          ...createDefaultConfigApp(),
+          ...(library.filesBasesSetting.config_json_data ? JSON.parse(library.filesBasesSetting.config_json_data) : {}),
+        } as I_config_app;
+        const [tagResult, performersResult] = await Promise.all([
+          tagServer.tagDataByFilesBasesId(filesBasesId, config.showCustomTagResourceCount !== false),
+          performerServer.listTopPreferredPerformers(
+            config.performerPreferredEnabled !== false ? config.performerPreferred : [],
+            mainPerformerBasesId, config.shieldNoPerformerPhoto, config.performerShowNum,
+            filesBasesId, config.performerSortMode, config.performerRecentDays,
+          ),
+        ]);
+        if (isStale()) return staleResult;
+        if (!tagResult?.status) return { status: false, message: tagResult?.msg || '标签加载失败' };
+        if (!performersResult?.status) return { status: false, message: performersResult?.msg || '演员加载失败' };
 
-      // 解析配置文件
-      if (info.data.filesBasesSetting.config_json_data != '') {
-        const configApp = JSON.parse(info.data.filesBasesSetting.config_json_data);
-        this.currentConfigApp = { ...createDefaultConfigApp(), ...configApp };
-      } else {
-        this.currentConfigApp = createDefaultConfigApp();
+        // 使提交前发出的标签刷新失效，避免同库重载时旧请求覆盖新配置的结果。
+        // 当前库最后更新，让监听库 ID 的同步逻辑读取到完整的新配置。
+        // 使用函数式 patch 整体替换对象，避免递归合并时库 ID 先变而名称、关联仍是旧值。
+        this.$patch(state => Object.assign(state, {
+          tagDataRequestSerial: this.tagDataRequestSerial + 1,
+          currentPerformerBasesIds: performerBasesIds,
+          currentMainPerformerBasesId: mainPerformerBasesId,
+          currentConfigApp: config,
+          currentTagClass: tagResult.data.tagClass,
+          currentTag: tagResult.data.tag,
+          currentTopPreferredPerformers: performersResult.data,
+          currentFilesBases: library,
+        }));
+        return { status: true, message: 'success' };
+      } catch (error) {
+        if (isStale()) return staleResult;
+        return { status: false, message: error instanceof Error ? error.message : '文件库加载失败，请重试' };
       }
-      /*
-      if (info.data.filesBasesSetting.nfo_json_data != '') {
-        const configNfo = JSON.parse(info.data.filesBasesSetting.nfo_json_data);
-        this.currentConfigNfo = { ...defualtConfigApp, ...configNfo };
-      } else {
-        this.currentConfigNfo = defualtConfigNfo;
-      }
-      if (info.data.filesBasesSetting.simple_json_data != '') {
-        const configSimple = JSON.parse(info.data.filesBasesSetting.simple_json_data);
-        this.currentConfigNfo = { ...defualtConfigApp, ...configSimple };
-      } else {
-        this.currentConfigSimple = defualtConfigSimple;
-      }
-      */
-      console.log(this.currentConfigApp);
-
-      const tagPromise = this.initTagData(filesBasesId);
-      const topPreferredPerformersPromise = performerServer.listTopPreferredPerformers(
-        this.currentConfigApp.performerPreferredEnabled !== false
-          ? this.currentConfigApp.performerPreferred
-          : [],
-        this.currentMainPerformerBasesId,
-        this.currentConfigApp.shieldNoPerformerPhoto,
-        this.currentConfigApp.performerShowNum,
-        filesBasesId,
-        this.currentConfigApp.performerSortMode,
-        this.currentConfigApp.performerRecentDays
-      );
-
-      const [tagResult, topPreferredPerformersResult] = await Promise.all([
-        tagPromise,
-        topPreferredPerformersPromise,
-      ]);
-      if (this.currentFilesBases.id !== filesBasesId) {
-        return {
-          status: true,
-          message: 'stale files base request ignored'
-        };
-      }
-      if (tagResult && !tagResult.status) {
-        return tagResult;
-      }
-      if (!topPreferredPerformersResult.status) {
-        return {
-          status: false,
-          message: topPreferredPerformersResult.msg
-        };
-      }
-      this.currentTopPreferredPerformers = topPreferredPerformersResult.data;
-
-      return {
-        status: true,
-        message: 'success'
-      };
     },
     async initTagData(filesBasesId: string) {
       const requestSerial = ++this.tagDataRequestSerial;
