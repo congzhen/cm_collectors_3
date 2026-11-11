@@ -5,10 +5,11 @@
       type="info" :closable="false" style="margin-bottom: 16px" />
     <div class="performer-form-container">
       <div class="performer-form-left">
+        <h3 class="performer-section-title">头像与状态</h3>
         <div class="performer-form-photo">
           <setImage ref="setImageRef" :src="getPerformerPhoto(formData)"></setImage>
         </div>
-        <div class="performer-form-column performer-form-short-label" style="padding-top: 1em">
+        <div class="performer-form-column performer-form-short-label">
           <el-form-item label="评星">
             <el-rate v-model="formData.stars" clearable />
           </el-form-item>
@@ -19,7 +20,7 @@
       </div>
       <div class="performer-form-right">
         <div class="performer-form-column">
-          <el-divider content-position="left">演员信息</el-divider>
+          <h3 class="performer-section-title">演员信息</h3>
           <el-form-item label="姓名" prop="name">
             <el-input v-model="formData.name" />
           </el-form-item>
@@ -46,7 +47,7 @@
           <el-form-item v-if="store.appStoreData.currentConfigApp.plugInUnit_Cup" label="三围">
             <inputCupBWH v-model:waist="formData.waist" v-model:bust="formData.bust" v-model:hip="formData.hip" />
           </el-form-item>
-          <el-divider content-position="left">演员标签</el-divider>
+          <h3 class="performer-section-title performer-tag-title">演员标签</h3>
           <performerTagSelect v-model="formTagIds" :performer-bases-id="formPerformerBasesId_C" />
 
         </div>
@@ -179,44 +180,58 @@ defineExpose({ open, close: () => drawerFormRef.value?.close() })
 </script>
 <style lang="scss" scoped>
 .performer-form-container {
-  display: flex;
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  align-items: start;
+  gap: 16px;
+  color: var(--el-text-color-primary);
 
-  .performer-form-left {
-    flex-shrink: 0;
+  .performer-form-left,
+  .performer-form-right {
+    min-width: 0;
+    padding: 12px;
+    border: 1px solid var(--el-border-color-lighter);
+    border-radius: 8px;
+    background: var(--el-bg-color);
   }
+  .performer-section-title {
+    margin: 0 0 12px;
+    padding: 0 0 10px;
+    border-bottom: 1px solid var(--el-border-color-lighter);
+    font-size: 14px;
+    line-height: 22px;
+    font-weight: 600;
+  }
+  .performer-tag-title { margin-top: 4px; }
 
+  // Keep the existing image viewport and crop dimensions.
   .performer-form-photo {
     width: 270px;
     height: 320px;
     padding: 1px;
+    border: 1px solid var(--el-border-color);
     border-radius: 5px;
-    border: 1px solid #4c4d4f;
-    flex-shrink: 0;
-
-    .performer-form-photo-text {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-size: 1.5em;
-    }
+    background: var(--el-fill-color-light);
+    transition: border-color .2s;
+    &:hover { border-color: var(--el-color-primary); }
+    :deep(.el-upload-dragger) { background: transparent; }
+    :deep(.image-slot) { font-size: 13px; color: var(--el-text-color-secondary); }
   }
-
-  .performer-form-right {
-    flex-grow: 1;
-  }
-
   .performer-form-short-label {
-    :deep(.el-form-item__label) {
-      width: 70px !important;
-    }
+    padding-top: 16px;
+    :deep(.el-form-item__label) { width: 54px !important; }
+    :deep(.el-form-item:last-child) { margin-bottom: 0; }
   }
-
-  .performer-form-column {
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
+  :deep(.el-form-item) { margin-bottom: 16px; }
+  :deep(.el-form-item__content) { min-width: 0; }
+  .performer-form-right {
+    :deep(.el-form-item__label) { width: 80px !important; }
+    :deep(.el-date-editor) { width: 100%; }
+    :deep(.el-checkbox.is-bordered) { margin-right: 12px; }
+    :deep(.BWH) { width: 100%; }
+    :deep(.BWH > div) { flex: 1; min-width: 0; }
+    :deep(.performer-tag-empty) { padding: 4px 0 4px 80px; line-height: 1.7; }
   }
+  .performer-form-column { display: flex; flex-direction: column; min-width: 0; }
 }
 </style>

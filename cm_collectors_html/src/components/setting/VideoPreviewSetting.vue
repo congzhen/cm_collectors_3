@@ -1,49 +1,51 @@
 <template>
   <section class="preview-settings settings-subpage" v-loading="loading">
     <div class="subpage-content">
-      <section class="subpage-group" aria-label="预览设置">
-        <div class="group-heading"><h3>预览设置</h3><p>调整之后生成的缩略图与缓存保留策略。</p></div>
+      <section class="subpage-group" aria-label="时间轴预览设置">
+        <div class="group-heading"><h3>时间轴预览设置</h3><p>设置视频播放时间轴的预览缩略图，不影响下方封面候选图。</p></div>
         <el-form class="subpage-panel preview-form" label-position="left" label-width="200px">
           <el-form-item label="缩略图宽度">
             <el-select v-model="setting.width" class="width-select">
               <el-option v-for="w in [160, 240, 320, 480]" :key="w" :value="w" :label="`${w} 像素`" />
             </el-select>
-            <div class="help">仅影响之后生成的预览。已有图片保留，手动删除后重新生成才会使用新尺寸。</div>
+            <div class="help">仅影响之后生成的时间轴预览图。已有图片需删除并重新生成，才会使用新宽度。</div>
           </el-form-item>
           <el-form-item label="缓存容量上限（MB）">
             <el-input-number v-model="setting.maxMB" :min="0" :max="1048576" :step="64" :precision="0" />
-            <div class="help">0 表示不限；启用上限时至少 64 MB。超过上限，自动删除最早生成的预览缓存，保留视频和片段收藏。</div>
+            <div class="help">仅限制时间轴预览缓存。0 表示不限，启用上限时至少 64 MB；超出后自动删除最早生成的预览图，不删除视频和片段收藏。</div>
           </el-form-item>
-          <div class="save-actions"><el-button type="primary" :loading="saving" @click="save">保存设置</el-button></div>
+          <div class="save-actions"><el-button type="primary" :loading="saving" @click="save">保存时间轴预览设置</el-button></div>
         </el-form>
       </section>
-      <section class="subpage-group" aria-label="缓存与任务">
-        <div class="group-heading"><h3>缓存与任务</h3><p>查看占用空间与任务队列，控制预览生成。</p></div>
+      <section class="subpage-group" aria-label="时间轴缓存与任务">
+        <div class="group-heading"><h3>时间轴缓存与任务</h3><p>查看时间轴预览的缓存占用和生成队列；暂停、恢复仅作用于此队列。</p></div>
         <div class="subpage-panel">
           <dl v-if="status" class="cache-status" aria-live="polite">
-            <div><dt>当前缓存</dt><dd>{{ (status.bytes / 1024 / 1024).toFixed(1) }} <small>MB</small></dd></div>
-            <div><dt>待完成</dt><dd>{{ status.queued }} <small>项</small></dd></div>
+            <div><dt>时间轴缓存占用</dt><dd>{{ (status.bytes / 1024 / 1024).toFixed(1) }} <small>MB</small></dd></div>
+            <div><dt>待完成任务</dt><dd>{{ status.queued }} <small>项</small></dd></div>
             <div><dt>生成状态</dt><dd class="queue-state">{{ status.paused ? '已暂停' : status.running ? '生成中' : '空闲' }}</dd></div>
           </dl>
           <div class="actions">
-            <el-button :loading="openingFolder" title="在运行服务的电脑上打开缓存目录" @click="openCacheFolder">打开缓存文件夹</el-button>
+            <el-button :loading="openingFolder" title="在运行服务的电脑上打开时间轴预览缓存目录" @click="openCacheFolder">打开时间轴缓存文件夹</el-button>
             <el-button @click="load(false)">刷新状态</el-button>
             <el-button @click="control('pause')">暂停生成</el-button>
             <el-button @click="control('resume')">恢复生成</el-button>
           </div>
           <div class="cache-cleanup">
-            <el-button type="danger" plain @click="clear">清空预览缓存</el-button>
-            <p class="help">清空前请暂停并等待当前抽图结束。替换源视频不会自动删除或更新预览；你可以在视频时间轴中单独删除预览。</p>
+            <el-button type="danger" plain @click="clear">清空时间轴预览缓存</el-button>
+            <p class="help">仅清空时间轴预览图，不影响封面预览缓存、已保存封面、视频和片段收藏。清空前请暂停生成并等待当前任务结束。替换源视频后，可在时间轴中单独删除旧预览再重新生成。</p>
           </div>
           <p v-if="status?.error" class="error-message" role="alert">{{ status.error }}</p>
         </div>
       </section>
+      <CoverPreviewCacheSettings />
       <p v-if="error" class="error-message" role="alert">{{ error }}</p>
     </div>
   </section>
 </template>
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import CoverPreviewCacheSettings from './CoverPreviewCacheSettings.vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import request from '@/assets/request'
 import { notifyPreviewChanged } from '@/server/videoMoments.server'
@@ -90,7 +92,7 @@ async function save() {
   saving.value = false
   if (!r.status) ElMessage.error(r.msg)
   else {
-    ElMessage.success('预览设置已保存')
+    ElMessage.success('时间轴预览设置已保存')
     notifyPreviewChanged()
     await load(false)
   }
@@ -103,7 +105,7 @@ async function control(action: string) {
 }
 async function clear() {
   try {
-    await ElMessageBox.confirm('删除全部预览图片？不会删除视频、片段收藏和首图。', '清空预览缓存', {
+    await ElMessageBox.confirm('删除全部时间轴预览图片？不会删除封面预览候选图、已保存的封面、视频、片段收藏和首图。', '清空时间轴预览缓存', {
       type: 'warning',
     })
   } catch {

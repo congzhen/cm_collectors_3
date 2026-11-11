@@ -300,6 +300,7 @@ type ReqParam_ImportTag struct {
 }
 
 type ReqParam_FFmpeg_VideoKeyFramePosters struct {
+	Refresh    bool   `json:"refresh"`
 	VideoPath  string `json:"videoPath"`
 	FrameCount int    `json:"frameCount"`
 }

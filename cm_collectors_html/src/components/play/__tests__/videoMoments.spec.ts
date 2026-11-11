@@ -815,12 +815,12 @@ describe('片段收藏和时间轴', () => {
     width.vm.$emit('update:modelValue', 320)
     await wrapper
       .findAll('button')
-      .find((b) => b.text() === '保存设置')!
+      .find((b) => b.text() === '保存时间轴预览设置')!
       .trigger('click')
     width.vm.$emit('update:modelValue', 480)
     await wrapper
       .findAll('button')
-      .find((b) => b.text() === '保存设置')!
+      .find((b) => b.text() === '保存时间轴预览设置')!
       .trigger('click')
     expect(mocks.request.mock.calls.filter(([r]) => r.method === 'put')).toHaveLength(1)
     expect(mocks.request.mock.calls.find(([r]) => r.method === 'put')?.[0].data.width).toBe(320)

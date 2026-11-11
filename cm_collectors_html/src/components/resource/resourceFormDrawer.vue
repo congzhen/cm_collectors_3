@@ -447,126 +447,89 @@ defineExpose({ open })
 </script>
 <style lang="scss" scoped>
 .resource-form-container {
-  display: flex;
-  gap: 1em;
+  display: grid;
+  grid-template-columns: 334px minmax(0, 1fr);
+  align-items: start;
+  gap: 16px;
+  color: var(--el-text-color-primary);
 
-  .el-alert {
-    padding: 4px 10px;
-    margin-bottom: 8px;
+  // Add the card around the original 300px content width, without shrinking the cover.
+  .resource-form-left { box-sizing: content-box; width: 300px; }
+
+  .resource-form-left,
+  .resource-form-right {
+    min-width: 0;
+    padding: 12px 16px;
+    border: 1px solid var(--el-border-color-lighter);
+    border-radius: 8px;
+    background: var(--el-bg-color);
   }
 
-  .resource-form-left {
-    width: 300px;
+  // Section headers share one neutral treatment in both themes.
+  .el-alert {
+    padding: 0 0 10px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid var(--el-border-color-lighter);
+    border-radius: 0;
+    background: transparent;
+    color: var(--el-text-color-primary);
+    :deep(.el-alert__content) { padding: 0; }
+    :deep(.el-alert__title) { font-size: 14px; font-weight: 600; }
+  }
+
+  .resource-form-cover-poster {
+    margin-top: 5px;
+    width: calc(100% - 4px);
+    height: auto;
+    padding: 1px;
+    border: 1px solid var(--el-border-color);
+    border-radius: 5px;
     flex-shrink: 0;
+    background: var(--el-fill-color-light);
+    transition: border-color .2s;
+    &:hover { border-color: var(--el-color-primary); }
+    :deep(.el-upload-dragger) { background: transparent; }
+    :deep(.image-slot) { font-size: 13px; color: var(--el-text-color-secondary); }
+  }
 
-    .resource-form-cover-poster {
-      margin-top: 5px;
-      width: calc(100% - 4px);
-      height: auto;
-      padding: 1px;
-      border-radius: 5px;
-      border: 1px solid #4c4d4f;
-      flex-shrink: 0;
+  .resource-form-mode {
+    margin: 8px 0 18px;
+    .el-radio-group { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; width: 100%; }
+    .el-radio {
+      min-width: 0; margin: 0; padding: 0 8px;
+      :deep(.el-radio__label) { overflow: hidden; text-overflow: ellipsis; font-size: 12px; padding-left: 6px; }
+    }
+    .auto-cover-poster { grid-column: 1 / -1; }
+  }
 
-      .resource-form-cover-poster-text {
-        width: 100%;
-        height: 100%;
-        min-height: 200px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-size: 1.3em;
+  .resource-form-drama-series {
+    list-style: none; padding: 0; margin: 0;
+    li {
+      display: flex; align-items: center; gap: 4px; margin-bottom: 6px;
+      .el-input { min-width: 0; }
+      .drama-series-index {
+        width: 20px; flex-shrink: 0; text-align: center;
+        font-size: 12px; color: var(--el-text-color-secondary); cursor: grab;
+        &:active { cursor: grabbing; }
       }
+      .drama-series-tool { flex-shrink: 0; .el-button { padding: 7px; } }
     }
-
-    .resource-form-mode {
-      width: 100%;
-      overflow: hidden;
-      margin-bottom: 10px;
-
-      .el-radio-group {
-        width: 100%;
-        display: flex;
-        flex-wrap: wrap;
-        padding: 5px 0;
-        gap: 5px;
-
-        .el-radio {
-          min-width: calc(50% - 3px);
-          margin: 0;
-          white-space: nowrap;
-          overflow: hidden;
-
-          :deep(.el-radio__label) {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            font-size: 1em;
-          }
-        }
-
-        .auto-cover-poster {
-          width: 100%;
-        }
-      }
-    }
-
-    .resource-form-drama-series {
-      list-style-type: none;
-
-      li {
-        display: flex;
-        gap: 5px;
-        padding-bottom: 5px;
-
-        .drama-series-index {
-          width: 24px;
-          flex-shrink: 0;
-          text-align: center;
-          line-height: 24px;
-          font-size: 12px;
-          font-weight: 500;
-          font-style: italic;
-          cursor: move;
-        }
-
-        .drama-series-index:hover {
-          cursor: grab;
-        }
-
-        .drama-series-index:active {
-          cursor: grabbing;
-        }
-
-        .drama-series-tool {
-          flex-shrink: 0;
-
-          .el-button {
-            padding: 8px;
-          }
-        }
-      }
-    }
-
-    .resource-form-browse {
-      display: flex;
-      justify-content: center;
-      padding: 5px 0;
-    }
+  }
+  .resource-form-browse {
+    display: flex; flex-wrap: wrap; gap: 8px; padding-top: 2px;
+    .el-button { margin: 0; flex: 1; }
   }
 
   .resource-form-right {
-    flex-grow: 1;
-
+    padding: 12px 16px;
+    :deep(.el-form-item) { margin-bottom: 16px; }
+    :deep(.el-form-item__label) { width: 92px !important; }
+    :deep(.el-form-item__content) { min-width: 0; }
+    .resource-form-block { margin-bottom: 18px; }
     .resource-form-two {
-      display: flex;
-      flex-wrap: wrap;
-
-      >div {
-        width: 50%;
-        flex-shrink: 0;
-        overflow: hidden;
-      }
+      display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 8px;
+      > div { min-width: 0; }
+      :deep(.el-date-editor) { width: 100%; }
     }
   }
 }

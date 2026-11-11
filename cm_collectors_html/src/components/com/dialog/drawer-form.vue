@@ -71,18 +71,11 @@ const props = defineProps({
 const emits = defineEmits(['closed', 'submit'])
 
 const submitHandle = debounceNow((formEl: FormInstance | undefined) => {
-  try {
-    if (!formEl) return
-    formEl.validate((valid) => {
-      if (valid) {
-        emits('submit')
-        return Promise.resolve()
-      } else {
-        return Promise.reject()
-      }
-    })
-  } finally {
-  }
+  if (!formEl) return
+  // Validation renders field errors; an invalid form is not an exceptional failure.
+  void formEl.validate((valid) => {
+    if (valid) emits('submit')
+  })
 })
 
 const open = () => {
