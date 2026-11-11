@@ -1,10 +1,10 @@
 <template>
-  <div v-if="grouped && style !== 'stack'" class="el-image group-cover" :class="[`group-cover--${style}`, `group-cover--count-${others.length + 1}`]" :style="style === 'adaptive' ? { '--group-main-width': `${others.length < 3 ? 65 : others.length < 5 ? 60 : 55}%` } : undefined">
-    <el-image class="group-cover-main" :src="src" fit="cover" @load="emit('load', $event)" />
+  <div v-if="grouped && style !== 'stack'" class="el-image group-cover" :class="[`group-cover--${style}`, `group-cover--count-${others.length + 1}`]" :style="{ '--group-main-width': `${others.length < 3 ? 65 : others.length < 5 ? 60 : 55}%`, '--group-leaf-fit': compositionFit || 'cover' }">
+    <el-image class="group-cover-main" :src="src" :fit="compositionFit || 'cover'" @load="emit('load', $event)" />
     <img class="group-cover-sizer" :src="src" alt="" aria-hidden="true" decoding="async" />
     <div class="group-cover-leaves" aria-hidden="true">
       <div v-for="(member, index) in others" :key="member.id" class="group-cover-leaf" :class="`group-cover-leaf--${index}`">
-        <el-image :src="getResourceCoverPoster(member)" fit="cover" loading="lazy" />
+        <el-image :src="getResourceCoverPoster(member)" :fit="compositionFit || 'cover'" loading="lazy" />
       </div>
     </div>
   </div>
@@ -16,7 +16,7 @@ import { appStoreData } from '@/storeData/app.storeData';
 import { getResourceCoverPoster } from '@/common/photo';
 import type { I_resource } from '@/dataType/resource.dataType';
 import { resourceGroupContextKey } from './resourceGroups';
-const props = withDefaults(defineProps<{ resource: I_resource; src: string; fit?: string; coverStyle?: 'stack'|'triptych'|'book'|'adaptive' }>(), { fit: 'cover' });
+const props = withDefaults(defineProps<{ resource: I_resource; src: string; fit?: string; compositionFit?: string; coverStyle?: 'stack'|'triptych'|'book'|'adaptive' }>(), { fit: 'cover' });
 const emit = defineEmits<{ load: [event: Event] }>();
 const context = inject(resourceGroupContextKey, undefined);
 const style = computed(() => {
@@ -43,7 +43,7 @@ const others = computed(() => {
 .group-cover-leaf { position: relative; flex: 1; min-width: 0; overflow: hidden; }
 .group-cover-leaf::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(0,0,0,.22), transparent 45%, rgba(0,0,0,.08)); }
 .group-cover-leaf :deep(.el-image) { display: block; width: 100% !important; height: 100% !important; transform: none !important; scale: 1 !important; }
-.group-cover-leaf :deep(.el-image__inner) { object-fit: cover !important; }
+.group-cover-leaf :deep(.el-image__inner) { object-fit: var(--group-leaf-fit, cover) !important; }
 .group-cover--book > .group-cover-main { width: 90% !important; border-radius: 0 5px 5px 0; }
 .group-cover--book .group-cover-leaves { left: 90%; gap: 0; padding-left: 1px; }
 .group-cover--book .group-cover-leaf { margin-block: 5px; border-radius: 0 6px 6px 0; box-shadow: inset 1px 0 0 rgba(255,255,255,.35); }

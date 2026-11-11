@@ -117,7 +117,8 @@ const cardStyle = (index: number) => {
   --fan-bg: #fff; --fan-text: #34404c; --fan-border: rgba(67,82,98,.3);
   --fan-active-border: #fff; --fan-shadow: rgba(37,52,70,.2); --fan-active-shadow: rgba(37,52,70,.3);
 }
-.fan-cards { max-height: calc(100vh - 24px); overflow-y: auto; scrollbar-width: thin; }
+/* Rotated and lifted cards extend beyond the deck box; they are not a scrollable list. */
+.fan-cards { overflow: visible; }
 .group-fan.is-dense { --fan-card-width: clamp(100px, 24vw, 132px); --fan-card-height: 188px; }
 .group-fan--strip { --fan-max-step: 48px; --fan-edge-space: 48px; }
 .group-fan--strip .fan-card { border-radius: 8px; box-shadow: 0 6px 14px var(--fan-shadow); }

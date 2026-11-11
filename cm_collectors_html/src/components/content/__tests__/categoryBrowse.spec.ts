@@ -377,3 +377,17 @@ it('组内时长补采只更新时长，保留资源对象和本地星级；离�
     w.unmount()
   }
 })
+
+it('尺寸间距和对齐实时更新分类网格，不重新查询分类数据', async () => {
+  const w = mount(CategoryBrowse, { global: { plugins: [ElementPlus] } });
+  try {
+    await flushPromises();
+    const calls = mocks.summaries.mock.calls.length;
+    Object.assign(appStoreData().currentConfigApp, { coverPosterGap: 0, contentPadding: 12, resourceJustifyContent: 'center', coverPosterHeightBase: 300 });
+    await flushPromises();
+    expect(w.get('.category-grid').attributes('style')).toContain('gap: 0px');
+    expect(w.get('.category-grid').attributes('style')).toContain('padding-inline: 12%');
+    expect(w.get('.category-grid').attributes('style')).toContain('justify-content: center');
+    expect(mocks.summaries).toHaveBeenCalledTimes(calls);
+  } finally { w.unmount(); }
+});

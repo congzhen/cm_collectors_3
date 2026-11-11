@@ -2,6 +2,7 @@
   <article
     ref="card"
     class="category-card"
+    :style="categoryCardDisplay(displayConfig || {}, source)"
     @pointerenter="open"
     @pointerleave="leave"
     @focusin="open"
@@ -31,6 +32,8 @@
         :resource="source"
         :src="getResourceCoverPoster(source)"
         :cover-style="coverStyle"
+        :fit="displayConfig?.coverImageFit || 'cover'"
+        :composition-fit="displayConfig?.coverImageFit || 'cover'"
       />
       <span v-if="group.parts > 1" class="category-part">{{ group.part }} / {{ group.parts }}</span>
       <span class="category-count">{{ group.count }} 个</span>
@@ -74,6 +77,7 @@
         v-if="visible"
         ref="surface"
         class="category-preview"
+        :class="{ 'category-preview--deck': isCardDeck }"
         @pointerenter="keep"
         @pointerleave="leave"
         @focusin="keep"
@@ -132,10 +136,12 @@ import {
   resourceGroupContextKey,
 } from './resourceGroups'
 import ResourceGroupCover from './ResourceGroupCover.vue'
+import { categoryCardDisplay } from './categoryDisplay'
 import ResourceGroupFan from './ResourceGroupFan.vue'
 import ResourceGroupFold from './ResourceGroupFold.vue'
 import ResourceGroupMagazine from './ResourceGroupMagazine.vue'
 const props = defineProps<{
+  displayConfig?: I_config_app
   group: CategoryGroup
   query: CategoryQuery
   coverStyle: I_config_app['categoryBrowseCoverStyle']
@@ -310,7 +316,10 @@ onBeforeUnmount(() => {
 <style scoped>
 .category-card {
   color: var(--el-text-color-primary);
-  width: 180px;
+  width: calc(var(--category-cover-width, 162px) + 18px);
+  max-width: 100%;
+  min-width: 0;
+  flex: 0 0 auto;
   padding: 8px;
   box-sizing: border-box;
   border: 1px solid var(--el-border-color-lighter);
@@ -320,7 +329,8 @@ onBeforeUnmount(() => {
 .category-cover {
   position: relative;
   width: 100%;
-  height: 210px;
+  height: auto;
+  aspect-ratio: var(--category-cover-ratio, 162 / 210);
   padding: 0;
   border: 0;
   border-radius: 7px;
@@ -346,7 +356,7 @@ onBeforeUnmount(() => {
   position: absolute;
   width: 94%;
   height: 94%;
-  object-fit: cover;
+  object-fit: var(--category-cover-fit, cover);
   top: 0;
   right: 0;
   border-radius: 5px;
@@ -363,7 +373,7 @@ onBeforeUnmount(() => {
   border-radius: 5px;
   background: rgba(15, 20, 28, 0.76);
   color: #fff;
-  font-size: 11px;
+  font-size: var(--category-badge-size, 12px);
   padding: 3px 6px;
 }
 .category-part {
@@ -375,18 +385,22 @@ onBeforeUnmount(() => {
   right: 6px;
 }
 .category-caption {
+  justify-content: var(--category-caption-align, flex-start);
   display: flex;
   align-items: center;
   gap: 6px;
   margin-top: 9px;
 }
 .category-caption strong {
+  min-width: 0;
+  text-align: var(--category-title-align, left);
   font-size: 14px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .category-meta {
+  text-align: var(--category-title-align, left);
   font-size: 12px;
   color: var(--el-text-color-secondary);
   margin-top: 5px;
@@ -398,4 +412,5 @@ onBeforeUnmount(() => {
   max-height: calc(100vh - 24px);
   overflow: auto;
 }
+.category-preview--deck { max-height: none; overflow: visible; }
 </style>

@@ -42,11 +42,11 @@
         />
       </div>
       <el-scrollbar v-else class="category-scroll">
-        <div class="category-grid">
+        <div class="category-grid" :style="categoryGridDisplay(store.currentConfigApp)">
           <CategoryBrowseCard
             v-for="group in groups"
             :key="`${group.categoryId}:${group.part}`"
-            :group="group"
+            :group="group" :display-config="store.currentConfigApp"
             :query="query"
             :cover-style="settings.categoryBrowseCoverStyle"
             :hide-single="settings.categoryBrowseHideSingle" :expand-style="settings.categoryBrowseExpandStyle" :adapt-cover-ratio="settings.categoryBrowseAdaptCoverRatio"
@@ -87,6 +87,7 @@ import {
 import type { I_resource } from '@/dataType/resource.dataType'
 import { E_searchSort } from '@/dataType/search.dataType'
 import CategoryBrowseCard from './CategoryBrowseCard.vue'
+import { categoryGridDisplay } from './categoryDisplay'
 import contentList from './contentList.vue'
 defineProps<{ externalFooter?: boolean }>()
 const emit = defineEmits<{ select: [resource: I_resource]; clearSelection: []; exit: [] }>()
@@ -360,8 +361,7 @@ defineExpose({ refresh: load, showDataList: () => members.value, pagination, set
 .category-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 14px;
-  padding: 4px;
+  padding-block: 4px;
 }
 footer {
   display: flex;
