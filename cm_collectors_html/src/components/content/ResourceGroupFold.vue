@@ -1,5 +1,5 @@
 <template>
-  <section class="group-fold" :class="{ 'group-fold--spine': vertical }" :style="vertical ? { '--spine-height': `${Math.min(520, 260 + Math.max(0, (loading || error ? expectedCount || members.length : members.length) - 1) * 28)}px` } : undefined" :aria-busy="loading" :aria-label="vertical ? '纵向封面书脊' : '封面折屏'">
+  <section class="group-fold" :class="{ 'group-fold--spine': vertical, 'is-adaptive': adaptCoverRatio, 'is-single': members.length === 1 }" :style="[adaptiveSpineStyle, members.length === 1 ? { '--single-ratio': ratio(members[0]) } : {}, vertical ? { '--spine-height': `${Math.min(520, 260 + Math.max(0, (loading || error ? expectedCount || members.length : members.length) - 1) * 28)}px` } : undefined]" :aria-busy="loading" :aria-label="vertical ? '纵向封面书脊' : '封面折屏'">
     <div v-if="loading || error || !members.length" class="fold-state">
       <el-icon v-if="loading" class="is-loading"><Loading /></el-icon>
       <span>{{ error || (loading ? '正在展开关联资源…' : '暂无关联资源') }}</span>
@@ -11,7 +11,7 @@
         :class="{ 'is-active': index === activeIndex }" :style="sliceStyle(index)"
         :aria-label="`打开资源：${resource.title}`" :tabindex="index === activeIndex ? 0 : -1"
         @focus="activeIndex = index">
-        <el-image :src="getResourceCoverPoster(resource)" fit="cover" loading="lazy">
+        <el-image :src="getResourceCoverPoster(resource)" :fit="adaptCoverRatio && index === activeIndex ? 'contain' : 'cover'" @load="onLoad(resource, $event)" loading="lazy">
           <template #error><span class="fold-empty"><el-icon><Picture /></el-icon></span></template>
         </el-image>
         <span class="fold-title">{{ resource.title }}</span>
@@ -21,11 +21,13 @@
 </template>
 
 <script setup lang="ts">
+import { useGroupCoverRatio } from './groupCoverRatio';
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import { Loading, Picture } from '@element-plus/icons-vue';
 import { getResourceCoverPoster } from '@/common/photo';
 import type { I_resource } from '@/dataType/resource.dataType';
-const props = defineProps<{ members: I_resource[]; loading: boolean; error: string; sourceResource?: I_resource; vertical?: boolean; expectedCount?: number }>();
+const props = defineProps<{ adaptCoverRatio?: boolean; members: I_resource[]; loading: boolean; error: string; sourceResource?: I_resource; vertical?: boolean; expectedCount?: number }>();
+const { ratio, onLoad } = useGroupCoverRatio();
 const emit = defineEmits<{ select: [resource: I_resource]; retry: [] }>();
 const deckRef = ref<HTMLElement>();
 const width = ref(480);
@@ -53,12 +55,25 @@ watch(() => [props.members, props.sourceResource?.id, props.vertical], () => {
   activeIndex.value = sourceIndex >= 0 ? sourceIndex : Math.floor(props.members.length / 2);
   pressed = undefined; lastPointer = undefined; wheelDelta = 0;
 }, { immediate: true });
+const adaptiveSpineStyle = computed(() => {
+  if (!props.vertical || !props.adaptCoverRatio || props.members.length < 2) return undefined;
+  const count = props.members.length;
+  const gap = Math.min(2, height.value / (count * 8));
+  const available = Math.max(0, height.value - gap * (count - 1));
+  // Keep the original expanded height; fit the whole book's width to its active cover.
+  const expanded = Math.max(available / count, Math.min(200, available * .66));
+  const cover = props.members[activeIndex.value];
+  return cover ? { boxSizing: 'border-box' as const, width: `min(100%, ${expanded * ratio(cover) + 28}px)` } : undefined;
+});
 const geometry = computed(() => {
   const count = props.members.length || 1;
   const size = props.vertical ? height.value : width.value;
   const gap = Math.min(2, size / (count * 8));
   const available = Math.max(0, size - gap * (count - 1));
-  const expanded = count === 1 ? available : Math.max(available / count, Math.min(200, available * .66));
+  const current = props.members[activeIndex.value];
+  const desired = props.adaptCoverRatio && current
+    ? (props.vertical ? width.value / ratio(current) : height.value * ratio(current)) : 200;
+  const expanded = count === 1 ? available : Math.max(available / count, Math.min(desired, available * .66));
   return { gap, expanded, narrow: count === 1 ? 0 : (available - expanded) / (count - 1) };
 });
 const sliceStyle = (index: number) => {
@@ -145,4 +160,9 @@ const selectSlice = (event: MouseEvent) => {
 .group-fold--spine .fold-title { inset: 0 0 auto; padding: 3px 12px; font-size: 12px; line-height: 20px; background: linear-gradient(90deg,rgba(0,0,0,.62),rgba(0,0,0,.2)); opacity: 0; z-index: 1; }
 .group-fold--spine .is-active .fold-title { inset: auto 0 0; padding: 28px 12px 12px; background: linear-gradient(transparent,rgba(0,0,0,.78)); font-size: 13px; opacity: 1; }
 @media (prefers-reduced-motion: reduce) { .fold-slice, .group-fold--spine .fold-slice, .fold-slice::after, .fold-title { transition: none; } }
+.is-adaptive.is-single { box-sizing: border-box; width: min(100%, calc(238px * var(--single-ratio) + 28px)); }
+.is-adaptive.is-single.group-fold--spine { width: min(100%, calc(260px * var(--single-ratio) + 28px)); }
+/* Preserve the original Popper box and anchor; align to its source-facing edge when flipped. */
+:global(.el-popper[data-popper-placement^="left"] .group-fold.is-adaptive.is-single),
+:global(.el-popper[data-popper-placement^="left"] .group-fold--spine.is-adaptive) { margin-left: auto; }
 </style>

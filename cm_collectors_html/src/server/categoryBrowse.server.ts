@@ -10,6 +10,8 @@ export type CategoryBrowseSettings = Pick<
   | 'categoryBrowseGroupLimit'
   | 'categoryBrowseCoverStyle'
   | 'categoryBrowseExpandStyle'
+  | 'categoryBrowseHideSingle'
+  | 'categoryBrowseAdaptCoverRatio'
 >
 export interface CategoryGroup {
   categoryId: string
@@ -60,4 +62,6 @@ export const categorySettings = (config: I_config_app): CategoryBrowseSettings =
   categoryBrowseGroupLimit: config.categoryBrowseGroupLimit ?? 12,
   categoryBrowseCoverStyle: config.categoryBrowseCoverStyle || 'stack',
   categoryBrowseExpandStyle: config.categoryBrowseExpandStyle || 'fan',
+  categoryBrowseHideSingle: config.categoryBrowseHideSingle === true,
+  categoryBrowseAdaptCoverRatio: config.categoryBrowseAdaptCoverRatio === true,
 })

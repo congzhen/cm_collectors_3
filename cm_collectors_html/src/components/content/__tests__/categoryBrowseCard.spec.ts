@@ -32,7 +32,7 @@ const create = () =>
     global: {
       stubs: {
         ElAvatar: true,
-        ElPopover: { props: ['visible'], template: '<div><slot v-if="visible" /></div>' },
+        ElPopover: { name: 'ElPopover', props: ['visible', 'placement', 'width', 'offset'], template: '<div><slot v-if="visible" /></div>' },
         ElButton: { template: '<button><slot /></button>' },
         ResourceGroupCover: true,
         ResourceGroupFan: {
@@ -124,3 +124,44 @@ it('不限量分类展开一次读取全部成员，不额外分页或截成 100
     w.unmount()
   }
 })
+
+it('单资源不展开开关拦截悬停和焦点，关闭恢复，多资源不受影响', async () => {
+  vi.useFakeTimers();
+  mocks.members.mockResolvedValue({ status: true, data: { dataList: group.preview } });
+  const w = create();
+  try {
+    await w.setProps({ group: { ...group, count: 1 }, hideSingle: true });
+    await w.trigger('pointerenter'); await w.trigger('focusin');
+    await vi.advanceTimersByTimeAsync(200);
+    expect(mocks.members).not.toHaveBeenCalled();
+    expect(w.find('.preview-content').exists()).toBe(false);
+    await w.get('.category-cover').trigger('click');
+    expect(w.emitted('enter')).toHaveLength(1);
+    await w.setProps({ hideSingle: false });
+    await w.trigger('pointerenter'); await vi.advanceTimersByTimeAsync(200);
+    expect(w.find('.preview-content').exists()).toBe(true);
+    await w.setProps({ hideSingle: true });
+    expect(w.find('.preview-content').exists()).toBe(false);
+    await w.setProps({ group });
+    await w.trigger('pointerenter'); await vi.advanceTimersByTimeAsync(200);
+    expect(w.find('.preview-content').exists()).toBe(true);
+  } finally { w.unmount(); }
+});
+
+it.each(['fan', 'strip'] as const)('%s 展开复用关联组的顶部重叠定位与宽度', async style => {
+  vi.useFakeTimers();
+  mocks.members.mockResolvedValue({ status: true, data: { dataList: group.preview } });
+  const w = create();
+  try {
+    await w.setProps({ expandStyle: style });
+    vi.spyOn(w.element, 'getBoundingClientRect').mockReturnValue({ height: 280 } as DOMRect);
+    await w.trigger('pointerenter'); await vi.advanceTimersByTimeAsync(180);
+    const popover = w.findComponent({ name: 'ElPopover' });
+    expect(popover.props('placement')).toBe('top');
+    expect(popover.props('offset')).toBe(-220);
+    expect(popover.props('width')).toBe(style === 'fan' ? 440 : 328);
+    await w.setProps({ expandStyle: 'fold' });
+    expect(popover.props('placement')).toBe('right-start');
+    expect(popover.props('offset')).toBe(-30);
+  } finally { w.unmount(); }
+});

@@ -47,7 +47,7 @@
             <selectResourceGroupCoverStyle v-model="filesConfig.resourceGroupCoverStyle" />
           </el-form-item>
           <el-form-item label="关联组展开样式">
-            <selectResourceGroupExpandStyle v-model="filesConfig.resourceGroupExpandStyle" />
+            <selectResourceGroupExpandStyle v-model="filesConfig.resourceGroupExpandStyle" v-model:adapt-cover-ratio="filesConfig.resourceGroupAdaptCoverRatio" />
           </el-form-item>
         </template>
         <template #actors>

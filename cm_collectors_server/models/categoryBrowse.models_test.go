@@ -550,7 +550,7 @@ func TestCategoryBrowseSettingsIsolation(t *testing.T) {
 	if err := db.Create(&LibraryConfigFollow{FilesBasesID: "lib", Module: "display"}).Error; err != nil {
 		t.Fatal(err)
 	}
-	s := CategoryBrowseSettings{Enabled: true, Source: "performer", GroupLimit: 12, CoverStyle: "adaptive", ExpandStyle: "fold"}
+	s := CategoryBrowseSettings{Enabled: true, Source: "performer", GroupLimit: 12, CoverStyle: "adaptive", ExpandStyle: "fold", AdaptCoverRatio: true, HideSingle: true}
 	if err := SetCategoryBrowseSettings(db, "lib", s); err != nil {
 		t.Fatal(err)
 	}
@@ -558,7 +558,7 @@ func TestCategoryBrowseSettingsIsolation(t *testing.T) {
 	db.First(&setting, "filesBases_id = ?", "lib")
 	var values map[string]interface{}
 	json.Unmarshal([]byte(setting.ConfigJsonData), &values)
-	if values["pageLimit"] != float64(33) || values["resourceGroupCoverStyle"] != "book" || values["categoryBrowseEnabled"] != true {
+	if values["pageLimit"] != float64(33) || values["resourceGroupCoverStyle"] != "book" || values["categoryBrowseEnabled"] != true || values["categoryBrowseAdaptCoverRatio"] != true || values["categoryBrowseHideSingle"] != true {
 		t.Fatal(values)
 	}
 	for _, field := range SharedConfigFields("display") {

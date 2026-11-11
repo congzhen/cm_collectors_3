@@ -178,6 +178,10 @@ type Config_FilesBases struct {
 	VideoMomentLibraryMode       string                    `json:"videoMomentLibraryMode"`              // 本库片段默认视图
 	VideoPreviewInterval         int                       `json:"videoPreviewInterval"`                // 默认预览抽图间隔
 	SampleFolder                 string                    `json:"sampleFolder"`                        // 剧照文件夹
+
+	CategoryBrowseHideSingle bool `json:"categoryBrowseHideSingle"`
+	CategoryBrowseAdaptCoverRatio bool `json:"categoryBrowseAdaptCoverRatio"`
+	ResourceGroupAdaptCoverRatio  bool `json:"resourceGroupAdaptCoverRatio"`
 }
 
 type Config_ScanDisk struct {

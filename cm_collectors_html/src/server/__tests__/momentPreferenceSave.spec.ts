@@ -38,3 +38,22 @@ it('跟随状态版本冲突时不继续保存', async () => {
   expect(result.status).toBe(false)
   expect(mocks.request).not.toHaveBeenCalled()
 })
+
+it('快捷设置只修改独立比例开关时不确认、不退出跟随，保留最新公共字段', async () => {
+  const baseline = { ...config, pageLimit: 32, resourceGroupAdaptCoverRatio: false } as I_config_app;
+  mocks.status.mockResolvedValue({ status: true, data: {
+    following: true, fields: ['pageLimit', 'videoMomentLibraryMode'], config: { pageLimit: 64 }, revision: 7,
+  } });
+  await filesBasesServer.setFilesBasesConfigById('library-a', { ...baseline, resourceGroupAdaptCoverRatio: true }, { localOnly: true, baseline });
+  expect(mocks.confirm).not.toHaveBeenCalled();
+  expect(mocks.follow).not.toHaveBeenCalled();
+  const saved = JSON.parse(mocks.request.mock.calls[0][0].data.config);
+  expect(saved).toMatchObject({ pageLimit: 64, resourceGroupAdaptCoverRatio: true });
+});
+it('快捷设置调整基础展示只保存本库，不弹出公共配置确认', async () => {
+  const baseline = { ...config, videoMomentLibraryMode: 'theater' } as I_config_app;
+  await filesBasesServer.setFilesBasesConfigById('library-a', config, { localOnly: true, baseline });
+  expect(mocks.confirm).not.toHaveBeenCalled();
+  expect(mocks.follow).toHaveBeenCalledWith('library-a', 'display', false, 7);
+  expect(mocks.request).toHaveBeenCalledOnce();
+});

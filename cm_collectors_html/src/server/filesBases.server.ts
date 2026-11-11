@@ -59,22 +59,34 @@ export const filesBasesServer = {
       method: 'get',
     });
   },
-  setFilesBasesConfigById: async (id: string, config: I_config_app) => {
+  setFilesBasesConfigById: async (id: string, config: I_config_app, options?: { localOnly: boolean; baseline: I_config_app }) => {
     const status = await sharedConfigServer.status(id, 'display');
     if (!status.status) return { status: false, msg: status.msg, data: false };
-    if (status.data.following && status.data.fields.some(key => JSON.stringify((config as unknown as Record<string, unknown>)[key]) !== JSON.stringify(status.data.config[key]))) {
-      try {
+    const submitted = { ...config } as unknown as Record<string, unknown>;
+    const baseline = options?.baseline as unknown as Record<string, unknown> | undefined;
+    const changesShared = status.data.fields.some(key =>
+      // Legacy shared configurations may omit fields supplied by frontend defaults.
+      (baseline || Object.prototype.hasOwnProperty.call(status.data.config, key)) &&
+      JSON.stringify(submitted[key]) !== JSON.stringify(baseline ? baseline[key] : status.data.config[key]));
+    if (status.data.following && changesShared) {
+      if (!options?.localOnly) try {
         await ElMessageBox.confirm('当前基础展示设置跟随公共配置。继续将关闭本库的跟随并保存此次调整，其他库不受影响。', '改为本库自定义');
       } catch { return { status: false, msg: '已取消修改', data: false }; }
       const result = await sharedConfigServer.follow(id, 'display', false, status.data.revision);
       if (!result.status) return result;
+    }
+    // Independent quick-setting changes keep following and use the latest shared values.
+    if (status.data.following && !changesShared) {
+      for (const key of status.data.fields) {
+        if (Object.prototype.hasOwnProperty.call(status.data.config, key)) submitted[key] = status.data.config[key];
+      }
     }
     return await request<boolean>({
       url: `${routerGroupUri}/filesBases/setConfig/filesBases`,
       method: 'put',
       data: {
         id,
-        config: JSON.stringify(config),
+        config: JSON.stringify(submitted),
       }
     });
   }

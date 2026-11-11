@@ -49,7 +49,7 @@
             :group="group"
             :query="query"
             :cover-style="settings.categoryBrowseCoverStyle"
-            :expand-style="settings.categoryBrowseExpandStyle"
+            :hide-single="settings.categoryBrowseHideSingle" :expand-style="settings.categoryBrowseExpandStyle" :adapt-cover-ratio="settings.categoryBrowseAdaptCoverRatio"
             @enter="enter"
           />
         </div>

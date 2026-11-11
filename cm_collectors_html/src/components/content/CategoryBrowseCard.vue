@@ -55,10 +55,10 @@
       :visible="visible"
       :virtual-ref="card"
       virtual-triggering
-      placement="right-start"
+      :placement="isCardDeck ? 'top' : 'right-start'"
       :width="panelWidth"
       :show-arrow="false"
-      :offset="-30"
+      :offset="isCardDeck ? deckOffset : -30"
       :popper-options="{
         modifiers: [{ name: 'preventOverflow', options: { padding: 12, altAxis: true } }],
       }"
@@ -82,7 +82,7 @@
       >
         <ResourceGroupMagazine
           v-if="expandStyle === 'magazine'"
-          :members="members"
+          :members="members" :adapt-cover-ratio="adaptCoverRatio"
           :source-resource="source"
           :loading="loading"
           :error="error"
@@ -94,7 +94,7 @@
           v-else-if="expandStyle === 'fold' || expandStyle === 'spine'"
           :vertical="expandStyle === 'spine'"
           :source-resource="source"
-          :members="members"
+          :members="members" :adapt-cover-ratio="adaptCoverRatio"
           :loading="loading"
           :error="error"
           :expected-count="group.count"
@@ -104,7 +104,7 @@
         <ResourceGroupFan
           v-else
           :expand-style="expandStyle === 'strip' ? 'strip' : 'fan'"
-          :members="members"
+          :members="members" :adapt-cover-ratio="adaptCoverRatio"
           :loading="loading"
           :error="error"
           :expected-count="group.count"
@@ -139,6 +139,8 @@ const props = defineProps<{
   group: CategoryGroup
   query: CategoryQuery
   coverStyle: I_config_app['categoryBrowseCoverStyle']
+  hideSingle?: boolean
+  adaptCoverRatio?: boolean
   expandStyle: I_config_app['categoryBrowseExpandStyle']
 }>()
 const emit = defineEmits<{ enter: [group: CategoryGroup, all: boolean] }>()
@@ -174,12 +176,19 @@ let requestVersion = 0,
   openTimer: ReturnType<typeof setTimeout> | undefined,
   closeTimer: ReturnType<typeof setTimeout> | undefined
 let pointer: { x: number; y: number } | undefined
+const isCardDeck = computed(() => props.expandStyle === 'fan' || props.expandStyle === 'strip')
+const deckOffset = ref(-120)
+// Match the resource association group's deck dimensions and overlap positioning.
 const panelWidth = computed(() =>
-  props.expandStyle === 'spine'
-    ? 320
-    : props.expandStyle === 'magazine'
-      ? 560
-      : Math.min(720, Math.max(340, 200 + props.group.count * 44)),
+  props.expandStyle === 'fan'
+    ? Math.min(720, Math.max(320, 200 + props.group.count * 60))
+    : props.expandStyle === 'strip'
+      ? Math.min(640, Math.max(280, 208 + Math.max(0, props.group.count - 1) * 40))
+      : props.expandStyle === 'spine'
+        ? 320
+        : props.expandStyle === 'magazine'
+          ? 560
+          : Math.min(720, Math.max(340, 200 + props.group.count * 44)),
 )
 const inside = (target: EventTarget | null) =>
   target instanceof Node && (!!card.value?.contains(target) || !!surface.value?.contains(target))
@@ -206,13 +215,21 @@ function pointInside() {
     })
   )
 }
+const suppressPreview = computed(() => props.hideSingle === true && props.group.count === 1)
+watch(suppressPreview, suppressed => { if (suppressed) close() })
 function open(event: PointerEvent | FocusEvent) {
+  if (suppressPreview.value) return
   if ('clientX' in event) track(event)
   keep()
   if (visible.value || openTimer) return
   openTimer = setTimeout(() => {
     openTimer = undefined
+    if (suppressPreview.value) return
     claimResourceGroupFan(close)
+    if (isCardDeck.value) {
+      const height = card.value?.getBoundingClientRect().height || 180
+      deckOffset.value = -Math.min(220, height * .8)
+    }
     visible.value = true
     if (!members.value.length && !loading.value) void load()
   }, 180)

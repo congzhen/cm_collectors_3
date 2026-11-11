@@ -308,12 +308,14 @@ func (CategoryBrowse) Members(db *gorm.DB, par CategoryBrowseRequest) (*[]Resour
 }
 
 type CategoryBrowseSettings struct {
-	Enabled     bool   `json:"categoryBrowseEnabled"`
-	Source      string `json:"categoryBrowseSource"`
-	GroupLimit  int    `json:"categoryBrowseGroupLimit"`
-	Sort        string `json:"categoryBrowseSort"`
-	CoverStyle  string `json:"categoryBrowseCoverStyle"`
-	ExpandStyle string `json:"categoryBrowseExpandStyle"`
+	Enabled         bool   `json:"categoryBrowseEnabled"`
+	Source          string `json:"categoryBrowseSource"`
+	GroupLimit      int    `json:"categoryBrowseGroupLimit"`
+	Sort            string `json:"categoryBrowseSort"`
+	CoverStyle      string `json:"categoryBrowseCoverStyle"`
+	HideSingle bool `json:"categoryBrowseHideSingle"`
+	AdaptCoverRatio bool   `json:"categoryBrowseAdaptCoverRatio"`
+	ExpandStyle     string `json:"categoryBrowseExpandStyle"`
 }
 
 func SetCategoryBrowseSettings(db *gorm.DB, library string, settings CategoryBrowseSettings) error {

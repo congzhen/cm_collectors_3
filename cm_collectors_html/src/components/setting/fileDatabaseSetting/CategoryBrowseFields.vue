@@ -50,7 +50,7 @@
       <div class="category-field">
         <span>{{ compact ? '封面样式' : '合集封面样式' }}</span
         ><selectResourceGroupCoverStyle
-          v-model="config.categoryBrowseCoverStyle"
+          v-model="config.categoryBrowseCoverStyle" v-model:hide-single="config.categoryBrowseHideSingle" show-single-toggle
           :teleported="false"
           :disabled="!config.categoryBrowseEnabled"
         />
@@ -58,7 +58,7 @@
       <div class="category-field">
         <span>{{ compact ? '展开样式' : '合集展开样式' }}</span
         ><selectResourceGroupExpandStyle
-          v-model="config.categoryBrowseExpandStyle"
+          v-model="config.categoryBrowseExpandStyle" v-model:adapt-cover-ratio="config.categoryBrowseAdaptCoverRatio"
           :teleported="false"
           :disabled="!config.categoryBrowseEnabled"
         />
@@ -89,6 +89,7 @@ const props = defineProps<{
   compact?: boolean
   alwaysShow?: boolean
 }>()
+const emit = defineEmits<{ ready: [] }>()
 const classes = ref<I_tagClass[]>([]),
   error = ref('')
 let version = 0
@@ -103,7 +104,7 @@ function validate() {
   } else if (!['count', 'name', 'default'].includes(props.config.categoryBrowseSort)) {
     validationError.value = '请选择有效的分类排序'
   } else if (props.config.categoryBrowseSource !== 'performer' && loading.value) {
-    validationError.value = '标签分类正在加载，请稍后应用'
+    validationError.value = '标签分类正在加载，请稍候'
   } else if (
     props.config.categoryBrowseSource !== 'performer' &&
     !classes.value.some((item) => `tag:${item.id}` === props.config.categoryBrowseSource)
@@ -131,6 +132,7 @@ async function load() {
     if (current === version) {
       loading.value = false
       if (validationError.value) validate()
+      emit('ready')
     }
   }
 }

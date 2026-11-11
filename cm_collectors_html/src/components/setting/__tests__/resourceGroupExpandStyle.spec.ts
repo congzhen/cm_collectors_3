@@ -28,7 +28,7 @@ it.each(['strip','fold','spine','magazine'] as const)('显示设置默认扇形�
     expect(appStoreData().currentConfigApp.resourceGroupExpandStyle).toBe(style);
     wrapper.findAllComponents({name:'ElButton'}).find(button=>button.text()==='保存')!.vm.$emit('click');
     await flushPromises();
-    expect(mocks.save).toHaveBeenCalledWith('lib-a',expect.objectContaining({resourceGroupExpandStyle:style}));
+    expect(mocks.save).toHaveBeenCalledWith('lib-a',expect.objectContaining({resourceGroupExpandStyle:style}),expect.objectContaining({localOnly:true}));
     appStoreData().currentFilesBases.id='lib-b';
     appStoreData().currentConfigApp=createDefaultConfigApp();
     await flushPromises();
@@ -49,7 +49,7 @@ it.each(['triptych','book','adaptive'] as const)('封面样式默认叠牌，切
     expect(appStoreData().currentConfigApp.resourceGroupCoverStyle).toBe(style);
     wrapper.findAllComponents({name:'ElButton'}).find(button=>button.text()==='保存')!.vm.$emit('click');
     await flushPromises();
-    expect(mocks.save).toHaveBeenCalledWith('lib-a',expect.objectContaining({resourceGroupCoverStyle:style}));
+    expect(mocks.save).toHaveBeenCalledWith('lib-a',expect.objectContaining({resourceGroupCoverStyle:style}),expect.objectContaining({localOnly:true}));
     appStoreData().currentFilesBases.id='lib-b';
     appStoreData().currentConfigApp=createDefaultConfigApp();
     await flushPromises();
@@ -139,4 +139,27 @@ it('同库配置被替换后可立即保存新配置，旧请求不能解除新�
   first({status:true});await flushPromises();expect(save.props('loading')).toBe(true);
   second({status:true});await flushPromises();expect(save.props('loading')).toBe(false);
  }finally{w.unmount();}
+});
+
+it('分类预览随底部保存一起持久化，预览本身不触发保存', async () => {
+  const wrapper=shallowMount(CoverAdjuster,{global:{plugins:[ElementPlus],renderStubDefaultSlot:true,mocks:{$t:(key:string)=>key},stubs:{ElPopover:{template:'<div><slot name="reference"/><slot/></div>'}}}});
+  try {
+    Object.assign(appStoreData().currentConfigApp, { categoryBrowseEnabled: true, categoryBrowseSort: 'name', categoryBrowseAdaptCoverRatio: true });
+    await flushPromises();
+    expect(mocks.save).not.toHaveBeenCalled();
+    wrapper.findAllComponents({name:'ElButton'}).find(button=>button.text()==='保存')!.vm.$emit('click');
+    await flushPromises();
+    expect(mocks.save).toHaveBeenCalledWith('lib-a', expect.objectContaining({ categoryBrowseEnabled: true, categoryBrowseSort: 'name', categoryBrowseAdaptCoverRatio: true }), expect.objectContaining({ localOnly: true }));
+  } finally { wrapper.unmount(); }
+});
+
+it('分类输入校验失败时底部保存不会提交旧值', async () => {
+  const validate = vi.fn(() => false);
+  const wrapper=shallowMount(CoverAdjuster,{global:{plugins:[ElementPlus],renderStubDefaultSlot:true,mocks:{$t:(key:string)=>key},stubs:{CategoryBrowseQuickSettings:{template:'<div/>',methods:{validate}},ElPopover:{template:'<div><slot name="reference"/><slot/></div>'}}}});
+  try {
+    wrapper.findAllComponents({name:'ElButton'}).find(button=>button.text()==='保存')!.vm.$emit('click');
+    await flushPromises();
+    expect(validate).toHaveBeenCalled();
+    expect(mocks.save).not.toHaveBeenCalled();
+  } finally { wrapper.unmount(); }
 });

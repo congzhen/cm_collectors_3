@@ -1,8 +1,8 @@
 <template>
   <template v-if="!editable">
-    <ResourceGroupMagazine v-if="displayActive !== false && expandStyle === 'magazine'" :expected-count="expectedCount" :source-resource="sourceResource" :members="members" :loading="loading" :error="error" @retry="load" @select="emit('select', $event)" />
-    <ResourceGroupFold v-else-if="displayActive !== false && (expandStyle === 'fold' || expandStyle === 'spine')" :vertical="expandStyle === 'spine'" :expected-count="expectedCount" :source-resource="sourceResource" :members="members" :loading="loading" :error="error" @retry="load" @select="emit('select', $event)" />
-    <ResourceGroupFan v-else-if="displayActive !== false" :expand-style="expandStyle === 'strip' ? 'strip' : 'fan'" :members="members" :loading="loading" :error="error" :expected-count="expectedCount" :matched-ids="matchedIds" @retry="load" @select="emit('select', $event)" />
+    <ResourceGroupMagazine v-if="displayActive !== false && expandStyle === 'magazine'" :expected-count="expectedCount" :source-resource="sourceResource" :members="members" :adapt-cover-ratio="adaptCoverRatio" :loading="loading" :error="error" @retry="load" @select="emit('select', $event)" />
+    <ResourceGroupFold v-else-if="displayActive !== false && (expandStyle === 'fold' || expandStyle === 'spine')" :vertical="expandStyle === 'spine'" :expected-count="expectedCount" :source-resource="sourceResource" :members="members" :adapt-cover-ratio="adaptCoverRatio" :loading="loading" :error="error" @retry="load" @select="emit('select', $event)" />
+    <ResourceGroupFan v-else-if="displayActive !== false" :expand-style="expandStyle === 'strip' ? 'strip' : 'fan'" :members="members" :adapt-cover-ratio="adaptCoverRatio" :loading="loading" :error="error" :expected-count="expectedCount" :matched-ids="matchedIds" @retry="load" @select="emit('select', $event)" />
   </template>
   <section v-else class="resource-group-panel resource-group-panel--editable" v-loading="saving" :aria-busy="loading || saving">
     <header>
@@ -59,7 +59,7 @@ import type { I_resource } from '@/dataType/resource.dataType';
 import ResourceGroupFan from './ResourceGroupFan.vue';
 import ResourceGroupFold from './ResourceGroupFold.vue';
 import ResourceGroupMagazine from './ResourceGroupMagazine.vue';
-const props = defineProps<{ filesBasesId: string; groupId: string; editable?: boolean; displayActive?: boolean; expectedCount?: number; sourceResource?: I_resource; expandStyle?: 'fan' | 'strip' | 'fold' | 'spine' | 'magazine'; matchedIds?: Set<string> }>();
+const props = defineProps<{ filesBasesId: string; groupId: string; editable?: boolean; adaptCoverRatio?: boolean; displayActive?: boolean; expectedCount?: number; sourceResource?: I_resource; expandStyle?: 'fan' | 'strip' | 'fold' | 'spine' | 'magazine'; matchedIds?: Set<string> }>();
 const emit = defineEmits<{ select: [resource: I_resource]; changed: []; closed: []; add: [groupId: string] }>();
 const members = ref<I_resource[]>([]);
 const matchedCount = computed(() => members.value.filter(resource => props.matchedIds?.has(resource.id)).length);

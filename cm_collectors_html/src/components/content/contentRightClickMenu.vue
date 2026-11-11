@@ -26,7 +26,7 @@
       :popper-style="{ maxWidth: 'calc(100vw - 16px)', padding: '0', border: '0', background: 'transparent', boxShadow: 'none' }" @after-leave="releaseGroupFanView">
       <div ref="groupSurface" @pointerenter="keepGroupFan" @pointerleave="leaveGroupFan" @focusin="keepGroupFan" @focusout="leaveGroupFan" @keydown.esc="closeGroupFan">
       <ResourceGroupPanel v-if="groupPanelReady" :files-bases-id="props.resource.filesBases_id" :group-id="props.resource.associationGroupId!"
-        :source-resource="props.resource" :expand-style="groupExpandStyle" :display-active="groupViewActive" :expected-count="groupMemberCount" :matched-ids="groupContext?.pageIds.value" @select="selectGroupMember" />
+        :source-resource="props.resource" :expand-style="groupExpandStyle" :adapt-cover-ratio="appStoreData().currentConfigApp.resourceGroupAdaptCoverRatio" :display-active="groupViewActive" :expected-count="groupMemberCount" :matched-ids="groupContext?.pageIds.value" @select="selectGroupMember" />
       </div>
     </el-popover>
   </div>

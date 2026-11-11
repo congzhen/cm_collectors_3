@@ -49,3 +49,21 @@ it('加载与失败不保留旧封面，失败可以重试，空组明确提示'
     expect(w.text()).toContain('暂无关联资源');
   } finally { w.unmount(); }
 });
+
+it('适配拼版使用封面比例排满每行，成员顺序和键盘访问保持完整', async () => {
+  const w = create(12);
+  try {
+    const members = w.props('members').map((resource, i) => ({ ...resource, coverPosterWidth: i === 0 ? 1600 : 900, coverPosterHeight: i === 0 ? 900 : 1600 }));
+    await w.setProps({ members, adaptCoverRatio: true });
+    expect(w.find('.magazine-lead').exists()).toBe(false);
+    expect(w.findAll('.magazine-tile')).toHaveLength(12);
+    expect(w.findAll('.magazine-tile').map(t => t.attributes('aria-label'))).toEqual(members.map(r => `打开资源：${r.title}`));
+    expect(w.findAll('.magazine-adaptive-row').length).toBeGreaterThan(1);
+    await w.find('.magazine-scroll').trigger('keydown', { key: 'End' });
+    await w.find('[tabindex="0"]').trigger('click');
+    expect(w.emitted('select')?.[0]).toEqual([members[11]]);
+    await w.setProps({ adaptCoverRatio: false });
+    expect(w.find('.magazine-lead').exists()).toBe(true);
+    expect(w.findAll('.magazine-tile')).toHaveLength(12);
+  } finally { w.unmount(); }
+});

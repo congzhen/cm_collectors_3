@@ -99,9 +99,12 @@ export interface I_config_app {
   categoryBrowseSort: 'count' | 'name' | 'default';
   categoryBrowseGroupLimit: number;
   categoryBrowseCoverStyle: 'stack' | 'triptych' | 'book' | 'adaptive';
+  categoryBrowseHideSingle: boolean;
+  categoryBrowseAdaptCoverRatio: boolean;
   categoryBrowseExpandStyle: 'fan' | 'strip' | 'fold' | 'spine' | 'magazine';
   mergeResourceGroups: boolean; // 本库独立：PC 主列表合并同组资源
   resourceGroupCoverStyle: 'stack' | 'triptych' | 'book' | 'adaptive'; // 本库独立：关联组静态封面样式
+  resourceGroupAdaptCoverRatio: boolean;
   resourceGroupExpandStyle: 'fan' | 'strip' | 'fold' | 'spine' | 'magazine'; // 本库独立：关联组悬浮展开样式
   showVideoDuration: boolean; // 封面显示视频时长
   sortMode: string; // 排序模式
@@ -170,9 +173,12 @@ export const defualtConfigApp: I_config_app = {
   categoryBrowseSort: 'count',
   categoryBrowseGroupLimit: 12,
   categoryBrowseCoverStyle: 'stack',
+  categoryBrowseHideSingle: false,
+  categoryBrowseAdaptCoverRatio: false,
   categoryBrowseExpandStyle: 'fan',
   mergeResourceGroups: true,
   resourceGroupCoverStyle: 'stack',
+  resourceGroupAdaptCoverRatio: false,
   resourceGroupExpandStyle: 'fan',
   showVideoDuration: false,
   previewImageFolder: '/',

@@ -1,6 +1,6 @@
 import { flushPromises, mount } from '@vue/test-utils'
 import { beforeEach, expect, it, vi } from 'vitest'
-import ElementPlus, { ElInputNumber, ElMessage, ElSelect } from 'element-plus'
+import ElementPlus, { ElInputNumber, ElSelect } from 'element-plus'
 import Quick from '../fileDatabaseSetting/CategoryBrowseQuickSettings.vue'
 import { appStoreData } from '@/storeData/app.storeData'
 import { createDefaultConfigApp } from '@/dataType/config.dataType'
@@ -20,182 +20,97 @@ vi.mock('@/storeData/app.storeData', async () => {
   return { appStoreData: () => store }
 })
 beforeEach(() => {
-  vi.restoreAllMocks()
-  vi.clearAllMocks()
-  mocks.save.mockReset().mockResolvedValue({ status: true })
-  mocks.tags.mockReset().mockResolvedValue({ status: true, data: [] })
-  appStoreData().currentFilesBases.id = 'A'
-  appStoreData().currentConfigApp = createDefaultConfigApp()
-})
-const create = () =>
-  mount(Quick, { props: { horizontal: true }, global: { plugins: [ElementPlus] } })
-it.each(['performer', 'tag:type'])('演员和标签均可保存独立分类排序：%s', async (source) => {
-  mocks.tags.mockResolvedValue({ status: true, data: [{ id: 'type', name: '类型', status: true }] })
-  Object.assign(appStoreData().currentConfigApp, {
-    categoryBrowseEnabled: true,
-    categoryBrowseSource: source,
-  })
-  const w = create()
+  vi.restoreAllMocks(); vi.clearAllMocks();
+  mocks.tags.mockResolvedValue({ status: true, data: [] });
+  appStoreData().currentFilesBases.id = 'A';
+  appStoreData().currentConfigApp = createDefaultConfigApp();
+});
+const create = () => mount(Quick, { props: { horizontal: true }, global: { plugins: [ElementPlus] } });
+it('选择立即预览，不显示应用按钮且不保存，重新加载恢复持久化设置', async () => {
+  const persisted = createDefaultConfigApp();
+  const w = create();
   try {
-    await flushPromises()
-    const sort = w.findAll('.category-field')[2]!.findComponent(ElSelect)
-    expect(sort.props('modelValue')).toBe('count')
-    for (const mode of ['name', 'default', 'count']) {
-      sort.vm.$emit('update:modelValue', mode)
-      await flushPromises()
-      await w.get('.category-apply').trigger('click')
-      await flushPromises()
-      expect(mocks.save).toHaveBeenLastCalledWith(
-        'A', expect.objectContaining({ categoryBrowseSource: source, categoryBrowseSort: mode }),
-      )
-      expect(appStoreData().currentConfigApp.categoryBrowseSort).toBe(mode)
-    }
-  } finally {
-    w.unmount()
-  }
-})
-it.each([0, 1, 100])('允许保存每组上限 %s，应用后保留原值', async (cap) => {
-  const w = create()
+    await flushPromises();
+    expect(w.find('.category-apply').exists()).toBe(false);
+    await w.get('[role="switch"]').trigger('click');
+    await flushPromises();
+    expect(appStoreData().currentConfigApp.categoryBrowseEnabled).toBe(true);
+    w.findAll('.category-field')[2]!.findComponent(ElSelect).vm.$emit('update:modelValue', 'name');
+    await flushPromises();
+    expect(appStoreData().currentConfigApp.categoryBrowseSort).toBe('name');
+    expect(mocks.emit).toHaveBeenCalledWith('category-browse-applied');
+    expect(mocks.save).not.toHaveBeenCalled();
+    appStoreData().currentConfigApp = { ...persisted }; await flushPromises();
+    expect(w.findAll('.category-field')[2]!.findComponent(ElSelect).props('modelValue')).toBe('count');
+    expect(appStoreData().currentConfigApp.categoryBrowseEnabled).toBe(false);
+  } finally { w.unmount(); }
+  expect(mocks.save).not.toHaveBeenCalled();
+});
+it.each([0, 1, 100])('分组上限 %s 只修改当前显示，不调用持久化接口', async cap => {
+  appStoreData().currentConfigApp.categoryBrowseEnabled = true;
+  const w = create();
   try {
-    await flushPromises()
-    await w.get('[role="switch"]').trigger('click')
-    const input = w.findComponent(ElInputNumber).get('input')
-    await input.setValue(String(cap))
-    await input.trigger('change')
-    await w.get('.category-apply').trigger('click')
-    await flushPromises()
-    expect(mocks.save).toHaveBeenCalledWith(
-      'A',
-      expect.objectContaining({ categoryBrowseGroupLimit: cap }),
-    )
-    expect(appStoreData().currentConfigApp.categoryBrowseGroupLimit).toBe(cap)
-    expect(w.findComponent(ElInputNumber).props('modelValue')).toBe(cap)
-  } finally {
-    w.unmount()
-  }
-})
-it('关闭时表单保留禁用，开启后空上限阻止提交，修正后仅应用分类字段', async () => {
-  const w = create()
+    await flushPromises();
+    w.findComponent(ElInputNumber).vm.$emit('update:modelValue', cap); await flushPromises();
+    expect(appStoreData().currentConfigApp.categoryBrowseGroupLimit).toBe(cap);
+    expect(mocks.save).not.toHaveBeenCalled();
+  } finally { w.unmount(); }
+});
+it('无效输入不会进入当前配置，修正后立即预览', async () => {
+  appStoreData().currentConfigApp.categoryBrowseEnabled = true;
+  const w = create();
   try {
-    await flushPromises()
-    expect(w.findAll('.category-field')).toHaveLength(6)
-    expect(w.findComponent(ElInputNumber).props('disabled')).toBe(true)
-    await w.get('[role="switch"]').trigger('click')
-    const number = w.findComponent(ElInputNumber)
-    expect(number.get('input').attributes('aria-disabled')).toBe('false')
-    await number.get('input').setValue('')
-    await number.get('input').trigger('change')
-    await w.get('.category-apply').trigger('click')
-    await flushPromises()
-    expect(mocks.save).not.toHaveBeenCalled()
-    expect(w.text()).toContain('每组资源上限请输入')
-    await number.get('input').setValue('8')
-    await number.get('input').trigger('change')
-    await w.get('.category-apply').trigger('click')
-    await flushPromises()
-    expect(mocks.save).toHaveBeenCalledWith(
-      'A',
-      expect.objectContaining({ categoryBrowseEnabled: true, categoryBrowseGroupLimit: 8 }),
-    )
-    expect(mocks.save.mock.calls[0][1]).not.toHaveProperty('pageLimit')
-    expect(appStoreData().currentConfigApp.categoryBrowseGroupLimit).toBe(8)
-  } finally {
-    w.unmount()
-  }
-})
-it('旧库保存失败不能提示到新库，也不能解除新库保存状态', async () => {
-  let first!: (value: unknown) => void, second!: (value: unknown) => void
-  mocks.save
-    .mockImplementationOnce(
-      () =>
-        new Promise((resolve) => {
-          first = resolve
-        }),
-    )
-    .mockImplementationOnce(
-      () =>
-        new Promise((resolve) => {
-          second = resolve
-        }),
-    )
-  const error = vi.spyOn(ElMessage, 'error')
-  const w = create()
+    await flushPromises();
+    w.findComponent(ElInputNumber).vm.$emit('update:modelValue', undefined); await flushPromises();
+    expect(appStoreData().currentConfigApp.categoryBrowseGroupLimit).toBe(12);
+    expect(w.text()).toContain('每组资源上限请输入');
+    expect(w.vm.validate()).toBe(false);
+    w.findComponent(ElInputNumber).vm.$emit('update:modelValue', 8); await flushPromises();
+    expect(appStoreData().currentConfigApp.categoryBrowseGroupLimit).toBe(8);
+    expect(w.vm.validate()).toBe(true);
+    expect(mocks.save).not.toHaveBeenCalled();
+  } finally { w.unmount(); }
+});
+it('切库丢弃无效草稿，不影响新库设置', async () => {
+  appStoreData().currentConfigApp.categoryBrowseEnabled = true;
+  const w = create();
   try {
-    await flushPromises()
-    await w.get('[role="switch"]').trigger('click')
-    await w.get('.category-apply').trigger('click')
-    appStoreData().currentFilesBases.id = 'B'
-    appStoreData().currentConfigApp = createDefaultConfigApp()
-    await flushPromises()
-    await w.get('.category-apply').trigger('click')
-    first({ status: false, msg: '旧库失败' })
-    await flushPromises()
-    expect(error).not.toHaveBeenCalled()
-    expect(w.find('.category-apply.is-loading').exists()).toBe(true)
-    second({ status: true })
-    await flushPromises()
-    expect(w.find('.category-apply.is-loading').exists()).toBe(false)
-    expect(appStoreData().currentConfigApp.categoryBrowseEnabled).toBe(false)
-  } finally {
-    w.unmount()
-  }
-})
-it('同库配置被等值替换后可重新应用排序，旧保存不影响新请求', async () => {
-  let first!: (value: unknown) => void, second!: (value: unknown) => void
-  mocks.save
-    .mockImplementationOnce(() => new Promise((resolve) => { first = resolve }))
-    .mockImplementationOnce(() => new Promise((resolve) => { second = resolve }))
-  Object.assign(appStoreData().currentConfigApp, { categoryBrowseEnabled: true })
-  const error = vi.spyOn(ElMessage, 'error')
-  const w = create()
+    await flushPromises();
+    w.findComponent(ElInputNumber).vm.$emit('update:modelValue', undefined); await flushPromises();
+    appStoreData().currentFilesBases.id = 'B';
+    appStoreData().currentConfigApp = { ...createDefaultConfigApp(), categoryBrowseGroupLimit: 5 };
+    await flushPromises();
+    expect(w.findComponent(ElInputNumber).props('modelValue')).toBe(5);
+    expect(mocks.save).not.toHaveBeenCalled();
+  } finally { w.unmount(); }
+});
+it('标签加载完成后继续预览待选设置，不自动保存', async () => {
+  let finish!: (value: unknown) => void;
+  mocks.tags.mockReturnValueOnce(new Promise(resolve => { finish = resolve }));
+  Object.assign(appStoreData().currentConfigApp, { categoryBrowseEnabled: true, categoryBrowseSource: 'tag:type' });
+  const w = create();
   try {
-    await flushPromises()
-    await w.get('.category-apply').trigger('click')
-    expect(w.find('.category-apply.is-loading').exists()).toBe(true)
-    const replacement = { ...appStoreData().currentConfigApp }
-    appStoreData().currentConfigApp = replacement
-    await flushPromises()
-    expect(w.find('.category-apply.is-loading').exists()).toBe(false)
-    w.findAll('.category-field')[2]!.findComponent(ElSelect).vm.$emit('update:modelValue', 'name')
-    await flushPromises()
-    await w.get('.category-apply').trigger('click')
-    expect(mocks.save).toHaveBeenCalledTimes(2)
-    first({ status: false, msg: '过期保存失败' })
-    await flushPromises()
-    expect(error).not.toHaveBeenCalled()
-    expect(w.find('.category-apply.is-loading').exists()).toBe(true)
-    second({ status: true })
-    await flushPromises()
-    expect(w.find('.category-apply.is-loading').exists()).toBe(false)
-    expect(appStoreData().currentConfigApp.categoryBrowseSort).toBe('name')
-  } finally {
-    w.unmount()
-  }
-})
-it('标签尚未加载时保留设置并提示等待，加载成功后可以应用', async () => {
-  let finish!: (value: unknown) => void
-  mocks.tags.mockReturnValueOnce(
-    new Promise((resolve) => {
-      finish = resolve
-    }),
-  )
-  Object.assign(appStoreData().currentConfigApp, {
-    categoryBrowseEnabled: true,
-    categoryBrowseSource: 'tag:type',
-  })
-  const w = create()
+    w.findAll('.category-field')[2]!.findComponent(ElSelect).vm.$emit('update:modelValue', 'name'); await flushPromises();
+    expect(appStoreData().currentConfigApp.categoryBrowseSort).toBe('count');
+    finish({ status: true, data: [{ id: 'type', name: '类型', status: true }] }); await flushPromises();
+    expect(appStoreData().currentConfigApp.categoryBrowseSort).toBe('name');
+    expect(mocks.save).not.toHaveBeenCalled();
+  } finally { w.unmount(); }
+});
+
+it('仅封面下拉框提供单资源开关，只即时预览不保存', async () => {
+  appStoreData().currentConfigApp.categoryBrowseEnabled = true;
+  const w = create();
   try {
-    await w.get('.category-apply').trigger('click')
-    await flushPromises()
-    expect(w.text()).toContain('标签分类正在加载')
-    expect(mocks.save).not.toHaveBeenCalled()
-    finish({ status: true, data: [{ id: 'type', name: '类型', status: true }] })
-    await flushPromises()
-    expect(w.text()).not.toContain('标签分类正在加载')
-    await w.get('.category-apply').trigger('click')
-    await flushPromises()
-    expect(mocks.save).toHaveBeenCalledOnce()
-  } finally {
-    w.unmount()
-  }
-})
+    await flushPromises();
+    const cover = w.findComponent({ name: 'selectResourceGroupCoverStyle' });
+    const expand = w.findComponent({ name: 'selectResourceGroupExpandStyle' });
+    expect(cover.props('hideSingle')).toBe(false);
+    cover.vm.$emit('update:hideSingle', true); await flushPromises();
+    expect(appStoreData().currentConfigApp.categoryBrowseHideSingle).toBe(true);
+    expect(expand.props()).not.toHaveProperty('hideSingle');
+    cover.vm.$emit('update:hideSingle', false); await flushPromises();
+    expect(cover.props('hideSingle')).toBe(false);
+    expect(mocks.save).not.toHaveBeenCalled();
+  } finally { w.unmount(); }
+});

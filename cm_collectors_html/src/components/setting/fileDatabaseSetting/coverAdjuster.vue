@@ -86,7 +86,7 @@
               </div>
               <div class="modern-option-item modern-group-style">
                 <span class="modern-control-label">关联组展开样式</span>
-                <selectResourceGroupExpandStyle v-model="resourceGroupExpandStyle" :teleported="false" />
+                <selectResourceGroupExpandStyle v-model="resourceGroupExpandStyle" v-model:adapt-cover-ratio="store.appStoreData.currentConfigApp.resourceGroupAdaptCoverRatio" :teleported="false" />
               </div>
             </section>
 
@@ -126,11 +126,11 @@
             </div>
           </section>
           <section class="modern-settings-card modern-category-card">
-            <CategoryBrowseQuickSettings horizontal :disabled="savingConfig || props.disabled" @saving="categorySaving=$event" />
+            <CategoryBrowseQuickSettings ref="categoryQuick" horizontal :disabled="savingConfig || props.disabled" />
           </section>
         </div>
         <div class="modern-actions">
-          <el-button type="primary" :loading="savingConfig" :disabled="categorySaving || props.disabled" @click="saveConfig">保存</el-button>
+          <el-button type="primary" :loading="savingConfig" :disabled="props.disabled" @click="saveConfig">保存</el-button>
         </div>
       </div>
 
@@ -211,9 +211,9 @@
               </div>
               <div class="setting-item">
                 <span class="setting-label">关联组展开样式</span>
-                <selectResourceGroupExpandStyle v-model="resourceGroupExpandStyle" :teleported="false" />
+                <selectResourceGroupExpandStyle v-model="resourceGroupExpandStyle" v-model:adapt-cover-ratio="store.appStoreData.currentConfigApp.resourceGroupAdaptCoverRatio" :teleported="false" />
               </div>
-              <CategoryBrowseQuickSettings :disabled="savingConfig || props.disabled" @saving="categorySaving=$event" />
+              <CategoryBrowseQuickSettings ref="categoryQuick" :disabled="savingConfig || props.disabled" />
               <div class="setting-item">
                 <span class="setting-label">封面标题对齐方式</span>
                 <el-radio-group v-model="coverTitleAlign" size="small">
@@ -231,7 +231,7 @@
           </div>
         </div>
         <div class="actions">
-          <el-button type="primary" plain :loading="savingConfig" :disabled="categorySaving || props.disabled" @click="saveConfig">保存</el-button>
+          <el-button type="primary" plain :loading="savingConfig" :disabled="props.disabled" @click="saveConfig">保存</el-button>
         </div>
       </div>
     </el-popover>
@@ -244,6 +244,7 @@ import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import dataset from '@/assets/dataset';
 import { debounceNow } from '@/assets/debounce';
 import { filesBasesServer } from '@/server/filesBases.server';
+import { createDefaultConfigApp } from '@/dataType/config.dataType';
 import { ElMessage } from 'element-plus';
 import selectLeftColumnMode from '@/components/com/form/selectLeftColumnMode.vue';
 import selectResourceGroupCoverStyle from '@/components/com/form/selectResourceGroupCoverStyle.vue';
@@ -428,9 +429,9 @@ const showVideoDuration = computed({
   }
 });
 
+const categoryQuick = ref<InstanceType<typeof CategoryBrowseQuickSettings>>();
 const savingConfig = ref(false);
-const categorySaving = ref(false);
-watch(() => savingConfig.value || categorySaving.value, value => emit('saving', value), { flush: 'sync' });
+watch(() => savingConfig.value, value => emit('saving', value), { flush: 'sync' });
 let saveVersion = 0;
 onBeforeUnmount(() => { saveVersion++; emit('saving', false); });
 watch(() => [store.appStoreData.currentFilesBases.id, store.appStoreData.currentConfigApp], () => {
@@ -438,7 +439,8 @@ watch(() => [store.appStoreData.currentFilesBases.id, store.appStoreData.current
   savingConfig.value = false;
 }, { flush: 'sync' });
 const saveConfig = debounceNow(async () => {
-  if (savingConfig.value || categorySaving.value || props.disabled) return;
+  if (savingConfig.value || props.disabled) return;
+  if (categoryQuick.value?.validate?.() === false) return;
   const version = ++saveVersion;
   const library = store.appStoreData.currentFilesBases.id;
   const config = store.appStoreData.currentConfigApp;
@@ -447,7 +449,10 @@ const saveConfig = debounceNow(async () => {
     && config === store.appStoreData.currentConfigApp;
   savingConfig.value = true;
   try {
-    const result = await filesBasesServer.setFilesBasesConfigById(library, JSON.parse(snapshot));
+    const result = await filesBasesServer.setFilesBasesConfigById(library, JSON.parse(snapshot), {
+      localOnly: true,
+      baseline: { ...createDefaultConfigApp(), ...JSON.parse(store.appStoreData.currentFilesBases.filesBasesSetting?.config_json_data || '{}') },
+    });
     if (!isCurrent()) return;
     if (!result?.status) {
       ElMessage.error(result?.msg || '设置保存失败，请重试');
