@@ -88,6 +88,8 @@ onMounted(loadList)
 </script>
 
 <style lang="scss" scoped>
+@use '../settingsModules' as modules;
+
 .tvbox-recommend-setting {
   height: 100%;
   display: flex;
@@ -165,5 +167,29 @@ onMounted(loadList)
       }
     }
   }
+}
+
+.tvbox-recommend-setting {
+  gap: 12px;
+  .toolbar { @include modules.panel; padding: 8px 16px; flex-shrink: 0; }
+  .cache-tip { color: var(--el-text-color-secondary); background: var(--el-fill-color-light); line-height: 1.7; flex-shrink: 0; }
+  .recommend-list { min-height: 0; gap: 10px; .recommend-item { padding: 8px 16px; background: var(--el-bg-color); border: 1px solid var(--el-border-color-lighter); border-radius: 8px; } }
+  .empty-tip { @include modules.panel; padding: 48px 20px; }
+}
+
+.tvbox-recommend-setting { @include modules.frame; }
+
+.tvbox-recommend-setting {
+  gap: 8px;
+  .toolbar { padding: 8px 16px; }
+  .cache-tip { padding: 6px 12px; font-size: 12px; }
+  .recommend-list { gap: 0; border: 1px solid var(--el-border-color-lighter); border-radius: 8px; background: var(--el-bg-color); counter-reset: recommendations; }
+  .recommend-list .recommend-item { flex-shrink: 0; gap: 12px; padding: 8px 12px; border: 0; border-bottom: 1px solid var(--el-border-color-extra-light); border-radius: 0; background: transparent; }
+  .recommend-list .recommend-item:last-child { border-bottom: 0; }
+  .recommend-list .recommend-item::before { counter-increment: recommendations; content: counter(recommendations, decimal-leading-zero); min-width: 24px; font-size: 12px; color: var(--el-text-color-secondary); font-variant-numeric: tabular-nums; }
+  .recommend-list .recommend-item .cover { width: 32px; height: 44px; }
+  .recommend-list .drag-handle { padding: 8px 4px; cursor: grab; }
+  .recommend-list .title { font-size: 14px; }
+  .recommend-list .recommend-item:hover { background: var(--el-fill-color-light); }
 }
 </style>

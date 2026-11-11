@@ -1,19 +1,20 @@
 ﻿<template>
-  <div class="ai-tag-setting" v-loading="loading">
-    <div class="feature-intro">
-      <div class="feature-intro__title">AI 自动标签</div>
+  <div class="settings-editor-shell" v-loading="loading">
+  <div class="ai-tag-setting editor-scroll">
+    <details class="feature-intro">
+      <summary>使用说明</summary>
       <div class="feature-intro__text">
         根据资源下的视频截图，让 AI 从当前文件库已有标签中选择匹配项并自动写入资源标签。该功能不会创建新标签，也不会按单个视频分别打标签；默认追加写入，已分析且内容与标签池未变化的资源会跳过。
       </div>
       <div class="feature-intro__text">
         使用前请先选择启用文件库，补充标签的 AI 识别说明，并配置支持图片输入的 OpenAI 兼容模型。计划任务和立即执行都会使用这里的设置；暂停后可继续执行所选文件库的待分析资源。
       </div>
-    </div>
+    </details>
     <div class="toolbar">
       <div class="toolbar__actions">
         <el-button icon="Connection" @click="testService">测试服务</el-button>
         <el-button icon="ChatLineRound" :loading="modelTestLoading" @click="testConnection">测试模型输出</el-button>
-        <el-button type="primary" icon="Check" @click="saveAll">保存设置</el-button>
+
         <el-button type="success" icon="VideoPlay" :disabled="isTaskRunning || setting.paused"
           @click="runOnce">立即执行</el-button>
         <el-button v-if="!setting.paused" type="warning" icon="VideoPause" :disabled="!isTaskRunning"
@@ -125,9 +126,11 @@
       </template>
     </el-dialog>
 
-    <el-tabs v-model="activeTab">
+    <el-tabs v-model="activeTab" class="ai-settings-tabs">
       <el-tab-pane label="基础设置" name="setting">
         <el-form :model="setting" label-width="160px" label-position="left" class="setting-form">
+          <section class="ai-settings-group"><div class="ai-group-heading"><h3>服务与模型</h3><p>配置 AI 接口、模型与请求超时。</p></div><div class="ai-group-panel">
+
           <el-form-item label="AI 调用地址">
             <el-input v-model="setting.baseUrl" placeholder="https://api.openai.com/v1" />
             <div class="field-help">填写 OpenAI 兼容接口地址。可以填根地址、/v1，或完整的 /v1/chat/completions 地址。</div>
@@ -144,6 +147,8 @@
             <el-input-number v-model="setting.requestTimeoutSeconds" :min="30" :max="86400" />
             <div class="field-help">单次 AI 请求最多等待多少秒。大模型建议设置较大，例如 1800 秒或更高。</div>
           </el-form-item>
+          </div></section>
+          <section class="ai-settings-group"><div class="ai-group-heading"><h3>识别与写入</h3><p>选择截图质量和标签写入方式。</p></div><div class="ai-group-panel">
           <el-form-item label="写入策略">
             <el-radio-group v-model="setting.writeMode">
               <el-radio-button label="追加" value="append" />
@@ -168,6 +173,8 @@
             </el-radio-group>
             <div class="field-help">原始分辨率：优先准确度，不主动缩小截图。自动降级：AI 服务拒绝或超限时再压缩。固定缩放：始终按下方最大宽度压缩。</div>
           </el-form-item>
+          </div></section>
+          <section class="ai-settings-group"><div class="ai-group-heading"><h3>处理数量与质量</h3><p>控制任务规模、标签置信度及图片压缩参数。</p></div><div class="ai-group-panel">
           <div class="number-grid">
             <el-form-item label="每轮资源数">
               <el-input-number v-model="setting.maxResourcesPerRun" :min="1" :max="500" />
@@ -206,6 +213,7 @@
               <div class="field-help">图片压缩时的 JPEG 质量。100 最接近原图，数值越低体积越小但细节会减少。</div>
             </el-form-item>
           </div>
+          </div></section>
         </el-form>
       </el-tab-pane>
 
@@ -300,6 +308,8 @@
         </div>
       </el-tab-pane>
     </el-tabs>
+  </div>
+  <div class="editor-footer"><span class="editor-footer-note">保存 AI 配置及启用文件库范围</span><el-button type="primary" icon="Check" @click="saveAll">保存设置</el-button></div>
   </div>
 </template>
 
@@ -783,6 +793,8 @@ onUnmounted(() => {
 </script>
 
 <style lang="scss" scoped>
+@use '../settingsModules' as modules;
+
 .ai-tag-setting {
   height: 100%;
   overflow: auto;
@@ -887,7 +899,7 @@ onUnmounted(() => {
     :deep(.el-form-item__content) {
       flex-direction: row;
       align-items: center;
-      gap: 16px;
+      gap: 12px;
     }
 
     .field-help {
@@ -1075,5 +1087,45 @@ onUnmounted(() => {
       }
     }
   }
+}
+
+.ai-tag-setting {
+  @include modules.frame;
+  .feature-intro { padding: 0; border: 0; background: transparent; margin-bottom: 12px; }
+  .feature-intro summary { cursor: pointer; color: var(--el-text-color-secondary); }
+  .feature-intro__text { color: var(--el-text-color-secondary); }
+  .toolbar { @include modules.panel; gap: 14px; }
+  .toolbar__actions { justify-content: flex-start; gap: 8px; }
+  .setting-form { max-width: 1320px; @include modules.panel; @include modules.form-rows; @include modules.mobile-form; }
+  .stats-row { margin: 20px 0; }
+  .number-grid .field-help { min-width: 0; }
+}
+
+.settings-editor-shell { @include modules.editor-shell; }
+
+.ai-tag-setting {
+  .toolbar { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 10px 16px; padding: 10px 16px; margin-bottom: 8px; }
+  .toolbar__settings { order: -1; }
+  .toolbar__actions { margin-left: auto; }
+  .setting-form { max-width: none; padding: 0; border: 0; background: transparent; }
+  .ai-settings-group { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--el-border-color-lighter); }
+  .ai-settings-group:first-child { padding-top: 0; }
+  .ai-settings-group:last-child { border-bottom: 0; }
+  .ai-group-heading { padding: 10px 0 0 4px; }
+  .ai-group-heading h3 { font-size: 15px; line-height: 24px; margin: 0; }
+  .ai-group-heading p { margin: 6px 0 0; font-size: 12px; line-height: 1.7; color: var(--el-text-color-secondary); }
+  .ai-group-panel { min-width: 0; padding: 4px 16px; border: 1px solid var(--el-border-color-lighter); border-radius: 8px; background: var(--el-bg-color); }
+  .ai-group-panel :deep(.el-input:not(.el-input-number .el-input)) { max-width: 640px; }
+  .number-grid { display: block; }
+  .number-grid :deep(.el-form-item__content) { display: flex; flex-wrap: wrap; flex-direction: row; align-items: center; }
+  .number-grid .field-help { width: 100%; }
+  .ai-settings-tabs > :deep(.el-tabs__header) { margin: 0 0 12px; padding: 4px 8px; border: 1px solid var(--el-border-color-lighter); border-radius: 8px; background: var(--el-bg-color); }
+  .ai-settings-tabs > :deep(.el-tabs__header .el-tabs__nav-wrap)::after { display: none; }
+  .ai-settings-tabs > :deep(.el-tabs__header .el-tabs__active-bar) { display: none; }
+  .ai-settings-tabs > :deep(.el-tabs__header .el-tabs__item) { height: 34px; margin-right: 4px; padding: 0 16px !important; border-radius: 6px; }
+  .ai-settings-tabs > :deep(.el-tabs__header .el-tabs__item.is-active) { background: var(--el-color-primary-light-9); }
+}
+@media (max-width: 1100px) {
+  .ai-tag-setting .ai-settings-group { grid-template-columns: 150px minmax(0, 1fr); gap: 12px; }
 }
 </style>

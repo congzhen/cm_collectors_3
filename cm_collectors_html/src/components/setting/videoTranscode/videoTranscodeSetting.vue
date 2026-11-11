@@ -825,6 +825,8 @@ watch(
 </script>
 
 <style scoped lang="scss">
+@use '../settingsModules' as modules;
+
 .transcode-setting {
   height: 100%;
   min-height: 0;
@@ -1073,4 +1075,15 @@ watch(
   }
   .advanced-panel { padding-left: 0; }
 }
+
+.transcode-setting {
+  overflow: auto; gap: 12px;
+  .toolbar { @include modules.panel; @include modules.actions; padding: 8px 16px; }
+  .queue-summary { margin-left: 8px; }
+  .task-table { flex-shrink: 0; border: 1px solid var(--el-border-color-lighter); border-radius: 8px; }
+  .config-card { border-radius: 8px; }
+  .section-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 340px)); }
+  .config-title { gap: 12px; flex-wrap: wrap; }
+}
+
 </style>

@@ -7,12 +7,14 @@
       <SharedConfigBar ref="sharedBar" :files-bases-id="props.filesBasesId" module="display" :config="filesConfig"
         local-hint="标签与演员选择、路径、自定义头像及封面预设列表保持本库独立。" @config="applySharedConfig" @saved="emit('setSuccess', props.filesBasesId)" />
 
-      <SettingSectionTitle>文件库信息</SettingSectionTitle>
+      <section class="library-setting-group">
+        <div class="library-group-heading"><SettingSectionTitle>文件库信息</SettingSectionTitle><p class="library-group-description">管理本库名称、关联演员集与启用状态。</p></div>
+        <div class="library-group-panel">
       <el-form-item label="文件数据库名称">
-        <el-input v-model="filesBasesInfo.name" />
+        <el-input class="library-name-control" v-model="filesBasesInfo.name" />
       </el-form-item>
       <el-form-item label="(主)演员集">
-        <el-select v-model="mainPerformerBasesId">
+        <el-select class="library-actor-control" v-model="mainPerformerBasesId">
           <el-option v-for="item, index in store.performerBasesStoreData.listByIds(filesBasesRelatedPerformerBases)"
             :key="index" :label="item.name" :value="item.id"></el-option>
         </el-select>
@@ -26,6 +28,9 @@
       <el-form-item label="状态">
         <el-switch v-model="filesBasesInfo.status" inline-prompt active-text="启用" inactive-text="禁用" />
       </el-form-item>
+
+        </div>
+      </section>
 
       <SharedDisplayFields :config="filesConfig" :readonly="!!sharedBar?.state?.following">
         <template #resourceGroups>
@@ -287,6 +292,8 @@ onMounted(() => {
 
 </script>
 <style lang="scss" scoped>
+@use '../settingsModules' as modules;
+
 .setting-data {
   max-width: 960px;
   height: 100%;
@@ -324,5 +331,55 @@ onMounted(() => {
   font-size: 12px;
   line-height: 1.6;
   margin-top: 6px;
+}
+
+.setting-data {
+  @include modules.frame;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  gap: 0;
+  > .el-form {
+    @include modules.panel;
+    @include modules.form-rows;
+    flex: 1; min-height: 0; padding: 12px 16px;
+    border: 0; border-radius: 0;
+  }
+  > .save-button-container { flex-shrink: 0; padding: 8px 16px; gap: 8px; background: var(--el-bg-color); border-top: 1px solid var(--el-border-color-lighter); }
+  // Preserve the readonly scope's own surface, badge and disabled control styling.
+  :deep(.shared-source-hint) { line-height: 1.7; }
+  > .save-button-container { flex-wrap: wrap; }
+  > .save-button-container .el-button-group { display: inline-flex; flex-shrink: 0; }
+  .library-name-control { width: 360px; max-width: 100%; }
+  .library-actor-control { width: 240px; max-width: 100%; }
+  @include modules.mobile-form;
+}
+
+
+.setting-data {
+  :deep(.shared-config-bar) { padding: 10px 14px; margin-bottom: 12px; }
+  :deep(.shared-config-bar p) { display: inline; margin: 0; font-size: 12px; line-height: 1.7; }
+  :deep(.shared-config-bar .actions) { margin-bottom: 6px; }
+  :deep(.shared-config-bar p + p)::before { content: ' '; white-space: pre; }
+  :deep(.setting-section-title) { margin: 18px 0 10px; }
+  :deep(.shared-source-hint) { margin: 10px 0; font-size: 12px; color: var(--el-text-color-secondary); }
+}
+
+.setting-data {
+  :deep(.library-setting-group) { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--el-border-color-lighter); }
+  :deep(.library-setting-group:last-child) { border-bottom: 0; }
+  :deep(.library-group-heading) { padding-top: 8px; }
+  :deep(.library-group-heading .setting-section-title) { margin: 0; font-size: 15px; }
+  :deep(.library-group-heading .setting-section-title)::after { display: none; }
+  :deep(.library-group-description) { display: block; margin: 8px 0 0 15px; color: var(--el-text-color-secondary); font-size: 12px; line-height: 1.7; }
+  :deep(.library-group-panel) { min-width: 0; padding: 4px 16px; border: 1px solid var(--el-border-color-lighter); border-radius: 8px; background: var(--el-bg-color); }
+  :deep(.library-group-panel > .setting-fields-scope.is-readonly) { margin: 12px 0; }
+  :deep(.library-group-panel .el-form-item__label) { text-align: left; justify-content: flex-start; }
+  :deep(.shared-source-hint) { margin-bottom: 0; }
+}
+@media (max-width: 1100px) {
+  .setting-data :deep(.library-setting-group) { grid-template-columns: minmax(0, 1fr); gap: 12px; padding: 12px 0; }
+  .setting-data :deep(.library-group-heading) { padding-top: 0; }
 }
 </style>

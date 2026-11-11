@@ -48,6 +48,8 @@ const update = debounce(async (value: I_performerBases) => {
 })
 </script>
 <style lang="scss" scoped>
+@use '../settingsModules' as modules;
+
 .setting-data {
   width: 100%;
   height: 100%;
@@ -64,5 +66,20 @@ const update = debounce(async (value: I_performerBases) => {
     flex: 1;
     overflow: auto;
   }
+}
+
+.setting-data {
+  padding: 0 0 8px; box-sizing: border-box; min-height: 0;
+  > .el-form { @include modules.panel; flex-shrink: 0; padding: 8px 16px; margin-bottom: 8px; }
+  > .el-form :deep(.el-form-item) { margin: 0; }
+  > .el-form :deep(.el-input) { max-width: 420px; }
+  .setting-data-performer { min-height: 0; }
+}
+
+
+.setting-data-performer {
+  :deep(.performer-search) { flex-direction: column; gap: 8px; padding-bottom: 8px; }
+  :deep(.performer-search-filters), :deep(.performer-search-actions) { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  :deep(.performer-search-actions:empty) { display: none; }
 }
 </style>

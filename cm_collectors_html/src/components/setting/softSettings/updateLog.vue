@@ -1,448 +1,420 @@
 <template>
-  <el-timeline class="update-log-timeline">
-    <el-scrollbar height="100%">
+  <section class="settings-subpage update-log">
+    <div class="subpage-content">
+      <el-timeline class="update-log-timeline">
       <!--
       <el-timeline-item timestamp="2025/8/20" placement="top">
-        <h4 class="version-title">版本: v 2.0.7</h4>
-        <div class="rawContent">
+        <h4 class="release-version">版本: v 2.0.7</h4>
+        <div class="release-section">
           <h5 class="section-title">新特性</h5>
-          <p class="logContent">示例1</p>
-          <p class="logContent">示例2</p>
+          <p class="release-entry">示例1</p>
+          <p class="release-entry">示例2</p>
         </div>
-        <div class="rawContent">
+        <div class="release-section">
           <h5 class="section-title bug-fix">BUG修复</h5>
-          <p class="logContent">示例3</p>
-          <p class="logContent">示例4</p>
+          <p class="release-entry">示例3</p>
+          <p class="release-entry">示例4</p>
         </div>
       </el-timeline-item>
       -->
-      <el-timeline-item center timestamp="2026/11/1" placement="top">
-        <h4 class="version-title">版本: v 3.4.0</h4>
-        <div class="rawContent">
+      <el-timeline-item timestamp="2026/11/1" placement="top">
+        <h4 class="release-version">版本: v 3.4.0</h4>
+        <div class="release-section">
           <h5 class="section-title">新特性</h5>
-          <p class="logContent">新增视频片段收藏，支持收藏当前时刻、标记起止时间、编辑名称与备注，并按片段循环播放</p>
-          <p class="logContent">新增桌面与手机片段放映室，支持搜索、分页和连续切换片段，按文件库记忆收藏列表或放映室视图</p>
-          <p class="logContent">新增视频时间轴画面预览，支持播放时自动生成、手动生成、进度条预览及缓存容量管理</p>
-          <p class="logContent">新增资源关联组，支持同库资源创建分组、加入、移出、排序与解散，并按当前页合并展示</p>
-          <p class="logContent">关联组支持叠牌、三联切片、侧翻书页和自适应拼封，以及多种悬停展开样式和组内播放</p>
-          <p class="logContent">资源管理支持在当前布局直接多选，提供已选资源预览，并可切换管理表格执行批量操作</p>
-          <p class="logContent">新增文件库公共配置，基础展示、导入规则和刮削参数可分别跟随，退出跟随时可恢复原参数或保留公共值</p>
-          <p class="logContent">新增软件在线更新，支持静默检测、更新提醒、下载校验、等待任务完成、备份及安装重启，并提供七天免打扰</p>
-          <p class="logContent">新增大屏移动设备播放器配置，可为平板等设备选择播放器类型及尺寸阈值</p>
-          <p class="logContent">侧栏演员新增资源数量、累计热度和近期偏好排序</p>
+          <p class="release-entry">新增视频片段收藏，支持收藏当前时刻、标记起止时间、编辑名称与备注，并按片段循环播放</p>
+          <p class="release-entry">新增桌面与手机片段放映室，支持搜索、分页和连续切换片段，按文件库记忆收藏列表或放映室视图</p>
+          <p class="release-entry">新增视频时间轴画面预览，支持播放时自动生成、手动生成、进度条预览及缓存容量管理</p>
+          <p class="release-entry">新增资源关联组，支持同库资源创建分组、加入、移出、排序与解散，并按当前页合并展示</p>
+          <p class="release-entry">关联组支持叠牌、三联切片、侧翻书页和自适应拼封，以及多种悬停展开样式和组内播放</p>
+          <p class="release-entry">资源管理支持在当前布局直接多选，提供已选资源预览，并可切换管理表格执行批量操作</p>
+          <p class="release-entry">新增文件库公共配置，基础展示、导入规则和刮削参数可分别跟随，退出跟随时可恢复原参数或保留公共值</p>
+          <p class="release-entry">新增软件在线更新，支持静默检测、更新提醒、下载校验、等待任务完成、备份及安装重启，并提供七天免打扰</p>
+          <p class="release-entry">新增大屏移动设备播放器配置，可为平板等设备选择播放器类型及尺寸阈值</p>
+          <p class="release-entry">侧栏演员新增资源数量、累计热度和近期偏好排序</p>
         </div>
-        <div class="rawContent">
+        <div class="release-section">
           <h5 class="section-title optimization">优化</h5>
-          <p class="logContent">优化桌面与手机连续定位、进度拖动和片段切换，同视频切换片段时复用播放器与缓冲</p>
-          <p class="logContent">优化在线播放分片复用与转码并发，减少重复生成并改善连续播放体验</p>
-          <p class="logContent">资源详情支持直接查看和管理片段收藏，可按库选择弹窗或详情页播放，弹出详情自适应多列展示</p>
-          <p class="logContent">视频元数据采集支持自定义非视频排除规则、历史记录预览和批量整理，并保留人工补录与恢复操作</p>
-          <p class="logContent">优化公共配置独立编辑弹窗、跟随只读提示、设置分组及明暗主题显示</p>
-          <p class="logContent">优化手机片库顶部工具栏、播放器待播封面及弹出播放器标题栏，恢复手机视频下载入口</p>
-          <p class="logContent">Docker 新镜像支持持久化应用目录与容器内在线更新，旧实例需按迁移说明调整部署</p>
+          <p class="release-entry">优化桌面与手机连续定位、进度拖动和片段切换，同视频切换片段时复用播放器与缓冲</p>
+          <p class="release-entry">优化在线播放分片复用与转码并发，减少重复生成并改善连续播放体验</p>
+          <p class="release-entry">资源详情支持直接查看和管理片段收藏，可按库选择弹窗或详情页播放，弹出详情自适应多列展示</p>
+          <p class="release-entry">视频元数据采集支持自定义非视频排除规则、历史记录预览和批量整理，并保留人工补录与恢复操作</p>
+          <p class="release-entry">优化公共配置独立编辑弹窗、跟随只读提示、设置分组及明暗主题显示</p>
+          <p class="release-entry">优化手机片库顶部工具栏、播放器待播封面及弹出播放器标题栏，恢复手机视频下载入口</p>
+          <p class="release-entry">Docker 新镜像支持持久化应用目录与容器内在线更新，旧实例需按迁移说明调整部署</p>
         </div>
-        <div class="rawContent">
+        <div class="release-section">
           <h5 class="section-title bug-fix">BUG修复</h5>
-          <p class="logContent">修复触屏全屏播放时无法通过轻触或滑动唤出控制条的问题</p>
-          <p class="logContent">修复手机播放器慢首帧、重试和缓存页面返回时进度或循环状态恢复异常的问题</p>
-          <p class="logContent">修复片段连续定位与循环回跳互相覆盖，以及切源、切库和关闭后旧请求影响当前状态的问题</p>
-          <p class="logContent">修复非视频文件进入采集失败列表、失败统计重复计数及单条操作后列表未刷新的问题</p>
-          <p class="logContent">修复公共配置关联库查询报错，完善配置保存冲突及本库未保存参数的保护</p>
-          <p class="logContent">修复剧照读取目录不一致的问题，统一从视频所在目录读取剧照</p>
-          <p class="logContent">完善资源永久删除时的关联片段清理，以及关联组在删除和跨库移动后的自动维护</p>
-          <p class="logContent">修复资源管理视图切换或刷新时选择状态丢失，以及关联组翻页和时长补采引起的封面闪动</p>
-          <p class="logContent">修复软件更新弹窗长错误信息被截断的问题</p>
+          <p class="release-entry">修复触屏全屏播放时无法通过轻触或滑动唤出控制条的问题</p>
+          <p class="release-entry">修复手机播放器慢首帧、重试和缓存页面返回时进度或循环状态恢复异常的问题</p>
+          <p class="release-entry">修复片段连续定位与循环回跳互相覆盖，以及切源、切库和关闭后旧请求影响当前状态的问题</p>
+          <p class="release-entry">修复非视频文件进入采集失败列表、失败统计重复计数及单条操作后列表未刷新的问题</p>
+          <p class="release-entry">修复公共配置关联库查询报错，完善配置保存冲突及本库未保存参数的保护</p>
+          <p class="release-entry">修复剧照读取目录不一致的问题，统一从视频所在目录读取剧照</p>
+          <p class="release-entry">完善资源永久删除时的关联片段清理，以及关联组在删除和跨库移动后的自动维护</p>
+          <p class="release-entry">修复资源管理视图切换或刷新时选择状态丢失，以及关联组翻页和时长补采引起的封面闪动</p>
+          <p class="release-entry">修复软件更新弹窗长错误信息被截断的问题</p>
         </div>
       </el-timeline-item>
-      <el-timeline-item center timestamp="2026/9/11" placement="top">
-        <h4 class="version-title">版本: v 3.3.0</h4>
-        <div class="rawContent">
+      <el-timeline-item timestamp="2026/9/11" placement="top">
+        <h4 class="release-version">版本: v 3.3.0</h4>
+        <div class="release-section">
           <h5 class="section-title">新特性</h5>
-          <p class="logContent">新增可视化视频剪辑，支持片段分割、删除、排序、合成及覆盖式转场，可另存成片或替换源文件</p>
-          <p class="logContent">视频剪辑新增切点预览、时间轴缩放、动态缩略图及统一播放和音量控制</p>
-          <p class="logContent">视频重复检测新增同屏复核，支持最多四路视频统一播放、时间或比例同步、参考音轨切换及删除标记</p>
-          <p class="logContent">新增演员批量管理，支持跨页选择、筛选结果全选、批量评星、演员集迁移、标签调整及移入回收站</p>
-          <p class="logContent">资源编辑支持右键编辑已选演员，保存演员资料后保留资源未保存内容</p>
-          <p class="logContent">资源新增副标题，并支持按文件库配置详情信息显示项</p>
-          <p class="logContent">新增资源体积、总时长和平均视频码率的正序与倒序排序，数据不完整的资源统一置后</p>
-          <p class="logContent">支持在添加时间排序且无筛选条件时，与相邻资源交换添加时间</p>
-          <p class="logContent">批量导入合并剧集支持保持现有顺序，以及按文件名称或文件大小正序、倒序排列</p>
-          <p class="logContent">视频元数据新增采集失败分页列表，支持重试、标记非视频及人工补录</p>
+          <p class="release-entry">新增可视化视频剪辑，支持片段分割、删除、排序、合成及覆盖式转场，可另存成片或替换源文件</p>
+          <p class="release-entry">视频剪辑新增切点预览、时间轴缩放、动态缩略图及统一播放和音量控制</p>
+          <p class="release-entry">视频重复检测新增同屏复核，支持最多四路视频统一播放、时间或比例同步、参考音轨切换及删除标记</p>
+          <p class="release-entry">新增演员批量管理，支持跨页选择、筛选结果全选、批量评星、演员集迁移、标签调整及移入回收站</p>
+          <p class="release-entry">资源编辑支持右键编辑已选演员，保存演员资料后保留资源未保存内容</p>
+          <p class="release-entry">资源新增副标题，并支持按文件库配置详情信息显示项</p>
+          <p class="release-entry">新增资源体积、总时长和平均视频码率的正序与倒序排序，数据不完整的资源统一置后</p>
+          <p class="release-entry">支持在添加时间排序且无筛选条件时，与相邻资源交换添加时间</p>
+          <p class="release-entry">批量导入合并剧集支持保持现有顺序，以及按文件名称或文件大小正序、倒序排列</p>
+          <p class="release-entry">视频元数据新增采集失败分页列表，支持重试、标记非视频及人工补录</p>
         </div>
-        <div class="rawContent">
+        <div class="release-section">
           <h5 class="section-title optimization">优化</h5>
-          <p class="logContent">完善手机视频播放，支持横屏全屏、滑动定位、首帧预览、字幕及跨视频静音偏好</p>
-          <p class="logContent">手机端记忆资源库、筛选条件、分页、滚动位置及分集播放偏好，返回列表时恢复浏览位置</p>
-          <p class="logContent">演员列表记忆排序选择，重新打开时自动恢复</p>
-          <p class="logContent">完善转码任务顺序处理、源文件替换重试、失败成片另存及临时文件清理</p>
-          <p class="logContent">优化视频关键帧选中反馈与明暗主题显示，完善转场预览缓存存放和回收</p>
-          <p class="logContent">完善数据库及日志初始化错误提示，更新 Android 安装包和手机壳页面联动</p>
+          <p class="release-entry">完善手机视频播放，支持横屏全屏、滑动定位、首帧预览、字幕及跨视频静音偏好</p>
+          <p class="release-entry">手机端记忆资源库、筛选条件、分页、滚动位置及分集播放偏好，返回列表时恢复浏览位置</p>
+          <p class="release-entry">演员列表记忆排序选择，重新打开时自动恢复</p>
+          <p class="release-entry">完善转码任务顺序处理、源文件替换重试、失败成片另存及临时文件清理</p>
+          <p class="release-entry">优化视频关键帧选中反馈与明暗主题显示，完善转场预览缓存存放和回收</p>
+          <p class="release-entry">完善数据库及日志初始化错误提示，更新 Android 安装包和手机壳页面联动</p>
         </div>
-        <div class="rawContent">
+        <div class="release-section">
           <h5 class="section-title bug-fix">BUG修复</h5>
-          <p class="logContent">修复随机排序翻页时结果不稳定及重复的问题</p>
-          <p class="logContent">修复视频清晰度获取错误依赖自动截封面开关的问题</p>
-          <p class="logContent">修复合并剧集追加分集后未触发视频信息采集的问题</p>
-          <p class="logContent">修复图片、字幕等非视频文件误计入视频容量的问题，并支持纠正历史误识别记录</p>
-          <p class="logContent">修复视频剪辑切点定位及缩略图异步覆盖问题</p>
-          <p class="logContent">改善手机端 4K MKV 播放与拖动兼容性，修复慢缓冲时播放器重建及加载提示残留问题</p>
-          <p class="logContent">修复经典模式部分中文标签文字显示不全的问题</p>
+          <p class="release-entry">修复随机排序翻页时结果不稳定及重复的问题</p>
+          <p class="release-entry">修复视频清晰度获取错误依赖自动截封面开关的问题</p>
+          <p class="release-entry">修复合并剧集追加分集后未触发视频信息采集的问题</p>
+          <p class="release-entry">修复图片、字幕等非视频文件误计入视频容量的问题，并支持纠正历史误识别记录</p>
+          <p class="release-entry">修复视频剪辑切点定位及缩略图异步覆盖问题</p>
+          <p class="release-entry">改善手机端 4K MKV 播放与拖动兼容性，修复慢缓冲时播放器重建及加载提示残留问题</p>
+          <p class="release-entry">修复经典模式部分中文标签文字显示不全的问题</p>
         </div>
       </el-timeline-item>
-      <el-timeline-item center timestamp="2026/8/3" placement="top">
-        <h4 class="version-title">版本: v 3.2.0</h4>
-        <div class="rawContent">
+      <el-timeline-item timestamp="2026/8/3" placement="top">
+        <h4 class="release-version">版本: v 3.2.0</h4>
+        <div class="release-section">
           <h5 class="section-title">新特性</h5>
-          <p class="logContent">新增现代外观，支持新版顶部栏、详情弹窗、右侧详情及明亮/暗黑主题切换</p>
-          <p class="logContent">新增影廊、智能拼贴墙、智能拼贴墙短视频、紧凑影墙和宽幕卡廊等资源展示模式</p>
-          <p class="logContent">新增现代漫画与图片查看器，支持缩略图、键盘导航、滚轮浏览和图片缩放</p>
-          <p class="logContent">重构移动端资源浏览、视频播放、漫画和照片集查看体验</p>
-          <p class="logContent">新增安全的视频转码任务，支持批量处理、GPU 探测、源文件替换和失败回滚</p>
-          <p class="logContent">新增视频元数据统一采集、失败项强制重试及数字剧集按需查看视频信息</p>
-          <p class="logContent">新增筛选结果视频文件大小统计，按需计算已统计与未统计文件大小</p>
-          <p class="logContent">新增独立演员头像库，支持单人选图、批量匹配、头像编辑和缓存清理</p>
-          <p class="logContent">新增演员标签系统，支持分类管理、演员编辑选标签及任一/全部标签筛选</p>
-          <p class="logContent">新增组合搜索条件收藏，可按文件库保存、应用和删除常用筛选条件</p>
-          <p class="logContent">自定义标签新增当前库资源数量显示，并可在库设置和快捷显示设置中开关</p>
-          <p class="logContent">演员列表新增影片数量、姓名正序和姓名倒序排序</p>
+          <p class="release-entry">新增现代外观，支持新版顶部栏、详情弹窗、右侧详情及明亮/暗黑主题切换</p>
+          <p class="release-entry">新增影廊、智能拼贴墙、智能拼贴墙短视频、紧凑影墙和宽幕卡廊等资源展示模式</p>
+          <p class="release-entry">新增现代漫画与图片查看器，支持缩略图、键盘导航、滚轮浏览和图片缩放</p>
+          <p class="release-entry">重构移动端资源浏览、视频播放、漫画和照片集查看体验</p>
+          <p class="release-entry">新增安全的视频转码任务，支持批量处理、GPU 探测、源文件替换和失败回滚</p>
+          <p class="release-entry">新增视频元数据统一采集、失败项强制重试及数字剧集按需查看视频信息</p>
+          <p class="release-entry">新增筛选结果视频文件大小统计，按需计算已统计与未统计文件大小</p>
+          <p class="release-entry">新增独立演员头像库，支持单人选图、批量匹配、头像编辑和缓存清理</p>
+          <p class="release-entry">新增演员标签系统，支持分类管理、演员编辑选标签及任一/全部标签筛选</p>
+          <p class="release-entry">新增组合搜索条件收藏，可按文件库保存、应用和删除常用筛选条件</p>
+          <p class="release-entry">自定义标签新增当前库资源数量显示，并可在库设置和快捷显示设置中开关</p>
+          <p class="release-entry">演员列表新增影片数量、姓名正序和姓名倒序排序</p>
         </div>
-        <div class="rawContent">
+        <div class="release-section">
           <h5 class="section-title optimization">优化</h5>
-          <p class="logContent">优化资源卡片、详情信息、剧集列表、画室布局和快捷显示设置</p>
-          <p class="logContent">优化播放器全屏控制、字幕兼容、最大化标题及短视频切源体验</p>
-          <p class="logContent">优化标签长文本布局、分类数量和资源数量角标的明暗主题显示</p>
-          <p class="logContent">更新应用多尺寸图标与 Android 安装包</p>
+          <p class="release-entry">优化资源卡片、详情信息、剧集列表、画室布局和快捷显示设置</p>
+          <p class="release-entry">优化播放器全屏控制、字幕兼容、最大化标题及短视频切源体验</p>
+          <p class="release-entry">优化标签长文本布局、分类数量和资源数量角标的明暗主题显示</p>
+          <p class="release-entry">更新应用多尺寸图标与 Android 安装包</p>
         </div>
-        <div class="rawContent">
+        <div class="release-section">
           <h5 class="section-title bug-fix">BUG修复</h5>
-          <p class="logContent">修复 AI 标签扫描窗口卡住及计划任务可能重复执行的问题</p>
-          <p class="logContent">修复短视频切源声音残留、切库串播和资源列表切库状态异常</p>
-          <p class="logContent">修复播放器全屏控制、字幕显示和播放异常诊断问题</p>
-          <p class="logContent">修复 Windows 打开文件夹、文件定位及视频预览图裁剪问题</p>
-          <p class="logContent">修复推荐模块详情不联动及新资源库推荐模块默认状态问题</p>
+          <p class="release-entry">修复 AI 标签扫描窗口卡住及计划任务可能重复执行的问题</p>
+          <p class="release-entry">修复短视频切源声音残留、切库串播和资源列表切库状态异常</p>
+          <p class="release-entry">修复播放器全屏控制、字幕显示和播放异常诊断问题</p>
+          <p class="release-entry">修复 Windows 打开文件夹、文件定位及视频预览图裁剪问题</p>
+          <p class="release-entry">修复推荐模块详情不联动及新资源库推荐模块默认状态问题</p>
         </div>
       </el-timeline-item>
-      <el-timeline-item center timestamp="2026/6/14" placement="top">
-        <h4 class="version-title">版本: v 3.1.0</h4>
-        <div class="rawContent">
+      <el-timeline-item timestamp="2026/6/14" placement="top">
+        <h4 class="release-version">版本: v 3.1.0</h4>
+        <div class="release-section">
           <h5 class="section-title">新特性</h5>
-          <p class="logContent">新增 AI 自动标签功能，可根据资源信息自动生成并写入标签</p>
-          <p class="logContent">新增自动备份功能，支持查看备份列表、手动执行备份和删除历史备份</p>
-          <p class="logContent">新增库真实删除功能，可在设置中按库清理实际资源文件</p>
-          <p class="logContent">新增演员回收站批量删除能力，提升演员数据清理效率</p>
-          <p class="logContent">新增标签分类删除功能，并优化标签状态管理</p>
-          <p class="logContent">新增资源批量设置评星功能</p>
-          <p class="logContent">新增封面视频时长显示，资源列表可直接查看视频封面时长信息</p>
-          <p class="logContent">新增移动端显示关闭配置，便于按部署场景控制移动端访问</p>
-          <p class="logContent">Wails 端新增开发者工具支持并增强窗口控制能力</p>
+          <p class="release-entry">新增 AI 自动标签功能，可根据资源信息自动生成并写入标签</p>
+          <p class="release-entry">新增自动备份功能，支持查看备份列表、手动执行备份和删除历史备份</p>
+          <p class="release-entry">新增库真实删除功能，可在设置中按库清理实际资源文件</p>
+          <p class="release-entry">新增演员回收站批量删除能力，提升演员数据清理效率</p>
+          <p class="release-entry">新增标签分类删除功能，并优化标签状态管理</p>
+          <p class="release-entry">新增资源批量设置评星功能</p>
+          <p class="release-entry">新增封面视频时长显示，资源列表可直接查看视频封面时长信息</p>
+          <p class="release-entry">新增移动端显示关闭配置，便于按部署场景控制移动端访问</p>
+          <p class="release-entry">Wails 端新增开发者工具支持并增强窗口控制能力</p>
         </div>
-        <div class="rawContent">
+        <div class="release-section">
           <h5 class="section-title optimization">优化</h5>
-          <p class="logContent">更新检测切换到 GitHub 更新配置源，兼容旧对象存储配置地址</p>
-          <p class="logContent">优化文件名解析逻辑，提升影视资源命名清洗与识别效果</p>
-          <p class="logContent">优化演员导入匹配逻辑，避免因名称匹配重复创建演员</p>
-          <p class="logContent">优化播放页明亮主题配色</p>
+          <p class="release-entry">更新检测切换到 GitHub 更新配置源，兼容旧对象存储配置地址</p>
+          <p class="release-entry">优化文件名解析逻辑，提升影视资源命名清洗与识别效果</p>
+          <p class="release-entry">优化演员导入匹配逻辑，避免因名称匹配重复创建演员</p>
+          <p class="release-entry">优化播放页明亮主题配色</p>
         </div>
-        <div class="rawContent">
+        <div class="release-section">
           <h5 class="section-title bug-fix">BUG修复</h5>
-          <p class="logContent">修复输入框内方向键会触发页面快捷键的问题</p>
+          <p class="release-entry">修复输入框内方向键会触发页面快捷键的问题</p>
         </div>
       </el-timeline-item>
-      <el-timeline-item center timestamp="2026/5/6" placement="top">
-        <h4 class="version-title">版本: v 3.0.9</h4>
-        <div class="rawContent">
+      <el-timeline-item timestamp="2026/5/6" placement="top">
+        <h4 class="release-version">版本: v 3.0.9</h4>
+        <div class="release-section">
           <h5 class="section-title">新特性</h5>
-          <p class="logContent">新增主页模式切换功能，支持经典模式与画室布局视图切换</p>
-          <p class="logContent">新增视频指纹重复检测，支持按文件库、汉明距离阈值筛选并删除重复视频</p>
-          <p class="logContent">新增资源置顶功能，已置顶资源支持再次置顶至第一位</p>
-          <p class="logContent">刮削演员对话框新增创建日期与头像筛选条件</p>
-          <p class="logContent">新增TVBox功能开关配置，未开启时接口返回不可用提示</p>
-          <p class="logContent">新增TVBox推荐管理，支持拖拽排序，资源右键菜单可直接添加到推荐</p>
-          <p class="logContent">TVBox接口支持m3u8/mp4双源切换，新增视频分页总数及跨分类搜索</p>
-          <p class="logContent">桌面端导入与刮削配置支持选择本地文件夹</p>
-          <p class="logContent">连续剧导入新增相似名称合并选项，按自然排序写入剧集顺序</p>
-          <p class="logContent">演员卡片新增大小调节滑块，右上角显示关联资源数量角标</p>
-          <p class="logContent">左侧标签栏浮动模式新增自动隐藏功能</p>
-          <p class="logContent">新增允许应用程序关闭服务器的开关配置项</p>
-          <p class="logContent">文件库设置新增视频预览图关键帧数量配置项，默认32帧</p>
-          <p class="logContent">新增资源封面标签点击搜索功能，支持年份、国家、星级等多种标签类型</p>
-          <p class="logContent">导入与刮削对话框新增数据条目选择功能，支持只处理勾选项</p>
-          <p class="logContent">搜索功能新增导演字段查询，AND/OR/NOT搜索均支持导演匹配</p>
-          <p class="logContent">详情页和播放页摘要内容支持HTML渲染，换行符自动转换为段落</p>
-          <p class="logContent">导入资源时支持使用 regex: 前缀的正则表达式匹配封面海报文件</p>
-          <p class="logContent">内容标签新增鼠标悬停高亮效果，固定模式支持配置每行显示数量</p>
-          <p class="logContent">新增安卓APK客户端，方便移动端直接安装访问</p>
+          <p class="release-entry">新增主页模式切换功能，支持经典模式与画室布局视图切换</p>
+          <p class="release-entry">新增视频指纹重复检测，支持按文件库、汉明距离阈值筛选并删除重复视频</p>
+          <p class="release-entry">新增资源置顶功能，已置顶资源支持再次置顶至第一位</p>
+          <p class="release-entry">刮削演员对话框新增创建日期与头像筛选条件</p>
+          <p class="release-entry">新增TVBox功能开关配置，未开启时接口返回不可用提示</p>
+          <p class="release-entry">新增TVBox推荐管理，支持拖拽排序，资源右键菜单可直接添加到推荐</p>
+          <p class="release-entry">TVBox接口支持m3u8/mp4双源切换，新增视频分页总数及跨分类搜索</p>
+          <p class="release-entry">桌面端导入与刮削配置支持选择本地文件夹</p>
+          <p class="release-entry">连续剧导入新增相似名称合并选项，按自然排序写入剧集顺序</p>
+          <p class="release-entry">演员卡片新增大小调节滑块，右上角显示关联资源数量角标</p>
+          <p class="release-entry">左侧标签栏浮动模式新增自动隐藏功能</p>
+          <p class="release-entry">新增允许应用程序关闭服务器的开关配置项</p>
+          <p class="release-entry">文件库设置新增视频预览图关键帧数量配置项，默认32帧</p>
+          <p class="release-entry">新增资源封面标签点击搜索功能，支持年份、国家、星级等多种标签类型</p>
+          <p class="release-entry">导入与刮削对话框新增数据条目选择功能，支持只处理勾选项</p>
+          <p class="release-entry">搜索功能新增导演字段查询，AND/OR/NOT搜索均支持导演匹配</p>
+          <p class="release-entry">详情页和播放页摘要内容支持HTML渲染，换行符自动转换为段落</p>
+          <p class="release-entry">导入资源时支持使用 regex: 前缀的正则表达式匹配封面海报文件</p>
+          <p class="release-entry">内容标签新增鼠标悬停高亮效果，固定模式支持配置每行显示数量</p>
+          <p class="release-entry">新增安卓APK客户端，方便移动端直接安装访问</p>
         </div>
       </el-timeline-item>
-      <el-timeline-item center timestamp="2026/1/1" placement="top">
-        <h4 class="version-title">版本: v 3.0.8</h4>
-        <div class="rawContent">
+      <el-timeline-item timestamp="2026/1/1" placement="top">
+        <h4 class="release-version">版本: v 3.0.8</h4>
+        <div class="release-section">
           <h5 class="section-title">新特性</h5>
-          <p class="logContent">新增应用界面缩放功能</p>
-          <p class="logContent">优化 Windows 资源管理器打开功能</p>
-          <p class="logContent">新增 Windows 端启动配置项，支持设置启动默认是否打开应用界面</p>
-          <p class="logContent">新增资源批量关联演员功能</p>
-          <p class="logContent">新增演员数据集导入导出功能</p>
-          <p class="logContent">新增文件管理器搜索结果中文件选择功能，增强操作便捷性</p>
-          <p class="logContent">新增资源随机排序展示选项</p>
-          <p class="logContent">优化演员管理功能，将编辑、删除等操作迁移至右键菜单</p>
-          <p class="logContent">新增演员数据集迁移功能，支持数据在不同集合间转移</p>
+          <p class="release-entry">新增应用界面缩放功能</p>
+          <p class="release-entry">优化 Windows 资源管理器打开功能</p>
+          <p class="release-entry">新增 Windows 端启动配置项，支持设置启动默认是否打开应用界面</p>
+          <p class="release-entry">新增资源批量关联演员功能</p>
+          <p class="release-entry">新增演员数据集导入导出功能</p>
+          <p class="release-entry">新增文件管理器搜索结果中文件选择功能，增强操作便捷性</p>
+          <p class="release-entry">新增资源随机排序展示选项</p>
+          <p class="release-entry">优化演员管理功能，将编辑、删除等操作迁移至右键菜单</p>
+          <p class="release-entry">新增演员数据集迁移功能，支持数据在不同集合间转移</p>
         </div>
-        <div class="rawContent">
+        <div class="release-section">
           <h5 class="section-title bug-fix">BUG修复</h5>
-          <p class="logContent">修复应用端管理员登录功能异常问题</p>
-          <p class="logContent">修复云播设置中应用参数配置错误</p>
+          <p class="release-entry">修复应用端管理员登录功能异常问题</p>
+          <p class="release-entry">修复云播设置中应用参数配置错误</p>
         </div>
       </el-timeline-item>
-      <el-timeline-item center timestamp="2025/12/15" placement="top">
-        <h4 class="version-title">版本: v 3.0.7</h4>
-        <div class="rawContent">
+      <el-timeline-item timestamp="2025/12/15" placement="top">
+        <h4 class="release-version">版本: v 3.0.7</h4>
+        <div class="release-section">
           <h5 class="section-title">新特性</h5>
-          <p class="logContent">云播功能优化：默认使用文件名作为播放标题</p>
-          <p class="logContent">定时任务增强：支持立即执行已设定的定时任务</p>
-          <p class="logContent">刮削功能改进：增加未搜索到ID时的错误处理机制</p>
-          <p class="logContent">资源管理界面升级：新增文件图标及优化对话框交互体验</p>
-          <p class="logContent">用户体验优化：新增一键返回页面顶部功能</p>
-          <p class="logContent">演员模块增强：演员卡片显示该演员关联的资源数量</p>
-          <p class="logContent">演员管理完善：新增彻底删除演员数据的功能</p>
-          <p class="logContent">NFO导入智能匹配：支持模糊匹配和随机匹配模式</p>
-          <p class="logContent">界面个性化：新增明亮主题模式，支持深色/明亮主题自由切换</p>
-          <p class="logContent">标题提取强化：字母提取支持日文假名</p>
-          <p class="logContent">资源排序自定义：支持配置资源排序</p>
-          <p class="logContent">资源推荐功能："随便看看"、"历史记录"、"热门资源" 模块</p>
-          <p class="logContent">云播配置细化：新增云播功能相关配置选项</p>
+          <p class="release-entry">云播功能优化：默认使用文件名作为播放标题</p>
+          <p class="release-entry">定时任务增强：支持立即执行已设定的定时任务</p>
+          <p class="release-entry">刮削功能改进：增加未搜索到ID时的错误处理机制</p>
+          <p class="release-entry">资源管理界面升级：新增文件图标及优化对话框交互体验</p>
+          <p class="release-entry">用户体验优化：新增一键返回页面顶部功能</p>
+          <p class="release-entry">演员模块增强：演员卡片显示该演员关联的资源数量</p>
+          <p class="release-entry">演员管理完善：新增彻底删除演员数据的功能</p>
+          <p class="release-entry">NFO导入智能匹配：支持模糊匹配和随机匹配模式</p>
+          <p class="release-entry">界面个性化：新增明亮主题模式，支持深色/明亮主题自由切换</p>
+          <p class="release-entry">标题提取强化：字母提取支持日文假名</p>
+          <p class="release-entry">资源排序自定义：支持配置资源排序</p>
+          <p class="release-entry">资源推荐功能："随便看看"、"历史记录"、"热门资源" 模块</p>
+          <p class="release-entry">云播配置细化：新增云播功能相关配置选项</p>
         </div>
-        <div class="rawContent">
+        <div class="release-section">
           <h5 class="section-title bug-fix">BUG修复</h5>
-          <p class="logContent">修复导入导出功能在软件端无法正常打开文件的问题</p>
-          <p class="logContent">修复资源排序逻辑错误导致排序结果不正确的问题</p>
-          <p class="logContent">修复移动端部分页面元素显示样式异常的问题</p>
+          <p class="release-entry">修复导入导出功能在软件端无法正常打开文件的问题</p>
+          <p class="release-entry">修复资源排序逻辑错误导致排序结果不正确的问题</p>
+          <p class="release-entry">修复移动端部分页面元素显示样式异常的问题</p>
         </div>
       </el-timeline-item>
-      <el-timeline-item center timestamp="2025/12/01" placement="top">
-        <h4 class="version-title">版本: v 3.0.6</h4>
-        <div class="rawContent">
+      <el-timeline-item timestamp="2025/12/01" placement="top">
+        <h4 class="release-version">版本: v 3.0.6</h4>
+        <div class="release-section">
           <h5 class="section-title">新特性</h5>
-          <p class="logContent">新增计划任务功能</p>
-          <p class="logContent">新增数据库清理功能</p>
-          <p class="logContent">新增标签导入导出功能</p>
-          <p class="logContent">新增资源右键添加演员功能</p>
-          <p class="logContent">新增文件数据库配置导入导出功能</p>
-          <p class="logContent">新增移动端与PC端切换控制</p>
-          <p class="logContent">新增导演信息展示</p>
-          <p class="logContent">新增标签右键以及真实删除功能</p>
-          <p class="logContent">新增封面标签字体大小与资源对齐方式控制</p>
-          <p class="logContent">新增资源与演员刮削配置保存功能</p>
+          <p class="release-entry">新增计划任务功能</p>
+          <p class="release-entry">新增数据库清理功能</p>
+          <p class="release-entry">新增标签导入导出功能</p>
+          <p class="release-entry">新增资源右键添加演员功能</p>
+          <p class="release-entry">新增文件数据库配置导入导出功能</p>
+          <p class="release-entry">新增移动端与PC端切换控制</p>
+          <p class="release-entry">新增导演信息展示</p>
+          <p class="release-entry">新增标签右键以及真实删除功能</p>
+          <p class="release-entry">新增封面标签字体大小与资源对齐方式控制</p>
+          <p class="release-entry">新增资源与演员刮削配置保存功能</p>
         </div>
-        <div class="rawContent">
+        <div class="release-section">
           <h5 class="section-title bug-fix">BUG修复</h5>
-          <p class="logContent">修复文件管理器路径拼接错误</p>
-          <p class="logContent">修复云播插件指定播放器路径错误</p>
-          <p class="logContent">修复资源清理资源路径问题以确保跨平台兼容性</p>
-          <p class="logContent">修复导入nfo值获取逻辑以支持更复杂的嵌套结构</p>
+          <p class="release-entry">修复文件管理器路径拼接错误</p>
+          <p class="release-entry">修复云播插件指定播放器路径错误</p>
+          <p class="release-entry">修复资源清理资源路径问题以确保跨平台兼容性</p>
+          <p class="release-entry">修复导入nfo值获取逻辑以支持更复杂的嵌套结构</p>
         </div>
       </el-timeline-item>
-      <el-timeline-item center timestamp="2025/11/11" placement="top">
-        <h4 class="version-title">版本: v 3.0.5</h4>
-        <div class="rawContent">
+      <el-timeline-item timestamp="2025/11/11" placement="top">
+        <h4 class="release-version">版本: v 3.0.5</h4>
+        <div class="release-section">
           <h5 class="section-title">新特性</h5>
-          <p class="logContent">优化视频播放页面背景图片加载及模糊遮罩效果</p>
-          <p class="logContent">新增资源评分功能</p>
-          <p class="logContent">新增 HLS 视频播放支持，包括 m3u8 视频播放、HLS 视频转码、自动切换播放类型及云播类型选择功能</p>
-          <p class="logContent">新增服务器文件管理挂载路径配置功能</p>
-          <p class="logContent">新增 Linux 视频调用器支持</p>
-          <p class="logContent">新增封面海报精简和精简扩展展示模式</p>
-          <p class="logContent">新增内容区域左右内边距设置功能</p>
-          <p class="logContent">新增 Windows 托盘菜单自定义功能，支持设置自定义浏览器打开</p>
-          <p class="logContent">新增清理已删除资源的功能</p>
-          <p class="logContent">优化配置合并逻辑，支持配置优先级控制</p>
-          <p class="logContent">新增刮削器自定义浏览器路径功能，支持其他 Chromium 内核浏览器</p>
-          <p class="logContent">新增导入方式"追加导入"和"覆盖导入"，并优化剧集导入逻辑</p>
-          <p class="logContent">新增粘贴图片自动将剪切板图片打开到裁剪器功能</p>
-          <p class="logContent">优化资源文件夹打开逻辑</p>
-          <p class="logContent">优化资源搜索逻辑</p>
-          <p class="logContent">支持点击详情中的标签设置搜索条件</p>
-          <p class="logContent">新增按发行日期排序功能</p>
-          <p class="logContent">重构标签列表为独立组件并优化标签排序逻辑</p>
+          <p class="release-entry">优化视频播放页面背景图片加载及模糊遮罩效果</p>
+          <p class="release-entry">新增资源评分功能</p>
+          <p class="release-entry">新增 HLS 视频播放支持，包括 m3u8 视频播放、HLS 视频转码、自动切换播放类型及云播类型选择功能</p>
+          <p class="release-entry">新增服务器文件管理挂载路径配置功能</p>
+          <p class="release-entry">新增 Linux 视频调用器支持</p>
+          <p class="release-entry">新增封面海报精简和精简扩展展示模式</p>
+          <p class="release-entry">新增内容区域左右内边距设置功能</p>
+          <p class="release-entry">新增 Windows 托盘菜单自定义功能，支持设置自定义浏览器打开</p>
+          <p class="release-entry">新增清理已删除资源的功能</p>
+          <p class="release-entry">优化配置合并逻辑，支持配置优先级控制</p>
+          <p class="release-entry">新增刮削器自定义浏览器路径功能，支持其他 Chromium 内核浏览器</p>
+          <p class="release-entry">新增导入方式"追加导入"和"覆盖导入"，并优化剧集导入逻辑</p>
+          <p class="release-entry">新增粘贴图片自动将剪切板图片打开到裁剪器功能</p>
+          <p class="release-entry">优化资源文件夹打开逻辑</p>
+          <p class="release-entry">优化资源搜索逻辑</p>
+          <p class="release-entry">支持点击详情中的标签设置搜索条件</p>
+          <p class="release-entry">新增按发行日期排序功能</p>
+          <p class="release-entry">重构标签列表为独立组件并优化标签排序逻辑</p>
         </div>
-        <div class="rawContent">
+        <div class="release-section">
           <h5 class="section-title bug-fix">BUG修复</h5>
-          <p class="logContent">修复演员默认图片显示错误的问题</p>
-          <p class="logContent">修复对话框宽度计算逻辑</p>
-          <p class="logContent">修复资源文件夹打开逻辑问题</p>
-          <p class="logContent">修复封面标签排序功能异常的问题</p>
-          <p class="logContent">修复添加资源封面海报模式默认值设置问题</p>
+          <p class="release-entry">修复演员默认图片显示错误的问题</p>
+          <p class="release-entry">修复对话框宽度计算逻辑</p>
+          <p class="release-entry">修复资源文件夹打开逻辑问题</p>
+          <p class="release-entry">修复封面标签排序功能异常的问题</p>
+          <p class="release-entry">修复添加资源封面海报模式默认值设置问题</p>
         </div>
       </el-timeline-item>
-      <el-timeline-item center timestamp="2025/10/27" placement="top">
-        <h4 class="version-title">版本: v 3.0.4</h4>
-        <div class="rawContent">
+      <el-timeline-item timestamp="2025/10/27" placement="top">
+        <h4 class="release-version">版本: v 3.0.4</h4>
+        <div class="release-section">
           <h5 class="section-title">新特性</h5>
-          <p class="logContent"></p>
-          <p class="logContent">新增播放列表功能</p>
-          <p class="logContent">新增演员多库数据显示支持</p>
-          <p class="logContent">新增按字母筛选演员功能</p>
-          <p class="logContent">新增单个演员信息刮削功能</p>
-          <p class="logContent">添加封面标签自定义排序功能</p>
-          <p class="logContent">新增批量增删标签功能</p>
-          <p class="logContent">优化封面图像尺寸计算</p>
-          <p class="logContent">添加封面图片填充方式设置</p>
-          <p class="logContent">添加封面标题对齐方式设置</p>
+          <p class="release-entry"></p>
+          <p class="release-entry">新增播放列表功能</p>
+          <p class="release-entry">新增演员多库数据显示支持</p>
+          <p class="release-entry">新增按字母筛选演员功能</p>
+          <p class="release-entry">新增单个演员信息刮削功能</p>
+          <p class="release-entry">添加封面标签自定义排序功能</p>
+          <p class="release-entry">新增批量增删标签功能</p>
+          <p class="release-entry">优化封面图像尺寸计算</p>
+          <p class="release-entry">添加封面图片填充方式设置</p>
+          <p class="release-entry">添加封面标题对齐方式设置</p>
         </div>
-        <div class="rawContent">
+        <div class="release-section">
           <h5 class="section-title bug-fix">BUG修复</h5>
-          <p class="logContent">修复右键菜单位置问题</p>
-          <p class="logContent">修复表单label触发表单组件的问题</p>
+          <p class="release-entry">修复右键菜单位置问题</p>
+          <p class="release-entry">修复表单label触发表单组件的问题</p>
         </div>
       </el-timeline-item>
-      <el-timeline-item center timestamp="2025/10/17" placement="top">
-        <h4 class="version-title">版本: v 3.0.3</h4>
-        <div class="rawContent">
+      <el-timeline-item timestamp="2025/10/17" placement="top">
+        <h4 class="release-version">版本: v 3.0.3</h4>
+        <div class="release-section">
           <h5 class="section-title">新特性</h5>
-          <p class="logContent">优化视频流传输性能及缓存机制</p>
-          <p class="logContent">新增视频限流器，提升带宽控制能力</p>
-          <p class="logContent">新增视频与演员信息刮削器</p>
-          <p class="logContent">新增刮削器配置调试工具</p>
-          <p class="logContent">新增路径替换功能，支持通过文件管理器选择路径</p>
-          <p class="logContent">新增剧照展示功能</p>
-          <p class="logContent">新增宽图盒子资源显示模式</p>
-          <p class="logContent">新增快捷调整资源显示方式的功能</p>
-          <p class="logContent">更新Dockerfile以适配刮削器功能</p>
+          <p class="release-entry">优化视频流传输性能及缓存机制</p>
+          <p class="release-entry">新增视频限流器，提升带宽控制能力</p>
+          <p class="release-entry">新增视频与演员信息刮削器</p>
+          <p class="release-entry">新增刮削器配置调试工具</p>
+          <p class="release-entry">新增路径替换功能，支持通过文件管理器选择路径</p>
+          <p class="release-entry">新增剧照展示功能</p>
+          <p class="release-entry">新增宽图盒子资源显示模式</p>
+          <p class="release-entry">新增快捷调整资源显示方式的功能</p>
+          <p class="release-entry">更新Dockerfile以适配刮削器功能</p>
         </div>
-        <div class="rawContent">
+        <div class="release-section">
           <h5 class="section-title bug-fix">BUG修复</h5>
-          <p class="logContent">修复部分视频因特殊编码格式导致误转码的问题</p>
-          <p class="logContent">修复移动端页面样式异常问题</p>
+          <p class="release-entry">修复部分视频因特殊编码格式导致误转码的问题</p>
+          <p class="release-entry">修复移动端页面样式异常问题</p>
         </div>
       </el-timeline-item>
-      <el-timeline-item center timestamp="2025/9/23" placement="top">
-        <h4 class="version-title">版本: v 3.0.2</h4>
-        <div class="rawContent">
+      <el-timeline-item timestamp="2025/9/23" placement="top">
+        <h4 class="release-version">版本: v 3.0.2</h4>
+        <div class="release-section">
           <h5 class="section-title">新特性</h5>
-          <p class="logContent">新增云播放功能（推荐使用 PotPlayer 播放器以获得最佳体验）</p>
-          <p class="logContent">新增云播放协议脚本</p>
-          <p class="logContent">新增 Docker 容器化部署</p>
-          <p class="logContent">优化 NFO 文件导入性能，移除链接尝试下载功能</p>
-          <p class="logContent">新增数据库迁移过程的错误日志记录</p>
+          <p class="release-entry">新增云播放功能（推荐使用 PotPlayer 播放器以获得最佳体验）</p>
+          <p class="release-entry">新增云播放协议脚本</p>
+          <p class="release-entry">新增 Docker 容器化部署</p>
+          <p class="release-entry">优化 NFO 文件导入性能，移除链接尝试下载功能</p>
+          <p class="release-entry">新增数据库迁移过程的错误日志记录</p>
         </div>
       </el-timeline-item>
-      <el-timeline-item center timestamp="2025/9/10" placement="top">
-        <h4 class="version-title">版本: v 3.0.1</h4>
-        <div class="rawContent">
+      <el-timeline-item timestamp="2025/9/10" placement="top">
+        <h4 class="release-version">版本: v 3.0.1</h4>
+        <div class="release-section">
           <h5 class="section-title">新特性</h5>
-          <p class="logContent">新增全新的 Web 端播放控制器</p>
-          <p class="logContent">播放控制器支持直接调用本地播放器播放视频</p>
-          <p class="logContent">播放控制器新增最大化播放功能</p>
-          <p class="logContent">新增短视频形式的资源展示模式</p>
-          <p class="logContent">新增资源右键菜单功能</p>
-          <p class="logContent">新增瀑布流布局、短视频布局、图集的列数以及漫画图片宽度的本地记忆功能</p>
-          <p class="logContent">优化移动端播放布局与交互体验</p>
-          <p class="logContent">文件管理器新增按文件名和修改时间排序功能</p>
-          <p class="logContent">新增挂载指定磁盘和网络地址的使用说明</p>
-          <p class="logContent">新增右键资源快捷打标签功能</p>
-          <p class="logContent">新增资源导入命名模式与封面海报的命名匹配功能</p>
-          <p class="logContent">新增同文件夹下视频导入为剧集功能</p>
-          <p class="logContent">新增服务器打开文件与文件夹的权限设置</p>
-          <p class="logContent">优化视频播放热度统计，并新增资源显示属性 hot</p>
-          <p class="logContent">新增 NFO 格式文件导入资源信息功能</p>
-          <p class="logContent">资源编辑页面的资源列表允许通过拖拽方式进行重新排序</p>
+          <p class="release-entry">新增全新的 Web 端播放控制器</p>
+          <p class="release-entry">播放控制器支持直接调用本地播放器播放视频</p>
+          <p class="release-entry">播放控制器新增最大化播放功能</p>
+          <p class="release-entry">新增短视频形式的资源展示模式</p>
+          <p class="release-entry">新增资源右键菜单功能</p>
+          <p class="release-entry">新增瀑布流布局、短视频布局、图集的列数以及漫画图片宽度的本地记忆功能</p>
+          <p class="release-entry">优化移动端播放布局与交互体验</p>
+          <p class="release-entry">文件管理器新增按文件名和修改时间排序功能</p>
+          <p class="release-entry">新增挂载指定磁盘和网络地址的使用说明</p>
+          <p class="release-entry">新增右键资源快捷打标签功能</p>
+          <p class="release-entry">新增资源导入命名模式与封面海报的命名匹配功能</p>
+          <p class="release-entry">新增同文件夹下视频导入为剧集功能</p>
+          <p class="release-entry">新增服务器打开文件与文件夹的权限设置</p>
+          <p class="release-entry">优化视频播放热度统计，并新增资源显示属性 hot</p>
+          <p class="release-entry">新增 NFO 格式文件导入资源信息功能</p>
+          <p class="release-entry">资源编辑页面的资源列表允许通过拖拽方式进行重新排序</p>
         </div>
-        <div class="rawContent">
+        <div class="release-section">
           <h5 class="section-title bug-fix">BUG修复</h5>
-          <p class="logContent">修复文件管理器在 Windows 上无法正确处理 Junction 的问题</p>
-          <p class="logContent">修复移动端播放视频时地址获取错误的问题</p>
-          <p class="logContent">修复封面瀑布流多次加载后出现重叠的问题</p>
-          <p class="logContent">修复视频播放音量状态无法保存和获取的问题</p>
-          <p class="logContent">修复TVBOX资源推荐失败的问题</p>
+          <p class="release-entry">修复文件管理器在 Windows 上无法正确处理 Junction 的问题</p>
+          <p class="release-entry">修复移动端播放视频时地址获取错误的问题</p>
+          <p class="release-entry">修复封面瀑布流多次加载后出现重叠的问题</p>
+          <p class="release-entry">修复视频播放音量状态无法保存和获取的问题</p>
+          <p class="release-entry">修复TVBOX资源推荐失败的问题</p>
         </div>
       </el-timeline-item>
-      <el-timeline-item center timestamp="2025/9/1" placement="top">
-        <h4 class="version-title">版本: v 3.0.0</h4>
-        <div class="rawContent">
+      <el-timeline-item timestamp="2025/9/1" placement="top">
+        <h4 class="release-version">版本: v 3.0.0</h4>
+        <div class="release-section">
           <h5 class="section-title">新特性</h5>
-          <p class="logContent">v3版本发布</p>
+          <p class="release-entry">v3版本发布</p>
         </div>
       </el-timeline-item>
-    </el-scrollbar>
-  </el-timeline>
+      </el-timeline>
+    </div>
+  </section>
 </template>
 <script setup lang="ts">
 </script>
 <style scoped lang="scss">
+@use '../settingsSubpage';
+.update-log .subpage-content { max-width: 1100px; }
 .update-log-timeline {
-  width: 100%;
-  height: 100%;
-  padding: 20px;
-
-  :deep(.el-timeline-item) {
-    .el-timeline-item__timestamp {
-      color: #409eff;
-      font-weight: bold;
-      font-size: 14px;
-    }
-
-    .el-timeline-item__wrapper {
-      padding-bottom: 20px;
-    }
-
-    .el-timeline-item__tail {
-      border-color: rgba(64, 158, 255, 0.3);
-    }
-
-    .el-timeline-item__node--normal {
-      background-color: #409eff;
-      border-color: #409eff;
-    }
-  }
-
-  .version-title {
-    color: #f2f2f2;
-    font-size: 16px;
-    margin-bottom: 10px;
-    padding: 4px 8px;
-    background: rgba(64, 158, 255, 0.15);
-    border-radius: 6px;
-    display: inline-block;
-  }
-
-  .rawContent {
-    background: rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
-    padding: 5px 15px;
-    margin-bottom: 15px;
-
-    .section-title {
-      color: #409eff;
-      font-size: 14px;
-      margin: 5px 0;
-      padding-bottom: 5px;
-      border-bottom: 1px solid rgba(64, 158, 255, 0.3);
-
-      &.optimization {
-        color: #67c23a;
-      }
-
-      &.bug-fix {
-        color: #f56c6c;
-      }
-    }
-
-    .logContent {
-      color: #f2f2f2;
-      font-size: 14px;
-      line-height: 1.8;
-      margin-bottom: 10px;
-      padding-left: 15px;
-      position: relative;
-
-      &::before {
-        content: "•";
-        color: #409eff;
-        position: absolute;
-        left: 0;
-        top: 0;
-      }
-    }
-  }
+  padding: 4px 0 0 8px;
+  :deep(.el-timeline-item__timestamp) { color: var(--el-text-color-secondary); font-size: 12px; line-height: 1.6; }
+  :deep(.el-timeline-item__tail) { border-color: var(--el-border-color-lighter); }
+  :deep(.el-timeline-item__node) { background: var(--el-color-primary); }
+  :deep(.el-timeline-item__wrapper) { padding-left: 26px; padding-bottom: 18px; }
+}
+.release-version { margin: 8px 0 16px; font-size: 18px; font-weight: 600; color: var(--el-text-color-primary); }
+.release-section {
+  margin-bottom: 12px;
+  padding: 18px 22px;
+  background: var(--el-bg-color);
+  border: 1px solid var(--el-border-color-lighter);
+  border-radius: 8px;
+}
+.section-title {
+  display: inline-block;
+  margin-bottom: 12px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  line-height: 22px;
+  font-weight: 500;
+  color: var(--el-color-primary);
+  background: var(--el-color-primary-light-9);
+  &.optimization { color: var(--el-color-success); background: var(--el-color-success-light-9); }
+  &.bug-fix { color: var(--el-text-color-regular); background: var(--el-fill-color); }
+}
+.release-entry {
+  position: relative;
+  padding-left: 14px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  line-height: 1.85;
+  color: var(--el-text-color-regular);
+  overflow-wrap: anywhere;
+  &:last-child { margin-bottom: 0; }
+  &:empty { display: none; }
+  &::before { content: '•'; position: absolute; left: 0; color: var(--el-text-color-placeholder); }
+}
+@media (max-width: 700px) {
+  .release-section { padding: 14px; }
+  .update-log-timeline :deep(.el-timeline-item__wrapper) { padding-left: 20px; }
 }
 </style>

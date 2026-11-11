@@ -186,12 +186,27 @@ onMounted(loadStatus);
 </script>
 
 <style scoped lang="scss">
+@use '../settingsModules' as modules;
+
 .avatar-library-setting { display: flex; flex-direction: column; gap: 12px; height: 100%; overflow: auto; }
-.card-header { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+.card-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .card-actions { display: flex; gap: 10px; }
 h3 { margin: 0; }
 p { margin: 6px 0 0; color: var(--el-text-color-secondary); }
 .field-help { margin-top: 6px; color: var(--el-text-color-secondary); font-size: 12px; }
 .field-help--inline { margin: 0 0 0 10px; }
 .cache-summary { margin-top: 12px; }
+
+.avatar-library-setting {
+  @include modules.frame; @include modules.cards;
+  gap: 12px;
+  .card-header { flex-wrap: wrap; gap: 12px; }
+  .card-actions { @include modules.actions; }
+  :deep(.el-radio-group) { max-width: 100%; flex-wrap: nowrap; overflow-x: auto; }
+  :deep(.el-radio-button) { flex-shrink: 0; }
+  .card-header h3 { font-size: 18px; }
+  .card-header p { font-size: 12px; line-height: 1.7; }
+  .el-form { @include modules.form-rows; @include modules.mobile-form; }
+}
+
 </style>

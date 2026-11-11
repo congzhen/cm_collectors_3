@@ -1,15 +1,9 @@
 <template>
-  <div class="video-metadata-setting" v-loading="loading">
-    <div class="page-header">
-      <div>
-        <h2>视频信息采集</h2>
-        <p>统一保存时长、分辨率、帧率、视频/音频编码等信息。历史列表补齐和空闲补齐默认关闭。</p>
-      </div>
-      <el-button type="primary" :loading="saving" @click="saveSetting">保存设置</el-button>
-    </div>
+  <div class="settings-editor-shell" v-loading="loading">
+  <div class="video-metadata-setting editor-scroll">
 
-    <el-card shadow="never">
-      <template #header>视频采集排除规则（全部文件库）</template>
+    <el-card class="metadata-group" shadow="never">
+      <template #header><h3>采集排除规则</h3><p>统一设置全部文件库的采集范围与排除后缀。</p></template>
       <el-form label-width="230px" label-position="left">
         <el-form-item label="自动排除常见非视频文件">
           <el-switch v-model="settingData.setting.autoExcludeNonVideo" />
@@ -25,8 +19,8 @@
       <p class="help">删除排除后缀后，文件将在下一次采集任务中重新参与。人工标记的非视频不会自动恢复；可在“已排除文件”中标记为视频并重试。</p>
     </el-card>
 
-    <el-card shadow="never">
-      <template #header>自动触发策略</template>
+    <el-card class="metadata-group" shadow="never">
+      <template #header><h3>自动触发策略</h3><p>设置采集时机与空闲补齐方式。</p></template>
       <el-form label-width="230px" label-position="left">
         <el-form-item label="新增或文件变化时采集">
           <el-switch v-model="settingData.setting.collectOnNewOrChanged" />
@@ -70,7 +64,7 @@
       </el-form>
     </el-card>
 
-    <el-card shadow="never">
+    <el-card class="metadata-group" shadow="never">
       <template #header>
         <div class="card-header">
           <span>历史数据补齐</span>
@@ -119,7 +113,8 @@
       </el-alert>
     </el-card>
 
-    <el-card class="collection-result-card" shadow="never">
+    <el-card class="collection-result-card metadata-group" shadow="never">
+      <template #header><h3>采集结果</h3><p>查看各文件库的采集进度，处理失败或已排除文件。</p></template>
       <el-tabs v-model="collectionResultTab">
         <el-tab-pane label="文件库采集概况" name="stats">
           <el-table :data="stats" stripe>
@@ -203,6 +198,8 @@
         <el-button type="primary" :loading="manualSaving" @click="saveManualMetadata">保存</el-button>
       </template>
     </el-dialog>
+  </div>
+  <div class="editor-footer"><span class="editor-footer-note">仅保存视频信息采集设置</span><el-button type="primary" :loading="saving" @click="saveSetting">保存设置</el-button></div>
   </div>
 </template>
 
@@ -566,6 +563,8 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
+@use '../settingsModules' as modules;
+
 .video-metadata-setting {
   height: 100%;
   min-height: 0;
@@ -574,7 +573,7 @@ onUnmounted(() => {
   padding: 18px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 
   > .el-card {
     flex: 0 0 auto;
@@ -585,7 +584,7 @@ onUnmounted(() => {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 16px;
+    gap: 12px;
   }
 
   h2 {
@@ -672,4 +671,27 @@ onUnmounted(() => {
     white-space: nowrap;
   }
 }
+
+.video-metadata-setting {
+  @include modules.frame; @include modules.cards;
+  gap: 12px;
+  .page-header, .card-header { flex-wrap: wrap; }
+  > .el-card .el-form { @include modules.form-rows; @include modules.mobile-form; }
+  .help { font-size: 12px; line-height: 1.7; }
+  .failure-pagination { max-width: 100%; overflow: auto; }
+}
+
+.settings-editor-shell { @include modules.editor-shell; }
+
+.video-metadata-setting {
+  .metadata-group { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 16px; border: 0; border-radius: 0; background: transparent; padding: 0 0 14px; border-bottom: 1px solid var(--el-border-color-lighter); overflow: visible; }
+  .metadata-group > :deep(.el-card__header) { min-width: 0; padding: 10px 4px 0; border: 0; }
+  .metadata-group > :deep(.el-card__body) { min-width: 0; padding: 4px 16px 12px; border: 1px solid var(--el-border-color-lighter); border-radius: 8px; background: var(--el-bg-color); }
+  .metadata-group h3 { margin: 0; font-size: 15px; line-height: 24px; }
+  .metadata-group > :deep(.el-card__header) p { font-size: 12px; font-weight: normal; line-height: 1.7; margin-top: 6px; }
+  .metadata-group .card-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .metadata-group :deep(.el-textarea), .metadata-group .manual-form { max-width: 900px; }
+  .metadata-group .help { margin-left: 8px; }
+}
+@media (max-width: 1100px) { .video-metadata-setting .metadata-group { grid-template-columns: 150px minmax(0, 1fr); gap: 12px; } }
 </style>

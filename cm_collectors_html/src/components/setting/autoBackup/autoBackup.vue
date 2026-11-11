@@ -1,5 +1,7 @@
 <template>
-  <div class="auto-backup" v-loading="loading">
+  <div class="settings-editor-shell" v-loading="loading">
+  <div class="auto-backup editor-scroll">
+    <section class="maintenance-group"><div class="maintenance-heading"><h3>备份策略</h3><p>设置备份路径、触发条件和保留份数。</p></div>
     <el-form v-model="formData" label-width="170px">
       <el-form-item label="自动备份">
         <div class="field-content">
@@ -48,7 +50,7 @@
       <el-form-item>
         <div class="field-content">
           <div class="button-row">
-            <el-button type="primary" icon="Edit" @click="saveHandle">保存</el-button>
+
             <el-button icon="Refresh" @click="refreshHandle">刷新</el-button>
             <el-button type="success" icon="Download" @click="runBackupHandle">立即备份</el-button>
           </div>
@@ -58,13 +60,14 @@
         </div>
       </el-form-item>
     </el-form>
+    </section>
 
     <el-alert
       v-if="formData.autoBackup.enabled && formData.autoBackup.intervalHours <= 0 && formData.autoBackup.resourceChangeThreshold <= 0"
       title="自动备份已开启，但尚未设置触发条件" type="warning" :closable="false" />
 
+    <section class="maintenance-group"><div class="maintenance-heading"><h3>运行状态</h3><p>查看备份进度、最近执行结果与错误信息。</p></div>
     <div class="state-section">
-      <h3>自动备份状态</h3>
       <div class="state-grid">
         <div class="state-item">
           <span class="label">最近成功</span>
@@ -93,8 +96,9 @@
       </div>
     </div>
 
+    </section>
+    <section class="maintenance-group"><div class="maintenance-heading"><h3>备份文件</h3><p>管理已生成的自动备份文件。</p></div>
     <div class="backup-section">
-      <h3>自动备份列表</h3>
       <div class="backup-list">
         <div v-if="backupList.length === 0" class="empty-backup">暂无自动备份</div>
         <div v-for="(backup, index) in backupList" :key="backup" class="backup-item">
@@ -104,7 +108,10 @@
       </div>
     </div>
 
+    </section>
     <serverFileManagementDialog ref="serverFileManagementDialogRef" @selectedFiles="selectedFilesHandle" />
+  </div>
+  <div class="editor-footer"><span class="editor-footer-note">自动备份配置</span><el-button type="primary" icon="Edit" @click="saveHandle">保存</el-button></div>
   </div>
 </template>
 
@@ -296,6 +303,8 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
+@use '../settingsModules' as modules;
+
 .auto-backup {
   max-width: 960px;
   height: 100%;
@@ -396,4 +405,22 @@ onMounted(() => {
     color: var(--el-text-color-secondary);
   }
 }
+
+.auto-backup {
+  max-width: 1320px; margin: 0 auto;
+  .maintenance-group > .el-form { max-width: none; @include modules.panel; @include modules.form-rows; @include modules.mobile-form; }
+  .state-section, .backup-section { @include modules.panel; margin-top: 12px; h3 { font-size: 16px; } }
+  .button-row { @include modules.actions; }
+  .help-text { line-height: 1.7; }
+  @media (max-width: 700px) { .state-grid { grid-template-columns: minmax(0, 1fr); } }
+}
+
+.settings-editor-shell { @include modules.editor-shell; }
+
+.auto-backup { max-width: none; @include modules.maintenance-groups;
+  .maintenance-group .state-section, .maintenance-group .backup-section { margin: 0; min-width: 0; }
+  .maintenance-group .el-input { max-width: 760px; }
+  .maintenance-group .el-form :deep(.el-form-item__label) { justify-content: flex-start; }
+}
+.settings-editor-shell > .auto-backup { max-width: none; }
 </style>

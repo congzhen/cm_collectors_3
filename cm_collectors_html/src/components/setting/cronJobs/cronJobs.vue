@@ -266,6 +266,8 @@ onUnmounted(() => {
 </script>
 
 <style lang="scss" scoped>
+@use '../settingsModules' as modules;
+
 .cron-jobs-modern {
   .container {
 
@@ -294,7 +296,7 @@ onUnmounted(() => {
       .jobs-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-        gap: 20px;
+        gap: 12px;
 
         .job-card {
           background: white;
@@ -432,7 +434,7 @@ onUnmounted(() => {
     .container {
       .header-section {
         flex-direction: column;
-        gap: 16px;
+        gap: 12px;
         align-items: stretch;
       }
 
@@ -444,4 +446,19 @@ onUnmounted(() => {
     }
   }
 }
+
+.cron-jobs-modern {
+  overflow: auto;
+  .container .content-wrapper .jobs-grid { grid-template-columns: repeat(auto-fill, minmax(min(100%, 360px), 1fr)); gap: 12px; }
+  .container .content-wrapper .jobs-grid .job-card { background: var(--el-bg-color); border: 1px solid var(--el-border-color-lighter); border-radius: 8px; box-shadow: none; }
+  .container .content-wrapper .jobs-grid .job-card--failed { border-left: 3px solid var(--el-color-danger); }
+  .container .content-wrapper .empty-state { background: var(--el-bg-color); box-shadow: none; }
+  .container .content-wrapper .jobs-grid .job-card {
+    .job-card__header { padding: 16px; border-color: var(--el-border-color-lighter); }
+    .job-card__header .job-info .job-name { color: var(--el-text-color-primary); }
+    .job-card__body { padding: 16px; .job-detail .detail-label { color: var(--el-text-color-secondary); } .job-detail .detail-value { color: var(--el-text-color-regular); } .error-detail .detail-value { color: var(--el-color-danger); } }
+    .job-card__footer { @include modules.actions; padding: 8px 16px; border-color: var(--el-border-color-lighter); }
+  }
+}
+
 </style>

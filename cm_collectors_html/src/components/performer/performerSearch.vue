@@ -13,8 +13,7 @@
       <el-button type="danger" plain icon="Delete" @click="emits('batchDelete')">批量删除</el-button>
     </div>
     <div class="performer-search">
-      <el-button icon="DocumentAdd" v-admin v-if="props.admin && !props.batchMode" @click="emits('add')">新增</el-button>
-      <el-button icon="Delete" v-admin v-if="props.admin && !props.batchMode" @click="emits('recycleBin')">回收站</el-button>
+      <div class="performer-search-filters">
       <inputSearch width="280px" placeholder="请输入姓名、别名、首字母" @change="changeSearchHandle" />
       <selectStar width="200px" @change="changeStarHandle" />
       <selectCup v-if="store.appStoreData.currentConfigApp.plugInUnit_Cup" :search-mode="true" width="200px" @change="changeCupHandle" />
@@ -27,9 +26,14 @@
         <el-option label="影片数从多到少" value="resourceCountDesc" />
         <el-option label="影片数从少到多" value="resourceCountAsc" />
       </el-select>
+      </div>
+      <div class="performer-search-actions">
+      <el-button icon="DocumentAdd" v-admin v-if="props.admin && !props.batchMode" @click="emits('add')">新增</el-button>
+      <el-button icon="Delete" v-admin v-if="props.admin && !props.batchMode" @click="emits('recycleBin')">回收站</el-button>
       <el-button icon="Magnet" v-admin v-if="props.admin && !props.batchMode" @click="emits('scraper')">刮削</el-button>
       <el-button icon="Picture" v-admin v-if="props.admin && !props.batchMode" @click="emits('avatarBatch')">批量匹配头像</el-button>
       <el-button v-if="props.admin && !props.batchMode" v-admin icon="Operation" @click="emits('batchEnter')">批量管理</el-button>
+      </div>
     </div>
     <div v-if="props.batchMode" class="selection-status">
       已选择 <strong>{{ props.selectionCount }}</strong> 位演员 · 当前筛选结果 {{ props.total }} 位
@@ -89,6 +93,8 @@ const clearTags = () => { searchData.tagIds = []; activeTags.splice(0); emitSear
 </script>
 
 <style lang="scss" scoped>
+.performer-search-filters, .performer-search-actions { display: contents; }
+.performer-search-actions > .el-button:nth-child(-n + 2) { order: -1; }
 .performer-search-shell { display: flex; flex-direction: column; gap: 6px; }
 .performer-search { display: flex; flex-wrap: wrap; gap: 0.5em; }
 .performer-search .el-button + .el-button { margin-left: 0; }

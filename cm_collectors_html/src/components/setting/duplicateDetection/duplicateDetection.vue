@@ -367,6 +367,8 @@ onMounted(refreshAll);
 </script>
 
 <style lang="scss" scoped>
+@use '../settingsModules' as modules;
+
 .duplicate-detection {
   height: 100%;
   overflow: auto;
@@ -448,4 +450,16 @@ onMounted(refreshAll);
     margin-top: 12px;
   }
 }
+
+.duplicate-detection {
+  .summary { gap: 12px; margin-bottom: 12px; }
+  .filters { @include modules.panel; @include modules.form-rows; @include modules.mobile-form; }
+  .threshold { width: min(100%, 400px); grid-template-columns: minmax(0, 1fr) 56px; }
+  .group { border-color: var(--el-border-color-lighter); border-radius: 8px; background: var(--el-bg-color); }
+  .group-header { flex-wrap: wrap; padding: 14px 16px; }
+  .group-actions { @include modules.actions; }
+  .pagination { max-width: 100%; overflow: auto; }
+}
+
+.duplicate-detection { @include modules.frame; }
 </style>

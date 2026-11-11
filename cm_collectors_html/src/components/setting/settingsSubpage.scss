@@ -1,0 +1,41 @@
+// Shared presentation for the software settings subpages; no global control overrides.
+.settings-subpage {
+  height: 100%;
+  min-height: 0;
+  box-sizing: border-box;
+  overflow: auto;
+  padding: 0 8px 12px;
+  scrollbar-gutter: stable;
+  color: var(--el-text-color-primary);
+}
+.subpage-content { max-width: 1320px; margin: 0 auto; }
+.subpage-group {
+  display: grid;
+  grid-template-columns: 190px minmax(0, 1fr);
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--el-border-color-lighter);
+  &:last-child { border-bottom: 0; }
+}
+.group-heading {
+  padding-top: 12px;
+  h3 { font-size: 15px; line-height: 24px; font-weight: 600; }
+  p { margin-top: 6px; font-size: 12px; line-height: 1.7; color: var(--el-text-color-secondary); }
+}
+.subpage-panel {
+  min-width: 0;
+  padding: 12px 16px;
+  background: var(--el-bg-color);
+  border: 1px solid var(--el-border-color-lighter);
+  border-radius: 8px;
+  overflow-wrap: anywhere;
+}
+.help { width: 100%; margin-top: 6px; font-size: 12px; line-height: 1.7; color: var(--el-text-color-secondary); }
+@media (max-width: 1200px) {
+  .subpage-group { grid-template-columns: minmax(0, 1fr); gap: 12px; padding: 12px 0; }
+  .group-heading { padding-top: 0; }
+}
+@media (max-width: 700px) {
+  .settings-subpage { padding: 0 0 16px; }
+  .subpage-panel { padding: 16px; }
+}

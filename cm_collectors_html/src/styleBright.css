@@ -180,10 +180,6 @@
 .bright .el-dialog__body .updateSoftView .btn-refresh {
   color: #606266;
 }
-/** 设置 */
-.bright .save-button-container {
-  background-color: #f2f3f5 !important;
-}
 /** 更新日志时间线 */
 .bright .update-log-timeline .version-title {
   color: #606266 !important;

@@ -3,7 +3,9 @@
     <p v-if="readonly" class="shared-source-hint">
       通用参数来自公共配置，下方只读展示；本库独立项仍可编辑。修改通用参数请点击上方“打开公共配置”。
     </p>
-    <SettingSectionTitle>基础设置</SettingSectionTitle>
+    <section class="library-setting-group">
+      <div class="library-group-heading"><SettingSectionTitle>基础设置</SettingSectionTitle><p class="library-group-description">设置国家、清晰度与资源排序。</p></div>
+      <div class="library-group-panel">
     <SettingFieldsScope :disabled="readonly">
       <el-form-item label="国家列表">
         <selectCountry v-model="config.country" multiple />
@@ -15,7 +17,11 @@
         <selectResourceSort v-model="config.resourceSort" multiple />
       </el-form-item>
     </SettingFieldsScope>
-    <SettingSectionTitle>左侧边栏</SettingSectionTitle>
+      </div>
+    </section>
+    <section class="library-setting-group">
+      <div class="library-group-heading"><SettingSectionTitle>左侧边栏</SettingSectionTitle><p class="library-group-description">调整侧栏布局、标签和演员显示。</p></div>
+      <div class="library-group-panel">
     <SettingFieldsScope :disabled="readonly">
       <el-form-item label="左侧边栏显示项">
         <selectLeftDisplay v-model="config.leftDisplay" multiple />
@@ -56,7 +62,11 @@
       </el-form-item>
     </SettingFieldsScope>
     <slot name="actors" />
-    <SettingSectionTitle>显示设置</SettingSectionTitle>
+      </div>
+    </section>
+    <section class="library-setting-group">
+      <div class="library-group-heading"><SettingSectionTitle>显示设置</SettingSectionTitle><p class="library-group-description">设置资源列表、详情与封面信息。</p></div>
+      <div class="library-group-panel">
     <SettingFieldsScope :disabled="readonly">
       <el-form-item label="分页显示数量">
         <el-input-number v-model="config.pageLimit" />
@@ -200,7 +210,11 @@
         </div>
       </el-form-item>
     </SettingFieldsScope>
-    <SettingSectionTitle>剧照设置</SettingSectionTitle>
+      </div>
+    </section>
+    <section class="library-setting-group">
+      <div class="library-group-heading"><SettingSectionTitle>剧照设置</SettingSectionTitle><p class="library-group-description">调整剧照展示与片段预览。</p></div>
+      <div class="library-group-panel">
     <SettingFieldsScope :disabled="readonly">
       <el-form-item label="显示剧照">
         <el-switch
@@ -237,7 +251,11 @@
       </el-form-item>
     </SettingFieldsScope>
     <slot name="sample" />
-    <SettingSectionTitle>参数设置</SettingSectionTitle>
+      </div>
+    </section>
+    <section class="library-setting-group">
+      <div class="library-group-heading"><SettingSectionTitle>参数设置</SettingSectionTitle><p class="library-group-description">设置资源打开方式和播放偏好。</p></div>
+      <div class="library-group-panel">
     <SettingFieldsScope :disabled="readonly">
       <el-form-item label="片段默认视图">
         <el-select v-model="config.videoMomentLibraryMode">
@@ -282,7 +300,11 @@
         <el-input-number v-model="config.videoPreviewImageCount" :min="1" :max="200" />
       </el-form-item>
     </SettingFieldsScope>
-    <SettingSectionTitle>演员&导演自定义</SettingSectionTitle>
+      </div>
+    </section>
+    <section class="library-setting-group">
+      <div class="library-group-heading"><SettingSectionTitle>演员&导演自定义</SettingSectionTitle><p class="library-group-description">调整演员、导演名称与头像。</p></div>
+      <div class="library-group-panel">
     <SettingFieldsScope :disabled="readonly">
       <el-form-item label="演员显示文字">
         <el-input v-model="config.performer_Text" />
@@ -299,7 +321,11 @@
       </el-form-item>
     </SettingFieldsScope>
     <slot name="avatar" />
-    <SettingSectionTitle>插件设置</SettingSectionTitle>
+      </div>
+    </section>
+    <section class="library-setting-group">
+      <div class="library-group-heading"><SettingSectionTitle>插件设置</SettingSectionTitle><p class="library-group-description">配置附加功能及显示文字。</p></div>
+      <div class="library-group-panel">
     <SettingFieldsScope :disabled="readonly">
       <el-form-item label="Cup插件">
         <el-checkbox v-model="config.plugInUnit_Cup" label="开启演员Cup插件" border />
@@ -311,7 +337,11 @@
         <el-input v-model="config.plugInUnit_Cup_Text" />
       </el-form-item>
     </SettingFieldsScope>
-    <SettingSectionTitle>封面海报设置</SettingSectionTitle>
+      </div>
+    </section>
+    <section class="library-setting-group">
+      <div class="library-group-heading"><SettingSectionTitle>封面海报设置</SettingSectionTitle><p class="library-group-description">调整海报展示尺寸与间距。</p></div>
+      <div class="library-group-panel">
     <slot name="poster" />
     <SettingFieldsScope :disabled="readonly">
       <el-form-item label="封面海报显示宽度">
@@ -341,6 +371,8 @@
         <el-input-number v-model="config.contentPadding" :min="0" :max="50" />
       </el-form-item>
     </SettingFieldsScope>
+      </div>
+    </section>
   </div>
 </template>
 <script setup lang="ts">
@@ -364,6 +396,8 @@ const appLang = AppLang()
 defineProps<{ config: I_config_app; readonly?: boolean }>()
 </script>
 <style scoped>
+.library-group-description { display: none; }
+
 .preview-setting-hint {
   width: 100%;
   margin-top: 6px;

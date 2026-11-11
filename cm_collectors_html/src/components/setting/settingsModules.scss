@@ -1,0 +1,63 @@
+// Opt-in, scoped layout only. Never change disabled state, pointer events or control internals.
+@mixin frame {
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  padding: 0 0 8px;
+  color: var(--el-text-color-primary);
+  scrollbar-gutter: stable;
+}
+@mixin panel {
+  min-width: 0;
+  box-sizing: border-box;
+  background: var(--el-bg-color);
+  border: 1px solid var(--el-border-color-lighter);
+  border-radius: 8px;
+  padding: 12px 16px;
+}
+@mixin form-rows {
+  :deep(.el-form-item) { margin-bottom: 0; padding: 8px 0; border-bottom: 1px solid var(--el-border-color-extra-light); }
+  :deep(.el-form-item:last-child) { border-bottom: 0; }
+  :deep(.el-form-item__content) { min-width: 0; overflow-wrap: anywhere; }
+  :deep(.el-form-item__label) { height: auto; line-height: 24px; padding-top: 4px; }
+}
+@mixin actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  > .el-button { margin-left: 0; }
+}
+@mixin cards {
+  > .el-card :deep(.el-card__body) { padding: 12px 16px; }
+  > .el-card { border-radius: 8px; border-color: var(--el-border-color-lighter); flex-shrink: 0; }
+  > .el-card :deep(.el-card__header) { padding: 10px 16px; font-size: 15px; font-weight: 600; }
+}
+@mixin mobile-form {
+  @media (max-width: 700px) {
+    :deep(.el-form-item) { display: block; }
+    :deep(.el-form-item__label-wrap) { margin-left: 0 !important; float: none; }
+    :deep(.el-form-item__label) { width: auto !important; display: block; text-align: left; padding: 0 0 8px; }
+    :deep(.el-form-item__content) { margin-left: 0 !important; }
+  }
+}
+
+// Keep page actions outside the scrollable form without changing save handlers.
+@mixin editor-shell {
+  height: 100%; min-height: 0; display: flex; flex-direction: column; overflow: hidden;
+  > .editor-scroll { flex: 1; min-height: 0; height: auto; width: 100%; margin: 0; padding: 0 0 8px; overflow: auto; box-sizing: border-box; }
+  > .editor-footer { flex-shrink: 0; display: flex; align-items: center; justify-content: flex-end; gap: 12px; padding: 8px 16px; border-top: 1px solid var(--el-border-color-lighter); background: var(--el-bg-color); }
+  .editor-footer-note { margin-right: auto; font-size: 12px; color: var(--el-text-color-secondary); }
+}
+
+@mixin maintenance-groups {
+  .maintenance-group { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--el-border-color-lighter); }
+  .maintenance-group:first-child { padding-top: 0; }
+  .maintenance-group:last-child { border-bottom: 0; }
+  .maintenance-heading { padding: 10px 4px 0; }
+  .maintenance-heading h3 { margin: 0; font-size: 15px; line-height: 24px; }
+  .maintenance-heading p { margin: 6px 0 0; font-size: 12px; line-height: 1.7; color: var(--el-text-color-secondary); }
+  .maintenance-group > .el-form { min-width: 0; width: 100%; max-width: none; margin: 0; }
+  @media (max-width: 1100px) { .maintenance-group { grid-template-columns: 150px minmax(0, 1fr); gap: 12px; } }
+}
