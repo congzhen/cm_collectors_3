@@ -1,6 +1,6 @@
 <template>
   <section class="group-magazine" :class="{ 'is-adaptive': adaptCoverRatio, 'is-single': members.length === 1 }" aria-label="杂志拼版" :aria-busy="loading"
-    :style="{ '--single-ratio': members.length === 1 ? ratio(members[0]) : 1, '--magazine-height': `${(loading || error ? expectedCount || members.length : members.length) > 5 ? 460 : 300}px` }">
+    :style="[sourceStyle, { '--single-ratio': members.length === 1 ? ratio(members[0]) : 1, '--magazine-height': `${(loading || error ? expectedCount || members.length : members.length) > 5 ? 460 : 300}px` }]">
     <div v-if="loading || error || !members.length" class="magazine-state">
       <el-icon v-if="loading" class="is-loading"><Loading /></el-icon>
       <span>{{ error || (loading ? '正在展开关联资源…' : '暂无关联资源') }}</span>
@@ -44,14 +44,26 @@
 </template>
 
 <script setup lang="ts">
+import { useGroupPreviewSize } from './groupPreviewSize';
 import { useGroupCoverRatio } from './groupCoverRatio';
 import { computed, nextTick, ref, watch } from 'vue';
 import { Loading, Picture } from '@element-plus/icons-vue';
 import { getResourceCoverPoster } from '@/common/photo';
 import type { I_resource } from '@/dataType/resource.dataType';
-const props = defineProps<{ adaptCoverRatio?: boolean; members: I_resource[]; loading: boolean; error: string; sourceResource?: I_resource; expectedCount?: number }>();
+const props = defineProps<{ sourceElement?: HTMLElement; adaptCoverRatio?: boolean; members: I_resource[]; loading: boolean; error: string; sourceResource?: I_resource; expectedCount?: number }>();
 const { ratio, onLoad } = useGroupCoverRatio();
-const emit = defineEmits<{ select: [resource: I_resource]; retry: [] }>();
+const emit = defineEmits<{ select: [resource: I_resource]; retry: []; layoutWidth: [width: number | undefined] }>();
+const { previewHeight, viewportWidth } = useGroupPreviewSize(() => props.sourceElement);
+const sourceSize = computed(() => {
+  if (!props.adaptCoverRatio || !props.sourceElement) return undefined;
+  const singleRatio = props.members.length === 1 ? ratio(props.members[0]) : 2.8;
+  const desiredWidth = props.members.length > 1
+    ? Math.min(...adaptiveRows.value.map(row => previewHeight.value * row.reduce((sum, item) => sum + ratio(item.resource), 0) + (row.length - 1) * 3)) + 28
+    : previewHeight.value * singleRatio + 28;
+  const width = Math.min(viewportWidth.value - 24, desiredWidth);
+  return { width, height: (width - 28) / singleRatio };
+});
+const sourceStyle = computed(() => sourceSize.value ? { '--magazine-source-height': `${sourceSize.value.height}px` } : undefined);
 const scrollRef = ref<HTMLElement>();
 const activeIndex = ref(0);
 const ordered = computed(() => {
@@ -77,6 +89,7 @@ const adaptiveRows = computed(() => {
   }
   return rows;
 });
+watch(() => sourceSize.value?.width, value => emit('layoutWidth', value), { immediate: true });
 watch(ordered, () => { activeIndex.value = 0; if (scrollRef.value) scrollRef.value.scrollTop = 0; });
 const tailStyle = (index: number) => {
   const count = ordered.value.length - 5;
@@ -138,8 +151,10 @@ const navigate = async (event: KeyboardEvent) => {
   .magazine-lead--3 .magazine-tile:not(.is-hero) { grid-column: span 1; }
 }
 @media (prefers-reduced-motion: reduce) { .magazine-tile :deep(.el-image__inner), .magazine-title { transition: none; } }
-.is-adaptive.is-single { box-sizing: border-box; width: min(100%, calc(300px * var(--single-ratio) + 28px)); }
+.is-adaptive.is-single { box-sizing: border-box; width: min(100%, calc(var(--magazine-source-height, 300px) * var(--single-ratio) + 28px)); }
 .is-adaptive .magazine-tile:hover :deep(.el-image__inner), .is-adaptive .magazine-tile:focus-visible :deep(.el-image__inner) { transform: none; }
 /* Preserve the original Popper box and anchor; align to its source-facing edge when flipped. */
 :global(.el-popper[data-popper-placement^="left"] .group-magazine.is-adaptive.is-single) { margin-left: auto; }
+.is-adaptive.is-single .magazine-scroll, .is-adaptive.is-single .magazine-lead { height: var(--magazine-source-height, 300px); }
+.is-adaptive.is-single .magazine-lead { grid-template-rows: minmax(0, 1fr); grid-auto-rows: auto; }
 </style>

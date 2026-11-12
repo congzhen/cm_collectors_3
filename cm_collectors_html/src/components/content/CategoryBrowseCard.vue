@@ -10,6 +10,7 @@
     @keydown.esc="close"
   >
     <button
+      ref="coverElement"
       class="category-cover"
       type="button"
       :aria-label="`查看${group.name}第${group.part}组`"
@@ -67,6 +68,7 @@
       }"
       :popper-style="{
         maxWidth: 'calc(100vw - 24px)',
+        minWidth: '0',
         padding: '0',
         border: '0',
         background: 'transparent',
@@ -84,7 +86,7 @@
         @focusout="leave"
         @keydown.esc="close"
       >
-        <ResourceGroupMagazine
+        <ResourceGroupMagazine :source-element="coverElement" @layout-width="foldWidth = $event"
           v-if="expandStyle === 'magazine'"
           :members="members" :adapt-cover-ratio="adaptCoverRatio"
           :source-resource="source"
@@ -96,7 +98,7 @@
         />
         <ResourceGroupFold
           v-else-if="expandStyle === 'fold' || expandStyle === 'spine'"
-          :vertical="expandStyle === 'spine'"
+          :vertical="expandStyle === 'spine'" :source-element="coverElement" @layout-width="foldWidth = $event"
           :source-resource="source"
           :members="members" :adapt-cover-ratio="adaptCoverRatio"
           :loading="loading"
@@ -105,7 +107,7 @@
           @retry="load"
           @select="select"
         />
-        <ResourceGroupFan
+        <ResourceGroupFan :source-element="coverElement" @layout-width="foldWidth = $event"
           v-else
           :expand-style="expandStyle === 'strip' ? 'strip' : 'fan'"
           :members="members" :adapt-cover-ratio="adaptCoverRatio"
@@ -183,10 +185,12 @@ let requestVersion = 0,
   closeTimer: ReturnType<typeof setTimeout> | undefined
 let pointer: { x: number; y: number } | undefined
 const isCardDeck = computed(() => props.expandStyle === 'fan' || props.expandStyle === 'strip')
+const coverElement = ref<HTMLElement>();
+const foldWidth = ref<number>();
 const deckOffset = ref(-120)
 // Match the resource association group's deck dimensions and overlap positioning.
 const panelWidth = computed(() =>
-  props.expandStyle === 'fan'
+  props.adaptCoverRatio && foldWidth.value ? foldWidth.value : props.expandStyle === 'fan'
     ? Math.min(720, Math.max(320, 200 + props.group.count * 60))
     : props.expandStyle === 'strip'
       ? Math.min(640, Math.max(280, 208 + Math.max(0, props.group.count - 1) * 40))

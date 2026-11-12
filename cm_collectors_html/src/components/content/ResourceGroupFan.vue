@@ -1,5 +1,5 @@
 <template>
-  <section class="group-fan" :class="{ 'is-dense': (loading || error ? expectedCount || members.length : members.length) > 7, 'group-fan--strip': expandStyle === 'strip', 'is-adaptive': adaptCoverRatio, 'is-single': members.length === 1 }" :style="adaptiveLayout" aria-label="关联组资源" :aria-busy="loading">
+  <section class="group-fan" :class="{ 'is-dense': (loading || error ? expectedCount || members.length : members.length) > 7, 'group-fan--strip': expandStyle === 'strip', 'is-adaptive': adaptCoverRatio, 'is-single': members.length === 1 }" :style="[adaptiveLayout, sourceStyle]" aria-label="关联组资源" :aria-busy="loading">
     <div v-if="loading || error" class="fan-state">
       <el-icon v-if="loading" class="is-loading"><Loading /></el-icon>
       <span>{{ error || '正在展开关联资源…' }}</span>
@@ -24,18 +24,31 @@
 </template>
 
 <script setup lang="ts">
+import { useGroupPreviewSize } from './groupPreviewSize';
 import { useGroupCoverRatio } from './groupCoverRatio';
 import { computed, nextTick, ref, watch } from 'vue';
 import { Loading, Picture } from '@element-plus/icons-vue';
 import { getResourceCoverPoster } from '@/common/photo';
 import type { I_resource } from '@/dataType/resource.dataType';
-const props = defineProps<{ adaptCoverRatio?: boolean; members: I_resource[]; loading: boolean; error: string; expectedCount?: number; expandStyle?: 'fan' | 'strip'; matchedIds?: Set<string> }>();
+const props = defineProps<{ sourceElement?: HTMLElement; adaptCoverRatio?: boolean; members: I_resource[]; loading: boolean; error: string; expectedCount?: number; expandStyle?: 'fan' | 'strip'; matchedIds?: Set<string> }>();
 const { ratio, onLoad } = useGroupCoverRatio();
-const emit = defineEmits<{ select: [resource: I_resource]; retry: [] }>();
+const emit = defineEmits<{ select: [resource: I_resource]; retry: []; layoutWidth: [width: number | undefined] }>();
 const activeIndex = ref(0);
-const maxRatio = computed(() => Math.max(2 / 3, ...props.members.map(ratio)));
+const { previewHeight, viewportWidth, viewportHeight } = useGroupPreviewSize(() => props.sourceElement);
+const sourceSize = computed(() => {
+  if (!props.adaptCoverRatio || !props.sourceElement) return undefined;
+  const count = props.members.length || props.expectedCount || 1;
+  const ratios = props.members.map(ratio);
+  const widest = ratios.length ? Math.max(...ratios) : 2 / 3;
+  const targetHeight = Math.min(previewHeight.value, Math.max(1, viewportHeight.value - 108));
+  const panelWidth = Math.min(viewportWidth.value - 24, Math.max(200, targetHeight * widest / .7 + Math.min(200, (count - 1) * 40)));
+  return { width: panelWidth, height: Math.min(targetHeight, panelWidth * .7 / widest) };
+});
+const sourceStyle = computed(() => sourceSize.value ? { '--fan-card-height': `${sourceSize.value.height}px`, '--fan-card-width': `${sourceSize.value.height * 2 / 3}px` } : undefined);
+watch(() => sourceSize.value?.width, value => emit('layoutWidth', value), { immediate: true });
+const maxRatio = computed(() => Math.max(sourceSize.value && props.members.length ? 0 : 2 / 3, ...props.members.map(ratio)));
 const adaptiveLayout = computed(() => props.adaptCoverRatio ? {
-  '--fan-layout-width': `max(var(--fan-card-width), clamp(80px, calc(var(--fan-card-height) * ${maxRatio.value}), min(360px, 70%)))`,
+  '--fan-layout-width': sourceSize.value ? `${sourceSize.value.height * maxRatio.value}px` : `max(var(--fan-card-width), clamp(80px, calc(var(--fan-card-height) * ${maxRatio.value}), min(360px, 70%)))`,
   '--fan-layout-edge': 'min(var(--fan-edge-space), max(0px, (100% - var(--fan-layout-width)) / 2))',
 } : undefined);
 let pressedResource: I_resource | undefined;
@@ -62,12 +75,12 @@ const pointToCard = (event: { clientX: number }) => {
   const firstCard = deck.firstElementChild as HTMLElement;
   // Integer offset/client widths accumulate visible hit errors in very dense groups.
   const deckWidth = bounds.width || deck.clientWidth;
-  const baseWidth = props.adaptCoverRatio
+  const baseWidth = sourceSize.value ? sourceSize.value.height * 2 / 3 : props.adaptCoverRatio
     ? Math.min(count > 7 ? 132 : 160, Math.max(count > 7 ? 100 : 110, window.innerWidth * (count > 7 ? .24 : .28)))
     : Number.parseFloat(getComputedStyle(firstCard).width) || firstCard.offsetWidth;
   const strip = props.expandStyle === 'strip';
   const cardHeight = Number.parseFloat(getComputedStyle(deck).getPropertyValue('--fan-card-height')) || (count > 7 ? 188 : 226);
-  const cardWidth = props.adaptCoverRatio
+  const cardWidth = sourceSize.value ? sourceSize.value.height * maxRatio.value : props.adaptCoverRatio
     ? Math.max(baseWidth, Math.max(80, Math.min(cardHeight * maxRatio.value, 360, deckWidth * .7))) : baseWidth;
   const edge = props.adaptCoverRatio ? Math.min(strip ? 48 : 112, Math.max(0, (deckWidth - cardWidth) / 2)) : (strip ? 48 : 112);
   const step = Math.min(strip ? 48 : 74, (deckWidth - cardWidth - edge) / Math.max(1, count - 1));
@@ -96,7 +109,7 @@ const cardStyle = (index: number) => {
   const position = index - (count - 1) / 2;
   const relative = count > 1 ? position / ((count - 1) / 2) : 0;
   return {
-    ...(props.adaptCoverRatio ? { width: `clamp(80px, calc(var(--fan-card-height) * ${ratio(props.members[index])}), min(360px, 70%))` } : {}),
+    ...(props.adaptCoverRatio ? { width: sourceSize.value ? `${sourceSize.value.height * ratio(props.members[index])}px` : `clamp(80px, calc(var(--fan-card-height) * ${ratio(props.members[index])}), min(360px, 70%))` } : {}),
     left: `calc(50% + ${position} * max(0px, min(var(--fan-max-step), (100% - var(--fan-layout-width, var(--fan-card-width)) - var(--fan-layout-edge, var(--fan-edge-space))) / ${Math.max(1, count - 1)})))`,
     '--card-angle': `${props.expandStyle === 'strip' ? 0 : relative * Math.min(14, (count - 1) * 3.5)}deg`,
     '--card-drop': `${props.expandStyle === 'strip' ? 0 : Math.abs(relative) * 16}px`,

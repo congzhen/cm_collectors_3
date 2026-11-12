@@ -23,10 +23,10 @@
     <el-popover v-if="isGroupStack" :visible="groupVisible" :virtual-ref="(groupExpandStyle === 'spine' || groupExpandStyle === 'magazine') && groupPointerAnchor ? groupPointerAnchor : groupAnchor" virtual-triggering
       trigger="hover" :placement="(groupExpandStyle === 'spine' || groupExpandStyle === 'magazine') ? 'right' : 'top'" :width="groupFanWidth" :show-arrow="false" :show-after="250" :hide-after="250" :offset="groupFanOffset"
       :popper-options="{ modifiers: [{ name: 'preventOverflow', options: { altAxis: true, padding: 12 } }] }"
-      :popper-style="{ maxWidth: 'calc(100vw - 16px)', padding: '0', border: '0', background: 'transparent', boxShadow: 'none' }" @after-leave="releaseGroupFanView">
+      :popper-style="{ maxWidth: 'calc(100vw - 16px)', minWidth: '0', padding: '0', border: '0', background: 'transparent', boxShadow: 'none' }" @after-leave="releaseGroupFanView">
       <div ref="groupSurface" @pointerenter="keepGroupFan" @pointerleave="leaveGroupFan" @focusin="keepGroupFan" @focusout="leaveGroupFan" @keydown.esc="closeGroupFan">
       <ResourceGroupPanel v-if="groupPanelReady" :files-bases-id="props.resource.filesBases_id" :group-id="props.resource.associationGroupId!"
-        :source-resource="props.resource" :expand-style="groupExpandStyle" :adapt-cover-ratio="appStoreData().currentConfigApp.resourceGroupAdaptCoverRatio" :display-active="groupViewActive" :expected-count="groupMemberCount" :matched-ids="groupContext?.pageIds.value" @select="selectGroupMember" />
+        :source-resource="props.resource" :source-element="groupCoverElement" @layout-width="groupFoldWidth = $event" :expand-style="groupExpandStyle" :adapt-cover-ratio="appStoreData().currentConfigApp.resourceGroupAdaptCoverRatio" :display-active="groupViewActive" :expected-count="groupMemberCount" :matched-ids="groupContext?.pageIds.value" @select="selectGroupMember" />
       </div>
     </el-popover>
   </div>
@@ -171,6 +171,8 @@ onBeforeUnmount(() => {
 });
 const groupPanelReady = ref(false);
 const groupFanOffset = ref(-120);
+const groupCoverElement = shallowRef<HTMLElement>();
+const groupFoldWidth = ref<number>();
 const groupMemberCount = computed(() => groupContext?.summaries.value.get(props.resource.associationGroupId || '')?.count);
 const groupCoverStyle = computed(() => {
   const value = appStoreData().currentConfigApp.resourceGroupCoverStyle;
@@ -180,12 +182,13 @@ const groupExpandStyle = computed(() => {
   const style = appStoreData().currentConfigApp.resourceGroupExpandStyle;
   return style === 'strip' || style === 'fold' || style === 'spine' || style === 'magazine' ? style : 'fan';
 });
-const groupFanWidth = computed(() => groupExpandStyle.value === 'magazine' ? 560 : groupExpandStyle.value === 'spine' ? 320 : groupExpandStyle.value === 'fold'
+const groupFanWidth = computed(() => appStoreData().currentConfigApp.resourceGroupAdaptCoverRatio && groupFoldWidth.value ? groupFoldWidth.value : groupExpandStyle.value === 'magazine' ? 560 : groupExpandStyle.value === 'spine' ? 320 : groupExpandStyle.value === 'fold'
   ? Math.min(720, Math.max(340, 248 + Math.max(0, (groupMemberCount.value || 5) - 1) * 68))
   : groupExpandStyle.value === 'strip'
   ? Math.min(640, Math.max(280, 208 + Math.max(0, (groupMemberCount.value || 5) - 1) * 40))
   : Math.min(720, Math.max(320, 200 + (groupMemberCount.value || 5) * 60)));
 const prepareGroupFan = () => {
+  groupCoverElement.value = groupAnchor.value?.querySelector<HTMLElement>('.resource-group-front .el-image') || groupAnchor.value;
   const rect = groupAnchor.value?.getBoundingClientRect();
   const height = rect?.height || 180;
   groupAnchorPosition = rect ? { top: rect.top, left: rect.left } : undefined;

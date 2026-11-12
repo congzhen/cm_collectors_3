@@ -1,11 +1,12 @@
 <template>
-  <section class="group-fold" :class="{ 'group-fold--spine': vertical, 'is-adaptive': adaptCoverRatio, 'is-single': members.length === 1 }" :style="[adaptiveSpineStyle, members.length === 1 ? { '--single-ratio': ratio(members[0]) } : {}, vertical ? { '--spine-height': `${Math.min(520, 260 + Math.max(0, (loading || error ? expectedCount || members.length : members.length) - 1) * 28)}px` } : undefined]" :aria-busy="loading" :aria-label="vertical ? '纵向封面书脊' : '封面折屏'">
+  <section class="group-fold" :class="{ 'group-fold--spine': vertical, 'is-adaptive': adaptCoverRatio, 'is-single': members.length === 1 && !sourceLayout }" :style="[adaptiveSpineStyle, members.length === 1 && !sourceLayout ? { '--single-ratio': ratio(members[0]) } : {}, vertical ? { '--spine-height': `${Math.min(520, 260 + Math.max(0, (loading || error ? expectedCount || members.length : members.length) - 1) * 28)}px` } : undefined]" :aria-busy="loading" :aria-label="vertical ? '纵向封面书脊' : '封面折屏'">
     <div v-if="loading || error || !members.length" class="fold-state">
       <el-icon v-if="loading" class="is-loading"><Loading /></el-icon>
       <span>{{ error || (loading ? '正在展开关联资源…' : '暂无关联资源') }}</span>
       <el-button v-if="error" link @click="emit('retry')">重试</el-button>
     </div>
-    <div v-else ref="deckRef" class="fold-screen" @pointermove="pointToSlice" @keydown="navigate" @wheel="browseWheel"
+    <div v-else class="fold-frame" :style="sourceLayout ? { height: `${sourceLayout.height}px` } : undefined">
+    <div ref="deckRef" class="fold-screen" :style="adaptiveScreenStyle" @pointermove="pointToSlice" @keydown="navigate" @wheel="browseWheel"
       @pointerdown.left="pressSlice" @pointercancel="pressed = undefined" @click="selectSlice">
       <button v-for="(resource, index) in members" :key="resource.id" class="fold-slice" type="button"
         :class="{ 'is-active': index === activeIndex }" :style="sliceStyle(index)"
@@ -17,19 +18,36 @@
         <span class="fold-title">{{ resource.title }}</span>
       </button>
     </div>
+    </div>
   </section>
 </template>
 
 <script setup lang="ts">
+import { useGroupPreviewSize } from './groupPreviewSize';
 import { useGroupCoverRatio } from './groupCoverRatio';
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import { Loading, Picture } from '@element-plus/icons-vue';
 import { getResourceCoverPoster } from '@/common/photo';
 import type { I_resource } from '@/dataType/resource.dataType';
-const props = defineProps<{ adaptCoverRatio?: boolean; members: I_resource[]; loading: boolean; error: string; sourceResource?: I_resource; vertical?: boolean; expectedCount?: number }>();
+const props = defineProps<{ adaptCoverRatio?: boolean; members: I_resource[]; loading: boolean; error: string; sourceResource?: I_resource; sourceElement?: HTMLElement; vertical?: boolean; expectedCount?: number }>();
 const { ratio, onLoad } = useGroupCoverRatio();
-const emit = defineEmits<{ select: [resource: I_resource]; retry: [] }>();
+const emit = defineEmits<{ select: [resource: I_resource]; retry: []; layoutWidth: [width: number | undefined] }>();
 const deckRef = ref<HTMLElement>();
+const { previewHeight, viewportWidth, viewportHeight } = useGroupPreviewSize(() => props.sourceElement);
+const sourceLayout = computed(() => {
+  if (!props.adaptCoverRatio || !props.sourceElement) return undefined;
+  const count = props.members.length || props.expectedCount || 1;
+  const ratios = (props.members.length ? props.members : props.sourceResource ? [props.sourceResource] : []).map(ratio);
+  const maxRatio = ratios.length ? Math.max(...ratios) : 2 / 3;
+  // Keep the preview slightly smaller than its source cover while following size settings.
+  const height = props.vertical ? Math.min(previewHeight.value, Math.max(1, viewportWidth.value - 52) / maxRatio) : previewHeight.value;
+  const gap = Math.min(2, Math.max(1, viewportWidth.value - 52) / (count * 8));
+  const desiredWidth = height * maxRatio / (count > 1 ? .66 : 1) + gap * (count - 1) + 28;
+  if (props.vertical) return { height: Math.min(viewportHeight.value - 56, count > 1 ? height / .66 + gap * (count - 1) : height), width: Math.min(viewportWidth.value - 24, height * maxRatio + 28) };
+  return { height, width: Math.min(Math.max(29, viewportWidth.value - 24), desiredWidth) };
+});
+watch(() => sourceLayout.value?.width, value => emit('layoutWidth', value), { immediate: true });
+
 const width = ref(480);
 const height = ref(480);
 const activeIndex = ref(0);
@@ -43,11 +61,12 @@ watch(deckRef, element => {
   const measure = () => {
     const rect = element.getBoundingClientRect();
     width.value = rect.width || 480;
-    height.value = rect.height || 480;
+    height.value = element.parentElement?.getBoundingClientRect().height || rect.height || 480;
   };
   measure();
   observer = new ResizeObserver(measure);
   observer.observe(element);
+  if (element.parentElement) observer.observe(element.parentElement);
 }, { flush: 'post' });
 onBeforeUnmount(() => observer?.disconnect());
 watch(() => [props.members, props.sourceResource?.id, props.vertical], () => {
@@ -61,7 +80,7 @@ const adaptiveSpineStyle = computed(() => {
   const gap = Math.min(2, height.value / (count * 8));
   const available = Math.max(0, height.value - gap * (count - 1));
   // Keep the original expanded height; fit the whole book's width to its active cover.
-  const expanded = Math.max(available / count, Math.min(200, available * .66));
+  const expanded = Math.max(available / count, Math.min(sourceLayout.value ? previewHeight.value : 200, available * .66));
   const cover = props.members[activeIndex.value];
   return cover ? { boxSizing: 'border-box' as const, width: `min(100%, ${expanded * ratio(cover) + 28}px)` } : undefined;
 });
@@ -73,8 +92,17 @@ const geometry = computed(() => {
   const current = props.members[activeIndex.value];
   const desired = props.adaptCoverRatio && current
     ? (props.vertical ? width.value / ratio(current) : height.value * ratio(current)) : 200;
-  const expanded = count === 1 ? available : Math.max(available / count, Math.min(desired, available * .66));
+  const expanded = count === 1 ? available
+    : props.adaptCoverRatio && !props.vertical ? Math.min(desired, available * .66)
+      : Math.max(available / count, Math.min(desired, available * .66));
   return { gap, expanded, narrow: count === 1 ? 0 : (available - expanded) / (count - 1) };
+});
+// Keep the original positioning box, but fit the visible screen to the active cover.
+// Measure the frame above so shrinking the screen cannot feed back into its geometry.
+const adaptiveScreenStyle = computed(() => {
+  const current = props.members[activeIndex.value];
+  if (!props.adaptCoverRatio || props.vertical || !current) return undefined;
+  return { height: `${Math.min(height.value, geometry.value.expanded / ratio(current))}px` };
 });
 const sliceStyle = (index: number) => {
   const { gap, expanded, narrow } = geometry.value;
@@ -144,7 +172,8 @@ const selectSlice = (event: MouseEvent) => {
 <style scoped lang="scss">
 .group-fold { --fold-gap: #22262c; --fold-border: rgba(255,255,255,.18); --fold-shadow: rgba(0,0,0,.34); padding: 14px; color: var(--el-text-color-primary); }
 :global(html.bright) .group-fold { --fold-gap: #e6e9ed; --fold-border: rgba(45,60,75,.16); --fold-shadow: rgba(30,45,60,.2); }
-.fold-screen { position: relative; height: 238px; max-height: calc(100vh - 56px); overflow: hidden; border-radius: 12px; background: var(--fold-gap); box-shadow: 0 10px 28px var(--fold-shadow); isolation: isolate; }
+.fold-frame { height: 238px; max-height: calc(100vh - 56px); }
+.fold-screen { position: relative; height: 100%; max-height: 100%; overflow: hidden; border-radius: 12px; background: var(--fold-gap); box-shadow: 0 10px 28px var(--fold-shadow); isolation: isolate; }
 .fold-screen::after { content: ''; position: absolute; inset: 0; border: 1px solid var(--fold-border); border-radius: inherit; box-sizing: border-box; pointer-events: none; z-index: 2; }
 .fold-slice { position: absolute; top: 0; bottom: 0; padding: 0; border: 0; overflow: hidden; background: var(--fold-gap); cursor: pointer; transition: left .2s cubic-bezier(.2,.7,.2,1), width .2s cubic-bezier(.2,.7,.2,1); }
 .fold-slice .el-image { display: block; width: 100%; height: 100%; }
@@ -155,7 +184,7 @@ const selectSlice = (event: MouseEvent) => {
 .is-active .fold-title { opacity: 1; }
 .fold-empty { display: grid; place-items: center; width: 100%; height: 100%; color: var(--el-text-color-placeholder); font-size: 30px; }
 .fold-state { height: 238px; max-height: calc(100vh - 56px); display: flex; gap: 10px; align-items: center; justify-content: center; border-radius: 12px; background: var(--el-bg-color-overlay); box-shadow: 0 10px 28px var(--fold-shadow); font-size: 13px; }
-.group-fold--spine .fold-screen, .group-fold--spine .fold-state { height: var(--spine-height, 400px); }
+.group-fold--spine .fold-frame, .group-fold--spine .fold-state { height: var(--spine-height, 400px); }
 .group-fold--spine .fold-slice { left: 0; right: 0; bottom: auto; width: 100%; text-align: left; transition: top .2s cubic-bezier(.2,.7,.2,1), height .2s cubic-bezier(.2,.7,.2,1); }
 .group-fold--spine .fold-title { inset: 0 0 auto; padding: 3px 12px; font-size: 12px; line-height: 20px; background: linear-gradient(90deg,rgba(0,0,0,.62),rgba(0,0,0,.2)); opacity: 0; z-index: 1; }
 .group-fold--spine .is-active .fold-title { inset: auto 0 0; padding: 28px 12px 12px; background: linear-gradient(transparent,rgba(0,0,0,.78)); font-size: 13px; opacity: 1; }

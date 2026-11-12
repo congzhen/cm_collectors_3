@@ -10,6 +10,60 @@ afterEach(()=>vi.unstubAllGlobals());
 const create=(count=5)=>mount(Fold,{props:{members:resources(count),loading:false,error:''},global:{plugins:[ElementPlus],stubs:{ElImage:true}}});
 const active=(w:ReturnType<typeof create>)=>w.find('.fold-slice.is-active').attributes('aria-label');
 const bounds=(w:ReturnType<typeof create>)=>vi.spyOn(w.find('.fold-screen').element,'getBoundingClientRect').mockReturnValue({left:100,top:0,width:480,height:236,right:580,bottom:236,x:100,y:0,toJSON(){}});
+it('实际来源封面控制自适应折屏大小，关闭自适应后释放宽度覆盖', async () => {
+  const source = document.createElement('div');
+  let resizeSource: (() => void) | undefined;
+  let sourceHeight = 180;
+  vi.spyOn(source, 'getBoundingClientRect').mockImplementation(() => ({height:sourceHeight} as DOMRect));
+  vi.stubGlobal('ResizeObserver', class {
+    constructor(private callback: () => void) {}
+    observe(element: Element) { if (element === source) resizeSource = this.callback; }
+    disconnect() {}
+  });
+  const w = create(1);
+  try {
+    await w.setProps({sourceElement:source,adaptCoverRatio:true,members:[{...resources(1)[0],coverPosterWidth:900,coverPosterHeight:1600}]});
+    expect((w.get('.fold-frame').element as HTMLElement).style.height).toBe('162px');
+    expect(w.emitted('layoutWidth')?.at(-1)).toEqual([162 * 900 / 1600 + 28]);
+    sourceHeight = 300;
+    resizeSource?.();
+    await w.vm.$nextTick();
+    expect((w.get('.fold-frame').element as HTMLElement).style.height).toBe('270px');
+    expect(w.emitted('layoutWidth')?.at(-1)).toEqual([270 * 900 / 1600 + 28]);
+    await w.setProps({adaptCoverRatio:false});
+    expect(w.emitted('layoutWidth')?.at(-1)).toEqual([undefined]);
+    expect((w.get('.fold-frame').element as HTMLElement).style.height).toBe('');
+  } finally { w.unmount(); }
+});
+it('自适应折屏随选中封面缩短可见高度，横竖封面均不留下空白', async () => {
+  const rect = vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({left:0,top:0,width:292,height:238,right:292,bottom:238,x:0,y:0,toJSON(){}});
+  const w = create(2);
+  try {
+    await w.setProps({adaptCoverRatio:true,members:resources(2).map((r,i)=>({...r,coverPosterWidth:i ? 900 : 1600,coverPosterHeight:i ? 1600 : 900}))});
+    for (const [key, ratio] of [['Home',1600/900],['End',900/1600]] as const) {
+      await w.find('.fold-screen').trigger('keydown',{key});
+      const width = parseFloat((w.find('.fold-slice.is-active').element as HTMLElement).style.width);
+      const height = parseFloat((w.find('.fold-screen').element as HTMLElement).style.height);
+      expect(width / height).toBeCloseTo(ratio);
+      expect(height).toBeLessThanOrEqual(238);
+      expect(w.find('.fold-frame').attributes('style')).toBeUndefined();
+    }
+    await w.setProps({adaptCoverRatio:false});
+    expect((w.find('.fold-screen').element as HTMLElement).style.height).toBe('');
+  } finally { w.unmount(); rect.mockRestore(); }
+});
+it('纵向书脊遇到超宽封面时同步缩短高度，避免窗口限宽后留下空白', async () => {
+  vi.stubGlobal('innerWidth', 390);
+  const source = document.createElement('div');
+  vi.spyOn(source, 'getBoundingClientRect').mockReturnValue({height:300} as DOMRect);
+  const w = create(2);
+  try {
+    await w.setProps({sourceElement:source,adaptCoverRatio:true,vertical:true,members:resources(2).map(r=>({...r,coverPosterWidth:4000,coverPosterHeight:600}))});
+    const frameHeight = parseFloat((w.get('.fold-frame').element as HTMLElement).style.height);
+    expect(frameHeight).toBeCloseTo(((390 - 52) / (4000 / 600)) / .66 + 2);
+    expect(w.emitted('layoutWidth')?.at(-1)).toEqual([366]);
+  } finally { w.unmount(); }
+});
 it('折屏默认展开原资源，首尾切片完整展开时仍在整体边界内',async()=>{
   const w=create();
   try{
