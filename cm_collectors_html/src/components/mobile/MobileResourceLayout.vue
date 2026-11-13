@@ -812,6 +812,45 @@ button {
   border-color: var(--mobile-accent);
 }
 
+// 旧浏览器会接受自定义属性中的 dvh，但使用时尺寸失效，导致缩略图栏塌陷。
+// 仅为不支持 dvh 的浏览器回退，新浏览器保留原有布局。
+@supports not (height: 1dvh) {
+  .mobile-short-video {
+    --mobile-short-gap: 8px;
+    --mobile-short-queue-height: 100px;
+    --mobile-short-button-height: 34px;
+  }
+
+  // 自定义属性不能依赖重复声明回退，需先检测 clamp 支持。
+  @supports (height: clamp(84px, 14vh, 116px)) {
+    .mobile-short-video {
+      --mobile-short-gap: clamp(5px, 1.1vh, 9px);
+      --mobile-short-queue-height: clamp(84px, 14vh, 116px);
+      --mobile-short-button-height: clamp(30px, 4.6vh, 36px);
+    }
+  }
+
+  .mobile-short-info {
+    padding: 2px 2px 0;
+    padding: clamp(1px, 0.4vh, 3px) 2px 0;
+  }
+
+  .mobile-short-heading > div {
+    gap: 4px;
+    gap: clamp(3px, 0.7vh, 6px);
+  }
+
+  .mobile-feature-meta {
+    gap: 4px 6px;
+    gap: clamp(3px, 0.6vh, 6px) clamp(5px, 1.8vw, 9px);
+  }
+
+  .mobile-short-queue {
+    padding-bottom: 3px;
+    padding-bottom: clamp(2px, 0.5vh, 4px);
+  }
+}
+
 .mobile-resource-layout--bright {
   --mobile-card-bg: #ffffff;
   --mobile-card-border: #dde4e8;
