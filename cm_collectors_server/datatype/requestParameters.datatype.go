@@ -310,6 +310,7 @@ type ReqParam_ImportData_ScanDisk_ImportPaths struct {
 	Config       Config_ScanDisk `json:"config"`
 }
 type ReqParam_ImportData_ScanDisk_ImportData struct {
+	BatchID string `json:"batchId"`
 	ReqParam_ImportData_ScanDisk_ImportPaths
 	FilePath string `json:"filePath"`
 }

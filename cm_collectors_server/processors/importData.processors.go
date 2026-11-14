@@ -4,11 +4,15 @@ import (
 	"bytes"
 	"cm_collectors_server/core"
 	"cm_collectors_server/datatype"
+	"cm_collectors_server/internal/importbatch"
 	"cm_collectors_server/models"
+	processorscache "cm_collectors_server/processorsCache"
 	processorsffmpeg "cm_collectors_server/processorsFFmpeg"
 	"cm_collectors_server/utils"
+	"context"
 	"encoding/json"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"io"
 	"math"
@@ -18,12 +22,38 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 	"unicode"
 
 	"golang.org/x/net/html/charset"
 )
 
 type ImportData struct {
+	ctx      context.Context
+	warnings *[]string
+}
+
+func (t ImportData) context() context.Context {
+	if t.ctx != nil {
+		return t.ctx
+	}
+	return context.Background()
+}
+func (t ImportData) warn(err error) {
+	if err == nil {
+		return
+	}
+	if t.warnings != nil && len(*t.warnings) < 20 {
+		*t.warnings = append(*t.warnings, err.Error())
+	}
+	core.LogErr(err)
+}
+func (t ImportData) ScanDiskImportDataResult(ctx context.Context, library, file string, config datatype.Config_ScanDisk) ([]string, error) {
+	warnings := []string{}
+	ctx, cancel := context.WithTimeout(ctx, 60*time.Second)
+	defer cancel()
+	err := (ImportData{ctx: ctx, warnings: &warnings}).ScanDiskImportData(library, file, config)
+	return warnings, err
 }
 
 func (ImportData) UpdateScanDiskConfig(filesBasesId, defaultConfigJson string) error {
@@ -94,10 +124,33 @@ func (ImportData) ScanDiskImportPaths(filesBasesId string, config datatype.Confi
 //
 // 返回值:
 //   - error: 执行过程中可能出现的错误
-func (t ImportData) ScanDiskImportData(filesBasesId, filePath string, config datatype.Config_ScanDisk) error {
+func (t ImportData) ScanDiskImportData(filesBasesId, filePath string, config datatype.Config_ScanDisk) (resultErr error) {
+	saved := false
+	defer func() { resultErr = t.finishImportError(resultErr, saved) }()
+	release := importbatch.Global.Hold()
+	defer release()
+	if err := t.context().Err(); err != nil {
+		return err
+	}
+	if filesBasesId == "" {
+		return fmt.Errorf("文件库不能为空")
+	}
+	unlock, err := importbatch.LibraryLocks.Acquire(t.context(), filesBasesId)
+	if err != nil {
+		return err
+	}
+	defer unlock()
 	exists := utils.FileExists(filePath)
 	if !exists {
 		return fmt.Errorf("文件不存在")
+	}
+	existingBySrc, err := (models.ResourcesDramaSeries{}).ListBySrcInLibrary(core.DBS(), filesBasesId, filePath)
+	if err != nil {
+		return err
+	}
+	if config.ImportMode == datatype.ImportMode_append && len(*existingBySrc) > 0 {
+		t.warn(fmt.Errorf("本库已存在该文件，已跳过重复导入"))
+		return nil
 	}
 	fileDir := utils.GetDirPathFromFilePath(filePath)
 	fileName := utils.GetFileNameFromPath(filePath, false)
@@ -105,13 +158,29 @@ func (t ImportData) ScanDiskImportData(filesBasesId, filePath string, config dat
 	// 合并为剧集的入口：
 	// - FolderToSeries：老逻辑，认为同一文件夹下的视频都属于同一个资源。
 	// - SimilarNameToSeries：新逻辑，只在同一文件夹下继续比较文件名相似度，避免把同目录的不同作品误合并。
-	if config.FolderToSeries || config.SimilarNameToSeries {
+	// Existing paths keep their owner during cover imports. Only new paths may
+	// join another resource; otherwise a folder match can duplicate an episode.
+	if len(*existingBySrc) == 0 && (config.FolderToSeries || config.SimilarNameToSeries) {
 		resourcesDramaSeries, err := ResourcesDramaSeries{}.FindDramaSeriesSlcBySearchPath(filesBasesId, fileDir)
-		if err == nil && config.SimilarNameToSeries && !config.FolderToSeries {
+		if err != nil {
+			return err
+		}
+		if config.SimilarNameToSeries && !config.FolderToSeries {
 			// “同一文件夹合并”优先级更高；只有未开启完整文件夹合并时，才做相似名称过滤。
 			resourcesDramaSeries = t.filterSimilarNameDramaSeries(resourcesDramaSeries, fileName)
+		} else if len(*resourcesDramaSeries) > 0 {
+			// Folder mode retains its first-group policy, while similar-name mode
+			// must inspect all groups in this directory before choosing one.
+			firstID := (*resourcesDramaSeries)[0].ResourcesID
+			group := []models.DramaSeriesWithResource{}
+			for _, item := range *resourcesDramaSeries {
+				if item.ResourcesID == firstID {
+					group = append(group, item)
+				}
+			}
+			resourcesDramaSeries = &group
 		}
-		if err == nil && len(*resourcesDramaSeries) > 0 {
+		if len(*resourcesDramaSeries) > 0 {
 			existsDramaSeriesFilePath := false
 			//判断filepath是否已在改资源的剧集中，则不处理
 			for _, resourcesDramaSeries := range *resourcesDramaSeries {
@@ -123,10 +192,14 @@ func (t ImportData) ScanDiskImportData(filesBasesId, filePath string, config dat
 			if !existsDramaSeriesFilePath {
 				resourcesID := (*resourcesDramaSeries)[0].ResourcesID
 				// 直接写入剧集信息
+				if err := t.context().Err(); err != nil {
+					return err
+				}
 				newDramaSeries, err := ResourcesDramaSeries{}.Create(core.DBS(), resourcesID, filePath, len(*resourcesDramaSeries))
 				if err != nil {
 					return err
 				}
+				saved = true
 				// 追加分集不会经过 CreateResource/UpdateResource，需要单独触发新分集的视频信息采集。
 				VideoMetadata{}.TriggerForNewDramaSeries(newDramaSeries)
 				AutoBackup{}.RecordResourceChanges(1)
@@ -145,8 +218,9 @@ func (t ImportData) ScanDiskImportData(filesBasesId, filePath string, config dat
 		}
 	}
 
-	coverPosterBase64, coverPosterWidth, coverPosterHeight, err := ImportData{}.GetCoverPosterBase64(filePath, config)
+	coverPosterBase64, coverPosterWidth, coverPosterHeight, err := t.GetCoverPosterBase64(filePath, config)
 
+	t.warn(err)
 	// 资源标题
 	resourceTitle := t.GetResourceTitle(filePath, config)
 
@@ -174,10 +248,13 @@ func (t ImportData) ScanDiskImportData(filesBasesId, filePath string, config dat
 		return err
 	}
 
-	t.Nfo(filesBasesId, nfoPath, config.Nfo, &resourceDataParam)
+	t.warn(t.Nfo(filesBasesId, nfoPath, config.Nfo, &resourceDataParam))
+	if err := t.context().Err(); err != nil {
+		return err
+	}
 
 	//根据filePath地址，查询资源是否已经存在
-	resourcesDramaSeriesScl, err := ResourcesDramaSeries{}.ListBySrc(filePath)
+	resourcesDramaSeriesScl, err := (models.ResourcesDramaSeries{}).ListBySrcInLibrary(core.DBS(), filesBasesId, filePath)
 	if err != nil {
 		return err
 	}
@@ -186,14 +263,20 @@ func (t ImportData) ScanDiskImportData(filesBasesId, filePath string, config dat
 		resourceID := (*resourcesDramaSeriesScl)[0].ResourcesID
 		resourceDataParam.Resource.ID = resourceID
 		var existingResource models.Resources
-		if err := core.DBS().Select("subtitle").Where("id = ?", resourceID).First(&existingResource).Error; err == nil {
-			// 扫盘/NFO 当前没有副标题映射，避免重新扫描时清空用户手工录入的副标题。
-			resourceDataParam.Resource.Subtitle = existingResource.Subtitle
+		if err := core.DBS().Select("subtitle", "coverPosterMode", "coverPosterWidth", "coverPosterHeight", "definition").Where("id = ? AND filesBases_id = ?", resourceID, filesBasesId).First(&existingResource).Error; err != nil {
+			return err
+		}
+		preserveImportMetadata(&resourceDataParam, &existingResource)
+		if err := t.context().Err(); err != nil {
+			return err
 		}
 		_, err := Resources{}.UpdateResource(&resourceDataParam, false)
 		return err
 	} else {
 		// 创建资源
+		if err := t.context().Err(); err != nil {
+			return err
+		}
 		_, err = Resources{}.CreateResource(&resourceDataParam)
 		return err
 	}
@@ -528,8 +611,16 @@ func minInt(values ...int) int {
 // 返回值:
 //   - string: 视频清晰度标识符（如"4K"、"1080P"等），如果获取失败则返回空字符串
 
-func (ImportData) VideoDefinition(filePath string, config datatype.Config_ScanDisk) string {
-	videoBasicInfo, err := processorsffmpeg.VideoInfo{}.GetVideoBasicInfo(filePath)
+func (t ImportData) VideoDefinition(filePath string, config datatype.Config_ScanDisk) string {
+	ctx, cancel := context.WithTimeout(t.context(), 20*time.Second)
+	defer cancel()
+	format, err := processorsffmpeg.VideoInfo{}.GetVideoFormatInfoContext(ctx, filePath)
+	if err == nil {
+		processorscache.CacheVideoInfoLastUse{}.Store(filePath, format)
+	} else {
+		t.warn(fmt.Errorf("视频信息采集失败: %w", err))
+	}
+	videoBasicInfo := processorsffmpeg.VideoInfo{}.GetVideoBasicInfoByVideoFormatInfo(format)
 	if err == nil {
 		videoDefinition := processorsffmpeg.VideoInfo{}.GetVideoDefinition(videoBasicInfo.Width, videoBasicInfo.Height)
 		return string(videoDefinition)
@@ -569,12 +660,17 @@ func (t ImportData) GetCoverPosterBase64(filePath string, config datatype.Config
 	// 如果未找到相似图片，则尝试自动创建海报
 	if coverPosterPath == "" && config.AutoCreatePoster {
 		// 自动创建海报
-		coverPosterBytes, err = processorsffmpeg.Thumbnail{}.ExtractThumbnailPoster(filePath)
+		coverPosterBytes, err = processorsffmpeg.Thumbnail{}.ExtractThumbnailPosterContext(t.context(), filePath)
 		if err != nil {
-			core.LogErr(err)
+			return "", 0, 0, fmt.Errorf("封面生成失败: %w", err)
+		}
+	} else if coverPosterPath != "" {
+		coverPosterBytes, err = utils.ReadImportImage(coverPosterPath)
+		if err != nil {
+			return "", 0, 0, fmt.Errorf("封面读取失败: %w", err)
 		}
 	} else {
-		coverPosterBytes, _ = utils.ImageToBytes(coverPosterPath)
+		return "", 0, 0, nil
 	}
 	// 获取图片尺寸
 	coverPosterWidth, coverPosterHeight, err = utils.GetImageDimensionsFromBytes(coverPosterBytes)
@@ -596,6 +692,9 @@ func (t ImportData) GetCoverPosterBase64(filePath string, config datatype.Config
 	// 封面进行封面尺寸适应裁切
 	if config.CoverPosterType >= 0 {
 		cropImageBytes, err := utils.ResizeAndCropImage(coverPosterBytes, config.CoverPosterWidth, config.CoverPosterHeight)
+		if err != nil {
+			return "", 0, 0, fmt.Errorf("封面裁剪失败: %w", err)
+		}
 		if err == nil {
 			coverPosterBytes = cropImageBytes
 			coverPosterWidth = config.CoverPosterWidth
@@ -707,12 +806,18 @@ func (t ImportData) Nfo(filesBasesId, nfoPath string, nfoConfig datatype.Config_
 	// 读取XML文件
 	xmlFile, err := os.Open(nfoPath)
 	if err != nil {
-		return nil
+		return err
 	}
 	defer xmlFile.Close()
 
 	// 解析XML
-	byteValue, _ := io.ReadAll(xmlFile)
+	byteValue, err := io.ReadAll(io.LimitReader(xmlFile, 8*1024*1024+1))
+	if err != nil {
+		return err
+	}
+	if len(byteValue) > 8*1024*1024 {
+		return fmt.Errorf("NFO 文件超过 8 MiB")
+	}
 
 	rootElement, err := parseNfoXMLToMap(byteValue)
 	if err != nil {
@@ -736,7 +841,7 @@ func (t ImportData) Nfo(filesBasesId, nfoPath string, nfoConfig datatype.Config_
 //
 // 返回值:
 //   - error: 执行过程中可能出现的错误
-func (ImportData) NfoExecData(filesBasesId, nfoPath string, rootElement map[string]interface{}, nfoConfig datatype.Config_ScanDisk_Nfo, data *datatype.ReqParam_Resource) error {
+func (t ImportData) NfoExecData(filesBasesId, nfoPath string, rootElement map[string]interface{}, nfoConfig datatype.Config_ScanDisk_Nfo, data *datatype.ReqParam_Resource) error {
 	var xmlData map[string]interface{}
 
 	// 根据Roots配置获取根节点
@@ -764,7 +869,11 @@ func (ImportData) NfoExecData(filesBasesId, nfoPath string, rootElement map[stri
 	if len(nfoConfig.Titles) > 0 {
 		for _, titlePath := range nfoConfig.Titles {
 			if value := utils.XML_getXMLValueByPath(xmlData, titlePath); value != "" {
-				data.Resource.Title = value.(string)
+				text := t.nfoText(value)
+				if text == "" {
+					continue
+				}
+				data.Resource.Title = text
 				break
 			}
 		}
@@ -774,7 +883,11 @@ func (ImportData) NfoExecData(filesBasesId, nfoPath string, rootElement map[stri
 	if len(nfoConfig.IssueNumbers) > 0 {
 		for _, issueNumberPath := range nfoConfig.IssueNumbers {
 			if value := utils.XML_getXMLValueByPath(xmlData, issueNumberPath); value != "" {
-				data.Resource.IssueNumber = value.(string)
+				text := t.nfoText(value)
+				if text == "" {
+					continue
+				}
+				data.Resource.IssueNumber = text
 				break
 			}
 		}
@@ -784,7 +897,11 @@ func (ImportData) NfoExecData(filesBasesId, nfoPath string, rootElement map[stri
 	if len(nfoConfig.IssuingDates) > 0 {
 		for _, issuingDatePath := range nfoConfig.IssuingDates {
 			if value := utils.XML_getXMLValueByPath(xmlData, issuingDatePath); value != "" {
-				data.Resource.IssuingDate = value.(string)
+				text := t.nfoText(value)
+				if text == "" {
+					continue
+				}
+				data.Resource.IssuingDate = text
 				break
 			}
 		}
@@ -795,7 +912,7 @@ func (ImportData) NfoExecData(filesBasesId, nfoPath string, rootElement map[stri
 		for _, scorePath := range nfoConfig.Score {
 			if value := utils.XML_getXMLValueByPath(xmlData, scorePath); value != "" {
 				// 将字符串转换为浮点数
-				scoreStr := value.(string)
+				scoreStr := t.nfoText(value)
 				score, err := strconv.ParseFloat(scoreStr, 64)
 				if err != nil {
 					// 转换失败，跳过该评分
@@ -823,7 +940,11 @@ func (ImportData) NfoExecData(filesBasesId, nfoPath string, rootElement map[stri
 	if len(nfoConfig.Abstracts) > 0 {
 		for _, abstractPath := range nfoConfig.Abstracts {
 			if value := utils.XML_getXMLValueByPath(xmlData, abstractPath); value != "" {
-				data.Resource.Abstract = value.(string)
+				text := t.nfoText(value)
+				if text == "" {
+					continue
+				}
+				data.Resource.Abstract = text
 				break
 			}
 		}
@@ -833,7 +954,13 @@ func (ImportData) NfoExecData(filesBasesId, nfoPath string, rootElement map[stri
 		for _, tagPath := range nfoConfig.Tags {
 			if values := utils.XML_getXMLValuesByPath(xmlData, tagPath); len(values) > 0 {
 				for _, value := range values {
-					tag, err := Tag{}.TagInfoByNameNotFoundCreate(filesBasesId, value)
+					var tag *models.Tag
+					var err error
+					if nfoConfig.TagAutoCreate {
+						tag, err = (Tag{}).TagInfoByNameNotFoundCreate(filesBasesId, value)
+					} else {
+						tag, err = (Tag{}).InfoByName(filesBasesId, value)
+					}
 					if err != nil {
 						continue
 					}
@@ -855,7 +982,7 @@ func (ImportData) NfoExecData(filesBasesId, nfoPath string, rootElement map[stri
 					// 调用我们新创建的函数处理演员图片
 					base64Image, err := getPerformerImage(value, nfoDir)
 					if err != nil {
-						core.LogErr(err)
+						t.warn(fmt.Errorf("演员图片读取失败: %w", err))
 						// 处理错误，可以选择记录日志或者忽略
 						continue
 					}
@@ -879,7 +1006,7 @@ func (ImportData) NfoExecData(filesBasesId, nfoPath string, rootElement map[stri
 		for _, performerPath := range nfoConfig.PerformerNames {
 			if values := utils.XML_getXMLValuesByPath(xmlData, performerPath); len(values) > 0 {
 				for _, value := range values {
-					performer, err := Performer{}.PerformerInfoByNameNotFoundCreate(filesBasesId, value, performerPhotoBase64)
+					performer, err := Performer{}.performerInfoForImport(filesBasesId, value, performerPhotoBase64, nfoConfig.PerformerMatchAliasName, nfoConfig.PerformerAutoCreate)
 					if err != nil {
 						continue
 					}
@@ -915,7 +1042,7 @@ func getPerformerImage(value string, nfoDir string) (string, error) {
 	}
 
 	// 读取本地图片文件
-	imageData, err = os.ReadFile(fullPath)
+	imageData, err = utils.ReadImportImage(fullPath)
 	if err != nil {
 		return "", fmt.Errorf("读取本地图片文件失败: %v", err)
 	}
@@ -1107,4 +1234,50 @@ func isValidXMLChar(r rune) bool {
 		(r >= 0x20 && r <= 0xD7FF) ||
 		(r >= 0xE000 && r <= 0xFFFD) ||
 		(r >= 0x10000 && r <= 0x10FFFF)
+}
+
+// NFO text nodes may carry attributes or repeat; use the first non-empty text.
+func (t ImportData) nfoText(value interface{}) string {
+	switch v := value.(type) {
+	case string:
+		return v
+	case map[string]interface{}:
+		if text, ok := v["#text"]; ok {
+			return t.nfoText(text)
+		}
+	case []interface{}:
+		for _, item := range v {
+			if text := t.nfoText(item); text != "" {
+				return text
+			}
+		}
+	}
+	t.warn(fmt.Errorf("NFO 字段不是可识别文本，已跳过"))
+	return ""
+}
+
+func (t ImportData) finishImportError(err error, saved bool) error {
+	if err == nil {
+		return nil
+	}
+	var committed *resourceCommittedError
+	if saved || errors.As(err, &committed) {
+		t.warn(fmt.Errorf("资源已入库，但后续处理未完成: %w", err))
+		return nil
+	}
+	return err
+}
+
+func preserveImportMetadata(par *datatype.ReqParam_Resource, existing *models.Resources) {
+	// Scan/NFO has no subtitle mapping. A missing replacement image also must not
+	// erase the dimensions/type of the old image retained by Resources.Update.
+	par.Resource.Subtitle = existing.Subtitle
+	if par.PhotoBase64 == "" {
+		par.Resource.CoverPosterMode = existing.CoverPosterMode
+		par.Resource.CoverPosterWidth = existing.CoverPosterWidth
+		par.Resource.CoverPosterHeight = existing.CoverPosterHeight
+	}
+	if par.Resource.Definition == "" {
+		par.Resource.Definition = existing.Definition
+	}
 }

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"image"
 	"image/jpeg"
+	"io"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -14,6 +15,46 @@ import (
 
 	"golang.org/x/image/draw"
 )
+
+const MaxImportImageBytes = 32 * 1024 * 1024
+const MaxImportImagePixels = 24_000_000
+
+// ReadImportImage bounds both compressed bytes and decoded pixels before processing.
+func ReadImportImage(filePath string) ([]byte, error) {
+	f, err := os.Open(filePath)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	info, err := f.Stat()
+	if err != nil {
+		return nil, err
+	}
+	if !info.Mode().IsRegular() || info.Size() > MaxImportImageBytes {
+		return nil, fmt.Errorf("图片不是普通文件或超过 32 MiB")
+	}
+	data, err := io.ReadAll(io.LimitReader(f, MaxImportImageBytes+1))
+	if err != nil {
+		return nil, err
+	}
+	if len(data) > MaxImportImageBytes {
+		return nil, fmt.Errorf("图片超过 32 MiB")
+	}
+	if err := ValidateImagePixels(data); err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+func ValidateImagePixels(data []byte) error {
+	c, _, err := image.DecodeConfig(bytes.NewReader(data))
+	if err != nil {
+		return err
+	}
+	if c.Width <= 0 || c.Height <= 0 || c.Width > MaxImportImagePixels/c.Height {
+		return fmt.Errorf("图片像素超过上限（2400 万像素）")
+	}
+	return nil
+}
 
 // ImageToBase64 将图片文件转换为base64编码的字符串
 // 参数:
@@ -265,6 +306,9 @@ func ScaleImage(data []byte, maxWidth int, level int) ([]byte, error) {
 		return data, nil
 	}
 	// 将字节数据解码为图像
+	if err := ValidateImagePixels(data); err != nil {
+		return nil, err
+	}
 	img, _, err := image.Decode(bytes.NewReader(data))
 	if err != nil {
 		return nil, err
@@ -336,8 +380,14 @@ func ResizeAndCropImage(data []byte, targetWidth, targetHeight int) ([]byte, err
 	if targetWidth <= 0 || targetHeight <= 0 {
 		return nil, errors.New("目标宽度和高度必须大于0")
 	}
+	if targetWidth > 4_000_000/targetHeight {
+		return nil, errors.New("目标封面超过 400 万像素")
+	}
 
 	// 将字节数据解码为图像
+	if err := ValidateImagePixels(data); err != nil {
+		return nil, err
+	}
 	img, _, err := image.Decode(bytes.NewReader(data))
 	if err != nil {
 		return nil, err
@@ -370,17 +420,10 @@ func ResizeAndCropImage(data []byte, targetWidth, targetHeight int) ([]byte, err
 		cropY = (srcHeight - cropHeight) / 2
 	}
 
-	// 创建裁剪后的图像
-	cropRect := image.Rect(0, 0, cropWidth, cropHeight)
-	cropImg := image.NewRGBA(cropRect)
-	draw.Draw(cropImg, cropRect, img, image.Point{cropX, cropY}, draw.Src)
-
-	// 创建缩放后的图像
+	// Scale directly from the source crop rectangle, avoiding a full-size RGBA copy.
+	srcRect := image.Rect(cropX, cropY, cropX+cropWidth, cropY+cropHeight)
 	dst := image.NewRGBA(image.Rect(0, 0, targetWidth, targetHeight))
-
-	// 使用中等质量进行缩放
-	scaler := draw.ApproxBiLinear
-	scaler.Scale(dst, dst.Bounds(), cropImg, cropImg.Bounds(), draw.Over, nil)
+	draw.ApproxBiLinear.Scale(dst, dst.Bounds(), img, srcRect, draw.Src, nil)
 
 	// 创建缓冲区用于存储编码后的图像
 	buf := new(bytes.Buffer)

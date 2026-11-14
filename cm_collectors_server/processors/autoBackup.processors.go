@@ -5,6 +5,7 @@ import (
 	"cm_collectors_server/config"
 	"cm_collectors_server/core"
 	"cm_collectors_server/datatype"
+	"cm_collectors_server/internal/importbatch"
 	"cm_collectors_server/internal/maintenance"
 	"cm_collectors_server/models"
 	"errors"
@@ -205,9 +206,35 @@ func (t AutoBackup) run(reason string) error {
 	if reason != "manual" && !cfg.Enabled {
 		return nil
 	}
-	if err := t.tryMarkRunning(); err != nil {
+	if reason != "manual" {
+		state, err := t.ensureState()
+		if err != nil {
+			return err
+		}
+		if !autoBackupDue(cfg, state, core.TimeNow()) {
+			return nil
+		}
+	}
+	if reason == "manual" {
+		if err := t.tryMarkRunning(); err != nil {
+			return err
+		}
+	} else {
+		admitted, err := importbatch.Global.AdmitBackup(t.tryMarkRunning)
+		if err != nil {
+			return err
+		}
+		if !admitted {
+			t.QueueRun(reason)
+			return nil
+		}
+	}
+	state, err := t.ensureState()
+	if err != nil {
+		t.markFailed(err)
 		return err
 	}
+	coveredChanges := state.PendingResourceChangeCount
 	zipPath, err := t.createBackupZip()
 	if err != nil {
 		t.markFailed(err)
@@ -216,7 +243,7 @@ func (t AutoBackup) run(reason string) error {
 	if err := t.cleanupOldBackups(); err != nil {
 		core.LogErr(err)
 	}
-	t.markSuccess(zipPath, reason)
+	t.markSuccess(zipPath, reason, coveredChanges)
 	return nil
 }
 
@@ -233,9 +260,6 @@ func (t AutoBackup) config() config.AutoBackup {
 
 func (AutoBackup) ensureState() (*models.AutoBackupState, error) {
 	db := core.DBS()
-	if err := db.AutoMigrate(&models.AutoBackupState{}); err != nil {
-		return nil, err
-	}
 	return models.AutoBackupState{}.Ensure(db)
 }
 
@@ -260,13 +284,21 @@ func (t AutoBackup) tryMarkRunning() error {
 		}).Error
 }
 
-func (t AutoBackup) markSuccess(zipPath, reason string) {
+func (t AutoBackup) markSuccess(zipPath, reason string, coveredChanges int) {
+	if err := saveAutoBackupSuccess(core.DBS(), zipPath, reason, coveredChanges); err != nil {
+		core.LogErr(err)
+	}
+}
+
+// Only clear changes covered when this backup started; imports may run alongside
+// a backup that was already admitted before the batch began.
+func saveAutoBackupSuccess(db *gorm.DB, zipPath, reason string, coveredChanges int) error {
 	now := datatype.CustomTime(core.TimeNow())
-	err := core.DBS().Model(&models.AutoBackupState{}).
+	return db.Model(&models.AutoBackupState{}).
 		Where("id = ?", models.AutoBackupStateID).
 		Updates(map[string]any{
 			"last_success_backup_at":        &now,
-			"pending_resource_change_count": 0,
+			"pending_resource_change_count": gorm.Expr("CASE WHEN pending_resource_change_count > ? THEN pending_resource_change_count - ? ELSE 0 END", coveredChanges, coveredChanges),
 			"running":                       false,
 			"running_started_at":            nil,
 			"last_backup_path":              filepath.ToSlash(zipPath),
@@ -274,9 +306,6 @@ func (t AutoBackup) markSuccess(zipPath, reason string) {
 			"last_error":                    "",
 			"updated_at":                    &now,
 		}).Error
-	if err != nil {
-		core.LogErr(err)
-	}
 }
 
 func (t AutoBackup) markFailed(runErr error) {
@@ -545,4 +574,19 @@ func mergeBackupReason(existing, next string) string {
 		return "manual"
 	}
 	return next
+}
+
+// A queued trigger is only a reminder to check again: another backup or a settings
+// change can satisfy/remove its condition while import batches defer execution.
+func autoBackupDue(cfg config.AutoBackup, state *models.AutoBackupState, now time.Time) bool {
+	if !cfg.Enabled {
+		return false
+	}
+	if cfg.ResourceChangeThreshold > 0 && state.PendingResourceChangeCount >= cfg.ResourceChangeThreshold {
+		return true
+	}
+	if cfg.IntervalHours <= 0 {
+		return false
+	}
+	return state.LastSuccessBackupAt == nil || state.LastSuccessBackupAt.IsZero() || now.Sub(time.Time(*state.LastSuccessBackupAt)) >= time.Duration(cfg.IntervalHours)*time.Hour
 }

@@ -11,6 +11,7 @@ const defaultHeaders = {
 
 export type IRequest = AxiosRequestConfig
 export interface IResponse<T> {
+  transportError?: boolean;
   status: boolean;
   statusCode: number;
   msg: string;
@@ -88,7 +89,7 @@ const _request = <T>(obj: IRequest): Promise<IResponse<T>> => {
       data: undefined as T
     };
   }).catch(error => {
-    if (error.status == 401) {
+    if (error.response?.status == 401) {
       router.push('/adminLogin');
     } else {
       //showCustomAlert('Request Error. ' + error.message);
@@ -96,8 +97,9 @@ const _request = <T>(obj: IRequest): Promise<IResponse<T>> => {
     console.error(error.message);
     return {
       status: false,
-      statusCode: 1,
+      statusCode: error.response?.status ?? 1,
       msg: error.message,
+      transportError: !error.response || error.response.status >= 500,
       data: undefined as T
     };
   });

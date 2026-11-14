@@ -2,8 +2,10 @@ package processorsffmpeg
 
 import (
 	"bytes"
+	"context"
 	"encoding/base64"
 	"fmt"
+	"time"
 )
 
 type Thumbnail struct{}
@@ -18,14 +20,7 @@ type Thumbnail struct{}
 //	[]byte: JPEG格式的图像数据
 //	error: 错误信息，如果提取成功则为nil，如果未能提取到关键帧则返回错误
 func (t Thumbnail) ExtractThumbnailPoster(videoPath string) ([]byte, error) {
-	images, err := t.ExtractThumbnail(videoPath, 1, 100)
-	if err != nil {
-		return nil, err
-	}
-	if len(images) == 0 {
-		return nil, fmt.Errorf("未能从视频中提取到关键帧")
-	}
-	return images[0], nil
+	return t.ExtractThumbnailPosterContext(context.Background(), videoPath)
 }
 
 // ExtractThumbnailAsBase64 从视频中提取指定数量的缩略图并以base64编码格式返回
@@ -204,33 +199,95 @@ func (t Thumbnail) ExtractThumbnail(videoPath string, frameCount, thumbnailFilte
 // splitMJPEGStream 分割MJPEG流中的各个JPEG图像
 func (t Thumbnail) splitMJPEGStream(data []byte) [][]byte {
 	var images [][]byte
-
-	// JPEG文件以0xFFD8开始，以0xFFD9结束
-	i := 0
-	for i < len(data)-1 {
-		// 查找JPEG开始标记
-		if data[i] == 0xFF && data[i+1] == 0xD8 {
-			start := i
-			// 从开始标记后查找结束标记
-			for j := i + 2; j < len(data)-1; j++ {
-				if data[j] == 0xFF && data[j+1] == 0xD9 {
-					// 找到完整JPEG图像
-					images = append(images, data[start:j+2])
-					i = j + 2 // 继续查找下一个图像
-					break
-				}
-			}
-			// 如果找到了JPEG结尾
-			if len(images) > 0 && len(images[len(images)-1]) == len(data[start:][:len(images[len(images)-1])]) {
-				// 已经处理了这部分数据
-			} else {
-				// 没有找到匹配的结尾，移动到下一个字节
-				i++
-			}
-		} else {
-			i++
+	for len(data) > 0 {
+		start := bytes.Index(data, []byte{0xff, 0xd8})
+		if start < 0 {
+			break
 		}
+		data = data[start:]
+		end := bytes.Index(data[2:], []byte{0xff, 0xd9})
+		if end < 0 {
+			break
+		}
+		end += 4
+		images = append(images, data[:end])
+		data = data[end:]
 	}
-
 	return images
 }
+
+var posterSlots = make(chan struct{}, 1)
+
+// Import posters retain representative selection across 100 frames. Scale before
+// buffering the candidates, not after exporting an original-size JPEG.
+func (t Thumbnail) ExtractThumbnailPosterContext(parent context.Context, videoPath string) ([]byte, error) {
+	ctx, cancel := context.WithTimeout(parent, 20*time.Second)
+	defer cancel()
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	select {
+	case posterSlots <- struct{}{}:
+		defer func() { <-posterSlots }()
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	}
+	tool, err := FFmpeg{}.isToolAvailableContext(ctx, "ffmpeg")
+	if err != nil {
+		return nil, err
+	}
+	cmd := createCommandContext(ctx, tool, "-hide_banner", "-loglevel", "error", "-nostdin", "-threads", "1", "-i", videoPath,
+		"-vf", "scale=w='min(400,iw)':h='min(600,ih)':force_original_aspect_ratio=decrease:force_divisible_by=2,thumbnail=100", "-filter_threads", "1", "-frames:v", "1", "-f", "image2pipe", "-vcodec", "mjpeg", "-threads", "1", "-q:v", "2", "pipe:1")
+	cmd.WaitDelay = 2 * time.Second
+	stdout := &boundedOutput{limit: 8 * 1024 * 1024, cancel: cancel}
+	stderr := &boundedOutput{limit: 16 * 1024}
+	cmd.Stdout = stdout
+	cmd.Stderr = stderr
+	err = cmd.Run()
+	if stdout.exceeded {
+		return nil, fmt.Errorf("封面输出超过 8 MiB")
+	}
+	if ctx.Err() != nil {
+		return nil, fmt.Errorf("封面生成超时或已取消: %w", ctx.Err())
+	}
+	if err != nil {
+		return nil, fmt.Errorf("FFmpeg执行失败: %w; %s", err, stderr.String())
+	}
+	images := t.splitMJPEGStream(stdout.Bytes())
+	if len(images) == 0 {
+		return nil, fmt.Errorf("未生成完整封面")
+	}
+	return images[0], nil
+}
+
+// Drain excess diagnostic output without retaining it; cancel oversized image output.
+type boundedOutput struct {
+	buffer   bytes.Buffer
+	limit    int
+	exceeded bool
+	cancel   context.CancelFunc
+}
+
+func (b *boundedOutput) Write(p []byte) (int, error) {
+	n := len(p)
+	remaining := b.limit - b.Len()
+	if n > remaining {
+		b.exceeded = true
+		if b.cancel != nil {
+			b.cancel()
+		}
+	}
+	if remaining > 0 {
+		keep := n
+		if keep > remaining {
+			keep = remaining
+		}
+		_, _ = b.buffer.Write(p[:keep])
+	}
+	return n, nil
+}
+
+// Do not embed bytes.Buffer: its ReaderFrom would bypass Write in io.Copy.
+func (b *boundedOutput) Len() int       { return b.buffer.Len() }
+func (b *boundedOutput) Bytes() []byte  { return b.buffer.Bytes() }
+func (b *boundedOutput) String() string { return b.buffer.String() }

@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"time"
 )
 
 type FFmpeg struct{}
@@ -69,7 +70,9 @@ func (f FFmpeg) IsFFprobeAvailable() (string, error) {
 
 // GetToolVersion 返回 FFmpeg/FFprobe 版本输出的第一行，供异常诊断日志使用。
 func (f FFmpeg) GetToolVersion(toolPath string) (string, error) {
-	cmd := createCommand(toolPath, "-version")
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	cmd := createCommandContext(ctx, toolPath, "-version")
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return "", fmt.Errorf("读取工具版本失败: %w", err)
@@ -80,6 +83,14 @@ func (f FFmpeg) GetToolVersion(toolPath string) (string, error) {
 
 // 检查指定工具是否可用的通用方法
 func (f FFmpeg) isToolAvailable(toolName string) (string, error) {
+	return f.isToolAvailableContext(context.Background(), toolName)
+}
+func (f FFmpeg) isToolAvailableContext(parent context.Context, toolName string) (string, error) {
+	if err := parent.Err(); err != nil {
+		return "", err
+	}
+	ctx, cancel := context.WithTimeout(parent, 3*time.Second)
+	defer cancel()
 	var cmd *exec.Cmd
 	var toolPath string
 
@@ -91,7 +102,7 @@ func (f FFmpeg) isToolAvailable(toolName string) (string, error) {
 		if _, err := os.Stat(localToolPath); err == nil {
 			// 本地工具存在
 			toolPath = localToolPath
-			cmd = createCommand(toolPath, "-version")
+			cmd = createCommandContext(ctx, toolPath, "-version")
 			break
 		}
 
@@ -105,7 +116,7 @@ func (f FFmpeg) isToolAvailable(toolName string) (string, error) {
 				return "", fmt.Errorf("在Windows系统中未找到%s: %v", toolName, err)
 			}
 		}
-		cmd = createCommand(toolPath, "-version")
+		cmd = createCommandContext(ctx, toolPath, "-version")
 	default:
 		// Unix-like系统 (Linux, macOS等)
 		var err error
@@ -113,11 +124,14 @@ func (f FFmpeg) isToolAvailable(toolName string) (string, error) {
 		if err != nil {
 			return "", fmt.Errorf("在Unix-like系统中未找到%s: %v", toolName, err)
 		}
-		cmd = createCommand(toolPath, "-version")
+		cmd = createCommandContext(ctx, toolPath, "-version")
 	}
 
 	// 尝试运行命令
 	err := cmd.Run()
+	if ctx.Err() != nil {
+		return "", ctx.Err()
+	}
 	if err != nil {
 		return "", fmt.Errorf("%s无法执行: %v", toolName, err)
 	}

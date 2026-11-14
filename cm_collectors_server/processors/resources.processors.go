@@ -192,7 +192,7 @@ func (t Resources) CreateResource(par *datatype.ReqParam_Resource) (*models.Reso
 		// 新建资源成功后按统一视频信息设置让新分集进入后台采集队列。
 		VideoMetadata{}.TriggerForResource(info)
 	}
-	return info, err
+	return committedResourceResult(info, err)
 }
 
 func (t Resources) UpdateResource(par *datatype.ReqParam_Resource, setResourcesDramaSeries bool) (*models.Resources, error) {
@@ -215,7 +215,7 @@ func (t Resources) UpdateResource(par *datatype.ReqParam_Resource, setResourcesD
 		// 修改资源可能新增分集或变更路径；已有时长保留，完整元数据在这里后台补齐。
 		VideoMetadata{}.TriggerForResource(info)
 	}
-	return info, err
+	return committedResourceResult(info, err)
 }
 func (t Resources) UpdateResourcePerformer(resourceID string, performers []string) (*models.Resources, error) {
 	db := core.DBS()
@@ -664,4 +664,18 @@ func uniqueStringCount(values []string) int {
 		seen[value] = struct{}{}
 	}
 	return len(seen)
+}
+
+// A failed read after a committed write must not be confused with a failed write.
+// Other callers still receive the original error through Unwrap; import can report
+// a saved-with-warning result without inviting an unnecessary retry.
+type resourceCommittedError struct{ cause error }
+
+func (e *resourceCommittedError) Error() string { return e.cause.Error() }
+func (e *resourceCommittedError) Unwrap() error { return e.cause }
+func committedResourceResult(info *models.Resources, err error) (*models.Resources, error) {
+	if err != nil {
+		return info, &resourceCommittedError{cause: err}
+	}
+	return info, nil
 }

@@ -8,12 +8,12 @@ import { scraperDataServer } from '@/server/scraper.server';
 
 vi.mock('@/assets/debounce', () => ({ debounceNow: (fn: unknown) => fn }));
 vi.mock('@/components/com/dialog/dialog-common.vue', () => ({ default: { name: 'dialogCommon', template: '<div />' } }));
-vi.mock('@/server/importData.server', () => ({ importDataServer: { scanDiskImportData: vi.fn() } }));
+vi.mock('@/server/importData.server', () => ({ importDataServer: { scanDiskImportData: vi.fn(), batch: vi.fn() } }));
 vi.mock('@/server/scraper.server', () => ({ scraperDataServer: { scraperDataProcess: vi.fn() } }));
 vi.mock('element-plus', () => ({ ElMessageBox: { alert: vi.fn() }, ElTable: { name: 'ElTable', template: '<div />' } }));
 
 const options = { global: { stubs: {
-  ElTableColumn: true, ElIcon: true, Loading: true, Select: true, CloseBold: true, Paperclip: true,
+  ElButton: true, ElTableColumn: true, ElIcon: true, Loading: true, Select: true, CloseBold: true, Paperclip: true,
   dialogCommon: { name: 'TaskDialogStub', emits: ['submit', 'closed'], methods: { open() {}, disabledSubmit() {} }, template: '<div><button @click="$emit(\'submit\')">开始</button><slot /></div>' },
   ElTable: { methods: { getSelectionRows: () => [], toggleAllSelection() {} }, template: '<div />' },
 } } };
@@ -21,6 +21,7 @@ const options = { global: { stubs: {
 describe('批量任务配置快照', () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    vi.mocked(importDataServer.batch).mockResolvedValue({ status: true, statusCode: 0, msg: '', data: 'batch-1' });
     vi.mocked(importDataServer.scanDiskImportData).mockResolvedValue({ status: true, statusCode: 200, msg: '', data: true });
     vi.mocked(scraperDataServer.scraperDataProcess).mockResolvedValue({ status: true, statusCode: 200, msg: '', data: true });
   });

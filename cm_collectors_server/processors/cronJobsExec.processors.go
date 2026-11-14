@@ -3,6 +3,7 @@ package processors
 import (
 	"cm_collectors_server/datatype"
 	"cm_collectors_server/errorMessage"
+	"cm_collectors_server/internal/importbatch"
 	"cm_collectors_server/internal/maintenance"
 	"cm_collectors_server/models"
 	"encoding/json"
@@ -295,6 +296,8 @@ func (t CronJobsExec) cronJobs_VideoMetadata(data models.CronJobs) error {
 
 // 导入任务处理
 func (t CronJobsExec) cronJobs_Import(data models.CronJobs) error {
+	release := importbatch.Global.Hold()
+	defer release()
 	fmt.Println("执行计划任务:", data.FilesBases.Name, data.JobsType, data.CronExpression)
 	config, err := FilesBases{}.Config_ScanDisk(data.FilesBasesId)
 	if err != nil {

@@ -187,22 +187,31 @@ func (v VideoInfo) IsWebCompatible(formatInfo VideoFormatInfo) bool {
 
 // GetVideoFormatInfo 使用ffprobe获取视频格式信息
 func (v VideoInfo) GetVideoFormatInfo(src string) (VideoFormatInfo, error) {
+	return v.GetVideoFormatInfoContext(context.Background(), src)
+}
+func (v VideoInfo) GetVideoFormatInfoContext(parent context.Context, src string) (VideoFormatInfo, error) {
 	var formatInfo VideoFormatInfo
+	if err := parent.Err(); err != nil {
+		return formatInfo, err
+	}
 
 	// 检查ffprobe是否可用
-	ffprobePath, err := FFmpeg{}.IsFFprobeAvailable()
+	ffprobePath, err := FFmpeg{}.isToolAvailableContext(parent, "ffprobe")
 	if err != nil {
-		return formatInfo, fmt.Errorf("ffprobe不可用: %v", err)
+		return formatInfo, fmt.Errorf("ffprobe不可用: %w", err)
 	}
 
 	// 使用ffprobe获取视频信息
-	ctx, cancel := context.WithTimeout(context.Background(), videoInfoProbeTimeout)
+	ctx, cancel := context.WithTimeout(parent, videoInfoProbeTimeout)
 	defer cancel()
 	cmd := createCommandContext(ctx, ffprobePath, "-v", "error", "-print_format", "json", "-show_format", "-show_streams", src)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		if ctx.Err() == context.DeadlineExceeded {
-			return formatInfo, fmt.Errorf("ffprobe timeout after %s: %w", videoInfoProbeTimeout, ctx.Err())
+			return formatInfo, fmt.Errorf("ffprobe timeout: %w", ctx.Err())
+		}
+		if ctx.Err() != nil {
+			return formatInfo, ctx.Err()
 		}
 		detail := strings.TrimSpace(string(output))
 		if len(detail) > 2000 {

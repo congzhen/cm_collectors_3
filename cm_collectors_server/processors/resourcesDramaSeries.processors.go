@@ -77,17 +77,11 @@ func (ResourcesDramaSeries) FindDramaSeriesSlcBySearchPath(filesBasesId string, 
 		return nil, err
 	}
 	dataList := []models.DramaSeriesWithResource{}
-	resourcesID := ""
 	// 遍历查找到的列表，筛选出与搜索路径在同一目录下的项目
 	for _, item := range *list {
 		if utils.IsSameDirectory(searchPath, item.Src) {
-			// 设置资源ID并筛选相同资源ID的项目
-			if resourcesID == "" {
-				resourcesID = item.ResourcesID
-			}
-			if resourcesID == item.ResourcesID {
-				dataList = append(dataList, item)
-			}
+			// Return every group; the import policy chooses the matching resource.
+			dataList = append(dataList, item)
 
 		}
 	}

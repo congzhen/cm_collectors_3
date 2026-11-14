@@ -105,6 +105,10 @@ func (Performer) InfoByID_DB(db *gorm.DB, id string) (*models.Performer, error) 
 //
 // 这样可以避免同一个文件库关联的多个演员库中，因为导入资源而重复创建同名演员。
 func (t Performer) PerformerInfoByNameNotFoundCreate(filesBasesId, name, photoBase64 string) (*models.Performer, error) {
+	return t.performerInfoForImport(filesBasesId, name, photoBase64, true, true)
+}
+
+func (t Performer) performerInfoForImport(filesBasesId, name, photoBase64 string, matchAlias, autoCreate bool) (*models.Performer, error) {
 	relatedPerformerBases, err := models.FilesRelatedPerformerBases{}.ListByFilesBasesID(core.DBS(), filesBasesId)
 	if err != nil {
 		return nil, err
@@ -114,7 +118,7 @@ func (t Performer) PerformerInfoByNameNotFoundCreate(filesBasesId, name, photoBa
 	mainPerformerBasesId, searchPerformerBasesIds := t.performerBasesSearchOrderForImport(*relatedPerformerBases)
 
 	for _, performerBasesId := range searchPerformerBasesIds {
-		info, err := t.InfoByName(performerBasesId, name, true)
+		info, err := t.InfoByName(performerBasesId, name, matchAlias)
 		if err == nil {
 			return info, nil
 		}
@@ -123,7 +127,7 @@ func (t Performer) PerformerInfoByNameNotFoundCreate(filesBasesId, name, photoBa
 		}
 	}
 
-	if mainPerformerBasesId == "" {
+	if mainPerformerBasesId == "" || !autoCreate {
 		return nil, errorMessage.Err_performer_Not_Found
 	}
 

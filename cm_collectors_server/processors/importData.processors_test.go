@@ -1,8 +1,16 @@
 package processors
 
 import (
+	"bytes"
 	"cm_collectors_server/datatype"
 	"cm_collectors_server/models"
+	"cm_collectors_server/utils"
+	"context"
+	"errors"
+	"image"
+	"image/jpeg"
+	"os"
+	"path/filepath"
 	"testing"
 )
 
@@ -127,5 +135,124 @@ func TestParseNfoXMLToMapRepairsBareAmpersand(t *testing.T) {
 	}
 	if movie["title"] != "Tom & Jerry" {
 		t.Fatalf("expected title to survive repair, got %#v", movie["title"])
+	}
+}
+
+func TestImportNfoTextVariants(t *testing.T) {
+	for _, input := range []string{
+		`<movie><title lang="zh">标题</title></movie>`,
+		`<movie><title>标题</title><title>备用标题</title></movie>`,
+	} {
+		root, err := parseNfoXMLToMap([]byte(input))
+		if err != nil {
+			t.Fatal(err)
+		}
+		warnings := []string{}
+		service := ImportData{warnings: &warnings}
+		par := datatype.ReqParam_Resource{}
+		err = service.NfoExecData("", "", root, datatype.Config_ScanDisk_Nfo{Roots: []string{"movie"}, Titles: []string{"title"}}, &par)
+		if err != nil || par.Resource.Title != "标题" || len(warnings) != 0 {
+			t.Fatalf("unexpected NFO result: %+v %v %v", par.Resource, warnings, err)
+		}
+	}
+}
+func TestImportNfoInvalidTextKeepsOriginalTitle(t *testing.T) {
+	root, err := parseNfoXMLToMap([]byte(`<movie><title><unexpected>nested</unexpected></title></movie>`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	warnings := []string{}
+	service := ImportData{warnings: &warnings}
+	par := datatype.ReqParam_Resource{Resource: datatype.ReqParam_ResourceBase{Title: "filename"}}
+	err = service.NfoExecData("", "", root, datatype.Config_ScanDisk_Nfo{Roots: []string{"movie"}, Titles: []string{"title"}}, &par)
+	if err != nil || par.Resource.Title != "filename" || len(warnings) != 1 {
+		t.Fatalf("lost fallback title or warning: %+v %v %v", par.Resource, warnings, err)
+	}
+}
+
+func TestImportLocalPosterPreservesOriginalAndRejectsInvalidImage(t *testing.T) {
+	dir := t.TempDir()
+	video := filepath.Join(dir, "movie.mp4")
+	poster := filepath.Join(dir, "movie.jpg")
+	var b bytes.Buffer
+	jpeg.Encode(&b, image.NewRGBA(image.Rect(0, 0, 800, 600)), nil)
+	if err := os.WriteFile(poster, b.Bytes(), 0600); err != nil {
+		t.Fatal(err)
+	}
+	config := datatype.Config_ScanDisk{CoverPosterSuffixName: []string{"jpg"}, CoverPosterType: -1}
+	data, w, h, err := (ImportData{}).GetCoverPosterBase64(video, config)
+	if err != nil || w != 800 || h != 600 {
+		t.Fatal(w, h, err)
+	}
+	decoded, err := utils.Base64ToBytes(data, true)
+	if err != nil || !bytes.Equal(decoded, b.Bytes()) {
+		t.Fatal("original bytes were changed", err)
+	}
+	if err := os.WriteFile(poster, []byte("broken image"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	data, _, _, err = (ImportData{}).GetCoverPosterBase64(video, config)
+	if err == nil || data != "" {
+		t.Fatal("invalid poster was not rejected")
+	}
+}
+
+func TestImportPreservesExistingPosterOnFallback(t *testing.T) {
+	existing := models.Resources{Subtitle: "manual subtitle", CoverPosterMode: 2, CoverPosterWidth: 600, CoverPosterHeight: 900, Definition: "4K"}
+	par := datatype.ReqParam_Resource{Resource: datatype.ReqParam_ResourceBase{CoverPosterMode: -1}}
+	preserveImportMetadata(&par, &existing)
+	if par.Resource.CoverPosterWidth != 600 || par.Resource.CoverPosterHeight != 900 || par.Resource.CoverPosterMode != 2 || par.Resource.Definition != "4K" || par.Resource.Subtitle != "manual subtitle" {
+		t.Fatalf("lost retained metadata: %+v", par.Resource)
+	}
+	par.PhotoBase64 = "replacement"
+	par.Resource.CoverPosterWidth = 400
+	par.Resource.CoverPosterHeight = 600
+	par.Resource.CoverPosterMode = 1
+	par.Resource.Definition = "1080P"
+	preserveImportMetadata(&par, &existing)
+	if par.Resource.CoverPosterWidth != 400 || par.Resource.CoverPosterHeight != 600 || par.Resource.CoverPosterMode != 1 || par.Resource.Definition != "1080P" {
+		t.Fatal("new metadata overwritten")
+	}
+}
+
+func TestImportCommittedErrorsBecomeWarnings(t *testing.T) {
+	failure := errors.New("detail query failed")
+	_, committed := committedResourceResult(nil, failure)
+	if !errors.Is(committed, failure) {
+		t.Fatal("error cause lost")
+	}
+	for _, test := range []struct {
+		name        string
+		err         error
+		saved       bool
+		wantWarning bool
+	}{
+		{"committed resource", committed, false, true},
+		{"saved episode sort failure", failure, true, true},
+		{"cancel after episode save", context.Canceled, true, true},
+		{"write failed", failure, false, false},
+		{"cancel before save", context.Canceled, false, false},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			warnings := []string{}
+			service := ImportData{warnings: &warnings}
+			got := service.finishImportError(test.err, test.saved)
+			if test.wantWarning {
+				if got != nil || len(warnings) != 1 {
+					t.Fatal(got, warnings)
+				}
+			} else if got != test.err || len(warnings) != 0 {
+				t.Fatal(got, warnings)
+			}
+		})
+	}
+}
+
+func TestImportCanceledBeforeProcessing(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	warnings, err := (ImportData{}).ScanDiskImportDataResult(ctx, "unused", "unused", datatype.Config_ScanDisk{})
+	if !errors.Is(err, context.Canceled) || len(warnings) != 0 {
+		t.Fatal(err, warnings)
 	}
 }

@@ -228,3 +228,15 @@ func (ResourcesDramaSeries) DeleteByFilesBasesID(db *gorm.DB, filesBases_id stri
 	sqlWhere := fmt.Sprintf("resources_id in (select id from %s where filesBases_id = ?)", Resources{}.TableName())
 	return db.Unscoped().Where(sqlWhere, filesBases_id).Delete(&ResourcesDramaSeries{}).Error
 }
+
+// ListBySrcInLibrary keeps import lookup consistent with the library-scoped scan.
+func (t ResourcesDramaSeries) ListBySrcInLibrary(db *gorm.DB, library, src string) (*[]ResourcesDramaSeries, error) {
+	list := []ResourcesDramaSeries{}
+	if library == "" {
+		return &list, fmt.Errorf("文件库不能为空")
+	}
+	err := db.Table(t.TableName()+" AS t").Select("t.*").
+		Joins("JOIN "+(Resources{}).TableName()+" AS r ON r.id = t.resources_id").
+		Where("r.filesBases_id = ? AND t.src = ?", library, src).Order("t.id ASC").Find(&list).Error
+	return &list, err
+}

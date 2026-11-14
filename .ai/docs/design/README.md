@@ -10,6 +10,8 @@
 
 ## 当前状态
 
+- [批量导入稳定性与自动备份协调](import-stability.md)：图片和探测限制、准确进度、批次租约与延后自动备份。
+
 - [静默检查与应用自更新](software-update.md)：浏览器提醒策略、GitHub 校验下载、Windows/Linux 安装及 Docker 持久化迁移。
 
 - [文件库公共基础配置](shared-library-config.md)：展示、导入和刮削的公共参数跟随与兼容边界。
